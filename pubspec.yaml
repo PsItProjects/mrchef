@@ -1,0 +1,49 @@
+name: mrsheaf
+description: MrSheaf App
+version: 1.0.0+1
+
+environment:
+  sdk: ">=2.19.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.6
+  google_fonts: ^6.1.0
+  flutter_svg: ^2.0.9
+  smooth_page_indicator: ^1.1.0
+  get: ^4.6.6
+  shared_preferences: ^2.2.2
+  segmented_button_slide: ^1.0.2
+  easy_stepper: ^0.8.5
+  awesome_bottom_bar: ^1.2.4
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.1
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/
+    - assets/fonts/
+    - assets/icons/
+    - assets/images/
+
+  fonts:
+    - family: Lato
+      fonts:
+        - asset: assets/fonts/Lato-Regular.ttf
+        - asset: assets/fonts/Lato-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/Lato-Black.ttf
+          weight: 900
+    - family: Givonic
+      fonts:
+        - asset: assets/fonts/Givonic-Regular.ttf
+        - asset: assets/fonts/Givonic-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/Givonic-ExtraBold.ttf
+          weight: 800
