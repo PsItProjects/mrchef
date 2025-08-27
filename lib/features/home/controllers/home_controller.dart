@@ -48,7 +48,7 @@ class HomeController extends GetxController {
             .toList();
 
         if (categoryNames.isNotEmpty) {
-          categories.value = categoryNames;
+          categories.assignAll(categoryNames);
         }
       }
     } catch (e) {

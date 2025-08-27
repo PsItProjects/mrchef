@@ -30,9 +30,9 @@ class BackendCategoryModel {
       name: _extractName(json['name']),
       description: _extractDescription(json['description']),
       image: json['image'],
-      sortOrder: json['sort_order'] ?? 0,
+      sortOrder: json['sort_order'] ?? json['sort'] ?? 0,
       isActive: json['is_active'] ?? true,
-      productsCount: json['products_count'] ?? json['available_products_count'] ?? 0,
+      productsCount: json['products_count'] ?? json['available_products_count'] ?? json['itemCount'] ?? 0,
       availableProductsCount: json['available_products_count'],
       subCategories: json['sub_categories'] != null
           ? (json['sub_categories'] as List)
