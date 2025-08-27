@@ -2,20 +2,26 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mrsheaf/features/categories/models/category_model.dart';
 import 'package:mrsheaf/features/product_details/models/product_model.dart';
+import '../services/category_service.dart';
 import 'package:mrsheaf/features/categories/widgets/filters_bottom_sheet.dart';
 
 class CategoriesController extends GetxController with GetSingleTickerProviderStateMixin {
   // Tab controller for Meals/Kitchens tabs
   late TabController tabController;
-  
+
+  // Services
+  final CategoryService _categoryService = Get.find<CategoryService>();
+
   // Observable variables
   final RxInt currentTabIndex = 0.obs;
   final RxString searchQuery = ''.obs;
   final RxList<CategoryModel> categoryChips = <CategoryModel>[].obs;
+  final RxList<BackendCategoryModel> backendCategories = <BackendCategoryModel>[].obs;
   final RxList<ProductModel> products = <ProductModel>[].obs;
   final RxList<KitchenModel> kitchens = <KitchenModel>[].obs;
   final RxList<FilterModel> filters = <FilterModel>[].obs;
   final RxList<String> appliedFilters = <String>[].obs;
+  final RxBool isLoading = false.obs;
   
   @override
   void onInit() {
@@ -34,15 +40,66 @@ class CategoriesController extends GetxController with GetSingleTickerProviderSt
   }
   
   void _initializeData() {
-    // Initialize category chips (horizontal filter)
+    _loadCategoriesFromBackend();
+    _initializeSampleData();
+  }
+
+  // Load categories from backend
+  Future<void> _loadCategoriesFromBackend() async {
+    try {
+      isLoading.value = true;
+
+      final response = await _categoryService.getCategories();
+
+      if (response.isSuccess && response.data != null) {
+        backendCategories.value = response.data!;
+
+        // Convert to legacy format for UI compatibility
+        final legacyCategories = _categoryService.convertToLegacyCategories(response.data!);
+
+        // Add "Popular" as first item if not already present
+        final hasPopular = legacyCategories.any((cat) => cat.name.toLowerCase() == 'popular');
+        if (!hasPopular) {
+          legacyCategories.insert(0, CategoryModel(
+            id: 0,
+            name: 'Popular',
+            icon: 'popular',
+            itemCount: _getTotalProductsCount(),
+            isSelected: true,
+          ));
+        }
+
+        categoryChips.value = legacyCategories;
+      } else {
+        // Fallback to sample data if API fails
+        _initializeFallbackCategories();
+      }
+    } catch (e) {
+      print('Error loading categories: $e');
+      _initializeFallbackCategories();
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  // Fallback categories if backend fails
+  void _initializeFallbackCategories() {
     categoryChips.value = [
-      CategoryModel(id: 1, name: 'Popular', icon: 'popular', itemCount: 29, isSelected: true),
-      CategoryModel(id: 2, name: 'Dessert', icon: 'dessert', itemCount: 9),
-      CategoryModel(id: 3, name: 'Pastries', icon: 'pastries', itemCount: 11),
-      CategoryModel(id: 4, name: 'Drink', icon: 'drink', itemCount: 5),
-      CategoryModel(id: 5, name: 'Pickles', icon: 'pickles', itemCount: 12),
-      CategoryModel(id: 6, name: 'Pizza', icon: 'pizza', itemCount: 8),
+      CategoryModel(id: 0, name: 'Popular', icon: 'popular', itemCount: 29, isSelected: true),
+      CategoryModel(id: 1, name: 'Dessert', icon: 'dessert', itemCount: 9),
+      CategoryModel(id: 2, name: 'Pastries', icon: 'pastries', itemCount: 11),
+      CategoryModel(id: 3, name: 'Drink', icon: 'drink', itemCount: 5),
+      CategoryModel(id: 4, name: 'Pickles', icon: 'pickles', itemCount: 12),
+      CategoryModel(id: 5, name: 'Pizza', icon: 'pizza', itemCount: 8),
     ];
+  }
+
+  // Get total products count from backend categories
+  int _getTotalProductsCount() {
+    return backendCategories.fold(0, (sum, category) => sum + category.productsCount);
+  }
+
+  void _initializeSampleData() {
 
     // Initialize products
     products.value = [
@@ -329,6 +386,36 @@ class CategoriesController extends GetxController with GetSingleTickerProviderSt
     // Select the tapped chip
     categoryChips[index] = categoryChips[index].copyWith(isSelected: true);
     categoryChips.refresh();
+
+    // Load products for selected category
+    final selectedCategory = categoryChips[index];
+    if (selectedCategory.id > 0) {
+      _loadCategoryProducts(selectedCategory.id);
+    }
+  }
+
+  // Load products for specific category
+  Future<void> _loadCategoryProducts(int categoryId) async {
+    try {
+      isLoading.value = true;
+
+      final response = await _categoryService.getCategoryProducts(categoryId);
+
+      if (response.isSuccess && response.data != null) {
+        // Handle products data here
+        // You can update products list based on response.data
+        print('Category products loaded for category $categoryId');
+      }
+    } catch (e) {
+      print('Error loading category products: $e');
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  // Refresh categories from backend
+  Future<void> refreshCategories() async {
+    await _loadCategoriesFromBackend();
   }
 
   void removeFilter(String filterName) {

@@ -1,3 +1,118 @@
+// Backend-compatible category model
+class BackendCategoryModel {
+  final int id;
+  final String name;
+  final String? description;
+  final String? image;
+  final int sortOrder;
+  final bool isActive;
+  final int productsCount;
+  final int? availableProductsCount;
+  final List<BackendCategoryModel>? subCategories;
+  final bool isSelected;
+
+  BackendCategoryModel({
+    required this.id,
+    required this.name,
+    this.description,
+    this.image,
+    required this.sortOrder,
+    required this.isActive,
+    required this.productsCount,
+    this.availableProductsCount,
+    this.subCategories,
+    this.isSelected = false,
+  });
+
+  factory BackendCategoryModel.fromJson(Map<String, dynamic> json) {
+    return BackendCategoryModel(
+      id: json['id'] ?? 0,
+      name: _extractName(json['name']),
+      description: _extractDescription(json['description']),
+      image: json['image'],
+      sortOrder: json['sort_order'] ?? 0,
+      isActive: json['is_active'] ?? true,
+      productsCount: json['products_count'] ?? json['available_products_count'] ?? 0,
+      availableProductsCount: json['available_products_count'],
+      subCategories: json['sub_categories'] != null
+          ? (json['sub_categories'] as List)
+              .map((subCat) => BackendCategoryModel.fromJson(subCat))
+              .toList()
+          : null,
+    );
+  }
+
+  static String _extractName(dynamic nameData) {
+    if (nameData is String) return nameData;
+    if (nameData is Map) {
+      return nameData['en'] ?? nameData['ar'] ?? 'Unknown Category';
+    }
+    return 'Unknown Category';
+  }
+
+  static String? _extractDescription(dynamic descData) {
+    if (descData == null) return null;
+    if (descData is String) return descData;
+    if (descData is Map) {
+      return descData['en'] ?? descData['ar'];
+    }
+    return null;
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'description': description,
+      'image': image,
+      'sort_order': sortOrder,
+      'is_active': isActive,
+      'products_count': productsCount,
+      'available_products_count': availableProductsCount,
+      'sub_categories': subCategories?.map((sub) => sub.toJson()).toList(),
+      'isSelected': isSelected,
+    };
+  }
+
+  BackendCategoryModel copyWith({
+    int? id,
+    String? name,
+    String? description,
+    String? image,
+    int? sortOrder,
+    bool? isActive,
+    int? productsCount,
+    int? availableProductsCount,
+    List<BackendCategoryModel>? subCategories,
+    bool? isSelected,
+  }) {
+    return BackendCategoryModel(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      description: description ?? this.description,
+      image: image ?? this.image,
+      sortOrder: sortOrder ?? this.sortOrder,
+      isActive: isActive ?? this.isActive,
+      productsCount: productsCount ?? this.productsCount,
+      availableProductsCount: availableProductsCount ?? this.availableProductsCount,
+      subCategories: subCategories ?? this.subCategories,
+      isSelected: isSelected ?? this.isSelected,
+    );
+  }
+
+  // Convert to legacy CategoryModel for UI compatibility
+  CategoryModel toLegacyModel() {
+    return CategoryModel(
+      id: id,
+      name: name,
+      icon: 'category_$id', // Generate icon name based on ID
+      itemCount: productsCount,
+      isSelected: isSelected,
+    );
+  }
+}
+
+// Legacy category model for UI compatibility
 class CategoryModel {
   final int id;
   final String name;
