@@ -1,6 +1,8 @@
 import 'package:get/get.dart';
 import 'package:mrsheaf/core/routes/app_routes.dart';
+import 'package:mrsheaf/core/middleware/auth_middleware.dart';
 import 'package:mrsheaf/features/profile/bindings/profile_binding.dart';
+import 'package:mrsheaf/features/auth/bindings/auth_binding.dart';
 import 'package:mrsheaf/features/splash/pages/splash_screen.dart';
 import 'package:mrsheaf/features/onboarding/pages/onboarding_screen.dart';
 import 'package:mrsheaf/features/onboarding/pages/final_onboarding_screen.dart';
@@ -41,16 +43,21 @@ class AppPages {
     GetPage(
       name: AppRoutes.LOGIN,
       page: () => const LoginScreen(),
+      binding: AuthBinding(),
+      middlewares: [GuestMiddleware()],
       transition: Transition.rightToLeft,
     ),
     GetPage(
       name: AppRoutes.SIGNUP,
       page: () => const NewSignupScreen(),
+      binding: AuthBinding(),
+      middlewares: [GuestMiddleware()],
       transition: Transition.rightToLeft,
     ),
     GetPage(
       name: AppRoutes.OTP_VERIFICATION,
       page: () => const OtpVerificationScreen(),
+      binding: AuthBinding(),
       transition: Transition.rightToLeft,
     ),
     GetPage(
@@ -76,8 +83,8 @@ class AppPages {
     GetPage(
       name: AppRoutes.HOME,
       page: () => const MainScreen(),
-      // binding: HomeBinding(),
-      bindings: [ProfileBinding(),HomeBinding()],
+      bindings: [ProfileBinding(), HomeBinding()],
+      middlewares: [AuthMiddleware()],
       transition: Transition.fadeIn,
     ),
     GetPage(
