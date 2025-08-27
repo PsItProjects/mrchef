@@ -55,9 +55,20 @@ class CategoriesController extends GetxController with GetSingleTickerProviderSt
       // Load categories
       if (pageData['categories'] != null) {
         final List<dynamic> categoriesData = pageData['categories'];
+        if (kDebugMode) {
+          print('🔍 RAW CATEGORIES DATA: $categoriesData');
+        }
+
         final categories = categoriesData
             .map((json) => CategoryModel.fromJson(json))
             .toList();
+
+        if (kDebugMode) {
+          print('🔍 PARSED CATEGORIES: ${categories.length} categories');
+          for (var cat in categories) {
+            print('   - ${cat.name} (ID: ${cat.id})');
+          }
+        }
 
         // تحديد التصنيف الأول كمحدد افتراضياً
         if (categories.isNotEmpty) {
@@ -66,6 +77,13 @@ class CategoriesController extends GetxController with GetSingleTickerProviderSt
         }
 
         categoryChips.value = categories;
+        if (kDebugMode) {
+          print('✅ CATEGORY CHIPS UPDATED: ${categoryChips.length} chips');
+        }
+      } else {
+        if (kDebugMode) {
+          print('⚠️ NO CATEGORIES DATA IN RESPONSE');
+        }
       }
 
       // Load kitchens
@@ -404,17 +422,44 @@ class CategoriesController extends GetxController with GetSingleTickerProviderSt
 
   /// Refresh categories from API
   Future<void> refreshCategories() async {
-    await _loadCategories();
+    try {
+      await _loadCategories();
+      if (kDebugMode) {
+        print('✅ Categories refreshed successfully');
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ Error refreshing categories: $e');
+      }
+    }
   }
 
   /// Refresh kitchens from API
   Future<void> refreshKitchens() async {
-    await _loadKitchens();
+    try {
+      await _loadKitchens();
+      if (kDebugMode) {
+        print('✅ Kitchens refreshed successfully');
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ Error refreshing kitchens: $e');
+      }
+    }
   }
 
   /// Refresh categories page data from API
   Future<void> refreshCategoriesPageData() async {
-    await _loadCategoriesPageData();
+    try {
+      await _loadCategoriesPageData();
+      if (kDebugMode) {
+        print('✅ Categories page data refreshed successfully');
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ Error refreshing categories page data: $e');
+      }
+    }
   }
   
   void showFilters() {

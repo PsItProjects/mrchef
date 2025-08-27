@@ -77,77 +77,84 @@ class ProductCard extends GetView<HomeController> {
 
             // Product details
             Expanded(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  // Product name and price
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        product['name'] ?? 'Special beef burger',
-                        style: const TextStyle(
-                          fontFamily: 'Tajawal',
-                          fontWeight: FontWeight.w500,
-                          fontSize: 14,
-                          color: Color(0xFF1A2023),
-                          letterSpacing: -0.04,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 2),
-                      Row(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Product name and price
+                    Flexible(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
-                            '${product['price'] ?? 16}',
+                            product['name'] ?? 'Special beef burger',
                             style: const TextStyle(
                               fontFamily: 'Tajawal',
                               fontWeight: FontWeight.w500,
-                              fontSize: 18,
+                              fontSize: 12,
                               color: Color(0xFF1A2023),
+                              letterSpacing: -0.04,
                             ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                          const Text(
-                            '\$',
-                            style: TextStyle(
-                              fontFamily: 'Tajawal',
-                              fontWeight: FontWeight.w400,
-                              fontSize: 18,
-                              color: Color(0xFFF5484A),
-                            ),
+                          const SizedBox(height: 2),
+                          Row(
+                            children: [
+                              Text(
+                                '${product['price'] ?? 16}',
+                                style: const TextStyle(
+                                  fontFamily: 'Tajawal',
+                                  fontWeight: FontWeight.w500,
+                                  fontSize: 16,
+                                  color: Color(0xFF1A2023),
+                                ),
+                              ),
+                              const Text(
+                                '\$',
+                                style: TextStyle(
+                                  fontFamily: 'Tajawal',
+                                  fontWeight: FontWeight.w400,
+                                  fontSize: 16,
+                                  color: Color(0xFFF5484A),
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
-                    ],
-                  ),
+                    ),
 
-                  const SizedBox(height: 6),
+                    const SizedBox(height: 4),
 
-                  // Add to Cart button
-                  GestureDetector(
-                    onTap: () => controller.addToCart(product['id']),
-                    child: Container(
-                      width: 118,
-                      height: 30,
-                      decoration: BoxDecoration(
-                        color: AppColors.primaryColor,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: const Center(
-                        child: Text(
-                          'Add to Cart',
-                          style: TextStyle(
-                            fontFamily: 'Lato',
-                            fontWeight: FontWeight.w700,
-                            fontSize: 12,
-                            color: Color(0xFF592E2C),
+                    // Add to Cart button
+                    GestureDetector(
+                      onTap: () => controller.addToCart(product['id']),
+                      child: Container(
+                        width: double.infinity,
+                        height: 26,
+                        decoration: BoxDecoration(
+                          color: AppColors.primaryColor,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Center(
+                          child: Text(
+                            'Add to Cart',
+                            style: TextStyle(
+                              fontFamily: 'Lato',
+                              fontWeight: FontWeight.w700,
+                              fontSize: 10,
+                              color: Color(0xFF592E2C),
+                            ),
                           ),
                         ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ],

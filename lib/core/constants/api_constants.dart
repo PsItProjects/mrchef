@@ -1,10 +1,10 @@
 class ApiConstants {
   // 🎯 CONTROL VARIABLE - Change this to switch between servers
-  static const bool useProductionServer = true; // true = Production, false = Local
+  static const bool useProductionServer = true; // true = Production, false = Local (temporarily using local due to empty production DB)
 
   // Server URLs
   static const String _productionUrl = 'https://mr-shife-backend-main-ygodva.laravel.cloud/api';
-  static const String _localUrl = 'http://172.20.20.23:8000/api';
+  static const String _localUrl = 'http://localhost:8000/api';
 
   // Base URL for the API (automatically switches based on useProductionServer)
   static String get baseUrl => useProductionServer ? _productionUrl : _localUrl;

@@ -11,10 +11,26 @@ class CategoryFilterChips extends GetView<CategoriesController> {
     return Container(
       height: 100, // Height from Figma
       padding: const EdgeInsets.symmetric(horizontal: 24),
-      child: Obx(() => ListView.builder(
-        scrollDirection: Axis.horizontal,
-        itemCount: controller.categoryChips.length,
-        itemBuilder: (context, index) {
+      child: Obx(() {
+        print('🔍 CategoryFilterChips: Building with ${controller.categoryChips.length} categories');
+        if (controller.categoryChips.isEmpty) {
+          print('⚠️ CategoryFilterChips: No categories to display');
+          return const Center(
+            child: Text(
+              'لا توجد تصنيفات متاحة',
+              style: TextStyle(
+                fontFamily: 'Lato',
+                fontSize: 16,
+                color: Color(0xFF262626),
+              ),
+            ),
+          );
+        }
+
+        return ListView.builder(
+          scrollDirection: Axis.horizontal,
+          itemCount: controller.categoryChips.length,
+          itemBuilder: (context, index) {
           final chip = controller.categoryChips[index];
           return Container(
             margin: const EdgeInsets.only(right: 16),
@@ -93,8 +109,8 @@ class CategoryFilterChips extends GetView<CategoriesController> {
               ),
             ),
           );
-        },
-      )),
+        });
+      }),
     );
   }
 }

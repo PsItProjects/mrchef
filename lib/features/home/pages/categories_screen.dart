@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
-import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/features/categories/controllers/categories_controller.dart';
 import 'package:mrsheaf/features/categories/widgets/categories_header.dart';
 import 'package:mrsheaf/features/categories/widgets/search_bar_with_filter.dart';
@@ -43,88 +42,102 @@ class CategoriesScreen extends GetView<CategoriesController> {
               child: TabBarView(
                 controller: controller.tabController,
                 children: [
-                  // Meals tab with CustomScrollView
-                  CustomScrollView(
-                    slivers: [
-                      // Category filter chips
-                      SliverToBoxAdapter(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const CategoryFilterChips(),
-                            const SizedBox(height: 16),
-                            const FilterResultChips(),
-                            const SizedBox(height: 16),
-                          ],
+                  // Meals tab with RefreshIndicator
+                  RefreshIndicator(
+                    onRefresh: () async {
+                      await controller.refreshCategoriesPageData();
+                    },
+                    color: const Color(0xFFFACD02), // Primary yellow color
+                    backgroundColor: Colors.white,
+                    child: CustomScrollView(
+                      slivers: [
+                        // Category filter chips
+                        const SliverToBoxAdapter(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              CategoryFilterChips(),
+                              SizedBox(height: 16),
+                              FilterResultChips(),
+                              SizedBox(height: 16),
+                            ],
+                          ),
                         ),
-                      ),
 
-                      // Products grid as SliverGrid
-                      SliverPadding(
-                        padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                        sliver: Obx(() => SliverGrid(
-                          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 2,
-                            crossAxisSpacing: 16,
-                            mainAxisSpacing: 16,
-                            childAspectRatio: 182 / 223,
-                          ),
-                          delegate: SliverChildBuilderDelegate(
-                            (context, index) {
-                              final product = controller.filteredProducts[index];
-                              return ProductCard(
-                                product: {
-                                  'id': product.id,
-                                  'name': product.name,
-                                  'price': product.price,
-                                  'originalPrice': product.originalPrice,
-                                  'image': product.image,
-                                  'rating': product.rating,
-                                  'reviewCount': product.reviewCount,
-                                },
-                                section: 'categories',
-                              );
-                            },
-                            childCount: controller.filteredProducts.length,
-                          ),
-                        )),
-                      ),
+                        // Products grid as SliverGrid
+                        SliverPadding(
+                          padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                          sliver: Obx(() => SliverGrid(
+                            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 2,
+                              crossAxisSpacing: 16,
+                              mainAxisSpacing: 16,
+                              childAspectRatio: 182 / 223,
+                            ),
+                            delegate: SliverChildBuilderDelegate(
+                              (context, index) {
+                                final product = controller.filteredProducts[index];
+                                return ProductCard(
+                                  product: {
+                                    'id': product.id,
+                                    'name': product.name,
+                                    'price': product.price,
+                                    'originalPrice': product.originalPrice,
+                                    'image': product.image,
+                                    'rating': product.rating,
+                                    'reviewCount': product.reviewCount,
+                                  },
+                                  section: 'categories',
+                                );
+                              },
+                              childCount: controller.filteredProducts.length,
+                            ),
+                          )),
+                        ),
 
-                      // Bottom padding
-                      const SliverToBoxAdapter(
-                        child: SizedBox(height: 100),
-                      ),
-                    ],
+                        // Bottom padding
+                        const SliverToBoxAdapter(
+                          child: SizedBox(height: 100),
+                        ),
+                      ],
+                    ),
                   ),
 
-                  // Kitchens tab with CustomScrollView
-                  CustomScrollView(
-                    slivers: [
-                      SliverPadding(
-                        padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                        sliver: Obx(() => SliverGrid(
-                          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 2,
-                            crossAxisSpacing: 16,
-                            mainAxisSpacing: 16,
-                            childAspectRatio: 182 / 223,
-                          ),
-                          delegate: SliverChildBuilderDelegate(
-                            (context, index) {
-                              return KitchenCard(
-                                kitchen: controller.kitchens[index],
-                              );
-                            },
-                            childCount: controller.kitchens.length,
-                          ),
-                        )),
-                      ),
+                  // Kitchens tab with RefreshIndicator
+                  RefreshIndicator(
+                    onRefresh: () async {
+                      await controller.refreshKitchens();
+                    },
+                    color: const Color(0xFFFACD02), // Primary yellow color
+                    backgroundColor: Colors.white,
+                    child: CustomScrollView(
+                      slivers: [
+                        SliverPadding(
+                          padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                          sliver: Obx(() => SliverGrid(
+                            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 2,
+                              crossAxisSpacing: 16,
+                              mainAxisSpacing: 16,
+                              childAspectRatio: 182 / 223,
+                            ),
+                            delegate: SliverChildBuilderDelegate(
+                              (context, index) {
+                                return KitchenCard(
+                                  kitchen: controller.kitchens[index],
+                                );
+                              },
+                              childCount: controller.kitchens.length,
+                            ),
+                          )),
+                        ),
 
-                      // Bottom padding
-                      const SliverToBoxAdapter(
-                        child: SizedBox(height: 100),
-                      ),
-                    ],
+                        // Bottom padding
+                        const SliverToBoxAdapter(
+                          child: SizedBox(height: 100),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),

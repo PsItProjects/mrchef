@@ -1,9 +1,9 @@
 import 'package:dio/dio.dart';
 import 'package:get/get.dart' as getx;
 import 'package:shared_preferences/shared_preferences.dart';
+import '../constants/api_constants.dart';
 
 class ApiClient {
-  static const String baseUrl = 'https://mr-shife-backend-main-ygodva.laravel.cloud/api';
   
   late Dio _dio;
   static ApiClient? _instance;
@@ -19,10 +19,12 @@ class ApiClient {
   }
   
   void _setupInterceptors() {
-    _dio.options.baseUrl = baseUrl;
+    _dio.options.baseUrl = ApiConstants.baseUrl;
     _dio.options.connectTimeout = const Duration(seconds: 30);
     _dio.options.receiveTimeout = const Duration(seconds: 30);
     _dio.options.sendTimeout = const Duration(seconds: 30);
+
+    print('🔧 ApiClient initialized with: ${ApiConstants.currentServerInfo}');
     
     // Request interceptor
     _dio.interceptors.add(
