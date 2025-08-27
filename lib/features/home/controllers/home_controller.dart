@@ -2,62 +2,20 @@ import 'package:get/get.dart';
 import 'package:mrsheaf/core/routes/app_routes.dart';
 import 'package:mrsheaf/features/cart/controllers/cart_controller.dart';
 import 'package:mrsheaf/features/product_details/models/product_model.dart';
-import '../../categories/services/category_service.dart';
-import '../../categories/models/category_model.dart';
 
 class HomeController extends GetxController {
-  // Services
-  final CategoryService _categoryService = Get.find<CategoryService>();
-
   // Observable variables for home screen state
   final RxInt selectedCategoryIndex = 0.obs;
   final RxInt currentBannerIndex = 0.obs;
-  final RxBool isLoadingCategories = false.obs;
-
+  
   // Categories for the filter section
-  final RxList<String> categories = <String>[
+  final List<String> categories = [
     'Popular',
     'Vegan',
     'Natural',
     'Dermatologically'
-  ].obs;
-
-  // Backend categories
-  final RxList<BackendCategoryModel> backendCategories = <BackendCategoryModel>[].obs;
-
-  @override
-  void onInit() {
-    super.onInit();
-    _loadHomeCategories();
-  }
-
-  // Load categories for home screen filter
-  Future<void> _loadHomeCategories() async {
-    try {
-      isLoadingCategories.value = true;
-
-      final response = await _categoryService.getHomeCategories();
-
-      if (response.isSuccess && response.data != null) {
-        backendCategories.value = response.data!;
-
-        // Update categories list for filter
-        final categoryNames = response.data!
-            .where((cat) => cat.isActive)
-            .map((cat) => cat.name)
-            .toList();
-
-        if (categoryNames.isNotEmpty) {
-          categories.assignAll(categoryNames);
-        }
-      }
-    } catch (e) {
-      print('Error loading home categories: $e');
-    } finally {
-      isLoadingCategories.value = false;
-    }
-  }
-
+  ];
+  
   // Kitchen data
   final RxList<Map<String, dynamic>> kitchens = <Map<String, dynamic>>[
     {

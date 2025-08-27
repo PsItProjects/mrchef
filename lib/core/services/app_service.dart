@@ -1,7 +1,6 @@
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../features/auth/services/auth_service.dart';
-import '../../features/categories/services/category_service.dart';
 
 class AppService extends GetxService {
   final RxBool isInitialized = false.obs;
@@ -20,10 +19,7 @@ class AppService extends GetxService {
       
       // Initialize auth service
       final authService = Get.put<AuthService>(AuthService(), permanent: true);
-
-      // Initialize category service
-      Get.put<CategoryService>(CategoryService(), permanent: true);
-
+      
       // Wait for auth service to load user data
       await Future.delayed(const Duration(milliseconds: 500));
       
