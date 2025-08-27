@@ -1,9 +1,9 @@
 import 'package:get/get.dart';
-import '../../../core/services/api_client.dart';
+import '../../../core/network/api_client.dart';
 import '../models/category_model.dart';
 
 class CategoryService extends GetxService {
-  final ApiClient _apiClient = Get.find<ApiClient>();
+  final ApiClient _apiClient = ApiClient.instance;
 
   /// Get categories from backend API
   /// Returns list of CategoryModel that matches Flutter's current structure

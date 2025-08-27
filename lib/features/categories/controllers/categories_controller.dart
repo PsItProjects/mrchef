@@ -7,7 +7,7 @@ import 'package:mrsheaf/features/categories/services/category_service.dart';
 
 class CategoriesController extends GetxController with GetSingleTickerProviderStateMixin {
   // Services
-  final CategoryService _categoryService = Get.find<CategoryService>();
+  final CategoryService _categoryService = CategoryService();
 
   // Tab controller for Meals/Kitchens tabs
   late TabController tabController;
