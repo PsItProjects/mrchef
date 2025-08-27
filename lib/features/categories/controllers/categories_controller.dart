@@ -3,11 +3,15 @@ import 'package:get/get.dart';
 import 'package:mrsheaf/features/categories/models/category_model.dart';
 import 'package:mrsheaf/features/product_details/models/product_model.dart';
 import 'package:mrsheaf/features/categories/widgets/filters_bottom_sheet.dart';
+import 'package:mrsheaf/features/categories/services/category_service.dart';
 
 class CategoriesController extends GetxController with GetSingleTickerProviderStateMixin {
+  // Services
+  final CategoryService _categoryService = Get.find<CategoryService>();
+
   // Tab controller for Meals/Kitchens tabs
   late TabController tabController;
-  
+
   // Observable variables
   final RxInt currentTabIndex = 0.obs;
   final RxString searchQuery = ''.obs;
@@ -16,6 +20,7 @@ class CategoriesController extends GetxController with GetSingleTickerProviderSt
   final RxList<KitchenModel> kitchens = <KitchenModel>[].obs;
   final RxList<FilterModel> filters = <FilterModel>[].obs;
   final RxList<String> appliedFilters = <String>[].obs;
+  final RxBool isLoadingCategories = false.obs;
   
   @override
   void onInit() {
@@ -24,7 +29,8 @@ class CategoriesController extends GetxController with GetSingleTickerProviderSt
     tabController.addListener(() {
       currentTabIndex.value = tabController.index;
     });
-    _initializeData();
+    _loadCategories();
+    _initializeOtherData();
   }
   
   @override
@@ -33,8 +39,28 @@ class CategoriesController extends GetxController with GetSingleTickerProviderSt
     super.onClose();
   }
   
-  void _initializeData() {
-    // Initialize category chips (horizontal filter)
+  /// Load categories from API
+  Future<void> _loadCategories() async {
+    try {
+      isLoadingCategories.value = true;
+      final categories = await _categoryService.getCategories();
+
+      // Set first category as selected by default
+      if (categories.isNotEmpty) {
+        categories[0] = categories[0].copyWith(isSelected: true);
+      }
+
+      categoryChips.value = categories;
+    } catch (e) {
+      print('Error loading categories: $e');
+      _initializeFallbackCategories();
+    } finally {
+      isLoadingCategories.value = false;
+    }
+  }
+
+  /// Fallback categories when API fails
+  void _initializeFallbackCategories() {
     categoryChips.value = [
       CategoryModel(id: 1, name: 'Popular', icon: 'popular', itemCount: 29, isSelected: true),
       CategoryModel(id: 2, name: 'Dessert', icon: 'dessert', itemCount: 9),
@@ -43,6 +69,10 @@ class CategoriesController extends GetxController with GetSingleTickerProviderSt
       CategoryModel(id: 5, name: 'Pickles', icon: 'pickles', itemCount: 12),
       CategoryModel(id: 6, name: 'Pizza', icon: 'pizza', itemCount: 8),
     ];
+  }
+
+  /// Initialize other data (products, kitchens, filters)
+  void _initializeOtherData() {
 
     // Initialize products
     products.value = [
@@ -266,9 +296,30 @@ class CategoriesController extends GetxController with GetSingleTickerProviderSt
   void changeTab(int index) {
     tabController.animateTo(index);
   }
-  
+
   void updateSearchQuery(String query) {
     searchQuery.value = query;
+  }
+
+
+
+  /// Load products for a specific category
+  Future<void> _loadCategoryProducts(int categoryId) async {
+    try {
+      final result = await _categoryService.getCategoryProducts(categoryId);
+      if (result.isNotEmpty && result['products'] != null) {
+        // Convert products data to ProductModel if needed
+        // For now, we'll keep the existing products
+        print('Loaded ${result['products'].length} products for category $categoryId');
+      }
+    } catch (e) {
+      print('Error loading category products: $e');
+    }
+  }
+
+  /// Refresh categories from API
+  Future<void> refreshCategories() async {
+    await _loadCategories();
   }
   
   void showFilters() {
@@ -329,6 +380,10 @@ class CategoriesController extends GetxController with GetSingleTickerProviderSt
     // Select the tapped chip
     categoryChips[index] = categoryChips[index].copyWith(isSelected: true);
     categoryChips.refresh();
+
+    // Load products for selected category
+    final selectedCategory = categoryChips[index];
+    _loadCategoryProducts(selectedCategory.id);
   }
 
   void removeFilter(String filterName) {
