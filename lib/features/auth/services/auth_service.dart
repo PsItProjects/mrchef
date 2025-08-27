@@ -401,4 +401,97 @@ class AuthService extends getx.GetxService {
 
   // Check if user is merchant
   bool get isMerchant => currentUser.value?.isMerchant ?? false;
+
+  // Update customer profile
+  Future<ApiResponse<UserModel>> updateCustomerProfile(
+      CustomerProfileUpdateRequest request) async {
+    try {
+      isLoading.value = true;
+
+      print('🔄 PROFILE UPDATE REQUEST: /customer/profile');
+      print('📤 Payload: ${request.toJson()}');
+
+      final response = await _apiClient.put('/customer/profile', data: request.toJson());
+
+      if (response.statusCode == 200) {
+        final apiResponse = ApiResponse.fromJson(
+          response.data,
+          (data) => UserModel.fromJson(data['customer']),
+        );
+
+        if (apiResponse.isSuccess && apiResponse.data != null) {
+          // Update current user data
+          currentUser.value = apiResponse.data;
+          await _saveUserToStorage(apiResponse.data!,
+              (await SharedPreferences.getInstance()).getString('auth_token') ?? '');
+        }
+
+        return apiResponse;
+      } else {
+        return ApiResponse<UserModel>(
+          success: false,
+          message: response.data['message'] ?? 'Failed to update profile',
+          statusCode: response.statusCode,
+        );
+      }
+    } on DioException catch (e) {
+      return ApiResponse<UserModel>(
+        success: false,
+        message: e.response?.data['message'] ?? 'Network error occurred',
+        errors: e.response?.data['errors'],
+        statusCode: e.response?.statusCode,
+      );
+    } catch (e) {
+      return ApiResponse<UserModel>(
+        success: false,
+        message: 'An unexpected error occurred: $e',
+      );
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  // Get customer profile
+  Future<ApiResponse<UserModel>> getCustomerProfile() async {
+    try {
+      isLoading.value = true;
+
+      print('📋 GET PROFILE REQUEST: /customer/profile');
+
+      final response = await _apiClient.get('/customer/profile');
+
+      if (response.statusCode == 200) {
+        final apiResponse = ApiResponse.fromJson(
+          response.data,
+          (data) => UserModel.fromJson(data['data']),
+        );
+
+        if (apiResponse.isSuccess && apiResponse.data != null) {
+          currentUser.value = apiResponse.data;
+        }
+
+        return apiResponse;
+      } else {
+        return ApiResponse<UserModel>(
+          success: false,
+          message: response.data['message'] ?? 'Failed to get profile',
+          statusCode: response.statusCode,
+        );
+      }
+    } on DioException catch (e) {
+      return ApiResponse<UserModel>(
+        success: false,
+        message: e.response?.data['message'] ?? 'Network error occurred',
+        errors: e.response?.data['errors'],
+        statusCode: e.response?.statusCode,
+      );
+    } catch (e) {
+      return ApiResponse<UserModel>(
+        success: false,
+        message: 'An unexpected error occurred: $e',
+      );
+    } finally {
+      isLoading.value = false;
+    }
+  }
 }

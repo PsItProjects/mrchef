@@ -38,30 +38,41 @@ class EditProfileScreen extends GetView<EditProfileController> {
                     const SizedBox(height: 32),
                     
                     // Save button
-                    Container(
+                    Obx(() => Container(
                       width: 380,
                       height: 50,
                       child: ElevatedButton(
-                        onPressed: controller.saveProfile,
+                        onPressed: controller.isLoading.value ? null : controller.saveProfile,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primaryColor,
+                          backgroundColor: controller.isLoading.value
+                              ? Colors.grey
+                              : AppColors.primaryColor,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10),
                           ),
                           elevation: 0,
                         ),
-                        child: const Text(
-                          'Save',
-                          style: TextStyle(
-                            fontFamily: 'Lato',
-                            fontWeight: FontWeight.w700,
-                            fontSize: 18,
-                            color: Color(0xFF592E2C),
-                            letterSpacing: -0.005,
-                          ),
-                        ),
+                        child: controller.isLoading.value
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                ),
+                              )
+                            : const Text(
+                                'Save',
+                                style: TextStyle(
+                                  fontFamily: 'Lato',
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 18,
+                                  color: Color(0xFF592E2C),
+                                  letterSpacing: -0.005,
+                                ),
+                              ),
                       ),
-                    ),
+                    )),
                     
                     const SizedBox(height: 32),
                   ],

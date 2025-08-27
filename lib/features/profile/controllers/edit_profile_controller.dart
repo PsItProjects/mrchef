@@ -2,21 +2,26 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mrsheaf/features/profile/models/user_profile_model.dart';
 import 'package:mrsheaf/features/profile/controllers/profile_controller.dart';
+import '../../auth/services/auth_service.dart';
+import '../../auth/models/auth_request.dart';
 
 class EditProfileController extends GetxController {
   // Form controllers
   final fullNameController = TextEditingController();
   final emailController = TextEditingController();
   final phoneController = TextEditingController();
-  
+
   // Form validation
   final formKey = GlobalKey<FormState>();
-  
+
   // Loading state
   final RxBool isLoading = false.obs;
-  
+
   // Country code
   final RxString countryCode = '+966'.obs;
+
+  // Services
+  final AuthService _authService = Get.find<AuthService>();
 
   @override
   void onInit() {
@@ -33,13 +38,23 @@ class EditProfileController extends GetxController {
   }
 
   void _loadCurrentProfile() {
-    final profileController = Get.find<ProfileController>();
-    final currentProfile = profileController.userProfile.value;
-    
-    fullNameController.text = currentProfile.fullName;
-    emailController.text = currentProfile.email;
-    phoneController.text = currentProfile.phoneNumber;
-    countryCode.value = currentProfile.countryCode ?? '+966';
+    // Load from AuthService current user
+    final currentUser = _authService.currentUser.value;
+    if (currentUser != null) {
+      fullNameController.text = currentUser.displayName;
+      emailController.text = currentUser.email ?? '';
+      phoneController.text = currentUser.phoneNumber;
+      countryCode.value = currentUser.countryCode;
+    } else {
+      // Fallback to ProfileController if AuthService user is null
+      final profileController = Get.find<ProfileController>();
+      final currentProfile = profileController.userProfile.value;
+
+      fullNameController.text = currentProfile.fullName;
+      emailController.text = currentProfile.email;
+      phoneController.text = currentProfile.phoneNumber;
+      countryCode.value = currentProfile.countryCode ?? '+966';
+    }
   }
 
   void changePhoto() {
@@ -51,30 +66,65 @@ class EditProfileController extends GetxController {
     );
   }
 
-  void saveProfile() {
+  Future<void> saveProfile() async {
     if (!formKey.currentState!.validate()) {
       return;
     }
 
     isLoading.value = true;
 
-    // Simulate API call
-    Future.delayed(const Duration(seconds: 1), () {
-      final profileController = Get.find<ProfileController>();
-      final currentProfile = profileController.userProfile.value;
-      
-      final updatedProfile = currentProfile.copyWith(
-        fullName: fullNameController.text.trim(),
-        email: emailController.text.trim(),
-        phoneNumber: phoneController.text.trim(),
-        countryCode: countryCode.value,
+    try {
+      // Create update request with only the fields that can be updated
+      final request = CustomerProfileUpdateRequest(
+        nameEn: fullNameController.text.trim(),
+        email: emailController.text.trim().isNotEmpty
+            ? emailController.text.trim()
+            : null,
+        preferredLanguage: 'en', // Default to English for now
       );
-      
-      profileController.updateProfile(updatedProfile);
+
+      final response = await _authService.updateCustomerProfile(request);
+
+      if (response.isSuccess) {
+        Get.snackbar(
+          'Success',
+          'Profile updated successfully',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.green.withValues(alpha: 0.3),
+        );
+
+        // Update local ProfileController as well for UI consistency
+        final profileController = Get.find<ProfileController>();
+        final currentProfile = profileController.userProfile.value;
+
+        final updatedProfile = currentProfile.copyWith(
+          fullName: fullNameController.text.trim(),
+          email: emailController.text.trim(),
+          phoneNumber: phoneController.text.trim(),
+          countryCode: countryCode.value,
+        );
+
+        profileController.updateProfile(updatedProfile);
+
+        Get.back();
+      } else {
+        Get.snackbar(
+          'Update Failed',
+          response.message,
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red.withValues(alpha: 0.3),
+        );
+      }
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'An unexpected error occurred',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red.withValues(alpha: 0.3),
+      );
+    } finally {
       isLoading.value = false;
-      
-      Get.back();
-    });
+    }
   }
 
   // Form validation methods

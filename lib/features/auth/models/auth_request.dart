@@ -133,3 +133,44 @@ class ResendOTPRequest {
     return data;
   }
 }
+
+// Customer profile update request model
+class CustomerProfileUpdateRequest {
+  final String? nameEn;
+  final String? nameAr;
+  final String? email;
+  final String? preferredLanguage;
+  final String? dateOfBirth;
+  final String? gender;
+  final bool? notificationsEnabled;
+  final bool? smsNotifications;
+  final bool? emailNotifications;
+
+  CustomerProfileUpdateRequest({
+    this.nameEn,
+    this.nameAr,
+    this.email,
+    this.preferredLanguage,
+    this.dateOfBirth,
+    this.gender,
+    this.notificationsEnabled,
+    this.smsNotifications,
+    this.emailNotifications,
+  });
+
+  Map<String, dynamic> toJson() {
+    final data = <String, dynamic>{};
+
+    if (nameEn != null) data['name_en'] = nameEn;
+    if (nameAr != null) data['name_ar'] = nameAr;
+    if (email != null) data['email'] = email;
+    if (preferredLanguage != null) data['preferred_language'] = preferredLanguage;
+    if (dateOfBirth != null) data['date_of_birth'] = dateOfBirth;
+    if (gender != null) data['gender'] = gender;
+    if (notificationsEnabled != null) data['notifications_enabled'] = notificationsEnabled;
+    if (smsNotifications != null) data['sms_notifications'] = smsNotifications;
+    if (emailNotifications != null) data['email_notifications'] = emailNotifications;
+
+    return data;
+  }
+}

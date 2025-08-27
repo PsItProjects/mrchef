@@ -34,9 +34,25 @@ class ProfileController extends GetxController {
     _loadUserProfile();
   }
 
-  void _loadUserProfile() {
-    // TODO: Load user profile from API
-    // For now using sample data
+  Future<void> _loadUserProfile() async {
+    try {
+      final authService = Get.find<AuthService>();
+      final response = await authService.getCustomerProfile();
+
+      if (response.isSuccess && response.data != null) {
+        final user = response.data!;
+        userProfile.value = UserProfileModel(
+          id: user.id,
+          fullName: user.displayName,
+          email: user.email ?? '',
+          phoneNumber: user.phoneNumber,
+          countryCode: user.countryCode,
+        );
+      }
+    } catch (e) {
+      print('Error loading user profile: $e');
+      // Keep using sample data if API fails
+    }
   }
 
   // Navigation methods
