@@ -8,6 +8,7 @@ import '../../auth/models/auth_request.dart';
 class EditProfileController extends GetxController {
   // Form controllers
   final fullNameController = TextEditingController();
+  final arabicNameController = TextEditingController();
   final emailController = TextEditingController();
   final phoneController = TextEditingController();
 
@@ -32,6 +33,7 @@ class EditProfileController extends GetxController {
   @override
   void onClose() {
     fullNameController.dispose();
+    arabicNameController.dispose();
     emailController.dispose();
     phoneController.dispose();
     super.onClose();
@@ -41,7 +43,8 @@ class EditProfileController extends GetxController {
     // Load from AuthService current user
     final currentUser = _authService.currentUser.value;
     if (currentUser != null) {
-      fullNameController.text = currentUser.displayName;
+      fullNameController.text = currentUser.nameEn ?? currentUser.displayName;
+      arabicNameController.text = currentUser.nameAr ?? '';
       emailController.text = currentUser.email ?? '';
       phoneController.text = currentUser.phoneNumber;
       countryCode.value = currentUser.countryCode;
@@ -51,6 +54,7 @@ class EditProfileController extends GetxController {
       final currentProfile = profileController.userProfile.value;
 
       fullNameController.text = currentProfile.fullName;
+      arabicNameController.text = '';
       emailController.text = currentProfile.email;
       phoneController.text = currentProfile.phoneNumber;
       countryCode.value = currentProfile.countryCode ?? '+966';
@@ -77,6 +81,9 @@ class EditProfileController extends GetxController {
       // Create update request with only the fields that can be updated
       final request = CustomerProfileUpdateRequest(
         nameEn: fullNameController.text.trim(),
+        nameAr: arabicNameController.text.trim().isNotEmpty
+            ? arabicNameController.text.trim()
+            : null,
         email: emailController.text.trim().isNotEmpty
             ? emailController.text.trim()
             : null,
@@ -130,10 +137,18 @@ class EditProfileController extends GetxController {
   // Form validation methods
   String? validateFullName(String? value) {
     if (value == null || value.trim().isEmpty) {
-      return 'Full name is required';
+      return 'English name is required';
     }
     if (value.trim().length < 2) {
-      return 'Full name must be at least 2 characters';
+      return 'English name must be at least 2 characters';
+    }
+    return null;
+  }
+
+  String? validateArabicName(String? value) {
+    // Arabic name is optional
+    if (value != null && value.trim().isNotEmpty && value.trim().length < 2) {
+      return 'Arabic name must be at least 2 characters';
     }
     return null;
   }

@@ -11,15 +11,24 @@ class EditProfileForm extends GetView<EditProfileController> {
       key: controller.formKey,
       child: Column(
         children: [
-          // Full Name field
+          // English Name field
           _buildInputField(
-            label: 'Full Name',
+            label: 'Full Name (English)',
             controller: controller.fullNameController,
             validator: controller.validateFullName,
           ),
-          
+
           const SizedBox(height: 24),
-          
+
+          // Arabic Name field
+          _buildInputField(
+            label: 'Full Name (Arabic)',
+            controller: controller.arabicNameController,
+            validator: controller.validateArabicName,
+          ),
+
+          const SizedBox(height: 24),
+
           // Email field
           _buildInputField(
             label: 'Email',
