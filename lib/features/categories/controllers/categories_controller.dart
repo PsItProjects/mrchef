@@ -5,10 +5,12 @@ import 'package:mrsheaf/features/categories/models/category_model.dart';
 import 'package:mrsheaf/features/product_details/models/product_model.dart';
 import 'package:mrsheaf/features/categories/widgets/filters_bottom_sheet.dart';
 import 'package:mrsheaf/features/categories/services/category_service.dart';
+import 'package:mrsheaf/features/categories/services/kitchen_service.dart';
 
 class CategoriesController extends GetxController with GetSingleTickerProviderStateMixin {
   // Services
   final CategoryService _categoryService = CategoryService();
+  final KitchenService _kitchenService = KitchenService();
 
   // Tab controller for Meals/Kitchens tabs
   late TabController tabController;
@@ -22,6 +24,7 @@ class CategoriesController extends GetxController with GetSingleTickerProviderSt
   final RxList<FilterModel> filters = <FilterModel>[].obs;
   final RxList<String> appliedFilters = <String>[].obs;
   final RxBool isLoadingCategories = false.obs;
+  final RxBool isLoadingKitchens = false.obs;
   final RxInt selectedCategoryId = 1.obs; // معرف التصنيف المحدد حالياً
   
   @override
@@ -31,7 +34,7 @@ class CategoriesController extends GetxController with GetSingleTickerProviderSt
     tabController.addListener(() {
       currentTabIndex.value = tabController.index;
     });
-    _loadCategories();
+    _loadCategoriesPageData();
     _initializeOtherData();
   }
   
@@ -40,7 +43,51 @@ class CategoriesController extends GetxController with GetSingleTickerProviderSt
     tabController.dispose();
     super.onClose();
   }
-  
+
+  /// Load categories page data from API
+  Future<void> _loadCategoriesPageData() async {
+    try {
+      isLoadingCategories.value = true;
+      isLoadingKitchens.value = true;
+
+      final pageData = await _categoryService.getCategoriesPageData();
+
+      // Load categories
+      if (pageData['categories'] != null) {
+        final List<dynamic> categoriesData = pageData['categories'];
+        final categories = categoriesData
+            .map((json) => CategoryModel.fromJson(json))
+            .toList();
+
+        // تحديد التصنيف الأول كمحدد افتراضياً
+        if (categories.isNotEmpty) {
+          selectedCategoryId.value = categories.first.id;
+          categories[0] = categories[0].copyWith(isSelected: true);
+        }
+
+        categoryChips.value = categories;
+      }
+
+      // Load kitchens
+      if (pageData['kitchens'] != null) {
+        final List<dynamic> kitchensData = pageData['kitchens'];
+        kitchens.value = kitchensData
+            .map((json) => KitchenModel.fromJson(json))
+            .toList();
+      }
+
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error loading categories page data: $e');
+      }
+      _initializeFallbackCategories();
+      _initializeFallbackKitchens();
+    } finally {
+      isLoadingCategories.value = false;
+      isLoadingKitchens.value = false;
+    }
+  }
+
   /// Load categories from API
   Future<void> _loadCategories() async {
     try {
@@ -74,6 +121,60 @@ class CategoriesController extends GetxController with GetSingleTickerProviderSt
     ];
     // تحديد التصنيف الأول كمحدد افتراضياً
     selectedCategoryId.value = 1;
+  }
+
+  /// Load kitchens from API
+  Future<void> _loadKitchens() async {
+    try {
+      isLoadingKitchens.value = true;
+      final kitchensData = await _kitchenService.getKitchens();
+      kitchens.value = kitchensData;
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error loading kitchens: $e');
+      }
+      _initializeFallbackKitchens();
+    } finally {
+      isLoadingKitchens.value = false;
+    }
+  }
+
+  void _initializeFallbackKitchens() {
+    kitchens.value = [
+      KitchenModel(
+        id: 1,
+        name: 'Master Chef Restaurant',
+        image: 'assets/images/kitchen_food.png',
+        rating: 4.8,
+        reviewCount: 205,
+        description: 'Authentic Mediterranean cuisine',
+        specialties: ['Pizza', 'Pasta', 'Salads'],
+        deliveryTime: '25-35 min',
+        minimumOrder: 25.00,
+      ),
+      KitchenModel(
+        id: 2,
+        name: 'Burger Palace',
+        image: 'assets/images/kitchen_food.png',
+        rating: 4.6,
+        reviewCount: 150,
+        description: 'Premium burgers and fast food',
+        specialties: ['Burgers', 'Fries', 'Shakes'],
+        deliveryTime: '15-25 min',
+        minimumOrder: 20.00,
+      ),
+      KitchenModel(
+        id: 3,
+        name: 'Sweet Dreams Bakery',
+        image: 'assets/images/kitchen_food.png',
+        rating: 4.9,
+        reviewCount: 320,
+        description: 'Fresh pastries and desserts daily',
+        specialties: ['Cakes', 'Pastries', 'Cookies'],
+        deliveryTime: '20-30 min',
+        minimumOrder: 15.00,
+      ),
+    ];
   }
 
   /// Initialize other data (products, kitchens, filters)
@@ -202,64 +303,8 @@ class CategoriesController extends GetxController with GetSingleTickerProviderSt
         categoryId: 3, // Pastries
       ),
     ];
-    
-    // Initialize kitchens
-    kitchens.value = [
-      KitchenModel(
-        id: 1,
-        name: 'Master chef',
-        image: 'assets/images/kitchen_food.png',
-        rating: 4.8,
-        reviewCount: 205,
-        description: 'Authentic Mediterranean cuisine',
-        specialties: ['Pizza', 'Pasta', 'Salads'],
-      ),
-      KitchenModel(
-        id: 2,
-        name: 'Master chef',
-        image: 'assets/images/kitchen_food.png',
-        rating: 4.6,
-        reviewCount: 150,
-        description: 'Traditional Italian kitchen',
-        specialties: ['Burgers', 'Fries', 'Shakes'],
-      ),
-      KitchenModel(
-        id: 3,
-        name: 'Master chef',
-        image: 'assets/images/kitchen_food.png',
-        rating: 4.9,
-        reviewCount: 320,
-        description: 'Asian fusion cuisine',
-        specialties: ['Sushi', 'Ramen', 'Tempura'],
-      ),
-      KitchenModel(
-        id: 4,
-        name: 'Master chef',
-        image: 'assets/images/kitchen_food.png',
-        rating: 4.7,
-        reviewCount: 180,
-        description: 'Mexican street food',
-        specialties: ['Tacos', 'Burritos', 'Quesadillas'],
-      ),
-      KitchenModel(
-        id: 5,
-        name: 'Master chef',
-        image: 'assets/images/kitchen_food.png',
-        rating: 4.5,
-        reviewCount: 95,
-        description: 'French bistro classics',
-        specialties: ['Croissants', 'Soups', 'Wine'],
-      ),
-      KitchenModel(
-        id: 6,
-        name: 'Master chef',
-        image: 'assets/images/kitchen_food.png',
-        rating: 4.8,
-        reviewCount: 240,
-        description: 'Indian spice house',
-        specialties: ['Curry', 'Naan', 'Biryani'],
-      ),
-    ];
+
+    // المطاعم سيتم تحميلها من الباك-إند عبر _loadKitchens()
     
     // Initialize filters
     _initializeFilters();
@@ -360,6 +405,16 @@ class CategoriesController extends GetxController with GetSingleTickerProviderSt
   /// Refresh categories from API
   Future<void> refreshCategories() async {
     await _loadCategories();
+  }
+
+  /// Refresh kitchens from API
+  Future<void> refreshKitchens() async {
+    await _loadKitchens();
+  }
+
+  /// Refresh categories page data from API
+  Future<void> refreshCategoriesPageData() async {
+    await _loadCategoriesPageData();
   }
   
   void showFilters() {

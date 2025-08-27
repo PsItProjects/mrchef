@@ -1,7 +1,10 @@
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import '../../../core/network/api_client.dart';
+import '../../../core/constants/api_constants.dart';
 import '../models/category_model.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 class CategoryService extends GetxService {
   final ApiClient _apiClient = ApiClient.instance;
@@ -80,6 +83,38 @@ class CategoryService extends GetxService {
         itemCount: 8
       ),
     ];
+  }
+
+  /// Get categories page data (categories + kitchens)
+  Future<Map<String, dynamic>> getCategoriesPageData() async {
+    try {
+      if (kDebugMode) {
+        print('📡 ${ApiConstants.currentServerInfo}');
+        print('🔄 FETCHING CATEGORIES PAGE DATA: ${ApiConstants.baseUrl}${ApiConstants.categoriesPageData}');
+      }
+
+      final response = await http.get(
+        Uri.parse('${ApiConstants.baseUrl}${ApiConstants.categoriesPageData}'),
+        headers: ApiConstants.headers,
+      );
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> jsonResponse = json.decode(response.body);
+
+        if (jsonResponse['success'] == true) {
+          return jsonResponse['data'];
+        } else {
+          throw Exception('Failed to load categories page data: ${jsonResponse['message']}');
+        }
+      } else {
+        throw Exception('Failed to load categories page data: ${response.statusCode}');
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error loading categories page data: $e');
+      }
+      throw Exception('Error loading categories page data: $e');
+    }
   }
 
   /// Refresh categories cache

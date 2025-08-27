@@ -58,6 +58,9 @@ class KitchenModel {
   final int reviewCount;
   final String description;
   final List<String> specialties;
+  final String deliveryTime;
+  final double minimumOrder;
+  final bool isActive;
 
   KitchenModel({
     required this.id,
@@ -67,6 +70,9 @@ class KitchenModel {
     required this.reviewCount,
     required this.description,
     required this.specialties,
+    required this.deliveryTime,
+    required this.minimumOrder,
+    this.isActive = true,
   });
 
   factory KitchenModel.fromJson(Map<String, dynamic> json) {
@@ -77,7 +83,10 @@ class KitchenModel {
       rating: json['rating'].toDouble(),
       reviewCount: json['reviewCount'],
       description: json['description'],
-      specialties: List<String>.from(json['specialties']),
+      specialties: List<String>.from(json['specialties'] ?? []),
+      deliveryTime: json['deliveryTime'] ?? '25-35 min',
+      minimumOrder: (json['minimumOrder'] ?? 25.0).toDouble(),
+      isActive: json['isActive'] ?? true,
     );
   }
 
@@ -90,6 +99,9 @@ class KitchenModel {
       'reviewCount': reviewCount,
       'description': description,
       'specialties': specialties,
+      'deliveryTime': deliveryTime,
+      'minimumOrder': minimumOrder,
+      'isActive': isActive,
     };
   }
 }
