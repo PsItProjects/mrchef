@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import '../../../core/network/api_client.dart';
 import '../models/category_model.dart';
@@ -30,44 +31,15 @@ class CategoryService extends GetxService {
     }
   }
 
-  /// Get products for a specific category
-  Future<Map<String, dynamic>> getCategoryProducts(int categoryId, {
-    int page = 1,
-    int perPage = 20,
-    String sortBy = 'created_at',
-    String sortOrder = 'desc',
-  }) async {
-    try {
-      print('🔄 FETCHING CATEGORY PRODUCTS: /customer/categories/$categoryId/products');
-      
-      final response = await _apiClient.get(
-        '/customer/categories/$categoryId/products',
-        queryParameters: {
-          'page': page,
-          'per_page': perPage,
-          'sort_by': sortBy,
-          'sort_order': sortOrder,
-        },
-      );
-      
-      if (response.statusCode == 200) {
-        print('✅ CATEGORY PRODUCTS LOADED');
-        return response.data['data'];
-      } else {
-        print('❌ CATEGORY PRODUCTS API ERROR: ${response.statusCode}');
-        return {};
-      }
-      
-    } catch (e) {
-      print('❌ CATEGORY PRODUCTS EXCEPTION: $e');
-      return {};
-    }
-  }
+  // Note: Category products are handled locally, not from API
+  // Products are filtered locally based on selected category
 
   /// Fallback categories when API fails
   /// These are the same categories currently hardcoded in CategoriesController
   List<CategoryModel> _getFallbackCategories() {
-    print('📦 USING FALLBACK CATEGORIES');
+    if (kDebugMode) {
+      print('📦 USING FALLBACK CATEGORIES');
+    }
     
     return [
       CategoryModel(

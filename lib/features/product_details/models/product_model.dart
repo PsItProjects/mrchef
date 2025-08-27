@@ -11,6 +11,7 @@ class ProductModel {
   final List<String> sizes;
   final List<AdditionalOption> additionalOptions;
   final List<String> images;
+  final int? categoryId; // إضافة معرف التصنيف
 
   ProductModel({
     required this.id,
@@ -25,6 +26,7 @@ class ProductModel {
     required this.sizes,
     required this.additionalOptions,
     required this.images,
+    this.categoryId, // إضافة معرف التصنيف
   });
 
   factory ProductModel.fromJson(Map<String, dynamic> json) {
@@ -38,11 +40,12 @@ class ProductModel {
       rating: json['rating'].toDouble(),
       reviewCount: json['reviewCount'],
       productCode: json['productCode'],
-      sizes: List<String>.from(json['sizes']),
-      additionalOptions: (json['additionalOptions'] as List)
+      sizes: List<String>.from(json['sizes'] ?? []),
+      additionalOptions: (json['additionalOptions'] as List? ?? [])
           .map((option) => AdditionalOption.fromJson(option))
           .toList(),
-      images: List<String>.from(json['images']),
+      images: List<String>.from(json['images'] ?? []),
+      categoryId: json['categoryId'], // إضافة معرف التصنيف
     );
   }
 
@@ -60,6 +63,7 @@ class ProductModel {
       'sizes': sizes,
       'additionalOptions': additionalOptions.map((option) => option.toJson()).toList(),
       'images': images,
+      'categoryId': categoryId, // إضافة معرف التصنيف
     };
   }
 }

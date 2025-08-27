@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mrsheaf/features/categories/models/category_model.dart';
@@ -21,6 +22,7 @@ class CategoriesController extends GetxController with GetSingleTickerProviderSt
   final RxList<FilterModel> filters = <FilterModel>[].obs;
   final RxList<String> appliedFilters = <String>[].obs;
   final RxBool isLoadingCategories = false.obs;
+  final RxInt selectedCategoryId = 1.obs; // معرف التصنيف المحدد حالياً
   
   @override
   void onInit() {
@@ -48,6 +50,7 @@ class CategoriesController extends GetxController with GetSingleTickerProviderSt
       // Set first category as selected by default
       if (categories.isNotEmpty) {
         categories[0] = categories[0].copyWith(isSelected: true);
+        selectedCategoryId.value = categories[0].id; // تحديد معرف التصنيف المحدد
       }
 
       categoryChips.value = categories;
@@ -69,6 +72,8 @@ class CategoriesController extends GetxController with GetSingleTickerProviderSt
       CategoryModel(id: 5, name: 'Pickles', icon: 'pickles', itemCount: 12),
       CategoryModel(id: 6, name: 'Pizza', icon: 'pizza', itemCount: 8),
     ];
+    // تحديد التصنيف الأول كمحدد افتراضياً
+    selectedCategoryId.value = 1;
   }
 
   /// Initialize other data (products, kitchens, filters)
@@ -89,6 +94,7 @@ class CategoriesController extends GetxController with GetSingleTickerProviderSt
         sizes: ['L', 'M', 'S'],
         images: ['assets/images/pizza_main.png'],
         additionalOptions: [],
+        categoryId: 1, // Popular
       ),
       ProductModel(
         id: 2,
@@ -103,6 +109,7 @@ class CategoriesController extends GetxController with GetSingleTickerProviderSt
         sizes: ['L', 'M', 'S'],
         images: ['assets/images/burger.png'],
         additionalOptions: [],
+        categoryId: 1, // Popular
       ),
       ProductModel(
         id: 3,
@@ -117,6 +124,7 @@ class CategoriesController extends GetxController with GetSingleTickerProviderSt
         sizes: ['L', 'M', 'S'],
         images: ['assets/images/pizza_main.png'],
         additionalOptions: [],
+        categoryId: 1, // Popular
       ),
       ProductModel(
         id: 4,
@@ -131,6 +139,7 @@ class CategoriesController extends GetxController with GetSingleTickerProviderSt
         sizes: ['L', 'M', 'S'],
         images: ['assets/images/pizza_main.png'],
         additionalOptions: [],
+        categoryId: 1, // Popular
       ),
       ProductModel(
         id: 5,
@@ -145,6 +154,7 @@ class CategoriesController extends GetxController with GetSingleTickerProviderSt
         sizes: ['L', 'M', 'S'],
         images: ['assets/images/pizza_main.png'],
         additionalOptions: [],
+        categoryId: 2, // Dessert
       ),
       ProductModel(
         id: 6,
@@ -159,6 +169,37 @@ class CategoriesController extends GetxController with GetSingleTickerProviderSt
         sizes: ['L', 'M', 'S'],
         images: ['assets/images/pizza_main.png'],
         additionalOptions: [],
+        categoryId: 4, // Drink
+      ),
+      ProductModel(
+        id: 7,
+        name: 'Croissant',
+        description: 'Buttery and flaky French pastry',
+        price: 6.99,
+        originalPrice: 9.00,
+        image: 'assets/images/pizza_main.png',
+        rating: 4.3,
+        reviewCount: 95,
+        productCode: '#P7432648',
+        sizes: ['L', 'M', 'S'],
+        images: ['assets/images/pizza_main.png'],
+        additionalOptions: [],
+        categoryId: 3, // Pastries
+      ),
+      ProductModel(
+        id: 8,
+        name: 'Danish Pastry',
+        description: 'Sweet pastry with fruit filling',
+        price: 8.99,
+        originalPrice: 12.00,
+        image: 'assets/images/pizza_main.png',
+        rating: 4.6,
+        reviewCount: 110,
+        productCode: '#P7432649',
+        sizes: ['L', 'M', 'S'],
+        images: ['assets/images/pizza_main.png'],
+        additionalOptions: [],
+        categoryId: 3, // Pastries
       ),
     ];
     
@@ -303,18 +344,17 @@ class CategoriesController extends GetxController with GetSingleTickerProviderSt
 
 
 
-  /// Load products for a specific category
-  Future<void> _loadCategoryProducts(int categoryId) async {
-    try {
-      final result = await _categoryService.getCategoryProducts(categoryId);
-      if (result.isNotEmpty && result['products'] != null) {
-        // Convert products data to ProductModel if needed
-        // For now, we'll keep the existing products
-        print('Loaded ${result['products'].length} products for category $categoryId');
-      }
-    } catch (e) {
-      print('Error loading category products: $e');
+  /// Apply local filtering based on selected category
+  void _applyLocalCategoryFilter(int categoryId) {
+    if (kDebugMode) {
+      print('🔍 APPLYING LOCAL FILTER: Category $categoryId');
     }
+
+    // Store the selected category ID for filtering
+    selectedCategoryId.value = categoryId;
+
+    // Trigger the filteredProducts getter to update
+    products.refresh();
   }
 
   /// Refresh categories from API
@@ -381,9 +421,9 @@ class CategoriesController extends GetxController with GetSingleTickerProviderSt
     categoryChips[index] = categoryChips[index].copyWith(isSelected: true);
     categoryChips.refresh();
 
-    // Load products for selected category
+    // Apply local filtering for selected category
     final selectedCategory = categoryChips[index];
-    _loadCategoryProducts(selectedCategory.id);
+    _applyLocalCategoryFilter(selectedCategory.id);
   }
 
   void removeFilter(String filterName) {
@@ -402,8 +442,22 @@ class CategoriesController extends GetxController with GetSingleTickerProviderSt
 
   // Getter for filtered products based on selected category and filters
   List<ProductModel> get filteredProducts {
-    // For now, return all products. In a real app, this would filter based on
-    // selected category chip and applied filters
-    return products;
+    List<ProductModel> filtered = products.toList();
+
+    // فلترة حسب التصنيف المحدد
+    if (selectedCategoryId.value > 0) {
+      filtered = filtered.where((product) =>
+        product.categoryId == selectedCategoryId.value
+      ).toList();
+    }
+
+    // يمكن إضافة فلاتر أخرى هنا لاحقاً
+    // مثل السعر، التقييم، إلخ
+
+    if (kDebugMode) {
+      print('🔍 FILTERED PRODUCTS: ${filtered.length} products for category ${selectedCategoryId.value}');
+    }
+
+    return filtered;
   }
 }
