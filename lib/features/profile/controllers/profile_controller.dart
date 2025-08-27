@@ -7,8 +7,12 @@ import 'package:mrsheaf/features/profile/pages/my_orders_screen.dart';
 import 'package:mrsheaf/features/profile/pages/my_reviews_screen.dart';
 import 'package:mrsheaf/features/profile/pages/settings_screen.dart';
 import 'package:mrsheaf/features/profile/pages/shipping_addresses_screen.dart';
+import '../../auth/services/auth_service.dart';
 
 class ProfileController extends GetxController {
+  // Loading state
+  final RxBool isLoading = false.obs;
+
   // User profile data
   final Rx<UserProfileModel> userProfile = UserProfileModel(
     id: 1,
@@ -135,16 +139,42 @@ class ProfileController extends GetxController {
     );
   }
 
-  void _performLogout() {
-    // TODO: Clear user session and navigate to login
-    Get.snackbar(
-      'Logged Out',
-      'You have been logged out successfully',
-      snackPosition: SnackPosition.BOTTOM,
-    );
-    
-    // Navigate to login screen
-    Get.offAllNamed('/login');
+  Future<void> _performLogout() async {
+    try {
+      isLoading.value = true;
+
+      // Call logout API through AuthService
+      final authService = Get.find<AuthService>();
+      final response = await authService.logout();
+
+      if (response.isSuccess) {
+        Get.snackbar(
+          'Logged Out',
+          'You have been logged out successfully',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.green.withValues(alpha: 0.3),
+        );
+
+        // Navigate to login screen
+        Get.offAllNamed('/login');
+      } else {
+        Get.snackbar(
+          'Logout Failed',
+          response.message,
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red.withValues(alpha: 0.3),
+        );
+      }
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'An error occurred during logout',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red.withValues(alpha: 0.3),
+      );
+    } finally {
+      isLoading.value = false;
+    }
   }
 
   // Getters for UI

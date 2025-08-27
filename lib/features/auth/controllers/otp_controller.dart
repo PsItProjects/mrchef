@@ -105,9 +105,12 @@ class OTPController extends GetxController {
     isLoading.value = true;
 
     try {
+      final rawCode = _getOTPCode();
+      final cleanedCode = rawCode.replaceAll(RegExp(r'[^0-9]'), '');
+
       final request = OTPVerificationRequest(
         phoneNumber: phoneNumber!,
-        otpCode: _getOTPCode(),
+        otpCode: cleanedCode,
         countryCode: countryCode ?? '+966',
         userType: userType,
       );
@@ -115,7 +118,7 @@ class OTPController extends GetxController {
       if (purpose == 'login') {
         // Verify login OTP
         final response = await _authService.verifyLoginOTP(request);
-        
+
         if (response.isSuccess) {
           Get.snackbar(
             'Login Successful',

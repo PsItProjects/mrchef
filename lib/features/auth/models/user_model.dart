@@ -34,7 +34,7 @@ class UserModel {
       id: json['id'] ?? 0,
       nameEn: json['name_en'] ?? json['name']?['en'],
       nameAr: json['name_ar'] ?? json['name']?['ar'],
-      fullName: json['full_name'] ?? json['name'],
+      fullName: json['full_name'] ?? json['name']?['current'] ?? json['name']?['en'],
       phoneNumber: json['phone_number'] ?? '',
       countryCode: json['country_code'] ?? '+966',
       email: json['email'],

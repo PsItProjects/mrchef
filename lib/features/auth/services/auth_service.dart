@@ -116,7 +116,19 @@ class AuthService extends getx.GetxService {
           ? '/customer/verify-login-otp'
           : '/merchant/verify-login-otp';
 
-      final response = await _apiClient.post(endpoint, data: request.toJson());
+      // Build payload to match unified backend expectation: use 'otp' for login OTP
+      final cleanedCode = request.otpCode.replaceAll(RegExp(r'[^0-9]'), '');
+      final payload = {
+        'phone_number': request.phoneNumber,
+        'otp': cleanedCode,
+        'country_code': request.countryCode,
+        if (request.userType != null) 'user_type': request.userType!,
+      };
+
+      print('🚀 LOGIN OTP REQUEST: $endpoint');
+      print('📤 Payload: $payload');
+
+      final response = await _apiClient.post(endpoint, data: payload);
 
       if (response.statusCode == 200) {
         final apiResponse = ApiResponse.fromJson(
@@ -243,7 +255,19 @@ class AuthService extends getx.GetxService {
           ? '/customer/verify-otp'
           : '/merchant/verify-otp';
 
-      final response = await _apiClient.post(endpoint, data: request.toJson());
+      // Build payload to match backend expectation: use 'otp' for registration OTP
+      final cleanedCode = request.otpCode.replaceAll(RegExp(r'[^0-9]'), '');
+      final payload = {
+        'phone_number': request.phoneNumber,
+        'otp': cleanedCode,
+        'country_code': request.countryCode,
+        if (request.userType != null) 'user_type': request.userType!,
+      };
+
+      print('🚀 REGISTRATION OTP REQUEST: $endpoint');
+      print('📤 Payload: $payload');
+
+      final response = await _apiClient.post(endpoint, data: payload);
 
       if (response.statusCode == 200) {
         final apiResponse = ApiResponse.fromJson(
@@ -329,8 +353,18 @@ class AuthService extends getx.GetxService {
     try {
       isLoading.value = true;
 
-      // Call logout API
-      await _apiClient.post('/logout');
+      // Determine the correct logout endpoint based on user type
+      final userType = currentUser.value?.userType ?? 'customer';
+      final endpoint = userType == 'customer'
+          ? '/customer/logout'
+          : '/merchant/logout';
+
+      print('🚪 LOGOUT REQUEST: $endpoint');
+
+      // Call logout API with authentication header
+      final response = await _apiClient.post(endpoint);
+
+      print('✅ LOGOUT RESPONSE: ${response.statusCode}');
 
       // Clear local storage regardless of API response
       await _clearUserFromStorage();
@@ -340,6 +374,7 @@ class AuthService extends getx.GetxService {
         message: 'Logged out successfully',
       );
     } catch (e) {
+      print('❌ LOGOUT ERROR: $e');
       // Clear local storage even if API call fails
       await _clearUserFromStorage();
 

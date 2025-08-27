@@ -69,6 +69,7 @@ class NewSignupController extends GetxController {
           phoneNumber: phoneController.text.replaceAll(' ', ''),
           countryCode: '+966',
           email: emailController.text.trim(),
+          agreeToTerms: agreeToTerms.value,
         );
 
         final response = await _authService.registerMerchant(request);
@@ -105,6 +106,7 @@ class NewSignupController extends GetxController {
           email: emailController.text.trim().isNotEmpty
               ? emailController.text.trim()
               : null,
+          agreeToTerms: agreeToTerms.value,
         );
 
         final response = await _authService.registerCustomer(request);

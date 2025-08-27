@@ -23,6 +23,7 @@ class CustomerRegistrationRequest {
   final String phoneNumber;
   final String countryCode;
   final String? email;
+  final bool agreeToTerms;
 
   CustomerRegistrationRequest({
     required this.nameEn,
@@ -30,6 +31,7 @@ class CustomerRegistrationRequest {
     required this.phoneNumber,
     this.countryCode = '+966',
     this.email,
+    this.agreeToTerms = true,
   });
 
   Map<String, dynamic> toJson() {
@@ -39,6 +41,7 @@ class CustomerRegistrationRequest {
       'phone_number': phoneNumber,
       'country_code': countryCode,
       'email': email,
+      'agree_to_terms': agreeToTerms,
     };
   }
 }
@@ -50,6 +53,7 @@ class MerchantRegistrationRequest {
   final String phoneNumber;
   final String countryCode;
   final String email;
+  final bool agreeToTerms;
 
   MerchantRegistrationRequest({
     required this.englishFullName,
@@ -57,6 +61,7 @@ class MerchantRegistrationRequest {
     required this.phoneNumber,
     this.countryCode = '+966',
     required this.email,
+    this.agreeToTerms = true,
   });
 
   Map<String, dynamic> toJson() {
@@ -66,6 +71,7 @@ class MerchantRegistrationRequest {
       'phone_number': phoneNumber,
       'country_code': countryCode,
       'email': email,
+      'agree_to_terms': agreeToTerms,
     };
   }
 }
@@ -85,16 +91,19 @@ class OTPVerificationRequest {
   });
 
   Map<String, dynamic> toJson() {
-    final data = {
+    // Normalize OTP to digits only
+    final cleaned = otpCode.replaceAll(RegExp(r'[^0-9]'), '');
+
+    final data = <String, dynamic>{
       'phone_number': phoneNumber,
-      'otp_code': otpCode,
       'country_code': countryCode,
+      'otp': cleaned, // unified key for all cases
     };
-    
+
     if (userType != null) {
       data['user_type'] = userType!;
     }
-    
+
     return data;
   }
 }
