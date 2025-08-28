@@ -6,6 +6,7 @@ import 'package:mrsheaf/features/product_details/models/product_model.dart';
 import 'package:mrsheaf/features/categories/widgets/filters_bottom_sheet.dart';
 import 'package:mrsheaf/features/categories/services/category_service.dart';
 import 'package:mrsheaf/features/categories/services/kitchen_service.dart';
+import 'package:mrsheaf/core/network/api_client.dart';
 
 class CategoriesController extends GetxController with GetSingleTickerProviderStateMixin {
   // Services
@@ -50,19 +51,12 @@ class CategoriesController extends GetxController with GetSingleTickerProviderSt
       isLoadingCategories.value = true;
       isLoadingKitchens.value = true;
 
-      final pageData = await _categoryService.getCategoriesPageData();
+      // Use the new combined endpoint
+      final pageData = await _categoryService.getCategoriesWithProducts();
 
       // Load categories
       if (pageData['categories'] != null) {
-        final List<dynamic> categoriesData = pageData['categories'];
-        if (kDebugMode) {
-          print('🔍 RAW CATEGORIES DATA: $categoriesData');
-        }
-
-        final categories = categoriesData
-            .map((json) => CategoryModel.fromJson(json))
-            .toList();
-
+        final List<CategoryModel> categories = pageData['categories'];
         if (kDebugMode) {
           print('🔍 PARSED CATEGORIES: ${categories.length} categories');
           for (var cat in categories) {
@@ -86,20 +80,24 @@ class CategoriesController extends GetxController with GetSingleTickerProviderSt
         }
       }
 
-      // Load kitchens
-      if (pageData['kitchens'] != null) {
-        final List<dynamic> kitchensData = pageData['kitchens'];
-        kitchens.value = kitchensData
-            .map((json) => KitchenModel.fromJson(json))
-            .toList();
+      // Load products
+      if (pageData['products'] != null) {
+        final List<ProductModel> productsList = pageData['products'];
+        products.value = productsList;
+        if (kDebugMode) {
+          print('✅ PRODUCTS LOADED: ${products.length} products');
+        }
       }
+
+      // Load kitchens (fallback to separate API if needed)
+      await _loadKitchens();
 
     } catch (e) {
       if (kDebugMode) {
-        print('Error loading categories page data: $e');
+        print('❌ Error loading categories page data: $e');
+        print('⚠️ NO FALLBACK DATA - App requires backend connection');
       }
-      _initializeFallbackCategories();
-      _initializeFallbackKitchens();
+      // NO FALLBACK DATA - App must work with backend only
     } finally {
       isLoadingCategories.value = false;
       isLoadingKitchens.value = false;
@@ -110,36 +108,33 @@ class CategoriesController extends GetxController with GetSingleTickerProviderSt
   Future<void> _loadCategories() async {
     try {
       isLoadingCategories.value = true;
+      print('🎯 CATEGORIES CONTROLLER: Starting to load categories...');
+
       final categories = await _categoryService.getCategories();
+      print('🎯 CATEGORIES CONTROLLER: Received ${categories.length} categories');
 
       // Set first category as selected by default
       if (categories.isNotEmpty) {
         categories[0] = categories[0].copyWith(isSelected: true);
         selectedCategoryId.value = categories[0].id; // تحديد معرف التصنيف المحدد
+        print('🎯 CATEGORIES CONTROLLER: Selected first category: ${categories[0].name}');
       }
 
       categoryChips.value = categories;
+      print('🎯 CATEGORIES CONTROLLER: Categories loaded successfully!');
     } catch (e) {
-      print('Error loading categories: $e');
-      _initializeFallbackCategories();
+      if (kDebugMode) {
+        print('❌ CATEGORIES CONTROLLER ERROR: $e');
+        print('⚠️ NO FALLBACK DATA - App requires backend connection');
+      }
+      // NO FALLBACK DATA - App must work with backend only
     } finally {
       isLoadingCategories.value = false;
+      print('🎯 CATEGORIES CONTROLLER: Loading finished. isLoading: ${isLoadingCategories.value}');
     }
   }
 
-  /// Fallback categories when API fails
-  void _initializeFallbackCategories() {
-    categoryChips.value = [
-      CategoryModel(id: 1, name: 'Popular', icon: 'popular', itemCount: 29, isSelected: true),
-      CategoryModel(id: 2, name: 'Dessert', icon: 'dessert', itemCount: 9),
-      CategoryModel(id: 3, name: 'Pastries', icon: 'pastries', itemCount: 11),
-      CategoryModel(id: 4, name: 'Drink', icon: 'drink', itemCount: 5),
-      CategoryModel(id: 5, name: 'Pickles', icon: 'pickles', itemCount: 12),
-      CategoryModel(id: 6, name: 'Pizza', icon: 'pizza', itemCount: 8),
-    ];
-    // تحديد التصنيف الأول كمحدد افتراضياً
-    selectedCategoryId.value = 1;
-  }
+
 
   /// Load kitchens from API
   Future<void> _loadKitchens() async {
@@ -151,182 +146,89 @@ class CategoriesController extends GetxController with GetSingleTickerProviderSt
       if (kDebugMode) {
         print('Error loading kitchens: $e');
       }
-      _initializeFallbackKitchens();
+      // NO FALLBACK DATA - App must work with backend only
     } finally {
       isLoadingKitchens.value = false;
     }
   }
 
-  void _initializeFallbackKitchens() {
-    kitchens.value = [
-      KitchenModel(
-        id: 1,
-        name: 'Master Chef Restaurant',
-        image: 'assets/images/kitchen_food.png',
-        rating: 4.8,
-        reviewCount: 205,
-        description: 'Authentic Mediterranean cuisine',
-        specialties: ['Pizza', 'Pasta', 'Salads'],
-        deliveryTime: '25-35 min',
-        minimumOrder: 25.00,
-      ),
-      KitchenModel(
-        id: 2,
-        name: 'Burger Palace',
-        image: 'assets/images/kitchen_food.png',
-        rating: 4.6,
-        reviewCount: 150,
-        description: 'Premium burgers and fast food',
-        specialties: ['Burgers', 'Fries', 'Shakes'],
-        deliveryTime: '15-25 min',
-        minimumOrder: 20.00,
-      ),
-      KitchenModel(
-        id: 3,
-        name: 'Sweet Dreams Bakery',
-        image: 'assets/images/kitchen_food.png',
-        rating: 4.9,
-        reviewCount: 320,
-        description: 'Fresh pastries and desserts daily',
-        specialties: ['Cakes', 'Pastries', 'Cookies'],
-        deliveryTime: '20-30 min',
-        minimumOrder: 15.00,
-      ),
-    ];
-  }
+
 
   /// Initialize other data (products, kitchens, filters)
   void _initializeOtherData() {
-
-    // Initialize products
-    products.value = [
-      ProductModel(
-        id: 1,
-        name: 'Vegetable pizza',
-        description: 'Tomato sauce, mozzarella cheese and a mix of fresh vegetables',
-        price: 39.99,
-        originalPrice: 70.00,
-        image: 'assets/images/pizza_main.png',
-        rating: 4.8,
-        reviewCount: 205,
-        productCode: '#G7432642',
-        sizes: ['L', 'M', 'S'],
-        images: ['assets/images/pizza_main.png'],
-        additionalOptions: [],
-        categoryId: 1, // Popular
-      ),
-      ProductModel(
-        id: 2,
-        name: 'Beef Burger',
-        description: 'Juicy beef patty with fresh vegetables and special sauce',
-        price: 25.99,
-        originalPrice: 35.00,
-        image: 'assets/images/burger.png',
-        rating: 4.6,
-        reviewCount: 150,
-        productCode: '#B7432643',
-        sizes: ['L', 'M', 'S'],
-        images: ['assets/images/burger.png'],
-        additionalOptions: [],
-        categoryId: 1, // Popular
-      ),
-      ProductModel(
-        id: 3,
-        name: 'Chicken Sandwich',
-        description: 'Grilled chicken with fresh lettuce and tomatoes',
-        price: 18.99,
-        originalPrice: 25.00,
-        image: 'assets/images/pizza_main.png',
-        rating: 4.5,
-        reviewCount: 89,
-        productCode: '#C7432644',
-        sizes: ['L', 'M', 'S'],
-        images: ['assets/images/pizza_main.png'],
-        additionalOptions: [],
-        categoryId: 1, // Popular
-      ),
-      ProductModel(
-        id: 4,
-        name: 'Caesar Salad',
-        description: 'Fresh romaine lettuce with caesar dressing and croutons',
-        price: 15.99,
-        originalPrice: 22.00,
-        image: 'assets/images/pizza_main.png',
-        rating: 4.7,
-        reviewCount: 120,
-        productCode: '#S7432645',
-        sizes: ['L', 'M', 'S'],
-        images: ['assets/images/pizza_main.png'],
-        additionalOptions: [],
-        categoryId: 1, // Popular
-      ),
-      ProductModel(
-        id: 5,
-        name: 'Chocolate Cake',
-        description: 'Rich chocolate cake with chocolate frosting',
-        price: 12.99,
-        originalPrice: 18.00,
-        image: 'assets/images/pizza_main.png',
-        rating: 4.9,
-        reviewCount: 200,
-        productCode: '#D7432646',
-        sizes: ['L', 'M', 'S'],
-        images: ['assets/images/pizza_main.png'],
-        additionalOptions: [],
-        categoryId: 2, // Dessert
-      ),
-      ProductModel(
-        id: 6,
-        name: 'Fresh Juice',
-        description: 'Freshly squeezed orange juice',
-        price: 8.99,
-        originalPrice: 12.00,
-        image: 'assets/images/pizza_main.png',
-        rating: 4.4,
-        reviewCount: 75,
-        productCode: '#J7432647',
-        sizes: ['L', 'M', 'S'],
-        images: ['assets/images/pizza_main.png'],
-        additionalOptions: [],
-        categoryId: 4, // Drink
-      ),
-      ProductModel(
-        id: 7,
-        name: 'Croissant',
-        description: 'Buttery and flaky French pastry',
-        price: 6.99,
-        originalPrice: 9.00,
-        image: 'assets/images/pizza_main.png',
-        rating: 4.3,
-        reviewCount: 95,
-        productCode: '#P7432648',
-        sizes: ['L', 'M', 'S'],
-        images: ['assets/images/pizza_main.png'],
-        additionalOptions: [],
-        categoryId: 3, // Pastries
-      ),
-      ProductModel(
-        id: 8,
-        name: 'Danish Pastry',
-        description: 'Sweet pastry with fruit filling',
-        price: 8.99,
-        originalPrice: 12.00,
-        image: 'assets/images/pizza_main.png',
-        rating: 4.6,
-        reviewCount: 110,
-        productCode: '#P7432649',
-        sizes: ['L', 'M', 'S'],
-        images: ['assets/images/pizza_main.png'],
-        additionalOptions: [],
-        categoryId: 3, // Pastries
-      ),
-    ];
-
-    // المطاعم سيتم تحميلها من الباك-إند عبر _loadKitchens()
-    
-    // Initialize filters
+    // Load products from backend instead of hardcoded data
+    _loadProductsFromBackend();
     _initializeFilters();
   }
+
+  /// Load products from backend API
+  Future<void> _loadProductsFromBackend() async {
+    try {
+      if (kDebugMode) {
+        print('🔄 LOADING PRODUCTS FROM BACKEND...');
+      }
+
+      // Use ApiClient directly since _apiClient is private in CategoryService
+      final ApiClient apiClient = ApiClient.instance;
+      final response = await apiClient.get('/customer/shopping/products');
+
+      if (response.statusCode == 200 && response.data['success'] == true) {
+        final List<dynamic> productsData = response.data['data']['products'];
+
+        final backendProducts = productsData.map((json) {
+          // Fix categoryId mapping from backend
+          final product = ProductModel.fromJson(json);
+          final fixedCategoryId = json['internal_category_id'] ?? product.categoryId;
+
+          if (kDebugMode) {
+            print('🔧 FIXING PRODUCT: ${product.name}');
+            print('   - Original CategoryID: ${product.categoryId}');
+            print('   - internal_category_id: ${json['internal_category_id']}');
+            print('   - Fixed CategoryID: $fixedCategoryId');
+          }
+
+          return ProductModel(
+            id: product.id,
+            name: product.name,
+            description: product.description,
+            price: product.price,
+            originalPrice: product.originalPrice,
+            image: product.image,
+            rating: product.rating,
+            reviewCount: product.reviewCount,
+            productCode: product.productCode,
+            sizes: product.sizes,
+            images: product.images,
+            additionalOptions: product.additionalOptions,
+            categoryId: fixedCategoryId, // Use the fixed categoryId
+          );
+        }).toList();
+
+        products.value = backendProducts;
+
+        if (kDebugMode) {
+          print('✅ LOADED ${backendProducts.length} PRODUCTS FROM BACKEND');
+          for (var product in backendProducts.take(3)) {
+            print('   - ${product.name}: ${product.price} (CategoryID: ${product.categoryId}) (Image: ${product.image})');
+          }
+        }
+      } else {
+        if (kDebugMode) {
+          print('❌ FAILED TO LOAD PRODUCTS FROM BACKEND');
+          print('⚠️ NO FALLBACK DATA - App requires backend connection');
+        }
+        products.value = []; // Empty list - no fallback data
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ ERROR LOADING PRODUCTS: $e');
+        print('⚠️ NO FALLBACK DATA - App requires backend connection');
+      }
+      products.value = []; // Empty list - no fallback data
+    }
+  }
+
+
   
   void _initializeFilters() {
     filters.value = [
@@ -544,6 +446,13 @@ class CategoriesController extends GetxController with GetSingleTickerProviderSt
   List<ProductModel> get filteredProducts {
     List<ProductModel> filtered = products.toList();
 
+    if (kDebugMode) {
+      print('🔍 FILTERING: ${products.length} total products for category ${selectedCategoryId.value}');
+      for (var product in products.take(3)) {
+        print('   - ${product.name} (CategoryID: ${product.categoryId})');
+      }
+    }
+
     // فلترة حسب التصنيف المحدد
     if (selectedCategoryId.value > 0) {
       filtered = filtered.where((product) =>
@@ -556,6 +465,9 @@ class CategoriesController extends GetxController with GetSingleTickerProviderSt
 
     if (kDebugMode) {
       print('🔍 FILTERED PRODUCTS: ${filtered.length} products for category ${selectedCategoryId.value}');
+      for (var product in filtered.take(3)) {
+        print('🔍 PRODUCT: ${product.name} - Image: ${product.image}');
+      }
     }
 
     return filtered;

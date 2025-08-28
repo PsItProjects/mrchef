@@ -4,6 +4,7 @@ import 'package:get/get.dart' as getx;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/models/api_response.dart';
+import '../../../core/services/language_service.dart';
 import '../models/user_model.dart';
 import '../models/auth_request.dart';
 import '../models/auth_response.dart';
@@ -46,6 +47,15 @@ class AuthService extends getx.GetxService {
 
       currentUser.value = user;
       isLoggedIn.value = true;
+
+      // Update language from user profile
+      try {
+        final languageService = LanguageService.instance;
+        final userData = user.toJson();
+        await languageService.updateLanguageFromUserProfile(userData);
+      } catch (e) {
+        print('Error updating language from user data: $e');
+      }
     } catch (e) {
       print('Error saving user to storage: $e');
     }
@@ -468,6 +478,15 @@ class AuthService extends getx.GetxService {
 
         if (apiResponse.isSuccess && apiResponse.data != null) {
           currentUser.value = apiResponse.data;
+
+          // Update language from user profile
+          try {
+            final languageService = LanguageService.instance;
+            final userData = response.data['data'] as Map<String, dynamic>;
+            await languageService.updateLanguageFromUserProfile(userData);
+          } catch (e) {
+            print('Error updating language from profile: $e');
+          }
         }
 
         return apiResponse;

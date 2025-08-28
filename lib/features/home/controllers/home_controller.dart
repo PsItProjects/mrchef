@@ -1,5 +1,8 @@
 import 'package:get/get.dart';
 import 'package:mrsheaf/core/routes/app_routes.dart';
+import 'package:mrsheaf/core/network/api_client.dart';
+import 'package:mrsheaf/core/constants/api_constants.dart';
+import 'package:mrsheaf/core/services/language_service.dart';
 import 'package:mrsheaf/features/cart/controllers/cart_controller.dart';
 import 'package:mrsheaf/features/product_details/models/product_model.dart';
 
@@ -7,6 +10,7 @@ class HomeController extends GetxController {
   // Observable variables for home screen state
   final RxInt selectedCategoryIndex = 0.obs;
   final RxInt currentBannerIndex = 0.obs;
+  final ApiClient _apiClient = ApiClient.instance;
   
   // Categories for the filter section
   final List<String> categories = [
@@ -87,7 +91,101 @@ class HomeController extends GetxController {
       'isFavorite': false,
     },
   ].obs;
-  
+
+  // Loading states
+  final RxBool isLoadingProducts = false.obs;
+
+  @override
+  void onInit() {
+    super.onInit();
+    _loadProductsFromBackend();
+  }
+
+  /// Load products from backend API
+  Future<void> _loadProductsFromBackend() async {
+    try {
+      isLoadingProducts.value = true;
+      print('🏠 HOME: Loading products from backend...');
+
+      // Get products from backend
+      final response = await _apiClient.get(
+        '${ApiConstants.baseUrl}${ApiConstants.products}',
+      );
+
+      print('🏠 HOME: Products API response: ${response.statusCode}');
+
+      if (response.data['success'] == true) {
+        // Handle nested products structure
+        final responseData = response.data['data'];
+        final List<dynamic> productsData = responseData is Map<String, dynamic>
+            ? (responseData['products'] ?? [])
+            : (responseData ?? []);
+        print('🏠 HOME: Found ${productsData.length} products');
+
+        // Clear existing mock data
+        bestSellerProducts.clear();
+        backAgainProducts.clear();
+
+        // Convert backend data to our format
+        for (var productData in productsData) {
+          final product = _convertBackendProduct(productData);
+          print('🏠 HOME: Converted product: ${product['name']} - ${product['price']} ر.س');
+
+          // Add to both lists for now (you can implement logic to separate them)
+          if (bestSellerProducts.length < 4) {
+            bestSellerProducts.add(product);
+          } else {
+            backAgainProducts.add(product);
+          }
+        }
+
+        print('🏠 HOME: Best sellers: ${bestSellerProducts.length}, Back again: ${backAgainProducts.length}');
+      } else {
+        print('🏠 HOME: API returned success=false');
+      }
+    } catch (e) {
+      print('🏠 HOME: Error loading products: $e');
+      // Keep mock data if API fails
+    } finally {
+      isLoadingProducts.value = false;
+    }
+  }
+
+  /// Convert backend product data to our format
+  Map<String, dynamic> _convertBackendProduct(Map<String, dynamic> backendData) {
+    // Use LanguageService to get localized text
+    final languageService = LanguageService.instance;
+
+    String getName(dynamic nameField) {
+      return languageService.getLocalizedText(nameField);
+    }
+
+    // Handle image URL properly
+    String getImageUrl(dynamic imageField) {
+      if (imageField != null && imageField.toString().isNotEmpty && imageField != 'null') {
+        String imageUrl = imageField.toString();
+        // If it's already a full URL, return it
+        if (imageUrl.startsWith('http')) {
+          return imageUrl;
+        }
+        // If it's a relative path, construct full URL
+        return 'https://mr-shife-backend-main-ygodva.laravel.cloud/storage/$imageUrl';
+      }
+      return 'assets/burger.png'; // fallback to local asset
+    }
+
+    return {
+      'id': backendData['id'],
+      'name': getName(backendData['name']),
+      'price': (backendData['price'] ?? 0).toDouble(),
+      'image': getImageUrl(backendData['image']),
+      'rating': backendData['rating'] is Map
+          ? (backendData['rating']['average'] ?? 4.5).toDouble()
+          : (backendData['rating'] ?? 4.5).toDouble(),
+      'isFavorite': false,
+    };
+  }
+
   // Methods
   void selectCategory(int index) {
     selectedCategoryIndex.value = index;

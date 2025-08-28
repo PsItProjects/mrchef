@@ -64,12 +64,32 @@ class ProductCard extends GetView<HomeController> {
                     left: 10,
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(8),
-                      child: Image.asset(
-                        'assets/images/burger.png',
-                        width: 100,
-                        height: 90,
-                        fit: BoxFit.cover,
-                      ),
+                      child: () {
+                        final imageUrl = product['image'] as String? ?? '';
+                        if (imageUrl.startsWith('http')) {
+                          return Image.network(
+                            imageUrl,
+                            width: 100,
+                            height: 90,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Image.asset(
+                                'assets/images/burger.png',
+                                width: 100,
+                                height: 90,
+                                fit: BoxFit.cover,
+                              );
+                            },
+                          );
+                        } else {
+                          return Image.asset(
+                            imageUrl.isNotEmpty ? imageUrl : 'assets/images/burger.png',
+                            width: 100,
+                            height: 90,
+                            fit: BoxFit.cover,
+                          );
+                        }
+                      }(),
                     ),
                   ),
                 ],
@@ -117,7 +137,7 @@ class ProductCard extends GetView<HomeController> {
                                 ),
                               ),
                               const Text(
-                                '\$',
+                                ' ر.س',
                                 style: TextStyle(
                                   fontFamily: 'Tajawal',
                                   fontWeight: FontWeight.w400,

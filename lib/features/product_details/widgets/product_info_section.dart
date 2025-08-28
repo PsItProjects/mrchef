@@ -66,7 +66,7 @@ class ProductInfoSection extends GetView<ProductDetailsController> {
                 children: [
                   if (controller.product.value?.originalPrice != null) ...[
                     Text(
-                      '\$${controller.product.value!.originalPrice!.toStringAsFixed(2)}',
+                      '${controller.product.value!.originalPrice!.toStringAsFixed(2)} ر.س',
                       style: const TextStyle(
                         fontFamily: 'Lato',
                         fontWeight: FontWeight.w400,
@@ -79,7 +79,7 @@ class ProductInfoSection extends GetView<ProductDetailsController> {
                     const SizedBox(width: 8),
                   ],
                   Text(
-                    '\$${controller.product.value?.price.toStringAsFixed(2) ?? '0.00'}',
+                    '${controller.totalPrice.toStringAsFixed(2)} ر.س',
                     style: const TextStyle(
                       fontFamily: 'Lato',
                       fontWeight: FontWeight.w700,

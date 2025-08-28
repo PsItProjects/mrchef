@@ -13,6 +13,15 @@ class CategoryFilterChips extends GetView<CategoriesController> {
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Obx(() {
         print('🔍 CategoryFilterChips: Building with ${controller.categoryChips.length} categories');
+        print('🔍 CategoryFilterChips: isLoadingCategories = ${controller.isLoadingCategories.value}');
+
+        if (controller.isLoadingCategories.value) {
+          print('⏳ CategoryFilterChips: Still loading categories...');
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        }
+
         if (controller.categoryChips.isEmpty) {
           print('⚠️ CategoryFilterChips: No categories to display');
           return const Center(

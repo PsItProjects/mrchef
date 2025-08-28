@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:mrsheaf/core/routes/app_pages.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/core/services/app_service.dart';
+import 'package:mrsheaf/core/services/language_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -12,7 +13,8 @@ void main() async {
     DeviceOrientation.portraitDown,
   ]);
 
-  // Initialize app service
+  // Initialize services
+  await Get.putAsync(() => LanguageService().onInit().then((_) => LanguageService()));
   await Get.putAsync(() => AppService().onInit().then((_) => AppService()));
 
   runApp(const MyApp());

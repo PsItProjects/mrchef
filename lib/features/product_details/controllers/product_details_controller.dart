@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:mrsheaf/features/product_details/models/product_model.dart';
 import 'package:mrsheaf/features/product_details/models/review_model.dart';
@@ -119,14 +120,57 @@ class ProductDetailsController extends GetxController {
   void addToCart() {
     if (product.value == null) return;
 
-    final cartController = Get.find<CartController>();
+    try {
+      final cartController = Get.find<CartController>();
 
-    cartController.addToCart(
-      product: product.value!,
-      size: selectedSize.value,
-      quantity: quantity.value,
-      additionalOptions: additionalOptions.toList(),
-    );
+      cartController.addToCart(
+        product: product.value!,
+        size: selectedSize.value,
+        quantity: quantity.value,
+        additionalOptions: additionalOptions.where((option) => option.isSelected).toList(),
+      );
+
+      // Show success message
+      Get.snackbar(
+        'تم بنجاح',
+        'تم إضافة ${product.value!.name} إلى السلة',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: const Color(0xFF4CAF50),
+        colorText: Colors.white,
+        duration: const Duration(seconds: 2),
+        margin: const EdgeInsets.all(16),
+        borderRadius: 8,
+      );
+
+      if (kDebugMode) {
+        print('✅ ADDED TO CART: ${product.value!.name}');
+        print('   - Size: ${selectedSize.value}');
+        print('   - Quantity: ${quantity.value}');
+        print('   - Total Price: ${totalPrice.toStringAsFixed(2)} ر.س');
+        final selectedOptions = additionalOptions.where((option) => option.isSelected).toList();
+        if (selectedOptions.isNotEmpty) {
+          print('   - Additional Options:');
+          for (var option in selectedOptions) {
+            print('     * ${option.name}: ${option.price?.toStringAsFixed(1)} ر.س');
+          }
+        }
+      }
+    } catch (e) {
+      Get.snackbar(
+        'خطأ',
+        'فشل في إضافة المنتج إلى السلة',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+        duration: const Duration(seconds: 2),
+        margin: const EdgeInsets.all(16),
+        borderRadius: 8,
+      );
+
+      if (kDebugMode) {
+        print('❌ ADD TO CART ERROR: $e');
+      }
+    }
   }
   
   void messageStore() {

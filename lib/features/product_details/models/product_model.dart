@@ -1,3 +1,7 @@
+import 'package:mrsheaf/core/services/language_service.dart';
+import 'package:get/get.dart';
+import 'package:flutter/foundation.dart';
+
 class ProductModel {
   final int id;
   final String name;
@@ -30,19 +34,15 @@ class ProductModel {
   });
 
   factory ProductModel.fromJson(Map<String, dynamic> json) {
-    // Handle translatable fields
+    // Use LanguageService to get localized text
+    final languageService = LanguageService.instance;
+
     String getName(dynamic nameField) {
-      if (nameField is Map<String, dynamic>) {
-        return nameField['current'] ?? nameField['en'] ?? nameField.values.first ?? 'Unknown Product';
-      }
-      return nameField?.toString() ?? 'Unknown Product';
+      return languageService.getLocalizedText(nameField);
     }
 
     String getDescription(dynamic descField) {
-      if (descField is Map<String, dynamic>) {
-        return descField['current'] ?? descField['en'] ?? descField.values.first ?? '';
-      }
-      return descField?.toString() ?? '';
+      return languageService.getLocalizedText(descField);
     }
 
     double getRating(dynamic ratingField) {
@@ -59,20 +59,34 @@ class ProductModel {
       return reviewField ?? 0;
     }
 
+    // Handle image URL properly
+    String getImageUrl(dynamic imageField) {
+      if (imageField != null && imageField.toString().isNotEmpty && imageField != 'null') {
+        String imageUrl = imageField.toString();
+        // If it's already a full URL, return it
+        if (imageUrl.startsWith('http')) {
+          return imageUrl;
+        }
+        // If it's a relative path, construct full URL
+        return 'https://mr-shife-backend-main-ygodva.laravel.cloud/storage/$imageUrl';
+      }
+      return 'https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=400&h=300&fit=crop'; // fallback image
+    }
+
     return ProductModel(
       id: json['id'],
       name: getName(json['name']),
       description: getDescription(json['description']),
       price: (json['price'] ?? 0).toDouble(),
       originalPrice: json['originalPrice']?.toDouble(),
-      image: json['image'] ?? '',
+      image: getImageUrl(json['image']),
       rating: getRating(json['rating']),
       reviewCount: getReviewCount(json['reviewCount'] ?? json['rating']),
       productCode: json['productCode'] ?? 'N/A',
       sizes: _extractSizes(json['additionalOptions']),
       additionalOptions: _extractAdditionalOptions(json['additionalOptions']),
       images: List<String>.from(json['images'] ?? [json['image'] ?? '']),
-      categoryId: json['categoryId'] ?? json['category']?['id'],
+      categoryId: json['internal_category_id'] ?? json['categoryId'] ?? json['category']?['id'],
     );
   }
 

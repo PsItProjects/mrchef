@@ -4,7 +4,7 @@ class ApiConstants {
 
   // Server URLs
   static const String _productionUrl = 'https://mr-shife-backend-main-ygodva.laravel.cloud/api';
-  static const String _localUrl = 'http://localhost:8000/api';
+  static const String _localUrl = 'http://127.0.0.1:8000/api'; // Android emulator localhost
 
   // Base URL for the API (automatically switches based on useProductionServer)
   static String get baseUrl => useProductionServer ? _productionUrl : _localUrl;
@@ -16,10 +16,11 @@ class ApiConstants {
   static const String profile = '/auth/profile';
   
   // Customer endpoints
-  static const String categories = '/customer/shopping/categories';
-  static const String products = '/customer/shopping/products';
+  static const String categories = '/customer/shopping/categories'; // Public route
+  static const String products = '/customer/shopping/products'; // Public route
   static const String kitchens = '/customer/shopping/kitchens';
   static const String categoriesPageData = '/customer/shopping/categories-page-data';
+  static const String categoriesWithProducts = '/customer/shopping/categories-with-products'; // New combined endpoint
 
   // Cart endpoints
   static const String cart = '/customer/shopping/cart';

@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:get/get.dart' as getx;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../constants/api_constants.dart';
+import '../services/language_service.dart';
 
 class ApiClient {
   
@@ -37,10 +38,18 @@ class ApiClient {
             options.headers['Authorization'] = 'Bearer $token';
           }
           
-          // Add language header
-          final language = prefs.getString('app_language') ?? 'en';
-          options.headers['X-Language'] = language;
-          options.headers['Accept-Language'] = language;
+          // Add language header from LanguageService
+          try {
+            final languageService = LanguageService.instance;
+            final language = languageService.currentLanguage;
+            options.headers['X-Language'] = language;
+            options.headers['Accept-Language'] = language;
+          } catch (e) {
+            // Fallback to stored preference or default
+            final language = prefs.getString('app_language') ?? 'en';
+            options.headers['X-Language'] = language;
+            options.headers['Accept-Language'] = language;
+          }
           
           // Add content type
           options.headers['Content-Type'] = 'application/json';

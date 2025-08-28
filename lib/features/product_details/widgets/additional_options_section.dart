@@ -91,13 +91,13 @@ class AdditionalOptionsSection extends GetView<ProductDetailsController> {
                           ),
                           if (option.price != null)
                             Text(
-                              '${option.price!.toStringAsFixed(1)} ILS',
+                              '${option.price!.toStringAsFixed(1)} ر.س',
                               style: TextStyle(
                                 fontFamily: 'Lato',
                                 fontWeight: FontWeight.w600,
                                 fontSize: 12,
-                                color: option.isSelected 
-                                    ? const Color(0xFF592E2C) 
+                                color: option.isSelected
+                                    ? const Color(0xFF592E2C)
                                     : const Color(0xFF727272),
                               ),
                             ),
