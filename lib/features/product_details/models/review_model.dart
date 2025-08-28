@@ -30,17 +30,19 @@ class ReviewModel {
   factory ReviewModel.fromJson(Map<String, dynamic> json) {
     return ReviewModel(
       id: json['id'],
-      userName: json['userName'],
-      userAvatar: json['userAvatar'],
-      rating: json['rating'].toDouble(),
-      comment: json['comment'],
-      date: DateTime.parse(json['date']),
-      images: List<String>.from(json['images']),
-      likes: json['likes'],
-      dislikes: json['dislikes'],
-      replies: json['replies'],
-      isLiked: json['isLiked'] ?? false,
-      isDisliked: json['isDisliked'] ?? false,
+      userName: json['userName'] ?? json['user_name'] ?? 'Anonymous',
+      userAvatar: json['userAvatar'] ?? json['user_avatar'] ?? '',
+      rating: (json['rating'] ?? 5).toDouble(),
+      comment: json['comment'] ?? '',
+      date: json['date'] != null
+          ? DateTime.tryParse(json['date']) ?? DateTime.now()
+          : DateTime.now(),
+      images: List<String>.from(json['images'] ?? []),
+      likes: json['likes'] ?? json['likes_count'] ?? 0,
+      dislikes: json['dislikes'] ?? json['dislikes_count'] ?? 0,
+      replies: json['replies'] ?? json['replies_count'] ?? 0,
+      isLiked: json['isLiked'] ?? json['is_liked'] ?? false,
+      isDisliked: json['isDisliked'] ?? json['is_disliked'] ?? false,
     );
   }
 

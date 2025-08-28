@@ -5,7 +5,7 @@ import 'package:mrsheaf/features/product_details/models/product_model.dart';
 import 'package:mrsheaf/features/product_details/models/review_model.dart';
 
 class ProductDetailsService {
-  final ApiClient _apiClient = ApiClient();
+  final ApiClient _apiClient = ApiClient.instance;
 
   /// Get product details by ID
   Future<ProductModel> getProductDetails(int productId) async {

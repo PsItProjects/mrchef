@@ -56,6 +56,7 @@ class ProductImagesCarousel extends GetView<ProductDetailsController> {
               ),
             ),
           ),
+          ),
         );
       }),
     );

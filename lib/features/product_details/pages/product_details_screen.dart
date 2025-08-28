@@ -74,8 +74,9 @@ class ProductDetailsScreen extends GetView<ProductDetailsController> {
           
           // Add to cart section (fixed at bottom)
           const AddToCartSection(),
-          ];
-        }),
+          ],
+        );
+      }),
     );
   }
 }

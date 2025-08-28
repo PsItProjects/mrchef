@@ -132,7 +132,7 @@ class ReviewsBottomSheet extends GetView<ProductDetailsController> {
                       Container(
                         margin: const EdgeInsets.fromLTRB(24, 0, 24, 32),
                         child: GestureDetector(
-                          onTap: controller.addReview,
+                          onTap: () => controller.addReview(5, "Great product!"),
                           child: Container(
                             width: 380,
                             height: 50,
