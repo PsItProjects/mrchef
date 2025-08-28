@@ -16,8 +16,21 @@ class ProductDetailsScreen extends GetView<ProductDetailsController> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF2F2F2), // Background color from Figma
-      body: Column(
-        children: [
+      body: Obx(() {
+        if (controller.isLoadingProduct.value) {
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        }
+
+        if (controller.product.value == null) {
+          return const Center(
+            child: Text('Product not found'),
+          );
+        }
+
+        return Column(
+          children: [
           // Main content
           Expanded(
             child: SingleChildScrollView(
@@ -61,8 +74,8 @@ class ProductDetailsScreen extends GetView<ProductDetailsController> {
           
           // Add to cart section (fixed at bottom)
           const AddToCartSection(),
-        ],
-      ),
+          ];
+        }),
     );
   }
 }

@@ -193,7 +193,10 @@ class HomeController extends GetxController {
     );
   }
 
-  void navigateToProductDetails() {
-    Get.toNamed(AppRoutes.PRODUCT_DETAILS);
+  void navigateToProductDetails({int? productId}) {
+    Get.toNamed(
+      AppRoutes.PRODUCT_DETAILS,
+      arguments: {'productId': productId ?? 1},
+    );
   }
 }

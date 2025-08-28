@@ -40,12 +40,12 @@ class ProductModel {
       rating: json['rating'].toDouble(),
       reviewCount: json['reviewCount'],
       productCode: json['productCode'],
-      sizes: List<String>.from(json['sizes'] ?? []),
+      sizes: List<String>.from(json['sizes'] ?? ['S', 'M', 'L']),
       additionalOptions: (json['additionalOptions'] as List? ?? [])
           .map((option) => AdditionalOption.fromJson(option))
           .toList(),
-      images: List<String>.from(json['images'] ?? []),
-      categoryId: json['categoryId'], // إضافة معرف التصنيف
+      images: List<String>.from(json['images'] ?? [json['image']]),
+      categoryId: json['categoryId'],
     );
   }
 
@@ -88,7 +88,7 @@ class AdditionalOption {
       id: json['id'],
       name: json['name'],
       price: json['price']?.toDouble(),
-      icon: json['icon'],
+      icon: json['icon'] ?? 'salad', // Default icon
       isSelected: json['isSelected'] ?? false,
     );
   }

@@ -10,10 +10,12 @@ class ProductImagesCarousel extends GetView<ProductDetailsController> {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: List.generate(
-          controller.product.images.length,
+      child: Obx(() {
+        final images = controller.product.value?.images ?? ['assets/images/pizza_main.png'];
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: List.generate(
+            images.length,
           (index) => GestureDetector(
             onTap: () => controller.changeImage(index),
             child: Container(
@@ -31,15 +33,31 @@ class ProductImagesCarousel extends GetView<ProductDetailsController> {
               ),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(32),
-                child: Image.asset(
-                  controller.product.images[index],
-                  fit: BoxFit.cover,
-                ),
+                child: () {
+                  final imageUrl = images[index];
+                  if (imageUrl.startsWith('http')) {
+                    return Image.network(
+                      imageUrl,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Image.asset(
+                          'assets/images/pizza_main.png',
+                          fit: BoxFit.cover,
+                        );
+                      },
+                    );
+                  } else {
+                    return Image.asset(
+                      imageUrl,
+                      fit: BoxFit.cover,
+                    );
+                  }
+                }(),
               ),
             ),
           ),
-        ),
-      ),
+        );
+      }),
     );
   }
 }

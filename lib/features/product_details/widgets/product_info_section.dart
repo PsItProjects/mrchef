@@ -15,8 +15,8 @@ class ProductInfoSection extends GetView<ProductDetailsController> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Product name
-          Text(
-            controller.product.name,
+          Obx(() => Text(
+            controller.product.value?.name ?? 'Loading...',
             style: const TextStyle(
               fontFamily: 'Lato',
               fontWeight: FontWeight.w700,
@@ -24,7 +24,7 @@ class ProductInfoSection extends GetView<ProductDetailsController> {
               color: Color(0xFF262626),
               letterSpacing: -0.01,
             ),
-          ),
+          )),
           
           const SizedBox(height: 16),
           
@@ -62,11 +62,11 @@ class ProductInfoSection extends GetView<ProductDetailsController> {
               ),
               
               // Price
-              Row(
+              Obx(() => Row(
                 children: [
-                  if (controller.product.originalPrice != null) ...[
+                  if (controller.product.value?.originalPrice != null) ...[
                     Text(
-                      '\$${controller.product.originalPrice!.toStringAsFixed(2)}',
+                      '\$${controller.product.value!.originalPrice!.toStringAsFixed(2)}',
                       style: const TextStyle(
                         fontFamily: 'Lato',
                         fontWeight: FontWeight.w400,
@@ -79,7 +79,7 @@ class ProductInfoSection extends GetView<ProductDetailsController> {
                     const SizedBox(width: 8),
                   ],
                   Text(
-                    '\$${controller.product.price.toStringAsFixed(2)}',
+                    '\$${controller.product.value?.price.toStringAsFixed(2) ?? '0.00'}',
                     style: const TextStyle(
                       fontFamily: 'Lato',
                       fontWeight: FontWeight.w700,
@@ -89,7 +89,7 @@ class ProductInfoSection extends GetView<ProductDetailsController> {
                     ),
                   ),
                 ],
-              ),
+              )),
             ],
           ),
           
@@ -165,21 +165,21 @@ class ProductInfoSection extends GetView<ProductDetailsController> {
           const SizedBox(height: 16),
           
           // Product code
-          Text(
-            'Product code: ${controller.product.productCode}',
+          Obx(() => Text(
+            'Product code: ${controller.product.value?.productCode ?? 'Loading...'}',
             style: const TextStyle(
               fontFamily: 'Lato',
               fontWeight: FontWeight.w400,
               fontSize: 14,
               color: Color(0xFF262626),
             ),
-          ),
+          )),
           
           const SizedBox(height: 16),
           
           // Description
-          Text(
-            controller.product.description,
+          Obx(() => Text(
+            controller.product.value?.description ?? 'Loading description...',
             style: const TextStyle(
               fontFamily: 'Lato',
               fontWeight: FontWeight.w600,
@@ -188,7 +188,7 @@ class ProductInfoSection extends GetView<ProductDetailsController> {
               height: 1.6,
             ),
             textAlign: TextAlign.justify,
-          ),
+          )),
         ],
       ),
     );

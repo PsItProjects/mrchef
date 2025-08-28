@@ -14,9 +14,9 @@ class ProductImageSection extends GetView<ProductDetailsController> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Size selector
-          Column(
+          Obx(() => Column(
             children: [
-              ...controller.product.sizes.map((size) => 
+              ...(controller.product.value?.sizes ?? ['S', 'M', 'L']).map((size) =>
                 Obx(() => GestureDetector(
                   onTap: () => controller.selectSize(size),
                   child: Container(
@@ -53,7 +53,7 @@ class ProductImageSection extends GetView<ProductDetailsController> {
                 )),
               ),
             ],
-          ),
+          )),
           
           const SizedBox(width: 40),
           
@@ -74,10 +74,32 @@ class ProductImageSection extends GetView<ProductDetailsController> {
               ),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(32),
-                child: Obx(() => Image.asset(
-                  controller.product.images[controller.currentImageIndex.value],
-                  fit: BoxFit.cover,
-                )),
+                child: Obx(() {
+                  final images = controller.product.value?.images ?? ['assets/images/pizza_main.png'];
+                  final currentIndex = controller.currentImageIndex.value;
+                  final imageUrl = images.isNotEmpty && currentIndex < images.length
+                      ? images[currentIndex]
+                      : 'assets/images/pizza_main.png';
+
+                  // Check if it's a network image or asset
+                  if (imageUrl.startsWith('http')) {
+                    return Image.network(
+                      imageUrl,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Image.asset(
+                          'assets/images/pizza_main.png',
+                          fit: BoxFit.cover,
+                        );
+                      },
+                    );
+                  } else {
+                    return Image.asset(
+                      imageUrl,
+                      fit: BoxFit.cover,
+                    );
+                  }
+                }),
               ),
             ),
           ),

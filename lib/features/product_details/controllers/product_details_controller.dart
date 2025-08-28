@@ -4,8 +4,12 @@ import 'package:mrsheaf/features/product_details/models/product_model.dart';
 import 'package:mrsheaf/features/product_details/models/review_model.dart';
 import 'package:mrsheaf/features/product_details/widgets/reviews_bottom_sheet.dart';
 import 'package:mrsheaf/features/cart/controllers/cart_controller.dart';
+import 'package:mrsheaf/features/product_details/services/product_details_service.dart';
 
 class ProductDetailsController extends GetxController {
+  // Services
+  final ProductDetailsService _productDetailsService = ProductDetailsService();
+
   // Observable variables
   final RxInt quantity = 1.obs;
   final RxString selectedSize = 'S'.obs;
@@ -14,107 +18,69 @@ class ProductDetailsController extends GetxController {
   final RxList<AdditionalOption> additionalOptions = <AdditionalOption>[].obs;
   final RxString comment = ''.obs;
   final RxList<ReviewModel> reviews = <ReviewModel>[].obs;
-  
+
+  // Loading states
+  final RxBool isLoadingProduct = true.obs;
+  final RxBool isLoadingReviews = false.obs;
+  final RxBool isAddingReview = false.obs;
+
   // Product data
-  late ProductModel product;
+  final Rx<ProductModel?> product = Rx<ProductModel?>(null);
+
+  // Product ID (passed from navigation)
+  late int productId;
   
   @override
   void onInit() {
     super.onInit();
-    _initializeProduct();
-    _initializeReviews();
+    // Get product ID from arguments
+    productId = Get.arguments?['productId'] ?? 1;
+    _loadProductDetails();
   }
   
-  void _initializeProduct() {
-    // Initialize with sample data based on Figma design
-    product = ProductModel(
-      id: 1,
-      name: 'Vegetable pizza',
-      description: 'Tomato sauce, mozzarella cheese and a mix of fresh vegetables, perfect for a light and delicious meal.',
-      price: 39.99,
-      originalPrice: 70.00,
-      image: 'assets/images/pizza_main.png',
-      rating: 4.8,
-      reviewCount: 205,
-      productCode: '#G7432642',
-      sizes: ['L', 'M', 'S'],
-      images: [
-        'assets/images/pizza_main.png',
-        'assets/images/pizza_main.png',
-        'assets/images/pizza_main.png',
-      ],
-      additionalOptions: [
-        AdditionalOption(
-          id: 1,
-          name: 'Coca Cola 330 ml',
-          icon: 'salad',
-          isSelected: true,
-        ),
-        AdditionalOption(
-          id: 2,
-          name: 'Potato meal',
-          icon: 'salad',
-          isSelected: false,
-        ),
-        AdditionalOption(
-          id: 3,
-          name: 'cheese',
-          price: 3.0,
-          icon: 'salad',
-          isSelected: false,
-        ),
-      ],
-    );
-    
-    // Initialize reactive variables
-    selectedSize.value = 'S';
-    additionalOptions.value = product.additionalOptions;
+  /// Load product details from API
+  Future<void> _loadProductDetails() async {
+    try {
+      isLoadingProduct.value = true;
+
+      final productData = await _productDetailsService.getProductDetails(productId);
+      product.value = productData;
+
+      // Initialize reactive variables
+      selectedSize.value = productData.sizes.isNotEmpty ? productData.sizes.first : 'S';
+      additionalOptions.value = productData.additionalOptions;
+
+      // Load reviews
+      await _loadProductReviews();
+
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'Failed to load product details: $e',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    } finally {
+      isLoadingProduct.value = false;
+    }
   }
 
-  void _initializeReviews() {
-    // Initialize with sample reviews data
-    reviews.value = [
-      ReviewModel(
-        id: 1,
-        userName: 'Jenny Wilson',
-        userAvatar: 'assets/images/pizza_main.png',
-        rating: 5.0,
-        comment: 'La pizza a très bon goût et a l\'air délicieuse, tout comme les photos',
-        date: DateTime.now().subtract(const Duration(days: 2)),
-        images: [
-          'assets/images/pizza_main.png',
-          'assets/images/pizza_main.png',
-          'assets/images/pizza_main.png',
-        ],
-        likes: 0,
-        dislikes: 0,
-        replies: 1,
-      ),
-      ReviewModel(
-        id: 2,
-        userName: 'Jenny Wilson',
-        userAvatar: 'assets/images/pizza_main.png',
-        rating: 5.0,
-        comment: 'Amet minim mollit non deserunt ullamco est sit aliqua dolor do.',
-        date: DateTime.now().subtract(const Duration(days: 5)),
-        images: [],
-        likes: 0,
-        dislikes: 0,
-        replies: 1,
-      ),
-      ReviewModel(
-        id: 3,
-        userName: 'Jenny Wilson',
-        userAvatar: 'assets/images/pizza_main.png',
-        rating: 5.0,
-        comment: 'Amet minim mollit non deserunt ullamco est sit aliqua dolor do.',
-        date: DateTime.now().subtract(const Duration(days: 7)),
-        images: [],
-        likes: 0,
-        dislikes: 0,
-        replies: 1,
-      ),
-    ];
+  /// Load product reviews from API
+  Future<void> _loadProductReviews() async {
+    try {
+      isLoadingReviews.value = true;
+
+      final reviewsData = await _productDetailsService.getProductReviews(productId);
+      reviews.value = reviewsData;
+
+    } catch (e) {
+      print('Failed to load reviews: $e');
+      // Keep empty reviews list on error
+      reviews.value = [];
+    } finally {
+      isLoadingReviews.value = false;
+    }
   }
   
   // Methods
@@ -151,10 +117,12 @@ class ProductDetailsController extends GetxController {
   }
   
   void addToCart() {
+    if (product.value == null) return;
+
     final cartController = Get.find<CartController>();
 
     cartController.addToCart(
-      product: product,
+      product: product.value!,
       size: selectedSize.value,
       quantity: quantity.value,
       additionalOptions: additionalOptions.toList(),
@@ -172,7 +140,7 @@ class ProductDetailsController extends GetxController {
   void shareWithFriend() {
     Get.snackbar(
       'Share',
-      'Sharing ${product.name} with friend...',
+      'Sharing ${product.value?.name ?? 'product'} with friend...',
       snackPosition: SnackPosition.BOTTOM,
     );
   }
@@ -201,49 +169,57 @@ class ProductDetailsController extends GetxController {
     );
   }
 
-  void toggleReviewLike(int reviewId) {
-    final index = reviews.indexWhere((review) => review.id == reviewId);
-    if (index != -1) {
-      final review = reviews[index];
-      if (review.isLiked) {
-        // Unlike
+  Future<void> toggleReviewLike(int reviewId) async {
+    try {
+      final result = await _productDetailsService.likeReview(reviewId);
+
+      // Update local review data
+      final index = reviews.indexWhere((review) => review.id == reviewId);
+      if (index != -1) {
+        final review = reviews[index];
         reviews[index] = review.copyWith(
-          isLiked: false,
-          likes: review.likes - 1,
-        );
-      } else {
-        // Like (and remove dislike if exists)
-        reviews[index] = review.copyWith(
-          isLiked: true,
-          likes: review.likes + 1,
+          likes: result['likes_count']!,
+          dislikes: result['dislikes_count']!,
+          isLiked: !review.isLiked,
           isDisliked: false,
-          dislikes: review.isDisliked ? review.dislikes - 1 : review.dislikes,
         );
+        reviews.refresh();
       }
-      reviews.refresh();
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        e.toString(),
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
     }
   }
 
-  void toggleReviewDislike(int reviewId) {
-    final index = reviews.indexWhere((review) => review.id == reviewId);
-    if (index != -1) {
-      final review = reviews[index];
-      if (review.isDisliked) {
-        // Remove dislike
+  Future<void> toggleReviewDislike(int reviewId) async {
+    try {
+      final result = await _productDetailsService.dislikeReview(reviewId);
+
+      // Update local review data
+      final index = reviews.indexWhere((review) => review.id == reviewId);
+      if (index != -1) {
+        final review = reviews[index];
         reviews[index] = review.copyWith(
-          isDisliked: false,
-          dislikes: review.dislikes - 1,
-        );
-      } else {
-        // Dislike (and remove like if exists)
-        reviews[index] = review.copyWith(
-          isDisliked: true,
-          dislikes: review.dislikes + 1,
+          likes: result['likes_count']!,
+          dislikes: result['dislikes_count']!,
           isLiked: false,
-          likes: review.isLiked ? review.likes - 1 : review.likes,
+          isDisliked: !review.isDisliked,
         );
+        reviews.refresh();
       }
-      reviews.refresh();
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        e.toString(),
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
     }
   }
 
@@ -255,27 +231,59 @@ class ProductDetailsController extends GetxController {
     );
   }
 
-  void addReview() {
-    Get.snackbar(
-      'Add Review',
-      'Add review functionality coming soon',
-      snackPosition: SnackPosition.BOTTOM,
-    );
+  Future<void> addReview(int rating, String comment, {List<String>? images}) async {
+    if (product.value == null) return;
+
+    try {
+      isAddingReview.value = true;
+
+      final success = await _productDetailsService.addProductReview(
+        product.value!.id,
+        rating: rating,
+        comment: comment,
+        images: images,
+      );
+
+      if (success) {
+        Get.snackbar(
+          'Success',
+          'Review added successfully',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.green,
+          colorText: Colors.white,
+        );
+
+        // Reload reviews
+        await _loadProductReviews();
+      }
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        e.toString(),
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    } finally {
+      isAddingReview.value = false;
+    }
   }
   
   // Getters
   double get totalPrice {
-    double total = product.price * quantity.value;
-    
+    if (product.value == null) return 0.0;
+
+    double total = product.value!.price * quantity.value;
+
     for (var option in additionalOptions) {
       if (option.isSelected && option.price != null) {
         total += option.price! * quantity.value;
       }
     }
-    
+
     return total;
   }
-  
-  String get formattedRating => product.rating.toString();
-  String get formattedReviewCount => '(${product.reviewCount} Reviews)';
+
+  String get formattedRating => product.value?.rating.toString() ?? '0.0';
+  String get formattedReviewCount => '(${product.value?.reviewCount ?? 0} Reviews)';
 }

@@ -20,6 +20,14 @@ class ApiConstants {
   static const String products = '/customer/shopping/products';
   static const String kitchens = '/customer/shopping/kitchens';
   static const String categoriesPageData = '/customer/shopping/categories-page-data';
+
+  // Cart endpoints
+  static const String cart = '/customer/shopping/cart';
+  static const String addToCart = '/customer/shopping/cart/add';
+
+  // Product details endpoints
+  static String productDetails(int id) => '/customer/shopping/products/$id';
+  static String productReviews(int id) => '/customer/shopping/products/$id/reviews';
   
   // Headers
   static const Map<String, String> headers = {

@@ -17,7 +17,10 @@ class ProductCard extends GetView<HomeController> {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => Get.toNamed(AppRoutes.PRODUCT_DETAILS),
+      onTap: () => Get.toNamed(
+        AppRoutes.PRODUCT_DETAILS,
+        arguments: {'productId': product['id'] ?? 1},
+      ),
       child: Container(
       width: 182,
       // height: 240, // Fixed height to prevent overflow
