@@ -1,6 +1,7 @@
 class SettingsModel {
   final bool isDarkMode;
   final String currency;
+  final String language;
   final bool notificationsEnabled;
   final String cacheSize;
   final String appVersion;
@@ -8,6 +9,7 @@ class SettingsModel {
   SettingsModel({
     required this.isDarkMode,
     required this.currency,
+    required this.language,
     required this.notificationsEnabled,
     required this.cacheSize,
     required this.appVersion,
@@ -17,6 +19,7 @@ class SettingsModel {
     return SettingsModel(
       isDarkMode: json['isDarkMode'] ?? false,
       currency: json['currency'] ?? 'KWD',
+      language: json['language'] ?? 'ar',
       notificationsEnabled: json['notificationsEnabled'] ?? true,
       cacheSize: json['cacheSize'] ?? '7.65 MB',
       appVersion: json['appVersion'] ?? '1.0.0',
@@ -27,6 +30,7 @@ class SettingsModel {
     return {
       'isDarkMode': isDarkMode,
       'currency': currency,
+      'language': language,
       'notificationsEnabled': notificationsEnabled,
       'cacheSize': cacheSize,
       'appVersion': appVersion,
@@ -36,6 +40,7 @@ class SettingsModel {
   SettingsModel copyWith({
     bool? isDarkMode,
     String? currency,
+    String? language,
     bool? notificationsEnabled,
     String? cacheSize,
     String? appVersion,
@@ -43,6 +48,7 @@ class SettingsModel {
     return SettingsModel(
       isDarkMode: isDarkMode ?? this.isDarkMode,
       currency: currency ?? this.currency,
+      language: language ?? this.language,
       notificationsEnabled: notificationsEnabled ?? this.notificationsEnabled,
       cacheSize: cacheSize ?? this.cacheSize,
       appVersion: appVersion ?? this.appVersion,

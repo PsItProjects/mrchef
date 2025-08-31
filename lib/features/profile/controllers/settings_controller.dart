@@ -1,12 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mrsheaf/features/profile/models/settings_model.dart';
+import 'package:mrsheaf/core/services/language_service.dart';
+import 'package:mrsheaf/features/profile/services/profile_service.dart';
 
 class SettingsController extends GetxController {
+  final ProfileService _profileService = Get.find<ProfileService>();
+  final LanguageService _languageService = Get.find<LanguageService>();
+
   // Settings data
   final Rx<SettingsModel> settings = SettingsModel(
     isDarkMode: false,
     currency: 'KWD',
+    language: 'ar',
     notificationsEnabled: true,
     cacheSize: '7.65 MB',
     appVersion: '1.0.0',
@@ -61,6 +67,30 @@ class SettingsController extends GetxController {
     );
   }
 
+  void changeLanguage() {
+    // Show language selection dialog
+    Get.dialog(
+      AlertDialog(
+        title: const Text(
+          'Select Language',
+          style: TextStyle(
+            fontFamily: 'Lato',
+            fontWeight: FontWeight.w600,
+            fontSize: 18,
+            color: Color(0xFF262626),
+          ),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _buildLanguageOption('ar', 'العربية', '🇸🇦'),
+            _buildLanguageOption('en', 'English', '🇺🇸'),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildCurrencyOption(String code, String name) {
     return ListTile(
       title: Text(
@@ -76,7 +106,7 @@ class SettingsController extends GetxController {
         settings.value = settings.value.copyWith(currency: code);
         _saveSettings();
         Get.back();
-        
+
         Get.snackbar(
           'Currency Changed',
           'Currency changed to $code',
@@ -84,6 +114,96 @@ class SettingsController extends GetxController {
         );
       },
     );
+  }
+
+  Widget _buildLanguageOption(String code, String name, String flag) {
+    return ListTile(
+      leading: Text(
+        flag,
+        style: const TextStyle(fontSize: 24),
+      ),
+      title: Text(
+        name,
+        style: const TextStyle(
+          fontFamily: 'Lato',
+          fontWeight: FontWeight.w400,
+          fontSize: 14,
+          color: Color(0xFF262626),
+        ),
+      ),
+      trailing: settings.value.language == code
+        ? const Icon(Icons.check, color: Color(0xFF27AE60))
+        : null,
+      onTap: () {
+        _updateLanguage(code);
+        Get.back();
+      },
+    );
+  }
+
+  /// Update language preference
+  Future<void> _updateLanguage(String languageCode) async {
+    try {
+      // Show loading
+      Get.dialog(
+        const Center(
+          child: CircularProgressIndicator(),
+        ),
+        barrierDismissible: false,
+      );
+
+      // Update language in backend
+      final result = await _profileService.updateLanguage(languageCode);
+
+      // Close loading dialog
+      Get.back();
+
+      if (result['success'] == true) {
+        // Update local settings
+        settings.value = settings.value.copyWith(language: languageCode);
+        _saveSettings();
+
+        // Update language service
+        await _languageService.setLanguage(languageCode);
+
+        // Update GetX locale
+        final locale = languageCode == 'ar'
+          ? const Locale('ar', 'SA')
+          : const Locale('en', 'US');
+        Get.updateLocale(locale);
+
+        Get.snackbar(
+          languageCode == 'ar' ? 'تم تحديث اللغة' : 'Language Updated',
+          languageCode == 'ar'
+            ? 'تم تحديث اللغة بنجاح'
+            : 'Language updated successfully',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: const Color(0xFF27AE60),
+          colorText: Colors.white,
+        );
+      } else {
+        Get.snackbar(
+          'Error',
+          result['message'] ?? 'Failed to update language',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: const Color(0xFFEB5757),
+          colorText: Colors.white,
+        );
+      }
+    } catch (e) {
+      // Close loading dialog if still open
+      if (Get.isDialogOpen == true) {
+        Get.back();
+      }
+
+      Get.snackbar(
+        'Error',
+        'Network error occurred',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: const Color(0xFFEB5757),
+        colorText: Colors.white,
+      );
+    }
   }
 
   void openNotificationSettings() {
@@ -263,5 +383,7 @@ class SettingsController extends GetxController {
   // Getters for UI
   bool get isDarkMode => settings.value.isDarkMode;
   String get currency => settings.value.currency;
+  String get language => settings.value.language;
+  String get languageDisplayName => settings.value.language == 'ar' ? 'العربية' : 'English';
   String get cacheSize => settings.value.cacheSize;
 }

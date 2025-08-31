@@ -6,10 +6,15 @@ import 'package:mrsheaf/features/profile/controllers/my_reviews_controller.dart'
 import 'package:mrsheaf/features/profile/controllers/settings_controller.dart';
 import 'package:mrsheaf/features/profile/controllers/shipping_addresses_controller.dart';
 import 'package:mrsheaf/features/profile/controllers/add_edit_address_controller.dart';
+import 'package:mrsheaf/features/profile/services/profile_service.dart';
 
 class ProfileBinding extends Bindings {
   @override
   void dependencies() {
+    // Services
+    Get.lazyPut<ProfileService>(() => ProfileService(), fenix: true);
+
+    // Controllers
     Get.lazyPut<ProfileController>(() => ProfileController(), fenix: true) ;
     Get.lazyPut<EditProfileController>(() => EditProfileController() , fenix: true);
     Get.lazyPut<MyOrdersController>(() => MyOrdersController() , fenix: true);
