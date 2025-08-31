@@ -1,4 +1,5 @@
 import 'package:mrsheaf/core/services/language_service.dart';
+import 'package:mrsheaf/core/constants/api_constants.dart';
 import 'package:get/get.dart';
 import 'package:flutter/foundation.dart';
 
@@ -68,7 +69,10 @@ class ProductModel {
           return imageUrl;
         }
         // If it's a relative path, construct full URL
-        return 'https://mr-shife-backend-main-ygodva.laravel.cloud/storage/$imageUrl';
+        String baseUrl = ApiConstants.useProductionServer
+            ? 'https://mr-shife-backend-main-ygodva.laravel.cloud'
+            : 'http://127.0.0.1:8000';
+        return '$baseUrl/storage/$imageUrl';
       }
       return 'https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=400&h=300&fit=crop'; // fallback image
     }
@@ -79,13 +83,13 @@ class ProductModel {
       description: getDescription(json['description']),
       price: (json['price'] ?? 0).toDouble(),
       originalPrice: json['originalPrice']?.toDouble(),
-      image: getImageUrl(json['image']),
+      image: getImageUrl(json['primary_image']),
       rating: getRating(json['rating']),
       reviewCount: getReviewCount(json['reviewCount'] ?? json['rating']),
       productCode: json['productCode'] ?? 'N/A',
       sizes: _extractSizes(json['additionalOptions']),
       additionalOptions: _extractAdditionalOptions(json['additionalOptions']),
-      images: List<String>.from(json['images'] ?? [json['image'] ?? '']),
+      images: List<String>.from(json['images'] ?? [json['primary_image'] ?? '']),
       categoryId: json['internal_category_id'] ?? json['categoryId'] ?? json['category']?['id'],
     );
   }

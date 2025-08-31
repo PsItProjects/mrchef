@@ -11,6 +11,7 @@ class LoginController extends GetxController {
 
   final RxBool isLoading = false.obs;
   final RxBool isPhoneNumberValid = false.obs;
+  bool _isDisposed = false;
 
   final AuthService _authService = Get.find<AuthService>();
 
@@ -21,8 +22,10 @@ class LoginController extends GetxController {
   }
 
   void _validatePhoneNumber() {
-    String phoneNumber = phoneController.text.replaceAll(' ', '');
-    isPhoneNumberValid.value = phoneNumber.length >= 9;
+    if (!_isDisposed) {
+      String phoneNumber = phoneController.text.replaceAll(' ', '');
+      isPhoneNumberValid.value = phoneNumber.length >= 9;
+    }
   }
 
   Future<void> sendLoginOTP() async {
@@ -55,12 +58,15 @@ class LoginController extends GetxController {
         );
 
         // Navigate to OTP verification screen
-        Get.toNamed(AppRoutes.OTP_VERIFICATION, arguments: {
+        final arguments = {
           'phone_number': phoneController.text.replaceAll(' ', ''),
           'country_code': countryCodeController.text,
           'user_type': 'customer',
           'purpose': 'login',
-        });
+        };
+
+        print('🚀 LOGIN: Navigating to OTP with arguments: $arguments');
+        Get.toNamed(AppRoutes.OTP_VERIFICATION, arguments: arguments);
       } else {
         Get.snackbar(
           'Error',
@@ -101,6 +107,8 @@ class LoginController extends GetxController {
 
   @override
   void onClose() {
+    _isDisposed = true;
+    phoneController.removeListener(_validatePhoneNumber);
     phoneController.dispose();
     countryCodeController.dispose();
     super.onClose();

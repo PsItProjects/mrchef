@@ -21,6 +21,7 @@ class NewSignupController extends GetxController {
   final RxBool agreeToTerms = false.obs;
   final RxBool isPhoneNumberValid = false.obs;
   final RxBool isLoading = false.obs;
+  bool _isDisposed = false;
 
   final AuthService _authService = Get.find<AuthService>();
 
@@ -33,8 +34,10 @@ class NewSignupController extends GetxController {
   }
 
   void validatePhoneNumber() {
-    String phoneNumber = phoneController.text.replaceAll(' ', '');
-    isPhoneNumberValid.value = phoneNumber.length >= 9;
+    if (!_isDisposed) {
+      String phoneNumber = phoneController.text.replaceAll(' ', '');
+      isPhoneNumberValid.value = phoneNumber.length >= 9;
+    }
   }
 
   Future<void> signup() async {
@@ -155,6 +158,8 @@ class NewSignupController extends GetxController {
 
   @override
   void onClose() {
+    _isDisposed = true;
+    phoneController.removeListener(validatePhoneNumber);
     fullNameController.dispose();
     emailController.dispose();
     phoneController.dispose();

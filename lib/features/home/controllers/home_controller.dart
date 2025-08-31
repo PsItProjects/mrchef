@@ -99,6 +99,17 @@ class HomeController extends GetxController {
   void onInit() {
     super.onInit();
     _loadProductsFromBackend();
+    _setupLanguageListener();
+  }
+
+  /// Setup language change listener
+  void _setupLanguageListener() {
+    final languageService = LanguageService.instance;
+    // Listen to language changes and reload products
+    ever(languageService.currentLanguageRx, (String language) {
+      print('🌐 HOME: Language changed to $language, reloading products...');
+      _loadProductsFromBackend();
+    });
   }
 
   /// Load products from backend API
@@ -140,6 +151,11 @@ class HomeController extends GetxController {
         }
 
         print('🏠 HOME: Best sellers: ${bestSellerProducts.length}, Back again: ${backAgainProducts.length}');
+
+        // Force UI update
+        bestSellerProducts.refresh();
+        backAgainProducts.refresh();
+        update();
       } else {
         print('🏠 HOME: API returned success=false');
       }
@@ -169,7 +185,10 @@ class HomeController extends GetxController {
           return imageUrl;
         }
         // If it's a relative path, construct full URL
-        return 'https://mr-shife-backend-main-ygodva.laravel.cloud/storage/$imageUrl';
+        String baseUrl = ApiConstants.useProductionServer
+            ? 'https://mr-shife-backend-main-ygodva.laravel.cloud'
+            : 'http://127.0.0.1:8000';
+        return '$baseUrl/storage/$imageUrl';
       }
       return 'assets/burger.png'; // fallback to local asset
     }
@@ -177,11 +196,16 @@ class HomeController extends GetxController {
     return {
       'id': backendData['id'],
       'name': getName(backendData['name']),
+      'description': backendData['description'] ?? '',
       'price': (backendData['price'] ?? 0).toDouble(),
-      'image': getImageUrl(backendData['image']),
+      'originalPrice': backendData['originalPrice']?.toDouble(),
+      'primary_image': getImageUrl(backendData['primary_image']),
+      'images': backendData['images'] ?? [getImageUrl(backendData['primary_image'])],
       'rating': backendData['rating'] is Map
           ? (backendData['rating']['average'] ?? 4.5).toDouble()
           : (backendData['rating'] ?? 4.5).toDouble(),
+      'reviewCount': backendData['reviewCount'] ?? 0,
+      'productCode': backendData['productCode'] ?? 'PRD-${backendData['id']}',
       'isFavorite': false,
     };
   }
@@ -237,12 +261,12 @@ class HomeController extends GetxController {
         description: productData['description'] ?? '',
         price: productData['price'].toDouble(),
         originalPrice: productData['originalPrice']?.toDouble(),
-        image: productData['image'],
+        image: productData['primary_image'],
         rating: productData['rating']?.toDouble() ?? 0.0,
         reviewCount: productData['reviewCount'] ?? 0,
-        productCode: '#${productData['id'].toString().padLeft(8, '0')}',
+        productCode: productData['productCode'] ?? '#${productData['id'].toString().padLeft(8, '0')}',
         sizes: ['L', 'M', 'S'],
-        images: [productData['image']],
+        images: productData['images'] ?? [productData['primary_image']],
         additionalOptions: [],
       );
 

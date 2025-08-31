@@ -3,10 +3,12 @@ import 'package:get/get.dart';
 import 'package:mrsheaf/features/profile/models/settings_model.dart';
 import 'package:mrsheaf/core/services/language_service.dart';
 import 'package:mrsheaf/features/profile/services/profile_service.dart';
+import 'package:mrsheaf/core/network/api_client.dart';
 
 class SettingsController extends GetxController {
   final ProfileService _profileService = Get.find<ProfileService>();
   final LanguageService _languageService = Get.find<LanguageService>();
+  final ApiClient _apiClient = ApiClient.instance;
 
   // Settings data
   final Rx<SettingsModel> settings = SettingsModel(
@@ -17,6 +19,9 @@ class SettingsController extends GetxController {
     cacheSize: '7.65 MB',
     appVersion: '1.0.0',
   ).obs;
+
+  // Loading states
+  final RxBool isChangingLanguage = false.obs;
 
   @override
   void onInit() {
@@ -134,7 +139,7 @@ class SettingsController extends GetxController {
       trailing: settings.value.language == code
         ? const Icon(Icons.check, color: Color(0xFF27AE60))
         : null,
-      onTap: () {
+      onTap: isChangingLanguage.value ? null : () {
         _updateLanguage(code);
         Get.back();
       },
@@ -143,20 +148,12 @@ class SettingsController extends GetxController {
 
   /// Update language preference
   Future<void> _updateLanguage(String languageCode) async {
-    try {
-      // Show loading
-      Get.dialog(
-        const Center(
-          child: CircularProgressIndicator(),
-        ),
-        barrierDismissible: false,
-      );
+    // Set loading state
+    isChangingLanguage.value = true;
 
+    try {
       // Update language in backend
       final result = await _profileService.updateLanguage(languageCode);
-
-      // Close loading dialog
-      Get.back();
 
       if (result['success'] == true) {
         // Update local settings
@@ -166,11 +163,17 @@ class SettingsController extends GetxController {
         // Update language service
         await _languageService.setLanguage(languageCode);
 
+        // Clear all cached data
+        await _apiClient.clearCache();
+
         // Update GetX locale
         final locale = languageCode == 'ar'
           ? const Locale('ar', 'SA')
           : const Locale('en', 'US');
         Get.updateLocale(locale);
+
+        // Force reload all controllers
+        _reloadAllControllers();
 
         Get.snackbar(
           languageCode == 'ar' ? 'تم تحديث اللغة' : 'Language Updated',
@@ -191,11 +194,6 @@ class SettingsController extends GetxController {
         );
       }
     } catch (e) {
-      // Close loading dialog if still open
-      if (Get.isDialogOpen == true) {
-        Get.back();
-      }
-
       Get.snackbar(
         'Error',
         'Network error occurred',
@@ -203,6 +201,34 @@ class SettingsController extends GetxController {
         backgroundColor: const Color(0xFFEB5757),
         colorText: Colors.white,
       );
+    } finally {
+      // Reset loading state
+      isChangingLanguage.value = false;
+    }
+  }
+
+  /// Force reload all controllers to refresh data with new language
+  void _reloadAllControllers() {
+    try {
+      // Reload Home Controller
+      if (Get.isRegistered<dynamic>(tag: 'HomeController')) {
+        final homeController = Get.find(tag: 'HomeController');
+        if (homeController.hasListeners) {
+          homeController.onInit();
+        }
+      }
+
+      // Reload Categories Controller
+      if (Get.isRegistered<dynamic>(tag: 'CategoriesController')) {
+        final categoriesController = Get.find(tag: 'CategoriesController');
+        if (categoriesController.hasListeners) {
+          categoriesController.onInit();
+        }
+      }
+
+      print('🔄 All controllers reloaded for language change');
+    } catch (e) {
+      print('❌ Error reloading controllers: $e');
     }
   }
 

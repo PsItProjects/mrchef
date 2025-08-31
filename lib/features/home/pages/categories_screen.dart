@@ -83,7 +83,7 @@ class CategoriesScreen extends GetView<CategoriesController> {
                                     'name': product.name,
                                     'price': product.price,
                                     'originalPrice': product.originalPrice,
-                                    'image': product.image,
+                                    'primary_image': product.image,
                                     'rating': product.rating,
                                     'reviewCount': product.reviewCount,
                                   },

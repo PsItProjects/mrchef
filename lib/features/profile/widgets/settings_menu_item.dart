@@ -9,6 +9,7 @@ class SettingsMenuItem extends StatelessWidget {
   final Function(bool)? onToggleChanged;
   final VoidCallback? onTap;
   final bool showDivider;
+  final bool isLoading;
 
   const SettingsMenuItem({
     super.key,
@@ -20,6 +21,7 @@ class SettingsMenuItem extends StatelessWidget {
     this.onToggleChanged,
     this.onTap,
     this.showDivider = true,
+    this.isLoading = false,
   });
 
   @override

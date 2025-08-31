@@ -8,8 +8,8 @@ class SignupScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Initialize the controller
-    final controller = Get.put(SignupController());
+    // Get the controller (it's already initialized in AuthBinding)
+    final controller = Get.find<SignupController>();
 
     return Scaffold(
       appBar: AppBar(

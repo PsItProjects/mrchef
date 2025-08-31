@@ -6,7 +6,8 @@ import 'package:mrsheaf/features/product_details/models/product_model.dart';
 import 'package:mrsheaf/features/categories/widgets/filters_bottom_sheet.dart';
 import 'package:mrsheaf/features/categories/services/category_service.dart';
 import 'package:mrsheaf/features/categories/services/kitchen_service.dart';
-import 'package:mrsheaf/core/network/api_client.dart';
+import 'package:mrsheaf/core/services/language_service.dart';
+
 
 class CategoriesController extends GetxController with GetSingleTickerProviderStateMixin {
   // Services
@@ -36,7 +37,20 @@ class CategoriesController extends GetxController with GetSingleTickerProviderSt
       currentTabIndex.value = tabController.index;
     });
     _loadCategoriesPageData();
-    _initializeOtherData();
+    _initializeFilters(); // Only initialize filters, not products (already loaded in _loadCategoriesPageData)
+    _setupLanguageListener();
+  }
+
+  /// Setup language change listener
+  void _setupLanguageListener() {
+    final languageService = LanguageService.instance;
+    // Listen to language changes and reload data
+    ever(languageService.currentLanguageRx, (String language) {
+      if (kDebugMode) {
+        print('🌐 CATEGORIES: Language changed to $language, reloading data...');
+      }
+      _loadCategoriesPageData();
+    });
   }
   
   @override
@@ -50,6 +64,10 @@ class CategoriesController extends GetxController with GetSingleTickerProviderSt
     try {
       isLoadingCategories.value = true;
       isLoadingKitchens.value = true;
+
+      if (kDebugMode) {
+        print('🚀 STARTING TO LOAD CATEGORIES PAGE DATA...');
+      }
 
       // Use the new combined endpoint
       final pageData = await _categoryService.getCategoriesWithProducts();
@@ -86,11 +104,26 @@ class CategoriesController extends GetxController with GetSingleTickerProviderSt
         products.value = productsList;
         if (kDebugMode) {
           print('✅ PRODUCTS LOADED: ${products.length} products');
+          for (var product in productsList.take(3)) {
+            print('   - ${product.name} (CategoryID: ${product.categoryId})');
+          }
+        }
+      } else {
+        if (kDebugMode) {
+          print('⚠️ NO PRODUCTS DATA IN RESPONSE');
         }
       }
 
       // Load kitchens (fallback to separate API if needed)
       await _loadKitchens();
+
+      // Force UI update
+      update();
+
+      if (kDebugMode) {
+        print('🎉 CATEGORIES PAGE DATA LOADED SUCCESSFULLY!');
+        print('📊 Final State: ${categoryChips.length} categories, ${products.length} products, ${kitchens.length} kitchens');
+      }
 
     } catch (e) {
       if (kDebugMode) {
@@ -108,20 +141,28 @@ class CategoriesController extends GetxController with GetSingleTickerProviderSt
   Future<void> _loadCategories() async {
     try {
       isLoadingCategories.value = true;
-      print('🎯 CATEGORIES CONTROLLER: Starting to load categories...');
+      if (kDebugMode) {
+        print('🎯 CATEGORIES CONTROLLER: Starting to load categories...');
+      }
 
       final categories = await _categoryService.getCategories();
-      print('🎯 CATEGORIES CONTROLLER: Received ${categories.length} categories');
+      if (kDebugMode) {
+        print('🎯 CATEGORIES CONTROLLER: Received ${categories.length} categories');
+      }
 
       // Set first category as selected by default
       if (categories.isNotEmpty) {
         categories[0] = categories[0].copyWith(isSelected: true);
         selectedCategoryId.value = categories[0].id; // تحديد معرف التصنيف المحدد
-        print('🎯 CATEGORIES CONTROLLER: Selected first category: ${categories[0].name}');
+        if (kDebugMode) {
+          print('🎯 CATEGORIES CONTROLLER: Selected first category: ${categories[0].name}');
+        }
       }
 
       categoryChips.value = categories;
-      print('🎯 CATEGORIES CONTROLLER: Categories loaded successfully!');
+      if (kDebugMode) {
+        print('🎯 CATEGORIES CONTROLLER: Categories loaded successfully!');
+      }
     } catch (e) {
       if (kDebugMode) {
         print('❌ CATEGORIES CONTROLLER ERROR: $e');
@@ -130,7 +171,9 @@ class CategoriesController extends GetxController with GetSingleTickerProviderSt
       // NO FALLBACK DATA - App must work with backend only
     } finally {
       isLoadingCategories.value = false;
-      print('🎯 CATEGORIES CONTROLLER: Loading finished. isLoading: ${isLoadingCategories.value}');
+      if (kDebugMode) {
+        print('🎯 CATEGORIES CONTROLLER: Loading finished. isLoading: ${isLoadingCategories.value}');
+      }
     }
   }
 
@@ -154,79 +197,9 @@ class CategoriesController extends GetxController with GetSingleTickerProviderSt
 
 
 
-  /// Initialize other data (products, kitchens, filters)
-  void _initializeOtherData() {
-    // Load products from backend instead of hardcoded data
-    _loadProductsFromBackend();
-    _initializeFilters();
-  }
 
-  /// Load products from backend API
-  Future<void> _loadProductsFromBackend() async {
-    try {
-      if (kDebugMode) {
-        print('🔄 LOADING PRODUCTS FROM BACKEND...');
-      }
 
-      // Use ApiClient directly since _apiClient is private in CategoryService
-      final ApiClient apiClient = ApiClient.instance;
-      final response = await apiClient.get('/customer/shopping/products');
 
-      if (response.statusCode == 200 && response.data['success'] == true) {
-        final List<dynamic> productsData = response.data['data']['products'];
-
-        final backendProducts = productsData.map((json) {
-          // Fix categoryId mapping from backend
-          final product = ProductModel.fromJson(json);
-          final fixedCategoryId = json['internal_category_id'] ?? product.categoryId;
-
-          if (kDebugMode) {
-            print('🔧 FIXING PRODUCT: ${product.name}');
-            print('   - Original CategoryID: ${product.categoryId}');
-            print('   - internal_category_id: ${json['internal_category_id']}');
-            print('   - Fixed CategoryID: $fixedCategoryId');
-          }
-
-          return ProductModel(
-            id: product.id,
-            name: product.name,
-            description: product.description,
-            price: product.price,
-            originalPrice: product.originalPrice,
-            image: product.image,
-            rating: product.rating,
-            reviewCount: product.reviewCount,
-            productCode: product.productCode,
-            sizes: product.sizes,
-            images: product.images,
-            additionalOptions: product.additionalOptions,
-            categoryId: fixedCategoryId, // Use the fixed categoryId
-          );
-        }).toList();
-
-        products.value = backendProducts;
-
-        if (kDebugMode) {
-          print('✅ LOADED ${backendProducts.length} PRODUCTS FROM BACKEND');
-          for (var product in backendProducts.take(3)) {
-            print('   - ${product.name}: ${product.price} (CategoryID: ${product.categoryId}) (Image: ${product.image})');
-          }
-        }
-      } else {
-        if (kDebugMode) {
-          print('❌ FAILED TO LOAD PRODUCTS FROM BACKEND');
-          print('⚠️ NO FALLBACK DATA - App requires backend connection');
-        }
-        products.value = []; // Empty list - no fallback data
-      }
-    } catch (e) {
-      if (kDebugMode) {
-        print('❌ ERROR LOADING PRODUCTS: $e');
-        print('⚠️ NO FALLBACK DATA - App requires backend connection');
-      }
-      products.value = []; // Empty list - no fallback data
-    }
-  }
 
 
   

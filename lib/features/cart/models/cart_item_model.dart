@@ -28,7 +28,7 @@ class CartItemModel {
       name: json['name'],
       description: json['description'],
       price: json['price'].toDouble(),
-      image: json['image'],
+      image: json['primary_image'] ?? json['image'],
       size: json['size'],
       quantity: json['quantity'],
       additionalOptions: (json['additionalOptions'] as List<dynamic>?)

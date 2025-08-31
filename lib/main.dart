@@ -25,12 +25,22 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GetMaterialApp(
-      title: 'MrSheaf',
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.lightTheme,
-      initialRoute: AppPages.INITIAL,
-      getPages: AppPages.routes,
-    );
+    final languageService = LanguageService.instance;
+
+    return Obx(() {
+      final locale = languageService.currentLanguage == 'ar'
+          ? const Locale('ar', 'SA')
+          : const Locale('en', 'US');
+
+      return GetMaterialApp(
+        title: 'MrSheaf',
+        debugShowCheckedModeBanner: false,
+        theme: AppTheme.lightTheme,
+        locale: locale,
+        fallbackLocale: const Locale('en', 'US'),
+        initialRoute: AppPages.INITIAL,
+        getPages: AppPages.routes,
+      );
+    });
   }
 }

@@ -9,7 +9,7 @@ class NewSignupScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.put(NewSignupController());
+    final controller = Get.find<NewSignupController>();
 
     return Scaffold(
       backgroundColor: Colors.white,

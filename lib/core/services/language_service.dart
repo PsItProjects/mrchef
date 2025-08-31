@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -5,8 +6,9 @@ class LanguageService extends GetxService {
   static LanguageService get instance => Get.find<LanguageService>();
   
   final RxString _currentLanguage = 'en'.obs;
-  
+
   String get currentLanguage => _currentLanguage.value;
+  RxString get currentLanguageRx => _currentLanguage;
   
   @override
   Future<void> onInit() async {
@@ -18,8 +20,27 @@ class LanguageService extends GetxService {
   Future<void> _loadLanguageFromStorage() async {
     try {
       final prefs = await SharedPreferences.getInstance();
+
+      // First check if user is logged in and has language preference
+      final userData = prefs.getString('user_data');
+      if (userData != null) {
+        try {
+          final userMap = jsonDecode(userData) as Map<String, dynamic>;
+          final userLanguage = userMap['language'] as String?;
+          if (userLanguage != null && (userLanguage == 'ar' || userLanguage == 'en')) {
+            _currentLanguage.value = userLanguage;
+            print('🌐 Language loaded from user profile: $userLanguage');
+            return;
+          }
+        } catch (e) {
+          print('Error parsing user data for language: $e');
+        }
+      }
+
+      // Fallback to saved language preference
       final savedLanguage = prefs.getString('user_language') ?? 'en';
       _currentLanguage.value = savedLanguage;
+      print('🌐 Language loaded from storage: $savedLanguage');
     } catch (e) {
       print('Error loading language: $e');
       _currentLanguage.value = 'en'; // Default to English

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mrsheaf/features/cart/models/cart_item_model.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
+import 'package:mrsheaf/core/localization/currency_helper.dart';
 
 class CartItemWidget extends StatelessWidget {
   final CartItemModel cartItem;
@@ -81,7 +82,7 @@ class CartItemWidget extends StatelessWidget {
                     const SizedBox(height: 4),
                     
                     Text(
-                      '\$ ${cartItem.price.toStringAsFixed(2)}',
+                      CurrencyHelper.formatPrice(cartItem.price),
                       style: const TextStyle(
                         fontFamily: 'Lato',
                         fontWeight: FontWeight.w400,

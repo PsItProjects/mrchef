@@ -33,8 +33,9 @@ class SettingsMenuList extends GetView<SettingsController> {
           Obx(() => SettingsMenuItem(
             title: 'Language',
             subtitle: controller.languageDisplayName,
-            onTap: controller.changeLanguage,
+            onTap: controller.isChangingLanguage.value ? null : controller.changeLanguage,
             showDivider: true,
+            isLoading: controller.isChangingLanguage.value,
           )),
           
           // Notification

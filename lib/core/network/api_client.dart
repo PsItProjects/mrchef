@@ -88,15 +88,38 @@ class ApiClient {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('auth_token');
     await prefs.remove('user_data');
-    
+
     // Navigate to login screen
     getx.Get.offAllNamed('/login');
-    
+
     getx.Get.snackbar(
       'Session Expired',
       'Please login again',
       snackPosition: getx.SnackPosition.BOTTOM,
     );
+  }
+
+  /// Clear all cached data when language changes
+  Future<void> clearCache() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+
+      // Clear all cached API responses
+      final keys = prefs.getKeys().where((key) =>
+        key.startsWith('cache_') ||
+        key.startsWith('products_') ||
+        key.startsWith('categories_') ||
+        key.startsWith('kitchens_')
+      ).toList();
+
+      for (String key in keys) {
+        await prefs.remove(key);
+      }
+
+      print('🗑️ ApiClient: Cache cleared successfully');
+    } catch (e) {
+      print('❌ ApiClient: Error clearing cache: $e');
+    }
   }
   
   // GET request

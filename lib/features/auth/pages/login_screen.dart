@@ -14,8 +14,8 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
-    // Initialize the controller
-    final controller = Get.put(LoginController());
+    // Get the controller (it's already initialized in AuthBinding)
+    final controller = Get.find<LoginController>();
     final screenHeight = MediaQuery.of(context).size.height;
 
     return Obx(() {

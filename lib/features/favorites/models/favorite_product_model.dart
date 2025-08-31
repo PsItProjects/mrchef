@@ -22,7 +22,7 @@ class FavoriteProductModel {
     return FavoriteProductModel(
       id: json['id'],
       name: json['name'],
-      image: json['image'],
+      image: json['primary_image'] ?? json['image'],
       price: json['price'].toDouble(),
       availability: json['availability'] == 'available' 
           ? ProductAvailability.available 

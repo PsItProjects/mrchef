@@ -30,14 +30,23 @@ class OTPController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    
+
     // Get arguments from previous screen
     final args = Get.arguments as Map<String, dynamic>?;
+    print('🔍 OTP Controller - Received arguments: $args');
+
     if (args != null) {
       phoneNumber = args['phone_number'];
       countryCode = args['country_code'] ?? '+966';
       userType = args['user_type'] ?? 'customer';
       purpose = args['purpose'] ?? 'registration';
+
+      print('📱 Phone Number: $phoneNumber');
+      print('🌍 Country Code: $countryCode');
+      print('👤 User Type: $userType');
+      print('🎯 Purpose: $purpose');
+    } else {
+      print('❌ No arguments received!');
     }
 
     _startCountdown();
@@ -82,7 +91,14 @@ class OTPController extends GetxController {
   }
 
   Future<void> verifyOTP() async {
+    print('🚀 Starting OTP verification...');
+    print('📱 Current phoneNumber: $phoneNumber');
+    print('🌍 Current countryCode: $countryCode');
+    print('👤 Current userType: $userType');
+    print('🎯 Current purpose: $purpose');
+
     if (!_isOTPComplete()) {
+      print('❌ OTP is not complete');
       Get.snackbar(
         'Incomplete OTP',
         'Please enter the complete OTP code',
@@ -93,6 +109,7 @@ class OTPController extends GetxController {
     }
 
     if (phoneNumber == null) {
+      print('❌ Phone number is null!');
       Get.snackbar(
         'Error',
         'Phone number not found',

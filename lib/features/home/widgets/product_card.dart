@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/core/routes/app_routes.dart';
 import 'package:mrsheaf/features/home/controllers/home_controller.dart';
+import 'package:mrsheaf/core/localization/currency_helper.dart';
 
 class ProductCard extends GetView<HomeController> {
   final Map<String, dynamic> product;
@@ -65,7 +66,7 @@ class ProductCard extends GetView<HomeController> {
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(8),
                       child: () {
-                        final imageUrl = product['image'] as String? ?? '';
+                        final imageUrl = product['primary_image'] as String? ?? '';
                         if (imageUrl.startsWith('http')) {
                           return Image.network(
                             imageUrl,
@@ -125,27 +126,14 @@ class ProductCard extends GetView<HomeController> {
                             overflow: TextOverflow.ellipsis,
                           ),
                           const SizedBox(height: 2),
-                          Row(
-                            children: [
-                              Text(
-                                '${product['price'] ?? 16}',
-                                style: const TextStyle(
-                                  fontFamily: 'Tajawal',
-                                  fontWeight: FontWeight.w500,
-                                  fontSize: 16,
-                                  color: Color(0xFF1A2023),
-                                ),
-                              ),
-                              const Text(
-                                ' ر.س',
-                                style: TextStyle(
-                                  fontFamily: 'Tajawal',
-                                  fontWeight: FontWeight.w400,
-                                  fontSize: 16,
-                                  color: Color(0xFFF5484A),
-                                ),
-                              ),
-                            ],
+                          Text(
+                            CurrencyHelper.formatPrice(double.tryParse('${product['price'] ?? 16}') ?? 16.0),
+                            style: const TextStyle(
+                              fontFamily: 'Tajawal',
+                              fontWeight: FontWeight.w500,
+                              fontSize: 16,
+                              color: Color(0xFF1A2023),
+                            ),
                           ),
                         ],
                       ),

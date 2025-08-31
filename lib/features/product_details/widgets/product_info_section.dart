@@ -3,6 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/features/product_details/controllers/product_details_controller.dart';
+import 'package:mrsheaf/core/localization/currency_helper.dart';
 
 class ProductInfoSection extends GetView<ProductDetailsController> {
   const ProductInfoSection({super.key});
@@ -66,7 +67,7 @@ class ProductInfoSection extends GetView<ProductDetailsController> {
                 children: [
                   if (controller.product.value?.originalPrice != null) ...[
                     Text(
-                      '${controller.product.value!.originalPrice!.toStringAsFixed(2)} ر.س',
+                      CurrencyHelper.formatPrice(controller.product.value!.originalPrice!),
                       style: const TextStyle(
                         fontFamily: 'Lato',
                         fontWeight: FontWeight.w400,
@@ -79,7 +80,7 @@ class ProductInfoSection extends GetView<ProductDetailsController> {
                     const SizedBox(width: 8),
                   ],
                   Text(
-                    '${controller.totalPrice.toStringAsFixed(2)} ر.س',
+                    CurrencyHelper.formatPrice(controller.totalPrice),
                     style: const TextStyle(
                       fontFamily: 'Lato',
                       fontWeight: FontWeight.w700,

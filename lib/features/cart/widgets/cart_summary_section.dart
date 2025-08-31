@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mrsheaf/features/cart/controllers/cart_controller.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
+import 'package:mrsheaf/core/localization/currency_helper.dart';
 
 class CartSummarySection extends GetView<CartController> {
   const CartSummarySection({super.key});
@@ -70,23 +71,23 @@ class CartSummarySection extends GetView<CartController> {
                     // Subtotal
                     _buildSummaryRow(
                       'Subtotal',
-                      '\$ ${controller.subtotal.toStringAsFixed(2)}',
+                      CurrencyHelper.formatPrice(controller.subtotal),
                     ),
-                    
+
                     const SizedBox(height: 8),
-                    
+
                     // Delivery fee
                     _buildSummaryRow(
                       'Delivery fee',
-                      '\$ ${controller.deliveryFee.toStringAsFixed(2)}',
+                      CurrencyHelper.formatPrice(controller.deliveryFee),
                     ),
-                    
+
                     const SizedBox(height: 8),
-                    
+
                     // Tax
                     _buildSummaryRow(
                       'Tax',
-                      '\$ ${controller.taxAmount.toStringAsFixed(2)}',
+                      CurrencyHelper.formatPrice(controller.taxAmount),
                     ),
                     
                     const SizedBox(height: 8),
@@ -114,7 +115,7 @@ class CartSummarySection extends GetView<CartController> {
                           ),
                         ),
                         Text(
-                          '\$ ${controller.totalAmount.toStringAsFixed(2)}',
+                          CurrencyHelper.formatPrice(controller.totalAmount),
                           style: const TextStyle(
                             fontFamily: 'Lato',
                             fontWeight: FontWeight.w700,

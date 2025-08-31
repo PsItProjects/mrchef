@@ -5,6 +5,7 @@ import 'package:mrsheaf/features/product_details/models/product_model.dart';
 import 'package:mrsheaf/features/product_details/models/review_model.dart';
 import 'package:mrsheaf/features/product_details/widgets/reviews_bottom_sheet.dart';
 import 'package:mrsheaf/features/cart/controllers/cart_controller.dart';
+import 'package:mrsheaf/core/services/language_service.dart';
 import 'package:mrsheaf/features/product_details/services/product_details_service.dart';
 
 class ProductDetailsController extends GetxController {
@@ -37,6 +38,17 @@ class ProductDetailsController extends GetxController {
     // Get product ID from arguments
     productId = Get.arguments?['productId'] ?? 1;
     _loadProductDetails();
+    _setupLanguageListener();
+  }
+
+  /// Setup language change listener
+  void _setupLanguageListener() {
+    final languageService = LanguageService.instance;
+    // Listen to language changes and reload product details
+    ever(languageService.currentLanguageRx, (String language) {
+      print('🌐 PRODUCT DETAILS: Language changed to $language, reloading product...');
+      _loadProductDetails();
+    });
   }
   
   /// Load product details from API

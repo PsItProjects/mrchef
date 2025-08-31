@@ -14,7 +14,7 @@ class OtpVerificationScreen extends StatefulWidget {
 class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
   @override
   Widget build(BuildContext context) {
-    final controller = Get.put(OTPController());
+    final controller = Get.find<OTPController>();
 
     return Obx(() {
       return Scaffold(
