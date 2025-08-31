@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../features/auth/services/auth_service.dart';
+import '../../features/profile/services/profile_service.dart';
 
 class AppService extends GetxService {
   final RxBool isInitialized = false.obs;
@@ -19,6 +20,9 @@ class AppService extends GetxService {
       
       // Initialize auth service
       final authService = Get.put<AuthService>(AuthService(), permanent: true);
+
+      // Initialize profile service
+      Get.put<ProfileService>(ProfileService(), permanent: true);
       
       // Wait for auth service to load user data
       await Future.delayed(const Duration(milliseconds: 500));
