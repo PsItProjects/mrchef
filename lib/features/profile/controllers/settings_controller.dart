@@ -27,11 +27,42 @@ class SettingsController extends GetxController {
   void onInit() {
     super.onInit();
     _loadSettings();
+    _loadUserProfile();
   }
 
   void _loadSettings() {
     // TODO: Load settings from local storage
     // For now using default values
+  }
+
+  /// Load user profile to get current language
+  Future<void> _loadUserProfile() async {
+    try {
+      final result = await _profileService.getUserProfile();
+
+      if (result['success'] == true && result['data'] != null) {
+        final userData = result['data'] as Map<String, dynamic>;
+        final userLanguage = userData['preferred_language'] as String?;
+
+        if (userLanguage != null) {
+          // Update settings with user's language from backend
+          settings.value = settings.value.copyWith(language: userLanguage);
+
+          // Update language service if different
+          if (_languageService.currentLanguage != userLanguage) {
+            await _languageService.setLanguage(userLanguage);
+          }
+
+          // Force UI update
+          settings.refresh();
+          update();
+
+          print('🌐 User language loaded from profile: $userLanguage');
+        }
+      }
+    } catch (e) {
+      print('❌ Error loading user profile: $e');
+    }
   }
 
   // Settings actions
