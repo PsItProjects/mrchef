@@ -16,6 +16,7 @@ class ProductDetailsService {
 
       if (response.data['success'] == true) {
         final productData = response.data['data'];
+
         return ProductModel.fromJson(productData);
       } else {
         throw Exception(response.data['message'] ?? 'Failed to load product details');

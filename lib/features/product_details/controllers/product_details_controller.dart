@@ -59,6 +59,8 @@ class ProductDetailsController extends GetxController {
       final productData = await _productDetailsService.getProductDetails(productId);
       product.value = productData;
 
+
+
       // Initialize reactive variables
       selectedSize.value = productData.sizes.isNotEmpty ? productData.sizes.first : 'S';
       additionalOptions.value = productData.additionalOptions;

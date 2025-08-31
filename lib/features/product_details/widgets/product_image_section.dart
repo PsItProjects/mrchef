@@ -81,12 +81,28 @@ class ProductImageSection extends GetView<ProductDetailsController> {
                       ? images[currentIndex]
                       : 'assets/images/pizza_main.png';
 
+                  print('🖼️ DISPLAYING IMAGE: $imageUrl');
+                  print('🖼️ IMAGES LIST: $images');
+                  print('🖼️ CURRENT INDEX: $currentIndex');
+
                   // Check if it's a network image or asset
                   if (imageUrl.startsWith('http')) {
                     return Image.network(
                       imageUrl,
                       fit: BoxFit.cover,
+                      loadingBuilder: (context, child, loadingProgress) {
+                        if (loadingProgress == null) return child;
+                        return Center(
+                          child: CircularProgressIndicator(
+                            value: loadingProgress.expectedTotalBytes != null
+                                ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
+                                : null,
+                          ),
+                        );
+                      },
                       errorBuilder: (context, error, stackTrace) {
+                        print('❌ IMAGE LOAD ERROR: $error');
+                        print('❌ FAILED URL: $imageUrl');
                         return Image.asset(
                           'assets/images/pizza_main.png',
                           fit: BoxFit.cover,
