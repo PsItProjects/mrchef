@@ -409,7 +409,7 @@ class TranslationHelper {
 
 // Extension for easy translation access
 extension StringTranslationHelper on String {
-  String get tr => TranslationHelper.tr(this);
+  // String get tr => TranslationHelper.tr(this);
   String trArgs(Map<String, String> args) => TranslationHelper.tr(this, args: args);
   String trPlural(int count) => TranslationHelper.trPlural(this, count);
 }
