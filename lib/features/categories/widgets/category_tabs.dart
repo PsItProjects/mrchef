@@ -20,15 +20,13 @@ class CategoryTabs extends GetView<CategoriesController> {
                 children: [
                   Text(
                     'Meals',
-                    style: TextStyle(
-                      fontFamily: 'Lato',
-                      fontWeight: controller.currentTabIndex.value == 0 
-                          ? FontWeight.w400 
+                    style: AppTheme.tabTextStyle.copyWith(
+                      fontWeight: controller.currentTabIndex.value == 0
+                          ? FontWeight.w400
                           : FontWeight.w600,
-                      fontSize: 16,
                       color: controller.currentTabIndex.value == 0
-                          ? const Color(0xFF999999) // Gray when selected (matches Figma)
-                          : AppColors.primaryColor, // Yellow when not selected
+                          ? AppColors.lightGreyTextColor
+                          : AppColors.primaryColor,
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -56,15 +54,13 @@ class CategoryTabs extends GetView<CategoriesController> {
                 children: [
                   Text(
                     'Kitchens',
-                    style: TextStyle(
-                      fontFamily: 'Lato',
-                      fontWeight: controller.currentTabIndex.value == 1 
-                          ? FontWeight.w400 
+                    style: AppTheme.tabTextStyle.copyWith(
+                      fontWeight: controller.currentTabIndex.value == 1
+                          ? FontWeight.w400
                           : FontWeight.w600,
-                      fontSize: 16,
                       color: controller.currentTabIndex.value == 1
-                          ? const Color(0xFF999999) // Gray when selected
-                          : AppColors.primaryColor, // Yellow when not selected
+                          ? AppColors.lightGreyTextColor
+                          : AppColors.primaryColor,
                     ),
                   ),
                   const SizedBox(height: 4),

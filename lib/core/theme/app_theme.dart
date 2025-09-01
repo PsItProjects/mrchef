@@ -55,6 +55,16 @@ class AppColors {
   static const Color darkCardColor = Color(0xFF2D2D2D);
   static const Color darkTextPrimaryColor = Color(0xFFFFFFFF);
   static const Color darkTextSecondaryColor = Color(0xFFB3B3B3);
+
+  // Additional utility colors
+  static const Color dividerColor = Color(0xFFE0E0E0);
+  static const Color borderColor = Color(0xFFE8E8E8);
+  static const Color disabledColor = Color(0xFFBDBDBD);
+  static const Color hintTextColor = Color(0xFF9E9E9E);
+
+  // Gradient colors for various uses
+  static const Color gradientStart = Color(0xFFFACD02);
+  static const Color gradientEnd = Color(0xFFFFE066);
 }
 
 class AppTheme {
@@ -134,6 +144,36 @@ class AppTheme {
     color: AppColors.optionTextColor,
   );
 
+  // Additional text styles
+  static const TextStyle captionStyle = TextStyle(
+    fontFamily: 'Lato',
+    fontWeight: FontWeight.w400,
+    fontSize: 12,
+    color: AppColors.hintTextColor,
+  );
+
+  static const TextStyle linkTextStyle = TextStyle(
+    fontFamily: 'Lato',
+    fontWeight: FontWeight.w600,
+    fontSize: 14,
+    color: AppColors.primaryColor,
+    decoration: TextDecoration.underline,
+  );
+
+  static const TextStyle errorTextStyle = TextStyle(
+    fontFamily: 'Lato',
+    fontWeight: FontWeight.w500,
+    fontSize: 12,
+    color: AppColors.errorColor,
+  );
+
+  static const TextStyle successTextStyle = TextStyle(
+    fontFamily: 'Lato',
+    fontWeight: FontWeight.w500,
+    fontSize: 12,
+    color: AppColors.successColor,
+  );
+
   // Button styles matching Figma
   static final ButtonStyle primaryButtonStyle = ElevatedButton.styleFrom(
     backgroundColor: AppColors.primaryColor,
@@ -155,16 +195,50 @@ class AppTheme {
   );
 
   static final ButtonStyle secondaryButtonStyle = ElevatedButton.styleFrom(
-    backgroundColor: Colors.transparent,
+    backgroundColor: AppColors.transparent,
     foregroundColor: AppColors.primaryColor,
     padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 32),
     shape: RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(12),
-      side: const BorderSide(
-          color: AppColors.primaryColor, width: 2), // 2px border as per Figma
+      side: const BorderSide(color: AppColors.primaryColor, width: 2),
     ),
     elevation: 0,
     textStyle: buttonTextStyle.copyWith(color: AppColors.primaryColor),
+  );
+
+  // Additional button styles
+  static final ButtonStyle smallButtonStyle = ElevatedButton.styleFrom(
+    backgroundColor: AppColors.primaryColor,
+    foregroundColor: AppColors.searchIconColor,
+    padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(8),
+    ),
+    elevation: 0,
+    minimumSize: const Size(0, 32),
+    textStyle: smallButtonTextStyle,
+  );
+
+  static final ButtonStyle dangerButtonStyle = ElevatedButton.styleFrom(
+    backgroundColor: AppColors.errorColor,
+    foregroundColor: AppColors.textLightColor,
+    padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 32),
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(12),
+    ),
+    elevation: 0,
+    textStyle: buttonTextStyle,
+  );
+
+  static final ButtonStyle successButtonStyle = ElevatedButton.styleFrom(
+    backgroundColor: AppColors.successColor,
+    foregroundColor: AppColors.textLightColor,
+    padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 32),
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(12),
+    ),
+    elevation: 0,
+    textStyle: buttonTextStyle,
   );
 
   // Light Theme
@@ -186,9 +260,12 @@ class AppTheme {
       displayMedium: subheadingStyle,
       bodyLarge: bodyStyle,
       bodyMedium: searchTextStyle,
+      bodySmall: captionStyle,
       labelLarge: buttonTextStyle,
       labelMedium: smallButtonTextStyle,
       labelSmall: optionTextStyle,
+      titleMedium: statusTextStyle,
+      titleSmall: linkTextStyle,
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: primaryButtonStyle,
@@ -248,9 +325,12 @@ class AppTheme {
       displayMedium: subheadingStyle.copyWith(color: AppColors.darkTextPrimaryColor),
       bodyLarge: bodyStyle.copyWith(color: AppColors.darkTextPrimaryColor),
       bodyMedium: searchTextStyle.copyWith(color: AppColors.darkTextSecondaryColor),
+      bodySmall: captionStyle.copyWith(color: AppColors.darkTextSecondaryColor),
       labelLarge: buttonTextStyle,
       labelMedium: smallButtonTextStyle,
       labelSmall: optionTextStyle.copyWith(color: AppColors.darkTextSecondaryColor),
+      titleMedium: statusTextStyle.copyWith(color: AppColors.darkTextPrimaryColor),
+      titleSmall: linkTextStyle,
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: primaryButtonStyle,

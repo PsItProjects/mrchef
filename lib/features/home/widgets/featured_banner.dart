@@ -22,8 +22,8 @@ class FeaturedBanner extends GetView<HomeController> {
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  const Color(0xFFBA8D13).withOpacity(0.8),
-                  const Color(0xFFBA8D13).withOpacity(0.6),
+                  AppColors.kitchenGradientStart.withOpacity(0.8),
+                  AppColors.kitchenGradientStart.withOpacity(0.6),
                 ],
               ),
             ),

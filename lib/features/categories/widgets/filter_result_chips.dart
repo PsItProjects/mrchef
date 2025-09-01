@@ -34,11 +34,8 @@ class FilterResultChips extends GetView<CategoriesController> {
                   children: [
                     Text(
                       filter.length > 10 ? '${filter.substring(0, 10)}....' : filter,
-                      style: const TextStyle(
-                        fontFamily: 'Lato',
-                        fontWeight: FontWeight.w700,
+                      style: AppTheme.smallButtonTextStyle.copyWith(
                         fontSize: 14,
-                        color: Color(0xFF592E2C),
                       ),
                     ),
                     const SizedBox(width: 4),
@@ -52,7 +49,7 @@ class FilterResultChips extends GetView<CategoriesController> {
                           width: 10.5,
                           height: 10.5,
                           colorFilter: const ColorFilter.mode(
-                            Color(0xFF592E2C),
+                            AppColors.searchIconColor,
                             BlendMode.srcIn,
                           ),
                         ),
@@ -67,7 +64,7 @@ class FilterResultChips extends GetView<CategoriesController> {
             if (controller.appliedFilters.length > 3)
               Container(
                 decoration: BoxDecoration(
-                  color: const Color(0xFF999999),
+                  color: AppColors.lightGreyTextColor,
                   borderRadius: BorderRadius.circular(10),
                 ),
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
@@ -76,11 +73,9 @@ class FilterResultChips extends GetView<CategoriesController> {
                   children: [
                     Text(
                       '+ ${controller.appliedFilters.length - 3} more',
-                      style: const TextStyle(
-                        fontFamily: 'Lato',
-                        fontWeight: FontWeight.w700,
+                      style: AppTheme.smallButtonTextStyle.copyWith(
                         fontSize: 14,
-                        color: Colors.white,
+                        color: AppColors.textLightColor,
                       ),
                     ),
                     const SizedBox(width: 4),
@@ -92,7 +87,7 @@ class FilterResultChips extends GetView<CategoriesController> {
                         width: 10.5,
                         height: 10.5,
                         colorFilter: const ColorFilter.mode(
-                          Colors.white,
+                          AppColors.textLightColor,
                           BlendMode.srcIn,
                         ),
                       ),

@@ -5,6 +5,7 @@ import 'package:mrsheaf/core/routes/app_pages.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/core/services/app_service.dart';
 import 'package:mrsheaf/core/services/language_service.dart';
+import 'package:mrsheaf/core/services/theme_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -14,6 +15,7 @@ void main() async {
   ]);
 
   // Initialize services
+  await Get.putAsync(() => ThemeService().onInit().then((_) => ThemeService()));
   await Get.putAsync(() => LanguageService().onInit().then((_) => LanguageService()));
   await Get.putAsync(() => AppService().onInit().then((_) => AppService()));
 
@@ -26,6 +28,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final languageService = LanguageService.instance;
+    final themeService = ThemeService.instance;
 
     return Obx(() {
       final locale = languageService.currentLanguage == 'ar'
@@ -36,6 +39,8 @@ class MyApp extends StatelessWidget {
         title: 'MrSheaf',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.lightTheme,
+        darkTheme: AppTheme.darkTheme,
+        themeMode: themeService.themeMode,
         locale: locale,
         fallbackLocale: const Locale('en', 'US'),
         initialRoute: AppPages.INITIAL,

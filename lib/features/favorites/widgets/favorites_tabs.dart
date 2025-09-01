@@ -23,15 +23,13 @@ class FavoritesTabs extends GetView<FavoritesController> {
                   child: Text(
                     'Stores',
                     textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontFamily: 'Lato',
-                      fontWeight: controller.isStoresTabSelected 
-                          ? FontWeight.w600 
+                    style: AppTheme.tabTextStyle.copyWith(
+                      fontWeight: controller.isStoresTabSelected
+                          ? FontWeight.w600
                           : FontWeight.w400,
-                      fontSize: 16,
-                      color: controller.isStoresTabSelected 
-                          ? AppColors.primaryColor 
-                          : const Color(0xFF999999),
+                      color: controller.isStoresTabSelected
+                          ? AppColors.primaryColor
+                          : AppColors.lightGreyTextColor,
                     ),
                   ),
                 ),
@@ -60,15 +58,13 @@ class FavoritesTabs extends GetView<FavoritesController> {
                   child: Text(
                     'Product',
                     textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontFamily: 'Lato',
-                      fontWeight: controller.isProductsTabSelected 
-                          ? FontWeight.w600 
+                    style: AppTheme.tabTextStyle.copyWith(
+                      fontWeight: controller.isProductsTabSelected
+                          ? FontWeight.w600
                           : FontWeight.w400,
-                      fontSize: 16,
-                      color: controller.isProductsTabSelected 
-                          ? AppColors.primaryColor 
-                          : const Color(0xFF999999),
+                      color: controller.isProductsTabSelected
+                          ? AppColors.primaryColor
+                          : AppColors.lightGreyTextColor,
                     ),
                   ),
                 ),
@@ -78,9 +74,9 @@ class FavoritesTabs extends GetView<FavoritesController> {
                   height: 8,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: controller.isProductsTabSelected 
-                        ? AppColors.primaryColor 
-                        : Colors.transparent,
+                    color: controller.isProductsTabSelected
+                        ? AppColors.primaryColor
+                        : AppColors.transparent,
                   ),
                 ),
               ],
