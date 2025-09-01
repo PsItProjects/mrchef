@@ -28,7 +28,6 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final languageService = LanguageService.instance;
-    final themeService = ThemeService.instance;
 
     return Obx(() {
       final locale = languageService.currentLanguage == 'ar'
@@ -40,7 +39,7 @@ class MyApp extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         theme: AppTheme.lightTheme,
         darkTheme: AppTheme.darkTheme,
-        themeMode: themeService.themeMode,
+        themeMode: ThemeMode.system,
         locale: locale,
         fallbackLocale: const Locale('en', 'US'),
         initialRoute: AppPages.INITIAL,

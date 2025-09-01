@@ -18,24 +18,20 @@ class ThemeToggleButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GetBuilder<ThemeService>(
-      init: ThemeService.instance,
-      builder: (themeService) {
-        return Obx(() => CircularIconButton(
-          iconData: themeService.isDarkMode 
-              ? Icons.light_mode 
-              : Icons.dark_mode,
-          onTap: themeService.toggleTheme,
-          size: size ?? 48,
-          backgroundColor: themeService.isDarkMode
-              ? (darkModeColor ?? AppColors.darkSurfaceColor)
-              : (lightModeColor ?? AppColors.surfaceColor),
-          iconColor: themeService.isDarkMode
-              ? AppColors.primaryColor
-              : AppColors.secondaryColor,
-        ));
-      },
-    );
+    final themeService = ThemeService.instance;
+    return Obx(() => CircularIconButton(
+      iconData: themeService.isDarkMode
+          ? Icons.light_mode
+          : Icons.dark_mode,
+      onTap: themeService.toggleTheme,
+      size: size ?? 48,
+      backgroundColor: themeService.isDarkMode
+          ? (darkModeColor ?? AppColors.darkSurfaceColor)
+          : (lightModeColor ?? AppColors.surfaceColor),
+      iconColor: themeService.isDarkMode
+          ? AppColors.primaryColor
+          : AppColors.secondaryColor,
+    ));
   }
 }
 
@@ -44,67 +40,63 @@ class ThemeSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GetBuilder<ThemeService>(
-      init: ThemeService.instance,
-      builder: (themeService) {
-        return Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Theme.of(context).cardColor,
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.blackShadowColor.withOpacity(0.1),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
-              ),
-            ],
+    final themeService = ThemeService.instance;
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.blackShadowColor.withOpacity(0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Theme Mode',
+            style: AppTheme.subheadingStyle.copyWith(
+              color: Theme.of(context).textTheme.bodyLarge?.color,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Obx(() => Column(
             children: [
-              Text(
-                'Theme Mode',
-                style: AppTheme.subheadingStyle.copyWith(
-                  color: Theme.of(context).textTheme.bodyLarge?.color,
-                ),
+              _buildThemeOption(
+                context,
+                'Light',
+                Icons.light_mode,
+                ThemeMode.light,
+                themeService.themeMode == ThemeMode.light,
+                () => themeService.setLightTheme(),
               ),
-              const SizedBox(height: 16),
-              Obx(() => Column(
-                children: [
-                  _buildThemeOption(
-                    context,
-                    'Light',
-                    Icons.light_mode,
-                    ThemeMode.light,
-                    themeService.themeMode == ThemeMode.light,
-                    () => themeService.setLightTheme(),
-                  ),
-                  const SizedBox(height: 8),
-                  _buildThemeOption(
-                    context,
-                    'Dark',
-                    Icons.dark_mode,
-                    ThemeMode.dark,
-                    themeService.themeMode == ThemeMode.dark,
-                    () => themeService.setDarkTheme(),
-                  ),
-                  const SizedBox(height: 8),
-                  _buildThemeOption(
-                    context,
-                    'System',
-                    Icons.settings,
-                    ThemeMode.system,
-                    themeService.themeMode == ThemeMode.system,
-                    () => themeService.setSystemTheme(),
-                  ),
-                ],
-              )),
+              const SizedBox(height: 8),
+              _buildThemeOption(
+                context,
+                'Dark',
+                Icons.dark_mode,
+                ThemeMode.dark,
+                themeService.themeMode == ThemeMode.dark,
+                () => themeService.setDarkTheme(),
+              ),
+              const SizedBox(height: 8),
+              _buildThemeOption(
+                context,
+                'System',
+                Icons.settings,
+                ThemeMode.system,
+                themeService.themeMode == ThemeMode.system,
+                () => themeService.setSystemTheme(),
+              ),
             ],
-          ),
-        );
-      },
+          )),
+        ],
+      ),
     );
   }
 

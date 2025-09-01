@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mrsheaf/core/widgets/index.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
-import 'package:mrsheaf/core/utils/index.dart';
 
 /// This file demonstrates how to use all the reusable widgets
 /// It can be used as a reference for developers
@@ -372,7 +371,6 @@ class _WidgetShowcaseState extends State<WidgetShowcase> {
                       final result = await AppDialog.showInput(
                         title: 'Enter Name',
                         hintText: 'Your name',
-                        validator: Validators.name,
                       );
                       if (result != null) {
                         AppNotifications.showInfo('Hello, $result!');
@@ -392,24 +390,12 @@ class _WidgetShowcaseState extends State<WidgetShowcase> {
                     label: 'Email with Validation',
                     hintText: 'Enter your email',
                     keyboardType: TextInputType.emailAddress,
-                    onChanged: (value) {
-                      final error = Validators.email(value);
-                      if (error != null) {
-                        // Handle validation error
-                      }
-                    },
                   ),
                   const SizedBox(height: 16),
                   AppTextField(
                     label: 'Phone with Validation',
                     hintText: 'Enter phone number',
                     keyboardType: TextInputType.phone,
-                    onChanged: (value) {
-                      final error = Validators.phoneNumber(value);
-                      if (error != null) {
-                        // Handle validation error
-                      }
-                    },
                   ),
                 ],
               ),
