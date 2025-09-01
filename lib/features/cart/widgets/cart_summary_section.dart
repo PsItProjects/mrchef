@@ -31,15 +31,10 @@ class CartSummarySection extends GetView<CartController> {
                 child: Row(
                   children: [
                     // Promo code text
-                    const Expanded(
+                    Expanded(
                       child: Text(
                         'Promo Code',
-                        style: TextStyle(
-                          fontFamily: 'Lato',
-                          fontWeight: FontWeight.w400,
-                          fontSize: 14,
-                          color: Color(0xFF5E5E5E),
-                        ),
+                        style: AppTheme.searchTextStyle,
                       ),
                     ),
                     
@@ -53,7 +48,7 @@ class CartSummarySection extends GetView<CartController> {
                       ),
                       child: const Icon(
                         Icons.local_offer_outlined,
-                        color: Color(0xFF592E2C),
+                        color: AppColors.searchIconColor,
                         size: 24,
                       ),
                     ),
@@ -132,27 +127,15 @@ class CartSummarySection extends GetView<CartController> {
               
               const SizedBox(height: 16),
               
-              // Checkout button - Yellow with brown text as per Figma
+              // Checkout button
               Container(
-                // width: 380,
-                // height: 50,
                 child: ElevatedButton(
                   onPressed: controller.proceedToCheckout,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primaryColor, // Yellow background
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    elevation: 0,
-                  ),
-                  child: const Text(
+                  style: AppTheme.primaryButtonStyle,
+                  child: Text(
                     'Checkout',
-                    style: TextStyle(
-                      fontFamily: 'Lato',
-                      fontWeight: FontWeight.w700,
-                      fontSize: 18,
-                      color: Color(0xFF592E2C), // Brown text
-                      letterSpacing: -0.005,
+                    style: AppTheme.buttonTextStyle.copyWith(
+                      color: AppColors.searchIconColor,
                     ),
                   ),
                 ),

@@ -23,7 +23,7 @@ class AddAddressButton extends GetView<ShippingAddressesController> {
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF974968).withOpacity(0.2),
+                    color: AppColors.addButtonShadowColor.withOpacity(0.2),
                     blurRadius: 18,
                     offset: const Offset(0, 0),
                   ),
@@ -33,7 +33,7 @@ class AddAddressButton extends GetView<ShippingAddressesController> {
                 child: Icon(
                   Icons.add,
                   size: 24,
-                  color: Color(0xFF0D1C2E),
+                  color: AppColors.darkTextColor,
                 ),
               ),
             ),

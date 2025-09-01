@@ -27,14 +27,10 @@ class EmptyFavoritesWidget extends GetView<FavoritesController> {
           // Empty favorites text
           Column(
             children: [
-              const Text(
+              Text(
                 'Start Favorite',
-                style: TextStyle(
-                  fontFamily: 'Lato',
-                  fontWeight: FontWeight.w700,
-                  fontSize: 18,
-                  color: Color(0xFF262626),
-                  letterSpacing: -0.005,
+                style: AppTheme.subheadingStyle.copyWith(
+                  color: AppColors.darkTextColor,
                 ),
               ),
               
@@ -42,15 +38,10 @@ class EmptyFavoritesWidget extends GetView<FavoritesController> {
               
               Container(
                 width: 285,
-                child: const Text(
+                child: Text(
                   'Save Store and Product, So that you can reach it as soon as possible',
                   textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontFamily: 'Lato',
-                    fontWeight: FontWeight.w400,
-                    fontSize: 14,
-                    color: Color(0xFF5E5E5E),
-                  ),
+                  style: AppTheme.searchTextStyle,
                 ),
               ),
             ],
@@ -96,21 +87,15 @@ class EmptyFavoritesWidget extends GetView<FavoritesController> {
             child: ElevatedButton(
               onPressed: controller.addSampleData,
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF592E2C),
+                backgroundColor: AppColors.searchIconColor,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
                 ),
                 elevation: 0,
               ),
-              child: const Text(
+              child: Text(
                 'Add Sample Favorites (Test)',
-                style: TextStyle(
-                  fontFamily: 'Lato',
-                  fontWeight: FontWeight.w700,
-                  fontSize: 18,
-                  color: Colors.white,
-                  letterSpacing: -0.005,
-                ),
+                style: AppTheme.buttonTextStyle,
               ),
             ),
           ),

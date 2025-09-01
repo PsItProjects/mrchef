@@ -24,13 +24,11 @@ class CategoryFilterChips extends GetView<CategoriesController> {
 
         if (controller.categoryChips.isEmpty) {
           print('⚠️ CategoryFilterChips: No categories to display');
-          return const Center(
+          return Center(
             child: Text(
               'لا توجد تصنيفات متاحة',
-              style: TextStyle(
-                fontFamily: 'Lato',
-                fontSize: 16,
-                color: Color(0xFF262626),
+              style: AppTheme.bodyStyle.copyWith(
+                color: AppColors.darkTextColor,
               ),
             ),
           );
@@ -50,20 +48,18 @@ class CategoryFilterChips extends GetView<CategoriesController> {
                 // width: 80, // Width from Figma
                 // height: 100, // Height from Figma
                 decoration: BoxDecoration(
-                  color: chip.isSelected 
-                      ? AppColors.primaryColor 
-                      : const Color(0xFFF7F7FB), // Light gray from Figma
-                  borderRadius: BorderRadius.circular(87), // Circular from Figma
+                  color: chip.isSelected
+                      ? AppColors.primaryColor
+                      : AppColors.lightGreyColor,
+                  borderRadius: BorderRadius.circular(87),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.2),
+                      color: AppColors.blackShadowColor.withOpacity(0.2),
                       blurRadius: 2.45,
-                      // offset: const Offset(0, 2.45),
                     ),
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
+                      color: AppColors.blackShadowColor.withOpacity(0.1),
                       blurRadius: 4.91,
-                      // offset: const Offset(0, 0),
                     ),
                   ],
                 ),
@@ -75,11 +71,11 @@ class CategoryFilterChips extends GetView<CategoriesController> {
                       width: 64,
                       height: 64,
                       decoration: BoxDecoration(
-                        color: const Color(0xFFECECEC),
+                        color: AppColors.greyColor,
                         shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.25),
+                            color: AppColors.blackShadowColor.withOpacity(0.25),
                             blurRadius: 0.49,
                             offset: const Offset(0, 0.61),
                           ),
@@ -102,13 +98,11 @@ class CategoryFilterChips extends GetView<CategoriesController> {
                       padding: const EdgeInsets.symmetric(horizontal:  8.0),
                       child: Text(
                         chip.name,
-                        style: TextStyle(
-                          fontFamily: 'Lato',
+                        style: AppTheme.tabTextStyle.copyWith(
                           fontWeight: chip.isSelected ? FontWeight.w400 : FontWeight.w300,
-                          fontSize: 16,
                           color: chip.isSelected
-                              ? const Color(0xFF592E2C)
-                              : const Color(0xFF262626),
+                              ? AppColors.searchIconColor
+                              : AppColors.darkTextColor,
                         ),
                         textAlign: TextAlign.center,
                       ),

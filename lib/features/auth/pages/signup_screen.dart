@@ -175,13 +175,13 @@ class SignupScreen extends StatelessWidget {
                   children: [
                     socialSignupButton(
                       icon: Icons.facebook,
-                      color: const Color(0xFF1877F2),
+                      color: AppColors.socialFacebookColor,
                       onTap: controller.signupWithFacebook,
                     ),
                     const SizedBox(width: 16),
                     socialSignupButton(
                       icon: Icons.g_mobiledata,
-                      color: const Color(0xFFEA4335),
+                      color: AppColors.socialGoogleColor,
                       onTap: controller.signupWithGoogle,
                     ),
                   ],

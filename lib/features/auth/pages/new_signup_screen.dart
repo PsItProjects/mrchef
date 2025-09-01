@@ -411,8 +411,8 @@ class NewSignupScreen extends StatelessWidget {
             onPressed: controller.agreeToTerms.value ? controller.signup : null,
             style: ElevatedButton.styleFrom(
               backgroundColor: controller.agreeToTerms.value
-                  ? Color(0xFFFACD02)
-                  : Color(0xFFD2D2D2),
+                  ? AppColors.primaryColor
+                  : AppColors.disabledColor,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),
               ),
@@ -420,11 +420,11 @@ class NewSignupScreen extends StatelessWidget {
             ),
             child: Text(
               controller.isVendor.value ? 'Continue' : 'Sign Up',
-              style: TextStyle(
-                fontFamily: 'Lato',
-                fontWeight: FontWeight.w700,
-                fontSize: 18,
+              style: AppTheme.buttonTextStyle.copyWith(
                 color: controller.agreeToTerms.value
+                    ? AppColors.searchIconColor
+                    : AppColors.textLightColor,
+              ),
                     ? Color(0xFF592E2C)
                     : Colors.white,
                 letterSpacing: -0.005,

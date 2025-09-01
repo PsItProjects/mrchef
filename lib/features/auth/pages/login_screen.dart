@@ -232,9 +232,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: controller
                                           .isPhoneNumberValid.value
-                                      ? AppColors
-                                          .primaryColor // Yellow when enabled
-                                      : Color(0xFFD2D2D2), // Gray when disabled
+                                      ? AppColors.primaryColor
+                                      : AppColors.disabledColor,
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(10),
                                   ),
@@ -242,16 +241,10 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ),
                                 child: Text(
                                   'Login',
-                                  style: TextStyle(
-                                    fontFamily: 'Lato',
-                                    fontWeight: FontWeight.w700,
-                                    fontSize: 18,
+                                  style: AppTheme.buttonTextStyle.copyWith(
                                     color: controller.isPhoneNumberValid.value
-                                        ? Color(
-                                            0xFF592E2C) // Dark brown when enabled
-                                        : Colors.white, // White when disabled
-                                    letterSpacing: -0.005,
-                                    height: 1.45,
+                                        ? AppColors.searchIconColor
+                                        : AppColors.textLightColor,
                                   ),
                                 ),
                               ),

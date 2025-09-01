@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/features/favorites/models/favorite_product_model.dart';
 
 class FavoriteProductWidget extends StatelessWidget {
@@ -110,13 +111,10 @@ class FavoriteProductWidget extends StatelessWidget {
                   // Availability status
                   Text(
                     product.availabilityText,
-                    style: TextStyle(
-                      fontFamily: 'Lato',
-                      fontWeight: FontWeight.w600,
-                      fontSize: 16,
-                      color: product.isAvailable 
-                          ? const Color(0xFF27AE60) // Green
-                          : const Color(0xFFEB5757), // Red
+                    style: AppTheme.statusTextStyle.copyWith(
+                      color: product.isAvailable
+                          ? AppColors.successColor
+                          : AppColors.errorColor,
                     ),
                   ),
                 ],

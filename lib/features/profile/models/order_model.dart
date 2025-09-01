@@ -1,4 +1,5 @@
 import 'dart:ui';
+import 'package:mrsheaf/core/theme/app_theme.dart';
 
 enum OrderStatus {
   delivered,
@@ -83,33 +84,33 @@ class OrderModel {
   Color get statusColor {
     switch (status) {
       case OrderStatus.delivered:
-        return const Color(0xFF27AE60); // Green
+        return AppColors.successColor;
       case OrderStatus.processing:
-        return const Color(0xFFFACD02); // Yellow
+        return AppColors.warningColor;
       case OrderStatus.canceled:
-        return const Color(0xFFEB5757); // Red
+        return AppColors.errorColor;
     }
   }
 
   Color get statusBackgroundColor {
     switch (status) {
       case OrderStatus.delivered:
-        return const Color(0xFF27AE60); // Green
+        return AppColors.successColor;
       case OrderStatus.processing:
-        return const Color(0xFFFACD02); // Yellow
+        return AppColors.warningColor;
       case OrderStatus.canceled:
-        return const Color(0xFFEB5757); // Red
+        return AppColors.errorColor;
     }
   }
 
   Color get statusTextColor {
     switch (status) {
       case OrderStatus.delivered:
-        return const Color(0xFF27AE60); // Green text
+        return AppColors.successColor;
       case OrderStatus.processing:
-        return const Color(0xFF999999); // Gray text
+        return AppColors.lightGreyTextColor;
       case OrderStatus.canceled:
-        return const Color(0xFFEB5757); // Red text
+        return AppColors.errorColor;
     }
   }
 }

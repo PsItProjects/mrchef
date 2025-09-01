@@ -27,11 +27,11 @@ class ProductCard extends GetView<HomeController> {
       // height: 240, // Fixed height to prevent overflow
       margin: const EdgeInsets.only(right: 16),
       decoration: BoxDecoration(
-        color: const Color(0xFFF1F6F9).withOpacity(0.1),
+        color: AppColors.cardBackgroundColor.withOpacity(0.1),
         borderRadius: BorderRadius.circular(32),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF2D5F8B).withOpacity(0.2),
+            color: AppColors.shadowColor.withOpacity(0.2),
             blurRadius: 14,
             offset: const Offset(0, 0),
           ),
@@ -47,11 +47,11 @@ class ProductCard extends GetView<HomeController> {
               width: 120,
               height: 120,
               decoration: BoxDecoration(
-                color: const Color(0xFFF1F6F9).withOpacity(0.1),
+                color: AppColors.cardBackgroundColor.withOpacity(0.1),
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
+                    color: AppColors.blackShadowColor.withOpacity(0.1),
                     blurRadius: 17,
                     offset: const Offset(0, -5),
                   ),
@@ -128,12 +128,7 @@ class ProductCard extends GetView<HomeController> {
                           const SizedBox(height: 2),
                           Text(
                             CurrencyHelper.formatPrice(double.tryParse('${product['price'] ?? 16}') ?? 16.0),
-                            style: const TextStyle(
-                              fontFamily: 'Tajawal',
-                              fontWeight: FontWeight.w500,
-                              fontSize: 16,
-                              color: Color(0xFF1A2023),
-                            ),
+                            style: AppTheme.priceTextStyle,
                           ),
                         ],
                       ),

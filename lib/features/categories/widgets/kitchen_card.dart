@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
+import 'package:mrsheaf/core/widgets/app_card.dart';
 import 'package:mrsheaf/features/categories/models/category_model.dart';
 
 class KitchenCard extends StatelessWidget {
@@ -13,7 +14,7 @@ class KitchenCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return KitchenGradientCard(
       onTap: () {
         Get.snackbar(
           'Kitchen Selected',
@@ -21,34 +22,6 @@ class KitchenCard extends StatelessWidget {
           snackPosition: SnackPosition.BOTTOM,
         );
       },
-      child: Container(
-        width: 182,
-        height: 223,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(32),
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              const Color(0xFFA44502).withOpacity(0.8), // Brown gradient from Figma
-              const Color(0xFF8F3A02).withOpacity(0.9),
-            ],
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xFF2D5F8B).withOpacity(0.2),
-              blurRadius: 14,
-              offset: const Offset(0, 0),
-            ),
-            BoxShadow(
-              color: Colors.black.withOpacity(0.03),
-              blurRadius: 62,
-              offset: const Offset(0, 0),
-              spreadRadius: 0,
-              blurStyle: BlurStyle.inner,
-            ),
-          ],
-        ),
         child: Padding(
           padding: const EdgeInsets.all(8.0),
           child: Column(
