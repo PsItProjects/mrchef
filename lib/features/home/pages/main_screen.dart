@@ -2,6 +2,7 @@ import 'package:awesome_bottom_bar/awesome_bottom_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/localization/translation_helper.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/features/home/controllers/main_controller.dart';
 import 'package:mrsheaf/features/home/pages/cart_screen.dart';
@@ -28,27 +29,27 @@ class MainScreen extends GetView<MainController> {
     final List<Map<String, dynamic>> navItems = [
       {
         'icon': 'assets/icons/home_icon.svg',
-        'title': 'Home',
+        'title': 'home'.tr,
         'fallbackIcon': Icons.home,
       },
       {
         'icon': 'assets/icons/category_icon.svg',
-        'title': 'Categories',
+        'title': 'categories'.tr,
         'fallbackIcon': Icons.category,
       },
       {
         'icon': 'assets/icons/cart_icon.svg',
-        'title': 'Cart',
+        'title': 'cart'.tr,
         'fallbackIcon': Icons.shopping_cart,
       },
       {
         'icon': 'assets/icons/heart_icon.svg',
-        'title': 'Favorite',
+        'title': 'favorites'.tr,
         'fallbackIcon': Icons.favorite,
       },
       {
         'icon': 'assets/icons/profile_icon.svg',
-        'title': 'Profile',
+        'title': 'profile'.tr,
         'fallbackIcon': Icons.person,
       },
     ];

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/localization/translation_helper.dart';
 import 'package:mrsheaf/features/categories/controllers/categories_controller.dart';
 import 'package:mrsheaf/features/categories/widgets/categories_header.dart';
 import 'package:mrsheaf/features/categories/widgets/search_bar_with_filter.dart';

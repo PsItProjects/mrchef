@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/localization/translation_helper.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/features/categories/controllers/categories_controller.dart';
 
@@ -38,8 +39,8 @@ class SearchBarWithFilter extends GetView<CategoriesController> {
                   // Search input
                   Expanded(
                     child: TextField(
-                      decoration: const InputDecoration(
-                        hintText: 'Search in your product',
+                      decoration: InputDecoration(
+                        hintText: 'search_food'.tr,
                         hintStyle: TextStyle(
                           fontFamily: 'Lato',
                           fontWeight: FontWeight.w600,

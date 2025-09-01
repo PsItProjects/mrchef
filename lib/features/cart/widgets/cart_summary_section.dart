@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/localization/translation_helper.dart';
 import 'package:mrsheaf/features/cart/controllers/cart_controller.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/core/localization/currency_helper.dart';
@@ -33,7 +34,7 @@ class CartSummarySection extends GetView<CartController> {
                     // Promo code text
                     Expanded(
                       child: Text(
-                        'Promo Code',
+                        TranslationHelper.tr('promo_code'),
                         style: AppTheme.searchTextStyle,
                       ),
                     ),
@@ -65,7 +66,7 @@ class CartSummarySection extends GetView<CartController> {
                   children: [
                     // Subtotal
                     _buildSummaryRow(
-                      'Subtotal',
+                      TranslationHelper.tr('subtotal'),
                       CurrencyHelper.formatPrice(controller.subtotal),
                     ),
 
@@ -73,7 +74,7 @@ class CartSummarySection extends GetView<CartController> {
 
                     // Delivery fee
                     _buildSummaryRow(
-                      'Delivery fee',
+                      TranslationHelper.tr('delivery_fee'),
                       CurrencyHelper.formatPrice(controller.deliveryFee),
                     ),
 
@@ -81,7 +82,7 @@ class CartSummarySection extends GetView<CartController> {
 
                     // Tax
                     _buildSummaryRow(
-                      'Tax',
+                      TranslationHelper.tr('tax'),
                       CurrencyHelper.formatPrice(controller.taxAmount),
                     ),
                     
@@ -99,9 +100,9 @@ class CartSummarySection extends GetView<CartController> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text(
-                          'Total',
-                          style: TextStyle(
+                        Text(
+                          TranslationHelper.tr('total'),
+                          style: const TextStyle(
                             fontFamily: 'Lato',
                             fontWeight: FontWeight.w700,
                             fontSize: 18,
@@ -133,7 +134,7 @@ class CartSummarySection extends GetView<CartController> {
                   onPressed: controller.proceedToCheckout,
                   style: AppTheme.primaryButtonStyle,
                   child: Text(
-                    'Checkout',
+                    TranslationHelper.tr('checkout'),
                     style: AppTheme.buttonTextStyle.copyWith(
                       color: AppColors.searchIconColor,
                     ),
