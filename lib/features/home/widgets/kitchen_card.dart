@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
+import 'package:mrsheaf/core/widgets/app_card.dart';
 
 class KitchenCard extends StatelessWidget {
   final Map<String, dynamic> kitchen;
@@ -11,28 +12,8 @@ class KitchenCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 182,
-      height: 223,
+    return KitchenGradientCard(
       margin: const EdgeInsets.only(right: 16),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(32),
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            Colors.black.withOpacity(0.2),
-            Colors.black.withOpacity(0.6),
-          ],
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF2D5F8B).withOpacity(0.2),
-            blurRadius: 14,
-            offset: const Offset(0, 0),
-          ),
-        ],
-      ),
       child: Stack(
         children: [
           // Background image placeholder
@@ -40,21 +21,11 @@ class KitchenCard extends StatelessWidget {
             child: ClipRRect(
               borderRadius: BorderRadius.circular(32),
               child: Container(
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Color(0xFFA44502), // Brown gradient from Figma
-                      Color(0xFF8F3A02),
-                    ],
-                  ),
-                ),
                 child: const Center(
                   child: Icon(
                     Icons.restaurant,
                     size: 60,
-                    color: Colors.white54,
+                    color: AppColors.textLightColor,
                   ),
                 ),
               ),
