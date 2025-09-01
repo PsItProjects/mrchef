@@ -22,7 +22,7 @@ class KitchenCard extends StatelessWidget {
           snackPosition: SnackPosition.BOTTOM,
         );
       },
-        child: Padding(
+      child: Padding(
           padding: const EdgeInsets.all(8.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.end,
@@ -84,7 +84,6 @@ class KitchenCard extends StatelessWidget {
             ],
           ),
         ),
-      ),
     );
   }
 }

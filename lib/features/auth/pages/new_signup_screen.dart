@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/features/auth/controllers/new_signup_controller.dart';
 import 'package:mrsheaf/core/routes/app_routes.dart';
 import 'package:segmented_button_slide/segmented_button_slide.dart';
@@ -424,11 +425,6 @@ class NewSignupScreen extends StatelessWidget {
                 color: controller.agreeToTerms.value
                     ? AppColors.searchIconColor
                     : AppColors.textLightColor,
-              ),
-                    ? Color(0xFF592E2C)
-                    : Colors.white,
-                letterSpacing: -0.005,
-                height: 1.45,
               ),
             ),
           ),
