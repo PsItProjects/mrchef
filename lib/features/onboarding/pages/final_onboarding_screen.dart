@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mrsheaf/core/routes/app_routes.dart';
+import 'package:mrsheaf/core/theme/app_theme.dart';
 
 class FinalOnboardingScreen extends StatelessWidget {
   const FinalOnboardingScreen({super.key});
@@ -11,7 +12,7 @@ class FinalOnboardingScreen extends StatelessWidget {
     final screenWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
-      backgroundColor: Colors.white, // White background as per Figma
+      backgroundColor: AppColors.backgroundColor,
       body: SafeArea(
         child: Stack(
           children: [
@@ -24,7 +25,7 @@ class FinalOnboardingScreen extends StatelessWidget {
                 height: screenWidth * 2.03,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Color(0xFFFCE167), // Light yellow from Figma
+                  color: AppColors.favoriteButtonColor,
                 ),
               ),
             ),
@@ -176,25 +177,15 @@ class FinalOnboardingScreen extends StatelessWidget {
                       children: [
                         Text(
                           'Ready to Start?',
-                          style: TextStyle(
-                            fontFamily: 'Lato',
-                            fontWeight: FontWeight.w700,
-                            fontSize: 32,
-                            color: Color(0xFF693E28), // Brown color from Figma
-                            letterSpacing: -0.01,
-                            height: 1.5,
+                          style: AppTheme.headingStyle.copyWith(
+                            color: AppColors.brownTextColor,
                           ),
                         ),
                         SizedBox(height: 8),
                         Text(
                           'Join now and embark on your journey with delightful flavors and a diverse selection!',
-                          style: TextStyle(
-                            fontFamily: 'Lato',
-                            fontWeight: FontWeight.w600,
-                            fontSize: 18,
-                            color: Color(0xFF999999), // Grey color from Figma
-                            letterSpacing: -0.005,
-                            height: 1.45,
+                          style: AppTheme.subheadingStyle.copyWith(
+                            color: AppColors.lightGreyTextColor,
                           ),
                         ),
                       ],
@@ -207,27 +198,13 @@ class FinalOnboardingScreen extends StatelessWidget {
                         // Login button
                         Container(
                           width: 380,
-                          // height: 50,
                           child: ElevatedButton(
                             onPressed: () => Get.toNamed(AppRoutes.LOGIN),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor:
-                                  Color(0xFFFACD02), // Yellow from Figma
-                              foregroundColor:
-                                  Color(0xFF592E2C), // Dark brown from Figma
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              elevation: 0,
-                            ),
+                            style: AppTheme.primaryButtonStyle,
                             child: Text(
                               'Login',
-                              style: TextStyle(
-                                fontFamily: 'Lato',
-                                fontWeight: FontWeight.w700,
-                                fontSize: 18,
-                                letterSpacing: -0.005,
-                                height: 1.45,
+                              style: AppTheme.buttonTextStyle.copyWith(
+                                color: AppColors.searchIconColor,
                               ),
                             ),
                           ),
@@ -236,27 +213,13 @@ class FinalOnboardingScreen extends StatelessWidget {
                         // Sign up button
                         Container(
                           width: 380,
-                          // height: 50,
                           child: OutlinedButton(
                             onPressed: () => Get.toNamed(AppRoutes.SIGNUP),
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor:
-                                  Color(0xFFFACD02), // Yellow from Figma
-                              backgroundColor: Colors.white,
-                              side: BorderSide(
-                                  color: Color(0xFFFACD02), width: 2),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                            ),
+                            style: AppTheme.secondaryButtonStyle,
                             child: Text(
                               'Sign up',
-                              style: TextStyle(
-                                fontFamily: 'Lato',
-                                fontWeight: FontWeight.w700,
-                                fontSize: 18,
-                                letterSpacing: -0.005,
-                                height: 1.45,
+                              style: AppTheme.buttonTextStyle.copyWith(
+                                color: AppColors.primaryColor,
                               ),
                             ),
                           ),

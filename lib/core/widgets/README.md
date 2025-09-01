@@ -4,7 +4,42 @@ This directory contains reusable UI components that provide consistent styling a
 
 ## 🎨 Available Widgets
 
-### 1. **AppCard**
+### 1. **Buttons (app_button.dart)**
+Comprehensive button system with multiple variants.
+
+```dart
+AppButton(
+  text: 'Primary Button',
+  onPressed: () => doSomething(),
+  type: AppButtonType.primary,
+)
+
+AppSmallButton(text: 'Small', onPressed: () {})
+AppIconButton(icon: Icons.favorite, onPressed: () {})
+```
+
+**Button Types:**
+- `AppButtonType.primary` - Main action buttons
+- `AppButtonType.secondary` - Secondary actions
+- `AppButtonType.danger` - Destructive actions
+- `AppButtonType.success` - Positive actions
+- `AppButtonType.outline` - Outlined style
+
+### 2. **Text Fields (app_text_field.dart)**
+Form input components with consistent styling.
+
+```dart
+AppTextField(
+  label: 'Email',
+  hintText: 'Enter your email',
+  controller: emailController,
+)
+
+AppPasswordField(label: 'Password')
+AppPhoneField(label: 'Phone Number')
+```
+
+### 3. **Cards (app_card.dart)**
 Flexible card component with consistent styling and shadows.
 
 ```dart
@@ -96,7 +131,57 @@ TabIndicator(
 )
 ```
 
-### 7. **Theme Controls**
+### 7. **Social Buttons (social_button.dart)**
+Social media login buttons with platform-specific styling.
+
+```dart
+SocialButton(
+  platform: SocialPlatform.facebook,
+  onTap: () => loginWithFacebook(),
+)
+
+SocialButtonRow(
+  onFacebookTap: () => loginWithFacebook(),
+  onGoogleTap: () => loginWithGoogle(),
+)
+
+SocialSignInSection(
+  title: 'Or continue with',
+  onFacebookTap: () => loginWithFacebook(),
+  onGoogleTap: () => loginWithGoogle(),
+)
+```
+
+### 8. **Layout Components (app_layout.dart)**
+Common layout patterns and containers.
+
+```dart
+AppScaffold(
+  title: 'Page Title',
+  body: YourContent(),
+  showBackButton: true,
+)
+
+AppSection(
+  title: 'Section Title',
+  child: YourContent(),
+)
+
+AppListTile(
+  leading: Icon(Icons.person),
+  title: Text('Profile'),
+  onTap: () => openProfile(),
+)
+
+AppEmptyState(
+  icon: Icons.shopping_cart,
+  title: 'No items found',
+  subtitle: 'Try adjusting your search',
+  action: AppButton(text: 'Retry', onPressed: () {}),
+)
+```
+
+### 9. **Theme Controls (theme_toggle_button.dart)**
 Components for theme management.
 
 ```dart

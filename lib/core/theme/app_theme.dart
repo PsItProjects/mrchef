@@ -65,6 +65,12 @@ class AppColors {
   // Gradient colors for various uses
   static const Color gradientStart = Color(0xFFFACD02);
   static const Color gradientEnd = Color(0xFFFFE066);
+
+  // Social media colors
+  static const Color socialFacebookColor = Color(0xFF1877F2);
+  static const Color socialGoogleColor = Color(0xFFEA4335);
+  static const Color socialAppleColor = Color(0xFF000000);
+  static const Color socialTwitterColor = Color(0xFF1DA1F2);
 }
 
 class AppTheme {
