@@ -1,7 +1,10 @@
 // Core reusable widgets
+export 'app_animations.dart';
 export 'app_button.dart';
 export 'app_card.dart';
 export 'app_layout.dart';
+export 'app_loading.dart';
+export 'app_notifications.dart';
 export 'app_search_bar.dart';
 export 'app_text_field.dart';
 export 'circular_icon_button.dart';

@@ -190,6 +190,96 @@ ThemeToggleButton() // Simple toggle button
 ThemeSelector() // Full theme selection widget
 ```
 
+### 10. **Animations (app_animations.dart)**
+Smooth animations for better user experience.
+
+```dart
+FadeInAnimation(
+  duration: Duration(milliseconds: 500),
+  child: YourWidget(),
+)
+
+SlideInAnimation(
+  begin: Offset(0.0, 1.0),
+  child: YourWidget(),
+)
+
+ScaleAnimation(
+  curve: Curves.elasticOut,
+  child: YourWidget(),
+)
+
+AnimatedListItem(
+  index: 0,
+  child: YourListItem(),
+)
+
+ShimmerLoading(
+  child: YourSkeletonWidget(),
+)
+
+BounceAnimation(
+  onTap: () => handleTap(),
+  child: YourButton(),
+)
+```
+
+### 11. **Loading States (app_loading.dart)**
+Comprehensive loading and skeleton components.
+
+```dart
+AppLoading(message: 'Loading...')
+
+AppSkeletonLoader(width: 200, height: 20)
+
+ProductCardSkeleton()
+KitchenCardSkeleton()
+ListTileSkeleton()
+
+AppLoadingOverlay(
+  isLoading: true,
+  child: YourContent(),
+)
+
+PullToRefreshWrapper(
+  onRefresh: () async => await refreshData(),
+  child: YourScrollableContent(),
+)
+```
+
+### 12. **Notifications (app_notifications.dart)**
+Toast notifications and dialogs.
+
+```dart
+// Notifications
+AppNotifications.showSuccess('Success message');
+AppNotifications.showError('Error message');
+AppNotifications.showWarning('Warning message');
+AppNotifications.showInfo('Info message');
+
+// Dialogs
+final confirmed = await AppDialog.showConfirmation(
+  title: 'Delete Item',
+  message: 'Are you sure?',
+);
+
+await AppDialog.showAlert(
+  title: 'Information',
+  message: 'This is an alert',
+);
+
+final input = await AppDialog.showInput(
+  title: 'Enter Name',
+  validator: Validators.name,
+);
+
+// Bottom Sheets
+await AppBottomSheet.show(
+  title: 'Options',
+  content: YourBottomSheetContent(),
+);
+```
+
 ## 🎯 Design Principles
 
 ### Consistency
@@ -266,3 +356,92 @@ Modify `AppTheme` class to change global styling:
 ## 📱 Examples
 
 Check the `features/` directory for real-world usage examples of these widgets in action.
+
+## 🛠️ Utilities
+
+### **Validators (core/utils/validators.dart)**
+Comprehensive form validation functions.
+
+```dart
+// Email validation
+String? emailError = Validators.email('user@example.com');
+
+// Password validation (8+ chars, uppercase, lowercase, number)
+String? passwordError = Validators.password('MyPassword123');
+
+// Phone validation (Saudi format)
+String? phoneError = Validators.phoneNumber('501234567');
+
+// Name validation
+String? nameError = Validators.name('John Doe');
+
+// Combine multiple validators
+String? error = Validators.combine(value, [
+  Validators.required,
+  (v) => Validators.minLength(v, 3, 'Name'),
+]);
+```
+
+### **App Helpers (core/utils/app_helpers.dart)**
+Utility functions for common tasks.
+
+```dart
+// Date formatting
+String formatted = AppHelpers.formatDate(DateTime.now());
+String timeAgo = AppHelpers.timeAgo(DateTime.now().subtract(Duration(hours: 2)));
+
+// String manipulation
+String capitalized = AppHelpers.capitalize('hello world');
+String truncated = AppHelpers.truncate('Long text...', 10);
+
+// Number formatting
+String currency = AppHelpers.formatCurrency(99.99);
+String number = AppHelpers.formatNumber(1234567);
+
+// Device info
+bool isMobile = AppHelpers.isMobile;
+double screenWidth = AppHelpers.screenWidth;
+
+// URL launching
+await AppHelpers.launchURL('https://example.com');
+await AppHelpers.launchEmail('support@example.com');
+await AppHelpers.launchPhone('+966501234567');
+
+// Haptic feedback
+AppHelpers.lightHaptic();
+AppHelpers.mediumHaptic();
+
+// Color manipulation
+Color darker = AppHelpers.darken(Colors.blue, 0.2);
+Color lighter = AppHelpers.lighten(Colors.blue, 0.2);
+```
+
+### **App Constants (core/utils/app_constants.dart)**
+Centralized constants and configuration.
+
+```dart
+// Design constants
+double padding = AppConstants.defaultPadding;
+Duration animation = AppConstants.normalAnimation;
+
+// Validation
+bool isValidEmail = AppConstants.isValidEmail('test@example.com');
+bool isMobileScreen = AppConstants.isMobile(screenWidth);
+
+// Formatting
+String formatted = AppConstants.formatCurrency(99.99);
+String phone = AppConstants.formatPhone('501234567');
+```
+
+## 🎯 **Production Ready Features**
+
+✅ **Complete Component Library** - 50+ reusable widgets
+✅ **Advanced Animations** - Smooth transitions and effects
+✅ **Loading States** - Skeletons and progress indicators
+✅ **Form Validation** - Comprehensive validation system
+✅ **Notifications** - Toast messages and dialogs
+✅ **Theme System** - Light/dark mode with persistence
+✅ **Utility Functions** - Helpers for common tasks
+✅ **Constants Management** - Centralized configuration
+✅ **Type Safety** - Proper enums and interfaces
+✅ **Documentation** - Complete usage examples

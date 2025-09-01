@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mrsheaf/core/widgets/index.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
+import 'package:mrsheaf/core/utils/index.dart';
 
 /// This file demonstrates how to use all the reusable widgets
 /// It can be used as a reference for developers
@@ -231,6 +232,186 @@ class _WidgetShowcaseState extends State<WidgetShowcase> {
                     onPressed: () => _showSnackBar('Browse products'),
                   ),
                 ),
+              ),
+            ),
+
+            // Animations Section
+            AppSection(
+              title: 'Animations',
+              child: Column(
+                children: [
+                  FadeInAnimation(
+                    child: Container(
+                      width: double.infinity,
+                      height: 60,
+                      decoration: BoxDecoration(
+                        color: AppColors.primaryColor,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Center(
+                        child: Text('Fade In Animation'),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  SlideInAnimation(
+                    begin: const Offset(1.0, 0.0),
+                    child: Container(
+                      width: double.infinity,
+                      height: 60,
+                      decoration: BoxDecoration(
+                        color: AppColors.successColor,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Center(
+                        child: Text('Slide In Animation', style: TextStyle(color: Colors.white)),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  ScaleAnimation(
+                    child: Container(
+                      width: double.infinity,
+                      height: 60,
+                      decoration: BoxDecoration(
+                        color: AppColors.errorColor,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Center(
+                        child: Text('Scale Animation', style: TextStyle(color: Colors.white)),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // Loading States Section
+            AppSection(
+              title: 'Loading States',
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: AppSkeletonLoader(width: double.infinity, height: 60),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: AppSkeletonLoader(width: double.infinity, height: 60),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  const ProductCardSkeleton(),
+                  const SizedBox(height: 12),
+                  const ListTileSkeleton(),
+                ],
+              ),
+            ),
+
+            // Notifications Section
+            AppSection(
+              title: 'Notifications',
+              child: Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  AppSmallButton(
+                    text: 'Success',
+                    type: AppButtonType.success,
+                    onPressed: () => AppNotifications.showSuccess('Operation completed successfully!'),
+                  ),
+                  AppSmallButton(
+                    text: 'Error',
+                    type: AppButtonType.danger,
+                    onPressed: () => AppNotifications.showError('Something went wrong!'),
+                  ),
+                  AppSmallButton(
+                    text: 'Warning',
+                    onPressed: () => AppNotifications.showWarning('Please check your input!'),
+                  ),
+                  AppSmallButton(
+                    text: 'Info',
+                    type: AppButtonType.secondary,
+                    onPressed: () => AppNotifications.showInfo('Here is some information'),
+                  ),
+                ],
+              ),
+            ),
+
+            // Dialogs Section
+            AppSection(
+              title: 'Dialogs',
+              child: Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  AppSmallButton(
+                    text: 'Confirm',
+                    onPressed: () async {
+                      final result = await AppDialog.showConfirmation(
+                        title: 'Delete Item',
+                        message: 'Are you sure you want to delete this item?',
+                      );
+                      if (result == true) {
+                        AppNotifications.showSuccess('Item deleted!');
+                      }
+                    },
+                  ),
+                  AppSmallButton(
+                    text: 'Alert',
+                    onPressed: () => AppDialog.showAlert(
+                      title: 'Information',
+                      message: 'This is an alert dialog',
+                    ),
+                  ),
+                  AppSmallButton(
+                    text: 'Input',
+                    onPressed: () async {
+                      final result = await AppDialog.showInput(
+                        title: 'Enter Name',
+                        hintText: 'Your name',
+                        validator: Validators.name,
+                      );
+                      if (result != null) {
+                        AppNotifications.showInfo('Hello, $result!');
+                      }
+                    },
+                  ),
+                ],
+              ),
+            ),
+
+            // Validation Section
+            AppSection(
+              title: 'Validation Examples',
+              child: Column(
+                children: [
+                  AppTextField(
+                    label: 'Email with Validation',
+                    hintText: 'Enter your email',
+                    keyboardType: TextInputType.emailAddress,
+                    onChanged: (value) {
+                      final error = Validators.email(value);
+                      if (error != null) {
+                        // Handle validation error
+                      }
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  AppTextField(
+                    label: 'Phone with Validation',
+                    hintText: 'Enter phone number',
+                    keyboardType: TextInputType.phone,
+                    onChanged: (value) {
+                      final error = Validators.phoneNumber(value);
+                      if (error != null) {
+                        // Handle validation error
+                      }
+                    },
+                  ),
+                ],
               ),
             ),
 
