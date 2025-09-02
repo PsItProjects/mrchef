@@ -20,6 +20,8 @@ import 'package:mrsheaf/features/product_details/pages/product_details_screen.da
 import 'package:mrsheaf/features/product_details/bindings/product_details_binding.dart';
 import 'package:mrsheaf/features/home/pages/categories_screen.dart';
 import 'package:mrsheaf/features/categories/bindings/categories_binding.dart';
+import 'package:mrsheaf/features/store_details/pages/store_details_screen.dart';
+import 'package:mrsheaf/features/store_details/bindings/store_details_binding.dart';
 
 class AppPages {
   static const INITIAL = AppRoutes.SPLASH;
@@ -98,6 +100,12 @@ class AppPages {
       page: () => const CategoriesScreen(),
       binding: CategoriesBinding(),
       transition: Transition.fadeIn,
+    ),
+    GetPage(
+      name: AppRoutes.STORE_DETAILS,
+      page: () => const StoreDetailsScreen(),
+      binding: StoreDetailsBinding(),
+      transition: Transition.rightToLeft,
     ),
   ];
 }

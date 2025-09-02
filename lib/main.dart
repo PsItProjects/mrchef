@@ -35,7 +35,18 @@ class MyApp extends StatelessWidget {
           ? const Locale('ar', 'SA')
           : const Locale('en', 'US');
 
-      return GetMaterialApp(
+      return
+        Listener(
+            onPointerUp: (_) {
+              print("SSSSSSS");
+              FocusScopeNode currentFocus = FocusScope.of(context);
+              if (!currentFocus.hasPrimaryFocus && currentFocus.focusedChild != null) {
+                currentFocus.focusedChild?.unfocus();
+              }
+            },
+            child:
+
+        GetMaterialApp(
         title: 'MrSheaf',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.lightTheme,
@@ -46,7 +57,9 @@ class MyApp extends StatelessWidget {
         translations: AppTranslations(),
         initialRoute: AppPages.INITIAL,
         getPages: AppPages.routes,
-      );
+      ));
+
+
     });
   }
 }

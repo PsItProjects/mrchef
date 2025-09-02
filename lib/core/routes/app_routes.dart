@@ -8,6 +8,7 @@ abstract class AppRoutes {
   static const HOME = '/home';
   static const PRODUCT_DETAILS = '/product-details';
   static const CATEGORIES = '/categories';
+  static const STORE_DETAILS = '/store-details';
 
   // Vendor onboarding routes
   static const VENDOR_STEP1 = '/vendor-step1';
