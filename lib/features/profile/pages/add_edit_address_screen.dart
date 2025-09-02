@@ -64,9 +64,9 @@ class AddEditAddressScreen extends StatelessWidget {
                             valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF592E2C)),
                           ),
                         )
-                      : const Text(
-                          'Save',
-                          style: TextStyle(
+                      : Text(
+                          'save'.tr,
+                          style: const TextStyle(
                             fontFamily: 'Lato',
                             fontWeight: FontWeight.w700,
                             fontSize: 18,

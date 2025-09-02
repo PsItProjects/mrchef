@@ -28,7 +28,7 @@ class EmptyFavoritesWidget extends GetView<FavoritesController> {
           Column(
             children: [
               Text(
-                'Start Favorite',
+                'start_favorite'.tr,
                 style: AppTheme.subheadingStyle.copyWith(
                   color: AppColors.darkTextColor,
                 ),
@@ -39,7 +39,7 @@ class EmptyFavoritesWidget extends GetView<FavoritesController> {
               Container(
                 width: 285,
                 child: Text(
-                  'Save Store and Product, So that you can reach it as soon as possible',
+                  'save_store_and_product_message'.tr,
                   textAlign: TextAlign.center,
                   style: AppTheme.searchTextStyle,
                 ),
@@ -94,7 +94,7 @@ class EmptyFavoritesWidget extends GetView<FavoritesController> {
                 elevation: 0,
               ),
               child: Text(
-                'Add Sample Favorites (Test)',
+                'add_sample_favorites_test'.tr,
                 style: AppTheme.buttonTextStyle,
               ),
             ),

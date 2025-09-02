@@ -11,10 +11,10 @@ class EmptyAddressesWidget extends GetView<ShippingAddressesController> {
   Widget build(BuildContext context) {
     return AppEmptyState(
       icon: Icons.location_on_outlined,
-      title: 'No Addresses Added',
-      subtitle: 'Add your delivery addresses to make ordering easier and faster',
+      title: 'no_addresses_added'.tr,
+      subtitle: 'add_delivery_address_message'.tr,
       action: AppButton(
-        text: 'Add Address',
+        text: 'add_address'.tr,
         onPressed: controller.addNewAddress,
         isFullWidth: false,
         width: 200,

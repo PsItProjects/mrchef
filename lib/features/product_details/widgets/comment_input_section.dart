@@ -13,9 +13,9 @@ class CommentInputSection extends GetView<ProductDetailsController> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Add a comment',
-            style: TextStyle(
+          Text(
+            'add_comment'.tr,
+            style: const TextStyle(
               fontFamily: 'Lato',
               fontWeight: FontWeight.w600,
               fontSize: 16,

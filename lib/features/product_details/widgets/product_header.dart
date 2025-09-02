@@ -15,12 +15,27 @@ class ProductHeader extends GetView<ProductDetailsController> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           // Back button
+          // if is arabic rotate it 180 degrees
+          if (Get.locale == const Locale('ar')) ...[
+            // RotatedBox
+            RotatedBox(
+              quarterTurns: 2,
+              child: CircularIconButton(
+                iconPath: 'assets/icons/arrow_left_icon.svg',
+                onTap: controller.goBack,
+                backgroundColor: AppColors.favoriteButtonColor,
+                iconColor: AppColors.darkTextColor,
+              ),
+            ),
+          ]
+          else ...[
           CircularIconButton(
             iconPath: 'assets/icons/arrow_left_icon.svg',
             onTap: controller.goBack,
             backgroundColor: AppColors.favoriteButtonColor,
             iconColor: AppColors.darkTextColor,
-          ),
+          )
+          ],
 
           // Favorite button
           Obx(() => CircularIconButton(

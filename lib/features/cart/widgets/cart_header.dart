@@ -29,9 +29,9 @@ class CartHeader extends StatelessWidget {
           ),
           
           // Title
-          const Text(
-            'My Cart',
-            style: TextStyle(
+          Text(
+            'cart'.tr,
+            style: const TextStyle(
               fontFamily: 'Lato',
               fontWeight: FontWeight.w600,
               fontSize: 16,

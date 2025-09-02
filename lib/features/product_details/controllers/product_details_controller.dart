@@ -8,6 +8,8 @@ import 'package:mrsheaf/features/cart/controllers/cart_controller.dart';
 import 'package:mrsheaf/core/services/language_service.dart';
 import 'package:mrsheaf/features/product_details/services/product_details_service.dart';
 
+import '../../../core/routes/app_routes.dart';
+
 class ProductDetailsController extends GetxController {
   // Services
   final ProductDetailsService _productDetailsService = ProductDetailsService();
@@ -208,11 +210,12 @@ class ProductDetailsController extends GetxController {
   }
 
   void goToStore() {
-    Get.snackbar(
-      'Go to Store',
-      'Navigating to store page...',
-      snackPosition: SnackPosition.BOTTOM,
-    );
+    Get.toNamed(AppRoutes.STORE_DETAILS, parameters: {'storeId':  '1'});
+    // Get.snackbar(
+    //   'Go to Store',
+    //   'Navigating to store page...',
+    //   snackPosition: SnackPosition.BOTTOM,
+    // );
   }
 
   void updateComment(String value) {

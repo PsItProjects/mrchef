@@ -13,7 +13,7 @@ class EditProfileForm extends GetView<EditProfileController> {
         children: [
           // English Name field
           _buildInputField(
-            label: 'Full Name (English)',
+            label: 'full_name'.tr,
             controller: controller.fullNameController,
             validator: controller.validateFullName,
           ),
@@ -22,7 +22,7 @@ class EditProfileForm extends GetView<EditProfileController> {
 
           // Arabic Name field
           _buildInputField(
-            label: 'Full Name (Arabic)',
+            label: 'full_name_arabic'.tr,
             controller: controller.arabicNameController,
             validator: controller.validateArabicName,
           ),
@@ -31,7 +31,7 @@ class EditProfileForm extends GetView<EditProfileController> {
 
           // Email field
           _buildInputField(
-            label: 'Email',
+            label: 'email'.tr,
             controller: controller.emailController,
             validator: controller.validateEmail,
             keyboardType: TextInputType.emailAddress,

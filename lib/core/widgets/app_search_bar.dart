@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:get/get.dart';
 import 'package:mrsheaf/core/localization/translation_helper.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 
@@ -14,7 +15,7 @@ class AppSearchBar extends StatelessWidget {
 
   const AppSearchBar({
     super.key,
-    this.hintText = 'Search products',
+    this.hintText = '',
     this.onTap,
     this.onSearchTap,
     this.iconPath = 'assets/icons/search_icon.svg',
@@ -70,7 +71,7 @@ class AppSearchBar extends StatelessWidget {
               // Search text
               Expanded(
                 child: Text(
-                  hintText,
+                  hintText.isEmpty ? 'search_products'.tr : hintText,
                   style: AppTheme.searchTextStyle,
                 ),
               ),

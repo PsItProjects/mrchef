@@ -56,7 +56,7 @@ class SettingsMenuList extends GetView<SettingsController> {
           
           // Clear app cache
           Obx(() => SettingsMenuItem(
-            title: 'Clear app cache',
+            title: 'clear_app_cache'.tr,
             subtitle: controller.cacheSize,
             onTap: controller.clearAppCache,
             showDivider: true,
@@ -64,7 +64,7 @@ class SettingsMenuList extends GetView<SettingsController> {
           
           // Rate the app
           SettingsMenuItem(
-            title: 'Rate the app',
+            title: 'rate_the_app'.tr,
             hasArrow: true,
             onTap: controller.rateTheApp,
             showDivider: true,
@@ -72,7 +72,7 @@ class SettingsMenuList extends GetView<SettingsController> {
           
           // About Heba App
           SettingsMenuItem(
-            title: 'About Heba App',
+            title: 'about_heba_app'.tr,
             hasArrow: true,
             onTap: controller.showAboutApp,
             showDivider: true,
@@ -80,7 +80,7 @@ class SettingsMenuList extends GetView<SettingsController> {
           
           // Invite Friends
           SettingsMenuItem(
-            title: 'Invite Friends',
+            title: 'invite_friends'.tr,
             hasArrow: true,
             onTap: controller.inviteFriends,
             showDivider: false,

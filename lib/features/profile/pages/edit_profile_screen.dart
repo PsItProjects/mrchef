@@ -61,9 +61,9 @@ class EditProfileScreen extends GetView<EditProfileController> {
                                   valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                                 ),
                               )
-                            : const Text(
-                                'Save',
-                                style: TextStyle(
+                            : Text(
+                                'save'.tr,
+                                style: const TextStyle(
                                   fontFamily: 'Lato',
                                   fontWeight: FontWeight.w700,
                                   fontSize: 18,

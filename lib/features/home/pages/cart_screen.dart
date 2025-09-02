@@ -35,9 +35,9 @@ class CartScreen extends GetView<CartController> {
                         child: Obx(() => Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            const Text(
-                              'Master chef',
-                              style: TextStyle(
+                            Text(
+                              'master_chef'.tr,
+                              style: const TextStyle(
                                 fontFamily: 'Lato',
                                 fontWeight: FontWeight.w700,
                                 fontSize: 18,

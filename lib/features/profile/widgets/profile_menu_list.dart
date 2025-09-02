@@ -49,8 +49,8 @@ class ProfileMenuList extends GetView<ProfileController> {
         
         // Setting
         ProfileMenuItem(
-          title: 'Setting',
-          subtitle: 'Notification, Password, FAQ, Content',
+          title: 'settings'.tr,
+          subtitle: 'notification_password_faq_content'.tr,
           onTap: controller.navigateToSettings,
         ),
         
@@ -58,7 +58,7 @@ class ProfileMenuList extends GetView<ProfileController> {
         
         // Log out
         ProfileMenuItem(
-          title: 'Log out',
+          title: 'logout'.tr,
           subtitle: null,
           isLogout: true,
           onTap: controller.logout,

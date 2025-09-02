@@ -26,9 +26,9 @@ class EditProfileHeader extends StatelessWidget {
           ),
           
           // Title
-          const Text(
-            'Edit Profile',
-            style: TextStyle(
+          Text(
+            'edit_profile'.tr,
+            style: const TextStyle(
               fontFamily: 'Lato',
               fontWeight: FontWeight.w600,
               fontSize: 16,
