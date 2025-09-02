@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/localization/translation_helper.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/features/cart/controllers/cart_controller.dart';
 import 'package:mrsheaf/features/cart/widgets/cart_header.dart';
@@ -45,7 +46,7 @@ class CartScreen extends GetView<CartController> {
                               ),
                             ),
                             Text(
-                              '${controller.totalItemsCount} Item${controller.totalItemsCount != 1 ? 's' : ''}',
+                              TranslationHelper.getQuantityText(controller.totalItemsCount, 'item'.tr),
                               style: const TextStyle(
                                 fontFamily: 'Lato',
                                 fontWeight: FontWeight.w700,

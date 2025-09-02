@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/localization/translation_helper.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/features/home/controllers/home_controller.dart';
 import 'package:mrsheaf/core/services/language_service.dart';
@@ -51,25 +52,23 @@ class SectionHeader extends GetView<HomeController> {
   }
 
   String _getLocalizedTitle(String language) {
-    final translations = {
-      'Kitchens': {
-        'ar': 'المطابخ',
-        'en': 'Kitchens',
-      },
-      'Best seller': {
-        'ar': 'الأكثر مبيعاً',
-        'en': 'Best seller',
-      },
-      'Back again': {
-        'ar': 'عاد مرة أخرى',
-        'en': 'Back again',
-      },
+    // Map English titles to translation keys
+    final titleKeys = {
+      'Kitchens': 'categories',
+      'Best seller': 'best_seller',
+      'Back again': 'recently',
+      'Featured Restaurants': 'featured_restaurants',
+      'Nearby Restaurants': 'nearby_restaurants',
+      'Popular Categories': 'popular_categories',
+      'Top Picks': 'top_picks',
+      'Special Offers': 'special_offers',
     };
 
-    return translations[title]?[language] ?? title;
+    final key = titleKeys[title];
+    return key != null ? key.tr : title;
   }
 
   String _getLocalizedSeeAll(String language) {
-    return language == 'ar' ? 'عرض الكل' : 'See All';
+    return 'see_all'.tr;
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/localization/translation_helper.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/features/categories/controllers/categories_controller.dart';
 
@@ -35,9 +36,9 @@ class CategoriesHeader extends GetView<CategoriesController> {
           ),
           
           // Categories title
-          const Text(
-            'Categories',
-            style: TextStyle(
+          Text(
+            'categories'.tr,
+            style: const TextStyle(
               fontFamily: 'Lato',
               fontWeight: FontWeight.w600,
               fontSize: 16,

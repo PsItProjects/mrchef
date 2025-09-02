@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/localization/translation_helper.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/features/cart/controllers/cart_controller.dart';
 
@@ -27,9 +28,9 @@ class EmptyCartWidget extends GetView<CartController> {
           // Empty cart text
           Column(
             children: [
-              const Text(
-                'Your cart are empty',
-                style: TextStyle(
+              Text(
+                'cart_empty'.tr,
+                style: const TextStyle(
                   fontFamily: 'Lato',
                   fontWeight: FontWeight.w700,
                   fontSize: 18,
@@ -37,12 +38,12 @@ class EmptyCartWidget extends GetView<CartController> {
                   letterSpacing: -0.005,
                 ),
               ),
-              
+
               const SizedBox(height: 8),
-              
-              const Text(
-                'Go to the Home to add your cart',
-                style: TextStyle(
+
+              Text(
+                'add_items_to_cart'.tr,
+                style: const TextStyle(
                   fontFamily: 'Lato',
                   fontWeight: FontWeight.w400,
                   fontSize: 14,
@@ -69,9 +70,9 @@ class EmptyCartWidget extends GetView<CartController> {
                 ),
                 elevation: 0,
               ),
-              child: const Text(
-                'Go to Home page',
-                style: TextStyle(
+              child: Text(
+                'continue_shopping'.tr,
+                style: const TextStyle(
                   fontFamily: 'Lato',
                   fontWeight: FontWeight.w700,
                   fontSize: 18,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/localization/app_translations.dart';
 import 'package:mrsheaf/core/routes/app_pages.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/core/services/app_service.dart';
@@ -28,7 +29,6 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final languageService = LanguageService.instance;
-    final themeService = ThemeService.instance;
 
     return Obx(() {
       final locale = languageService.currentLanguage == 'ar'
@@ -40,9 +40,10 @@ class MyApp extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         theme: AppTheme.lightTheme,
         darkTheme: AppTheme.darkTheme,
-        themeMode: themeService.themeMode,
+        themeMode: ThemeMode.system,
         locale: locale,
         fallbackLocale: const Locale('en', 'US'),
+        translations: AppTranslations(),
         initialRoute: AppPages.INITIAL,
         getPages: AppPages.routes,
       );

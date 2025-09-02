@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/localization/translation_helper.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/features/home/controllers/home_controller.dart';
 
@@ -29,9 +30,9 @@ class HomeHeader extends GetView<HomeController> {
           ),
           
           // Home title
-          const Text(
-            'Home',
-            style: TextStyle(
+          Text(
+            'home'.tr,
+            style: const TextStyle(
               fontFamily: 'Lato',
               fontWeight: FontWeight.w600,
               fontSize: 16,

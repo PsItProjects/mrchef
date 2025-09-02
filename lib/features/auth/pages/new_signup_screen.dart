@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/localization/translation_helper.dart';
+import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/features/auth/controllers/new_signup_controller.dart';
 import 'package:mrsheaf/core/routes/app_routes.dart';
 import 'package:segmented_button_slide/segmented_button_slide.dart';
@@ -91,7 +93,7 @@ class NewSignupScreen extends StatelessWidget {
                 children: [
                   // Title
                   Text(
-                    'Let\'s get started !',
+                    TranslationHelper.tr('get_started'),
                     style: TextStyle(
                       fontFamily: 'Lato',
                       fontWeight: FontWeight.w700,
@@ -129,7 +131,7 @@ class NewSignupScreen extends StatelessWidget {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Text(
-                              'Already have an account ? ',
+                              TranslationHelper.tr('already_have_account'),
                               style: TextStyle(
                                 fontFamily: 'Lato',
                                 fontWeight: FontWeight.w400,
@@ -140,7 +142,7 @@ class NewSignupScreen extends StatelessWidget {
                             GestureDetector(
                               onTap: () => Get.toNamed(AppRoutes.LOGIN),
                               child: Text(
-                                'Login',
+                                TranslationHelper.tr('login'),
                                 style: TextStyle(
                                   fontFamily: 'Lato',
                                   fontWeight: FontWeight.w700,
@@ -167,9 +169,9 @@ class NewSignupScreen extends StatelessWidget {
     return Obx(() => Container(
           height: 42,
           child: SegmentedButtonSlide(
-            entries: const [
-              SegmentedButtonSlideEntry(label: 'User'),
-              SegmentedButtonSlideEntry(label: 'Vendor'),
+            entries: [
+              SegmentedButtonSlideEntry(label: TranslationHelper.tr('customer')),
+              SegmentedButtonSlideEntry(label: TranslationHelper.tr('vendor')),
             ],
             selectedEntry: controller.isVendor.value ? 1 : 0,
             onChange: (index) => controller.toggleUserType(index == 1),
@@ -419,16 +421,11 @@ class NewSignupScreen extends StatelessWidget {
               elevation: 0,
             ),
             child: Text(
-              controller.isVendor.value ? 'Continue' : 'Sign Up',
+              controller.isVendor.value ? TranslationHelper.tr('continue') : TranslationHelper.tr('sign_up'),
               style: AppTheme.buttonTextStyle.copyWith(
                 color: controller.agreeToTerms.value
                     ? AppColors.searchIconColor
                     : AppColors.textLightColor,
-              ),
-                    ? Color(0xFF592E2C)
-                    : Colors.white,
-                letterSpacing: -0.005,
-                height: 1.45,
               ),
             ),
           ),

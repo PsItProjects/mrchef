@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:mrsheaf/core/theme/app_theme.dart';
+import 'package:mrsheaf/core/localization/translation_helper.dart';
+import 'package:mrsheaf/core/widgets/language_switcher.dart';
 
 class ProfileHeader extends StatelessWidget {
   const ProfileHeader({super.key});
@@ -34,9 +35,9 @@ class ProfileHeader extends StatelessWidget {
           ),
           
           // Title
-          const Text(
-            'Profile',
-            style: TextStyle(
+          Text(
+            TranslationHelper.tr('profile'),
+            style: const TextStyle(
               fontFamily: 'Lato',
               fontWeight: FontWeight.w600,
               fontSize: 16,
@@ -44,25 +45,10 @@ class ProfileHeader extends StatelessWidget {
             ),
           ),
           
-          // Search button
-          GestureDetector(
-            onTap: () {
-              // TODO: Implement search functionality
-              Get.snackbar(
-                'Search',
-                'Search functionality coming soon',
-                snackPosition: SnackPosition.BOTTOM,
-              );
-            },
-            child: Container(
-              width: 24,
-              height: 24,
-              child: Icon(
-                Icons.search,
-                size: 20,
-                color: const Color(0xFF262626),
-              ),
-            ),
+          // Language switcher
+          const LanguageSwitcher(
+            isCompact: true,
+            showLabel: false,
           ),
         ],
       ),

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 
 class AppColors {
   // Primary brand colors
@@ -71,6 +70,9 @@ class AppColors {
   static const Color socialGoogleColor = Color(0xFFEA4335);
   static const Color socialAppleColor = Color(0xFF000000);
   static const Color socialTwitterColor = Color(0xFF1DA1F2);
+
+  // Legacy support
+  static const Color splashBackgroundColor = backgroundColor;
 }
 
 class AppTheme {

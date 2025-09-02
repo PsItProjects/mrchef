@@ -3,7 +3,14 @@ import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ThemeService extends GetxService {
-  static ThemeService get instance => Get.find<ThemeService>();
+  static ThemeService get instance {
+    try {
+      return Get.find<ThemeService>();
+    } catch (e) {
+      Get.put(ThemeService());
+      return Get.find<ThemeService>();
+    }
+  }
   
   final _themeMode = ThemeMode.system.obs;
   ThemeMode get themeMode => _themeMode.value;

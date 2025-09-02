@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:mrsheaf/core/localization/translation_helper.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 
 class AppSearchBar extends StatelessWidget {
@@ -89,7 +90,7 @@ class AppSearchBarWithFilter extends StatelessWidget {
 
   const AppSearchBarWithFilter({
     super.key,
-    this.hintText = 'Search products',
+    required this.hintText,
     this.onTap,
     this.onFilterTap,
     this.padding,

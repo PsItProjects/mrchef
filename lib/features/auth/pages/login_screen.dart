@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/localization/translation_helper.dart';
 import 'package:mrsheaf/features/auth/controllers/login_controller.dart';
 import 'package:mrsheaf/core/routes/app_routes.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
@@ -79,7 +80,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   children: [
                     // Welcome text
                     Text(
-                      'Welcome Back 👋',
+                      '${TranslationHelper.tr('welcome')} 👋',
                       style: TextStyle(
                         fontFamily: 'Lato',
                         fontWeight: FontWeight.w700,
@@ -99,7 +100,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         children: [
                           // Label
                           Text(
-                            'Phone Number',
+                            TranslationHelper.tr('phone'),
                             style: TextStyle(
                               fontFamily: 'Lato',
                               fontWeight: FontWeight.w600,
@@ -178,7 +179,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                       color: Color(0xFF1C1C1C),
                                     ),
                                     decoration: InputDecoration(
-                                      hintText: '00 000 0000',
+                                      hintText: TranslationHelper.tr('enter_phone'),
                                       hintStyle: TextStyle(
                                         fontFamily: 'Lato',
                                         fontWeight: FontWeight.w400,
@@ -240,7 +241,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   elevation: 0,
                                 ),
                                 child: Text(
-                                  'Login',
+                                  TranslationHelper.tr('login'),
                                   style: AppTheme.buttonTextStyle.copyWith(
                                     color: controller.isPhoneNumberValid.value
                                         ? AppColors.searchIconColor
@@ -283,7 +284,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      'Don\'t have an account ?',
+                      TranslationHelper.tr('dont_have_account'),
                       style: TextStyle(
                         fontFamily: 'Lato',
                         fontWeight: FontWeight.w400,
@@ -296,7 +297,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     GestureDetector(
                       onTap: () => Get.toNamed(AppRoutes.SIGNUP),
                       child: Text(
-                        'Sign Up',
+                        TranslationHelper.tr('sign_up'),
                         style: TextStyle(
                           fontFamily: 'Lato',
                           fontWeight: FontWeight.w700,

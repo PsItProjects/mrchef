@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/localization/translation_helper.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/features/categories/controllers/categories_controller.dart';
 
@@ -19,7 +20,7 @@ class CategoryTabs extends GetView<CategoriesController> {
               child: Column(
                 children: [
                   Text(
-                    'Meals',
+                    'meal_types'.tr,
                     style: AppTheme.tabTextStyle.copyWith(
                       fontWeight: controller.currentTabIndex.value == 0
                           ? FontWeight.w400
@@ -53,7 +54,7 @@ class CategoryTabs extends GetView<CategoriesController> {
               child: Column(
                 children: [
                   Text(
-                    'Kitchens',
+                    'categories'.tr,
                     style: AppTheme.tabTextStyle.copyWith(
                       fontWeight: controller.currentTabIndex.value == 1
                           ? FontWeight.w400
