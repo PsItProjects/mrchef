@@ -23,11 +23,34 @@ class FavoriteProductModel {
       id: json['id'],
       name: json['name'],
       image: json['primary_image'] ?? json['image'],
-      price: json['price'].toDouble(),
-      availability: json['availability'] == 'available' 
-          ? ProductAvailability.available 
-          : ProductAvailability.outOfStock,
+      price: _parsePrice(json['price']),
+      availability: _parseAvailability(json['is_available'] ?? json['availability']),
     );
+  }
+
+  /// Parse price from different formats (String, int, double)
+  static double _parsePrice(dynamic price) {
+    if (price == null) return 0.0;
+    if (price is double) return price;
+    if (price is int) return price.toDouble();
+    if (price is String) {
+      return double.tryParse(price) ?? 0.0;
+    }
+    return 0.0;
+  }
+
+  /// Parse availability from different formats
+  static ProductAvailability _parseAvailability(dynamic availability) {
+    if (availability == null) return ProductAvailability.available;
+    if (availability is bool) {
+      return availability ? ProductAvailability.available : ProductAvailability.outOfStock;
+    }
+    if (availability is String) {
+      return availability.toLowerCase() == 'available'
+          ? ProductAvailability.available
+          : ProductAvailability.outOfStock;
+    }
+    return ProductAvailability.available;
   }
 
   Map<String, dynamic> toJson() {

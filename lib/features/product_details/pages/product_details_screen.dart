@@ -41,32 +41,32 @@ class ProductDetailsScreen extends GetView<ProductDetailsController> {
                   // Header with back and favorite buttons
                   const ProductHeader(),
                   
-                  const SizedBox(height: 32),
-                  
+                  const SizedBox(height: 16),
+
                   // Product image section with size and quantity selectors
                   const ProductImageSection(),
-                  
-                  const SizedBox(height: 32),
-                  
+
+                  const SizedBox(height: 16),
+
                   // Product images carousel
                   const ProductImagesCarousel(),
-                  
-                  const SizedBox(height: 32),
+
+                  const SizedBox(height: 16),
                   
                   // Product info section
                   const ProductInfoSection(),
-                  
-                  const SizedBox(height: 24),
-                  
+
+                  const SizedBox(height: 16),
+
                   // Additional options section
                   const AdditionalOptionsSection(),
 
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 16),
 
                   // Comment input section
                   const CommentInputSection(),
 
-                  const SizedBox(height: 100), // Space for bottom section
+                  const SizedBox(height: 20), // Space for bottom section
                 ],
               ),
             ),

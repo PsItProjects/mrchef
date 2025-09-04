@@ -16,15 +16,19 @@ class ProductImageSection extends GetView<ProductDetailsController> {
           // Size selector
           Obx(() => Column(
             children: [
-              ...(controller.product.value?.sizes ?? ['S', 'M', 'L']).map((size) =>
-                Obx(() => GestureDetector(
-                  onTap: () => controller.selectSize(size),
+              ...((controller.product.value?.rawSizes ?? []) as List)
+                  .map((sizeObj) {
+                final sizeName = _getSizeName(sizeObj);
+                final sizeData = _getSizeData(sizeObj);
+
+                return Obx(() => GestureDetector(
+                  onTap: () => controller.selectSize(sizeName),
                   child: Container(
                     width: 40,
                     height: 40,
                     margin: const EdgeInsets.only(bottom: 24),
                     decoration: BoxDecoration(
-                      color: controller.selectedSize.value == size
+                      color: controller.selectedSize.value == sizeName
                           ? const Color(0xFFFCE167) // Yellow background when selected
                           : const Color(0xFFF1F6F9).withOpacity(0.1),
                       borderRadius: BorderRadius.circular(40),
@@ -38,20 +42,20 @@ class ProductImageSection extends GetView<ProductDetailsController> {
                     ),
                     child: Center(
                       child: Text(
-                        size,
+                        sizeData['letter'],
                         style: TextStyle(
                           fontFamily: 'Lato',
                           fontWeight: FontWeight.w700,
                           fontSize: 24,
-                          color: controller.selectedSize.value == size
+                          color: controller.selectedSize.value == sizeName
                               ? const Color(0xFF592E2C)
                               : const Color(0xFFC2CECD),
                         ),
                       ),
                     ),
                   ),
-                )),
-              ),
+                ));
+              }),
             ],
           )),
           
@@ -194,5 +198,63 @@ class ProductImageSection extends GetView<ProductDetailsController> {
         ],
       ),
     );
+  }
+
+  /// Extract size name from size object or string
+  String _getSizeName(dynamic sizeObj) {
+    if (sizeObj is Map) {
+      final nameField = sizeObj['name'];
+      if (nameField is Map) {
+        return nameField['current'] ?? nameField['ar'] ?? nameField['en'] ?? nameField.values.first?.toString() ?? '';
+      }
+      return nameField?.toString() ?? '';
+    }
+    return sizeObj.toString();
+  }
+
+  /// Get size data for display
+  Map<String, dynamic> _getSizeData(dynamic sizeObj) {
+    String sizeName;
+    double priceModifier = 0.0;
+
+    if (sizeObj is Map) {
+      final nameField = sizeObj['name'];
+      if (nameField is Map) {
+        sizeName = nameField['current'] ?? nameField['ar'] ?? nameField['en'] ?? nameField.values.first?.toString() ?? '';
+      } else {
+        sizeName = nameField?.toString() ?? '';
+      }
+      priceModifier = (sizeObj['price_modifier'] ?? 0).toDouble();
+    } else {
+      sizeName = sizeObj.toString();
+    }
+
+    final nameLower = sizeName.toLowerCase();
+    // Common mappings
+    if (nameLower == 'صغير' || nameLower == 'small' || nameLower == 's') {
+      return {'letter': 'S', 'name': sizeName, 'priceModifier': priceModifier};
+    }
+    if (nameLower == 'متوسط' || nameLower == 'وسط' || nameLower == 'medium' || nameLower == 'm') {
+      return {'letter': 'M', 'name': sizeName, 'priceModifier': priceModifier};
+    }
+    if (nameLower == 'كبير' || nameLower == 'large' || nameLower == 'l') {
+      return {'letter': 'L', 'name': sizeName, 'priceModifier': priceModifier};
+    }
+    if (nameLower == 'عائلي' || nameLower == 'extra_large' || nameLower == 'xl') {
+      return {'letter': 'XL', 'name': sizeName, 'priceModifier': priceModifier};
+    }
+
+    // If it contains a number like "3 قطع" or "5 Pieces", take the first number
+    final numberMatch = RegExp(r"[0-9]+").firstMatch(sizeName);
+    if (numberMatch != null) {
+      return {'letter': numberMatch.group(0)!, 'name': sizeName, 'priceModifier': priceModifier};
+    }
+
+    // Default: first character
+    return {
+      'letter': sizeName.isNotEmpty ? sizeName.characters.first.toUpperCase() : '?',
+      'name': sizeName,
+      'priceModifier': priceModifier,
+    };
   }
 }

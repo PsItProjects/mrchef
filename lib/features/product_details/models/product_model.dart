@@ -14,6 +14,7 @@ class ProductModel {
   final int reviewCount;
   final String productCode;
   final List<String> sizes;
+  final List<Map<String, dynamic>> rawSizes; // Raw size data with IDs and prices
   final List<AdditionalOption> additionalOptions;
   final List<String> images;
   final int? categoryId; // إضافة معرف التصنيف
@@ -29,6 +30,7 @@ class ProductModel {
     required this.reviewCount,
     required this.productCode,
     required this.sizes,
+    required this.rawSizes,
     required this.additionalOptions,
     required this.images,
     this.categoryId, // إضافة معرف التصنيف
@@ -87,7 +89,8 @@ class ProductModel {
       rating: getRating(json['rating']),
       reviewCount: getReviewCount(json['reviewCount'] ?? json['rating']),
       productCode: json['productCode'] ?? 'N/A',
-      sizes: _extractSizes(json['additionalOptions']),
+      sizes: _extractSizes(json['sizes']),
+      rawSizes: _extractRawSizes(json['sizes']),
       additionalOptions: _extractAdditionalOptions(json['additionalOptions']),
       images: List<String>.from(json['images'] ?? [json['primary_image'] ?? '']),
       categoryId: json['internal_category_id'] ?? json['categoryId'] ?? json['category']?['id'],
@@ -95,79 +98,96 @@ class ProductModel {
   }
 
   // Helper methods for extracting data from backend response
-  static List<String> _extractSizes(dynamic additionalOptions) {
-    if (additionalOptions is List) {
-      for (var group in additionalOptions) {
-        if (group is Map<String, dynamic>) {
-          String groupName = '';
-          if (group['group_name'] is Map<String, dynamic>) {
-            groupName = group['group_name']['current'] ?? group['group_name']['en'] ?? '';
-          } else {
-            groupName = group['group_name']?.toString() ?? '';
+  static List<String> _extractSizes(dynamic sizesData) {
+    if (sizesData is List) {
+      List<String> sizes = [];
+      for (var sizeObj in sizesData) {
+        if (sizeObj is Map<String, dynamic>) {
+          String sizeName = sizeObj['name']?.toString() ?? '';
+          if (sizeName.isNotEmpty) {
+            sizes.add(sizeName);
           }
-
-          if (groupName.toLowerCase().contains('size')) {
-            List<String> sizes = [];
-            if (group['options'] is List) {
-              for (var option in group['options']) {
-                if (option is Map<String, dynamic>) {
-                  String optionName = '';
-                  if (option['name'] is Map<String, dynamic>) {
-                    optionName = option['name']['current'] ?? option['name']['en'] ?? '';
-                  } else {
-                    optionName = option['name']?.toString() ?? '';
-                  }
-                  if (optionName.isNotEmpty) {
-                    sizes.add(optionName);
-                  }
-                }
-              }
-            }
-            return sizes.isNotEmpty ? sizes : ['S', 'M', 'L'];
-          }
+        } else if (sizeObj is String) {
+          sizes.add(sizeObj);
         }
+      }
+      if (sizes.isNotEmpty) {
+        return sizes;
       }
     }
     return ['S', 'M', 'L'];
   }
 
+  static List<Map<String, dynamic>> _extractRawSizes(dynamic sizesData) {
+    if (sizesData is List) {
+      List<Map<String, dynamic>> rawSizes = [];
+      for (var sizeObj in sizesData) {
+        if (sizeObj is Map<String, dynamic>) {
+          rawSizes.add(Map<String, dynamic>.from(sizeObj));
+        }
+      }
+      return rawSizes;
+    }
+    return [];
+  }
+
   static List<AdditionalOption> _extractAdditionalOptions(dynamic additionalOptions) {
     List<AdditionalOption> options = [];
     if (additionalOptions is List) {
-      for (var group in additionalOptions) {
-        if (group is Map<String, dynamic> && group['options'] is List) {
-          String groupName = '';
-          if (group['group_name'] is Map<String, dynamic>) {
-            groupName = group['group_name']['current'] ?? group['group_name']['en'] ?? '';
+      // Handle flat structure (new backend response)
+      for (var option in additionalOptions) {
+        if (option is Map<String, dynamic>) {
+          // Extract option name
+          String optionName = '';
+          if (option['name'] is Map<String, dynamic>) {
+            optionName = option['name']['current'] ?? option['name']['ar'] ?? option['name']['en'] ?? '';
           } else {
-            groupName = group['group_name']?.toString() ?? '';
+            optionName = option['name']?.toString() ?? '';
+          }
+
+          // Extract group name
+          String groupName = '';
+          if (option['group_name'] is Map<String, dynamic>) {
+            groupName = option['group_name']['current'] ?? option['group_name']['ar'] ?? option['group_name']['en'] ?? '';
+          } else {
+            groupName = option['group_name']?.toString() ?? '';
           }
 
           // Skip size groups as they're handled separately
-          if (groupName.toLowerCase().contains('size')) continue;
+          if (groupName.toLowerCase().contains('size') || groupName.toLowerCase().contains('حجم')) continue;
 
-          for (var option in group['options']) {
-            if (option is Map<String, dynamic>) {
-              String optionName = '';
-              if (option['name'] is Map<String, dynamic>) {
-                optionName = option['name']['current'] ?? option['name']['en'] ?? '';
-              } else {
-                optionName = option['name']?.toString() ?? '';
-              }
-
-              options.add(AdditionalOption(
-                id: option['id'] ?? 0,
-                name: optionName,
-                price: (option['price'] ?? 0).toDouble(),
-                icon: 'salad', // Default icon
-                isSelected: false,
-              ));
-            }
-          }
+          options.add(AdditionalOption(
+            id: option['id'] ?? 0,
+            name: optionName,
+            price: (option['price'] ?? 0).toDouble(),
+            icon: _getIconForOption(optionName),
+            isSelected: option['isSelected'] ?? false,
+            isRequired: option['is_required'] ?? false,
+            groupName: groupName,
+            groupId: option['group_id'] ?? 0,
+          ));
         }
       }
     }
     return options;
+  }
+
+  /// Get appropriate icon based on option name
+  static String _getIconForOption(String optionName) {
+    final name = optionName.toLowerCase();
+
+    if (name.contains('خبز') || name.contains('bread')) return 'bread';
+    if (name.contains('ليمون') || name.contains('lemon')) return 'lemon';
+    if (name.contains('جبن') || name.contains('cheese')) return 'cheese';
+    if (name.contains('لحم') || name.contains('meat')) return 'meat';
+    if (name.contains('دجاج') || name.contains('chicken')) return 'meat';
+    if (name.contains('خضار') || name.contains('vegetable')) return 'vegetable';
+    if (name.contains('صوص') || name.contains('sauce')) return 'sauce';
+    if (name.contains('صنوبر') || name.contains('pine')) return 'nuts';
+    if (name.contains('بابريكا') || name.contains('paprika')) return 'spice';
+    if (name.contains('زيت') || name.contains('oil')) return 'oil';
+
+    return 'salad'; // Default icon
   }
 
   Map<String, dynamic> toJson() {
@@ -182,6 +202,7 @@ class ProductModel {
       'reviewCount': reviewCount,
       'productCode': productCode,
       'sizes': sizes,
+      'rawSizes': rawSizes,
       'additionalOptions': additionalOptions.map((option) => option.toJson()).toList(),
       'images': images,
       'categoryId': categoryId, // إضافة معرف التصنيف
@@ -195,6 +216,9 @@ class AdditionalOption {
   final double? price;
   final String icon;
   final bool isSelected;
+  final bool isRequired;
+  final String? groupName;
+  final int? groupId;
 
   AdditionalOption({
     required this.id,
@@ -202,6 +226,9 @@ class AdditionalOption {
     this.price,
     required this.icon,
     this.isSelected = false,
+    this.isRequired = false,
+    this.groupName,
+    this.groupId,
   });
 
   factory AdditionalOption.fromJson(Map<String, dynamic> json) {
@@ -218,6 +245,9 @@ class AdditionalOption {
       price: json['price']?.toDouble(),
       icon: json['icon'] ?? 'salad', // Default icon
       isSelected: json['isSelected'] ?? false,
+      isRequired: json['isRequired'] ?? false,
+      groupName: json['groupName'],
+      groupId: json['groupId'],
     );
   }
 
@@ -228,6 +258,9 @@ class AdditionalOption {
       'price': price,
       'icon': icon,
       'isSelected': isSelected,
+      'isRequired': isRequired,
+      'groupName': groupName,
+      'groupId': groupId,
     };
   }
 
@@ -237,6 +270,9 @@ class AdditionalOption {
     double? price,
     String? icon,
     bool? isSelected,
+    bool? isRequired,
+    String? groupName,
+    int? groupId,
   }) {
     return AdditionalOption(
       id: id ?? this.id,
@@ -244,6 +280,9 @@ class AdditionalOption {
       price: price ?? this.price,
       icon: icon ?? this.icon,
       isSelected: isSelected ?? this.isSelected,
+      isRequired: isRequired ?? this.isRequired,
+      groupName: groupName ?? this.groupName,
+      groupId: groupId ?? this.groupId,
     );
   }
 }

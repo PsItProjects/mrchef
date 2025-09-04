@@ -64,44 +64,44 @@ class CartSummarySection extends GetView<CartController> {
                 width: 380,
                 child: Obx(() => Column(
                   children: [
-                    // Subtotal
+                    // Subtotal - use backend data if available
                     _buildSummaryRow(
-                      TranslationHelper.tr('subtotal'),
-                      CurrencyHelper.formatPrice(controller.subtotal),
+                      _getLabel('subtotal'),
+                      _getFormattedPrice('subtotal'),
                     ),
 
                     const SizedBox(height: 8),
 
-                    // Delivery fee
+                    // Delivery fee - use backend data if available
                     _buildSummaryRow(
-                      TranslationHelper.tr('delivery_fee'),
-                      CurrencyHelper.formatPrice(controller.deliveryFee),
+                      _getLabel('delivery_fee'),
+                      _getFormattedPrice('delivery_fee'),
                     ),
 
                     const SizedBox(height: 8),
 
-                    // Tax
+                    // Service fee - use backend data if available
                     _buildSummaryRow(
-                      TranslationHelper.tr('tax'),
-                      CurrencyHelper.formatPrice(controller.taxAmount),
+                      _getLabel('service_fee'),
+                      _getFormattedPrice('service_fee'),
                     ),
-                    
+
                     const SizedBox(height: 8),
-                    
+
                     // Divider
                     Container(
                       height: 1,
                       color: const Color(0xFFB0B0B0),
                     ),
-                    
+
                     const SizedBox(height: 8),
-                    
+
                     // Total - with bold styling as per Figma
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          TranslationHelper.tr('total'),
+                          _getLabel('total'),
                           style: const TextStyle(
                             fontFamily: 'Lato',
                             fontWeight: FontWeight.w700,
@@ -111,7 +111,7 @@ class CartSummarySection extends GetView<CartController> {
                           ),
                         ),
                         Text(
-                          CurrencyHelper.formatPrice(controller.totalAmount),
+                          _getFormattedPrice('total'),
                           style: const TextStyle(
                             fontFamily: 'Lato',
                             fontWeight: FontWeight.w700,
@@ -172,5 +172,51 @@ class CartSummarySection extends GetView<CartController> {
         ),
       ],
     );
+  }
+
+  /// Get label from backend data or fallback to translation
+  String _getLabel(String key) {
+    if (controller.cartSummary.isNotEmpty &&
+        controller.cartSummary['labels'] != null &&
+        controller.cartSummary['labels'][key] != null) {
+      return controller.cartSummary['labels'][key] as String;
+    }
+
+    // Fallback to local translations
+    switch (key) {
+      case 'subtotal':
+        return TranslationHelper.tr('subtotal');
+      case 'delivery_fee':
+        return TranslationHelper.tr('delivery_fee');
+      case 'service_fee':
+        return TranslationHelper.tr('tax'); // Using tax as service fee
+      case 'total':
+        return TranslationHelper.tr('total');
+      default:
+        return key;
+    }
+  }
+
+  /// Get formatted price from backend data or fallback to local formatting
+  String _getFormattedPrice(String key) {
+    if (controller.cartSummary.isNotEmpty &&
+        controller.cartSummary['formatted'] != null &&
+        controller.cartSummary['formatted'][key] != null) {
+      return controller.cartSummary['formatted'][key] as String;
+    }
+
+    // Fallback to local calculations and formatting
+    switch (key) {
+      case 'subtotal':
+        return CurrencyHelper.formatPrice(controller.subtotal);
+      case 'delivery_fee':
+        return CurrencyHelper.formatPrice(controller.deliveryFee);
+      case 'service_fee':
+        return CurrencyHelper.formatPrice(controller.serviceFee);
+      case 'total':
+        return CurrencyHelper.formatPrice(controller.totalAmount);
+      default:
+        return '0.0 ر.س';
+    }
   }
 }

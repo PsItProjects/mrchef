@@ -623,7 +623,45 @@ class AppTranslations extends Translations {
       'invite_friends': 'Invite Friends',
       'add_comment': 'Add a comment',
       'full_name_arabic': 'Full Name (Arabic)',
-      'Additional options':'Additional options'
+      'Additional options':'Additional options',
+
+      // Cart and Pricing
+      'add_to_cart': 'Add to Cart',
+      'go_to_store': 'Go to Store',
+      'meal_price': 'Meal price:',
+      'meal_price_with_toppings': 'Meal price with toppings:',
+      'selected_size_label': 'Selected size',
+      'base_price': 'Base price',
+      'currency': 'SAR',
+
+      // Options
+      'additional_options': 'Additional Options',
+      'required': 'Required',
+      'optional': 'Optional',
+      'selected': 'Selected',
+      'required_options': 'Required Options',
+      'optional_options': 'Optional Add-ons',
+      'no_additional_options': 'No additional options available',
+      'free': 'Free',
+
+      // Size Selection
+      'size_selection': 'Size Selection',
+      'small_size': 'Small',
+      'medium_size': 'Medium',
+      'large_size': 'Large',
+      'extra_large_size': 'Extra Large',
+      'perfect_for_one': 'Perfect for one person',
+      'good_for_sharing': 'Good for sharing',
+      'family_size': 'Family size',
+      'party_size': 'Party size',
+      'three_pieces': '3 pieces',
+      'four_pieces': '4 pieces',
+      'five_pieces': '5 pieces',
+      'six_pieces': '6 pieces',
+      'eight_pieces': '8 pieces',
+      'regular_size': 'Regular size',
+      'grams_200': '200 grams',
+      'grams_300': '300 grams'
     },
     'ar': {
       // Common
@@ -1246,6 +1284,43 @@ class AppTranslations extends Translations {
       'add_comment': 'إضافة تعليق',
       'full_name_arabic': 'الاسم الكامل (عربي)',
       'Additional options':'الاضافات الإختيارية',
+
+      // Cart and Pricing
+      'go_to_store': 'الذهاب للمتجر',
+      'meal_price': 'سعر الوجبة:',
+      'meal_price_with_toppings': 'سعر الوجبة مع الإضافات:',
+      'selected_size_label': 'الحجم المختار',
+      'base_price': 'السعر الأساسي',
+      'currency': 'ر.س',
+
+      // Options
+      'additional_options': 'الخيارات الإضافية',
+      'required': 'إجباري',
+      'optional': 'اختياري',
+      'selected': 'مختار',
+      'required_options': 'الخيارات الإجبارية',
+      'optional_options': 'الإضافات الاختيارية',
+      'no_additional_options': 'لا توجد خيارات إضافية متاحة',
+      'free': 'مجاني',
+
+      // Size Selection
+      'size_selection': 'اختيار الحجم',
+      'small_size': 'صغير',
+      'medium_size': 'متوسط',
+      'large_size': 'كبير',
+      'extra_large_size': 'عائلي',
+      'perfect_for_one': 'مثالي لشخص واحد',
+      'good_for_sharing': 'مناسب للمشاركة',
+      'family_size': 'حجم عائلي',
+      'party_size': 'حجم الحفلات',
+      'three_pieces': '3 قطع',
+      'four_pieces': '4 قطع',
+      'five_pieces': '5 قطع',
+      'six_pieces': '6 قطع',
+      'eight_pieces': '8 قطع',
+      'regular_size': 'حجم عادي',
+      'grams_200': '200 جرام',
+      'grams_300': '300 جرام'
     },
   };
 }

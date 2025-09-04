@@ -1,67 +1,98 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:mrsheaf/features/favorites/models/favorite_store_model.dart';
 import 'package:mrsheaf/features/favorites/models/favorite_product_model.dart';
+import 'package:mrsheaf/features/favorites/services/favorites_service.dart';
 import 'package:mrsheaf/features/cart/controllers/cart_controller.dart';
 import 'package:mrsheaf/features/product_details/models/product_model.dart';
 
 class FavoritesController extends GetxController {
+  final FavoritesService _favoritesService = FavoritesService();
+
   // Tab management
   final RxInt selectedTabIndex = 0.obs;
-  
+
   // Favorite stores
   final RxList<FavoriteStoreModel> favoriteStores = <FavoriteStoreModel>[].obs;
-  
+
   // Favorite products
   final RxList<FavoriteProductModel> favoriteProducts = <FavoriteProductModel>[].obs;
+
+  // Loading states
+  final RxBool isLoading = false.obs;
+  final RxBool isLoadingProducts = false.obs;
+  final RxBool isLoadingStores = false.obs;
 
   @override
   void onInit() {
     super.onInit();
-    _initializeSampleData();
+    loadFavorites();
   }
 
-  void _initializeSampleData() {
-    // Add sample favorite stores
-    favoriteStores.addAll([
-      FavoriteStoreModel(
-        id: 1,
-        name: 'Al Shorouk Restaurant',
-        image: 'assets/images/store_logo.png',
-        rating: 4.8,
-        backgroundImage: 'assets/images/store_background.png',
-      ),
-      FavoriteStoreModel(
-        id: 2,
-        name: 'Al Shorouk Restaurant',
-        image: 'assets/images/store_logo.png',
-        rating: 4.8,
-        backgroundImage: 'assets/images/store_background.png',
-      ),
-    ]);
+  /// Load favorites from server
+  Future<void> loadFavorites() async {
+    try {
+      isLoading.value = true;
 
-    // Add sample favorite products
-    favoriteProducts.addAll([
-      FavoriteProductModel(
-        id: 1,
-        name: 'Caesar salad',
-        image: 'assets/images/pizza_main.png',
-        price: 25.00,
-        availability: ProductAvailability.available,
-      ),
-      FavoriteProductModel(
-        id: 2,
-        name: 'Caesar salad',
-        image: 'assets/images/pizza_main.png',
-        price: 25.00,
-        availability: ProductAvailability.outOfStock,
-      ),
-    ]);
+      if (kDebugMode) {
+        print('🤍 FAVORITES CONTROLLER: Loading favorites...');
+      }
+
+      final favorites = await _favoritesService.getFavorites();
+
+      // Parse products
+      final products = favorites['products'] as List<dynamic>;
+      favoriteProducts.value = products.map((productData) {
+        // Convert API data to the format expected by FavoriteProductModel
+        final convertedData = {
+          'id': productData['id'],
+          'name': productData['name'],
+          'image': productData['image'],
+          'price': productData['price'], // Will be parsed by _parsePrice
+          'is_available': productData['is_available'] ?? true,
+        };
+        return FavoriteProductModel.fromJson(convertedData);
+      }).toList();
+
+      // Parse merchants/stores
+      final merchants = favorites['merchants'] as List<dynamic>;
+      favoriteStores.value = merchants.map((merchantData) {
+        return FavoriteStoreModel.fromJson({
+          'id': merchantData['id'],
+          'name': merchantData['business_name'] ?? merchantData['name'],
+          'image': merchantData['logo'] ?? '',
+          'rating': merchantData['average_rating'] ?? 4.5,
+          'backgroundImage': merchantData['cover_image'] ?? '',
+        });
+      }).toList();
+
+      if (kDebugMode) {
+        print('✅ FAVORITES CONTROLLER: Favorites loaded successfully');
+        print('🤍 PRODUCTS: ${favoriteProducts.length}');
+        print('🤍 STORES: ${favoriteStores.length}');
+      }
+
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ FAVORITES CONTROLLER ERROR: $e');
+      }
+
+      Get.snackbar(
+        'خطأ',
+        'فشل في تحميل المفضلة',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    } finally {
+      isLoading.value = false;
+    }
   }
 
-  // Add sample data for testing
-  void addSampleData() {
-    _initializeSampleData();
+  // Refresh favorites
+  Future<void> refreshFavorites() async {
+    await loadFavorites();
   }
 
   // Tab switching
@@ -70,24 +101,73 @@ class FavoritesController extends GetxController {
   }
 
   // Store management
-  void addStoreToFavorites(FavoriteStoreModel store) {
-    if (!favoriteStores.any((s) => s.id == store.id)) {
-      favoriteStores.add(store);
+  Future<void> addStoreToFavorites(int storeId) async {
+    try {
+      isLoadingStores.value = true;
+
+      await _favoritesService.addMerchantToFavorites(storeId);
+
+      // Reload favorites to get updated list
+      await loadFavorites();
+
       Get.snackbar(
-        'Added to Favorites',
-        '${store.name} added to your favorite stores',
+        'تمت الإضافة',
+        'تم إضافة المتجر إلى المفضلة',
         snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: const Color(0xFFFACD02),
+        colorText: const Color(0xFF592E2C),
       );
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ ADD STORE TO FAVORITES ERROR: $e');
+      }
+
+      Get.snackbar(
+        'خطأ',
+        'فشل في إضافة المتجر إلى المفضلة',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    } finally {
+      isLoadingStores.value = false;
     }
   }
 
-  void removeStoreFromFavorites(int storeId) {
-    favoriteStores.removeWhere((store) => store.id == storeId);
-    Get.snackbar(
-      'Removed from Favorites',
-      'Store removed from your favorites',
-      snackPosition: SnackPosition.BOTTOM,
-    );
+  Future<void> removeStoreFromFavorites(int storeId) async {
+    try {
+      isLoadingStores.value = true;
+
+      await _favoritesService.removeMerchantFromFavorites(storeId);
+
+      // Remove from local list immediately for better UX
+      favoriteStores.removeWhere((store) => store.id == storeId);
+
+      Get.snackbar(
+        'تم الحذف',
+        'تم حذف المتجر من المفضلة',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: const Color(0xFFEB5757),
+        colorText: Colors.white,
+      );
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ REMOVE STORE FROM FAVORITES ERROR: $e');
+      }
+
+      // Reload favorites in case of error
+      await loadFavorites();
+
+      Get.snackbar(
+        'خطأ',
+        'فشل في حذف المتجر من المفضلة',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    } finally {
+      isLoadingStores.value = false;
+    }
   }
 
   bool isStoreFavorite(int storeId) {
@@ -95,28 +175,101 @@ class FavoritesController extends GetxController {
   }
 
   // Product management
-  void addProductToFavorites(FavoriteProductModel product) {
-    if (!favoriteProducts.any((p) => p.id == product.id)) {
-      favoriteProducts.add(product);
+  Future<void> addProductToFavorites(int productId) async {
+    try {
+      isLoadingProducts.value = true;
+
+      await _favoritesService.addProductToFavorites(productId);
+
+      // Reload favorites to get updated list
+      await loadFavorites();
+
       Get.snackbar(
-        'Added to Favorites',
-        '${product.name} added to your favorite products',
+        'تمت الإضافة',
+        'تم إضافة المنتج إلى المفضلة',
         snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: const Color(0xFFFACD02),
+        colorText: const Color(0xFF592E2C),
       );
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ ADD PRODUCT TO FAVORITES ERROR: $e');
+      }
+
+      Get.snackbar(
+        'خطأ',
+        'فشل في إضافة المنتج إلى المفضلة',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    } finally {
+      isLoadingProducts.value = false;
     }
   }
 
-  void removeProductFromFavorites(int productId) {
-    favoriteProducts.removeWhere((product) => product.id == productId);
-    Get.snackbar(
-      'Removed from Favorites',
-      'Product removed from your favorites',
-      snackPosition: SnackPosition.BOTTOM,
-    );
+  Future<void> removeProductFromFavorites(int productId) async {
+    try {
+      isLoadingProducts.value = true;
+
+      await _favoritesService.removeProductFromFavorites(productId);
+
+      // Remove from local list immediately for better UX
+      favoriteProducts.removeWhere((product) => product.id == productId);
+
+      Get.snackbar(
+        'تم الحذف',
+        'تم حذف المنتج من المفضلة',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: const Color(0xFFEB5757),
+        colorText: Colors.white,
+      );
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ REMOVE PRODUCT FROM FAVORITES ERROR: $e');
+      }
+
+      // Reload favorites in case of error
+      await loadFavorites();
+
+      Get.snackbar(
+        'خطأ',
+        'فشل في حذف المنتج من المفضلة',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    } finally {
+      isLoadingProducts.value = false;
+    }
   }
 
   bool isProductFavorite(int productId) {
     return favoriteProducts.any((product) => product.id == productId);
+  }
+
+  /// Check if product is favorited from server
+  Future<bool> checkProductFavoriteStatus(int productId) async {
+    try {
+      return await _favoritesService.isFavorited('product', productId);
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ CHECK PRODUCT FAVORITE STATUS ERROR: $e');
+      }
+      return false;
+    }
+  }
+
+  /// Check if merchant is favorited from server
+  Future<bool> checkMerchantFavoriteStatus(int merchantId) async {
+    try {
+      return await _favoritesService.isFavorited('merchant', merchantId);
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ CHECK MERCHANT FAVORITE STATUS ERROR: $e');
+      }
+      return false;
+    }
   }
 
   // Add to cart functionality
@@ -145,6 +298,7 @@ class FavoritesController extends GetxController {
       reviewCount: 120,
       productCode: '#${favoriteProduct.id.toString().padLeft(8, '0')}',
       sizes: ['L', 'M', 'S'],
+      rawSizes: [],
       images: [favoriteProduct.image],
       additionalOptions: [],
     );
@@ -158,14 +312,38 @@ class FavoritesController extends GetxController {
   }
 
   // Clear all favorites
-  void clearAllFavorites() {
-    favoriteStores.clear();
-    favoriteProducts.clear();
-    Get.snackbar(
-      'Favorites Cleared',
-      'All favorites have been removed',
-      snackPosition: SnackPosition.BOTTOM,
-    );
+  Future<void> clearAllFavorites() async {
+    try {
+      isLoading.value = true;
+
+      final deletedCount = await _favoritesService.clearAllFavorites();
+
+      // Clear local lists
+      favoriteStores.clear();
+      favoriteProducts.clear();
+
+      Get.snackbar(
+        'تم المسح',
+        'تم مسح جميع المفضلة ($deletedCount عنصر)',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: const Color(0xFFEB5757),
+        colorText: Colors.white,
+      );
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ CLEAR ALL FAVORITES ERROR: $e');
+      }
+
+      Get.snackbar(
+        'خطأ',
+        'فشل في مسح المفضلة',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    } finally {
+      isLoading.value = false;
+    }
   }
 
   // Getters for UI

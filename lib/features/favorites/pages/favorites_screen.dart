@@ -27,12 +27,22 @@ class FavoritesScreen extends GetView<FavoritesController> {
             // Content
             Expanded(
               child: Obx(() {
-                if (controller.showEmptyState) {
+                if (controller.isLoading.value) {
+                  return const Center(
+                    child: CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFACD02)),
+                    ),
+                  );
+                } else if (controller.showEmptyState) {
                   return const EmptyFavoritesWidget();
                 } else {
-                  return controller.isStoresTabSelected
-                      ? const FavoriteStoresList()
-                      : const FavoriteProductsList();
+                  return RefreshIndicator(
+                    onRefresh: controller.refreshFavorites,
+                    color: const Color(0xFFFACD02),
+                    child: controller.isStoresTabSelected
+                        ? const FavoriteStoresList()
+                        : const FavoriteProductsList(),
+                  );
                 }
               }),
             ),

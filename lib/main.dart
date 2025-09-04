@@ -7,6 +7,7 @@ import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/core/services/app_service.dart';
 import 'package:mrsheaf/core/services/language_service.dart';
 import 'package:mrsheaf/core/services/theme_service.dart';
+import 'package:mrsheaf/features/favorites/controllers/favorites_controller.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -19,6 +20,9 @@ void main() async {
   await Get.putAsync(() => ThemeService().onInit().then((_) => ThemeService()));
   await Get.putAsync(() => LanguageService().onInit().then((_) => LanguageService()));
   await Get.putAsync(() => AppService().onInit().then((_) => AppService()));
+
+  // Initialize FavoritesController early
+  Get.put(FavoritesController(), permanent: true);
 
   runApp(const MyApp());
 }
@@ -38,7 +42,6 @@ class MyApp extends StatelessWidget {
       return
         Listener(
             onPointerUp: (_) {
-              print("SSSSSSS");
               FocusScopeNode currentFocus = FocusScope.of(context);
               if (!currentFocus.hasPrimaryFocus && currentFocus.focusedChild != null) {
                 currentFocus.focusedChild?.unfocus();

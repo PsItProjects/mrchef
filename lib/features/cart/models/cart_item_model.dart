@@ -8,6 +8,9 @@ class CartItemModel {
   final String size;
   final int quantity;
   final List<CartAdditionalOption> additionalOptions;
+  final double totalPrice;
+  final String? specialInstructions;
+  final DateTime? createdAt;
 
   CartItemModel({
     required this.id,
@@ -19,18 +22,26 @@ class CartItemModel {
     required this.size,
     required this.quantity,
     this.additionalOptions = const [],
+    required this.totalPrice,
+    this.specialInstructions,
+    this.createdAt,
   });
 
   factory CartItemModel.fromJson(Map<String, dynamic> json) {
     return CartItemModel(
       id: json['id'],
-      productId: json['productId'],
-      name: json['name'],
-      description: json['description'],
-      price: json['price'].toDouble(),
-      image: json['primary_image'] ?? json['image'],
-      size: json['size'],
-      quantity: json['quantity'],
+      productId: json['productId'] ?? json['product_id'],
+      name: json['name'] ?? '',
+      description: json['description'] ?? '',
+      price: (json['price'] ?? 0).toDouble(),
+      image: json['image'] ?? json['primary_image'] ?? '',
+      size: json['size'] ?? '',
+      quantity: json['quantity'] ?? 1,
+      totalPrice: (json['total_price'] ?? 0).toDouble(),
+      specialInstructions: json['special_instructions'],
+      createdAt: json['created_at'] != null
+          ? DateTime.tryParse(json['created_at'])
+          : null,
       additionalOptions: (json['additionalOptions'] as List<dynamic>?)
           ?.map((option) => CartAdditionalOption.fromJson(option))
           .toList() ?? [],
@@ -47,6 +58,8 @@ class CartItemModel {
       'image': image,
       'size': size,
       'quantity': quantity,
+      'total_price': totalPrice,
+      'special_instructions': specialInstructions,
       'additionalOptions': additionalOptions.map((option) => option.toJson()).toList(),
     };
   }
@@ -61,6 +74,9 @@ class CartItemModel {
     String? size,
     int? quantity,
     List<CartAdditionalOption>? additionalOptions,
+    double? totalPrice,
+    String? specialInstructions,
+    DateTime? createdAt,
   }) {
     return CartItemModel(
       id: id ?? this.id,
@@ -72,11 +88,15 @@ class CartItemModel {
       size: size ?? this.size,
       quantity: quantity ?? this.quantity,
       additionalOptions: additionalOptions ?? this.additionalOptions,
+      totalPrice: totalPrice ?? this.totalPrice,
+      specialInstructions: specialInstructions ?? this.specialInstructions,
+      createdAt: createdAt ?? this.createdAt,
     );
   }
 
-  // Calculate total price for this item including additional options
-  double get totalPrice {
+  // Calculate local total price for this item including additional options
+  // This is a fallback calculation when server total is not available
+  double get calculatedTotalPrice {
     double basePrice = price * quantity;
     double optionsPrice = additionalOptions
         .where((option) => option.isSelected)

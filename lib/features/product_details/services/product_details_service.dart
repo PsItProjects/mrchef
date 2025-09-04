@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:mrsheaf/core/constants/api_constants.dart';
 import 'package:mrsheaf/core/network/api_client.dart';
 import 'package:mrsheaf/features/product_details/models/product_model.dart';
@@ -6,6 +7,11 @@ import 'package:mrsheaf/features/product_details/models/review_model.dart';
 
 class ProductDetailsService {
   final ApiClient _apiClient = ApiClient.instance;
+
+  // Store raw sizes data for ID mapping
+  final List<Map<String, dynamic>> _rawSizes = [];
+
+  List<Map<String, dynamic>> get rawSizes => _rawSizes;
 
   /// Get product details by ID
   Future<ProductModel> getProductDetails(int productId) async {
@@ -16,6 +22,29 @@ class ProductDetailsService {
 
       if (response.data['success'] == true) {
         final productData = response.data['data'];
+
+        // Store raw sizes data for ID mapping
+        if (kDebugMode) {
+          print('🔍 RAW PRODUCT DATA SIZES: ${productData['sizes']}');
+          print('🔍 SIZES TYPE: ${productData['sizes'].runtimeType}');
+        }
+
+        if (productData['sizes'] is List) {
+          _rawSizes.clear();
+          _rawSizes.addAll(
+            List<Map<String, dynamic>>.from(
+              productData['sizes'].map((size) => Map<String, dynamic>.from(size))
+            )
+          );
+
+          if (kDebugMode) {
+            print('🔍 STORED RAW SIZES: $_rawSizes');
+          }
+        } else {
+          if (kDebugMode) {
+            print('🔍 SIZES IS NOT A LIST!');
+          }
+        }
 
         return ProductModel.fromJson(productData);
       } else {
@@ -141,6 +170,37 @@ class ProductDetailsService {
       }
     } catch (e) {
       throw Exception('Failed to dislike review: $e');
+    }
+  }
+
+  /// Calculate product price with selected options
+  Future<Map<String, dynamic>> calculateProductPrice(
+    int productId, {
+    required int quantity,
+    List<int>? selectedOptionIds,
+  }) async {
+    try {
+      final response = await _apiClient.post(
+        '${ApiConstants.baseUrl}/customer/shopping/products/$productId/calculate-price',
+        data: {
+          'quantity': quantity,
+          if (selectedOptionIds != null) 'selected_options': selectedOptionIds,
+        },
+      );
+
+      if (response.data['success'] == true) {
+        return response.data['data'];
+      } else {
+        throw Exception(response.data['message'] ?? 'Failed to calculate price');
+      }
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 422) {
+        throw Exception('Invalid data: ${e.response?.data['message'] ?? 'Validation failed'}');
+      } else {
+        throw Exception('Network error: ${e.message}');
+      }
+    } catch (e) {
+      throw Exception('Failed to calculate price: $e');
     }
   }
 }

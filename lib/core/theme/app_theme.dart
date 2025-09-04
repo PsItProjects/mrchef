@@ -260,7 +260,6 @@ class AppTheme {
       primary: AppColors.primaryColor,
       secondary: AppColors.secondaryColor,
       surface: AppColors.backgroundColor,
-      background: AppColors.backgroundColor,
       error: AppColors.errorColor,
     ),
     textTheme: TextTheme(
@@ -305,7 +304,7 @@ class AppTheme {
       ),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
     ),
-    cardTheme: CardTheme(
+    cardTheme: CardThemeData(
       color: AppColors.backgroundColor,
       elevation: 0,
       shape: RoundedRectangleBorder(
@@ -325,7 +324,6 @@ class AppTheme {
       primary: AppColors.primaryColor,
       secondary: AppColors.secondaryColor,
       surface: AppColors.darkSurfaceColor,
-      background: AppColors.darkBackgroundColor,
       error: AppColors.errorColor,
     ),
     textTheme: TextTheme(
@@ -370,7 +368,7 @@ class AppTheme {
       ),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
     ),
-    cardTheme: CardTheme(
+    cardTheme: CardThemeData(
       color: AppColors.darkCardColor,
       elevation: 0,
       shape: RoundedRectangleBorder(

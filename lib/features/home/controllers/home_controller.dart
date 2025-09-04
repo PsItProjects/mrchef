@@ -1,4 +1,6 @@
 import 'package:get/get.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:mrsheaf/core/routes/app_routes.dart';
 import 'package:mrsheaf/core/network/api_client.dart';
 import 'package:mrsheaf/core/constants/api_constants.dart';
@@ -235,47 +237,49 @@ class HomeController extends GetxController {
     }
   }
   
-  void addToCart(int productId) {
-    final cartController = Get.find<CartController>();
-
-    // Find the product from either bestSeller or backAgain lists
-    Map<String, dynamic>? productData;
-
-    // Check in best seller products
-    final bestSellerIndex = bestSellerProducts.indexWhere((product) => product['id'] == productId);
-    if (bestSellerIndex != -1) {
-      productData = bestSellerProducts[bestSellerIndex];
-    } else {
-      // Check in back again products
-      final backAgainIndex = backAgainProducts.indexWhere((product) => product['id'] == productId);
-      if (backAgainIndex != -1) {
-        productData = backAgainProducts[backAgainIndex];
-      }
-    }
-
-    if (productData != null) {
-      // Convert to ProductModel
+  /// Add product to cart with minimum required options (handled by backend)
+  Future<void> addToCart(int productId) async {
+    try {
+      // Create a minimal ProductModel for the cart controller
       final product = ProductModel(
-        id: productData['id'],
-        name: productData['name'],
-        description: productData['description'] ?? '',
-        price: productData['price'].toDouble(),
-        originalPrice: productData['originalPrice']?.toDouble(),
-        image: productData['primary_image'],
-        rating: productData['rating']?.toDouble() ?? 0.0,
-        reviewCount: productData['reviewCount'] ?? 0,
-        productCode: productData['productCode'] ?? '#${productData['id'].toString().padLeft(8, '0')}',
-        sizes: ['L', 'M', 'S'],
-        images: productData['images'] ?? [productData['primary_image']],
+        id: productId,
+        name: 'Product $productId',
+        description: '',
+        price: 0.0,
+        image: '',
+        rating: 0.0,
+        reviewCount: 0,
+        productCode: '',
+        sizes: [],
+        rawSizes: [],
         additionalOptions: [],
+        images: [],
       );
 
-      cartController.addToCart(
+      final cartController = Get.find<CartController>();
+
+      // Use existing addToCart method with empty options
+      // Backend will automatically select minimum required options
+      await cartController.addToCart(
         product: product,
-        size: 'M', // Default size
-        quantity: 1, // Default quantity
-        additionalOptions: [],
+        size: '', // Empty - backend will choose minimum
+        quantity: 1,
+        additionalOptions: [], // Empty - backend will choose minimum required
       );
+
+    } catch (e) {
+      Get.snackbar(
+        'خطأ',
+        'فشل في إضافة المنتج إلى السلة',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+        duration: const Duration(seconds: 2),
+      );
+
+      if (kDebugMode) {
+        print('❌ ADD TO CART ERROR: $e');
+      }
     }
   }
   

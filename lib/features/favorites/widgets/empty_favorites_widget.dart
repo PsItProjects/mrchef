@@ -85,7 +85,7 @@ class EmptyFavoritesWidget extends GetView<FavoritesController> {
             width: 380,
             height: 50,
             child: ElevatedButton(
-              onPressed: controller.addSampleData,
+              onPressed: controller.refreshFavorites,
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.searchIconColor,
                 shape: RoundedRectangleBorder(

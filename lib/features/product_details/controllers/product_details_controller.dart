@@ -5,6 +5,7 @@ import 'package:mrsheaf/features/product_details/models/product_model.dart';
 import 'package:mrsheaf/features/product_details/models/review_model.dart';
 import 'package:mrsheaf/features/product_details/widgets/reviews_bottom_sheet.dart';
 import 'package:mrsheaf/features/cart/controllers/cart_controller.dart';
+import 'package:mrsheaf/features/favorites/utils/favorites_helper.dart';
 import 'package:mrsheaf/core/services/language_service.dart';
 import 'package:mrsheaf/features/product_details/services/product_details_service.dart';
 
@@ -16,12 +17,20 @@ class ProductDetailsController extends GetxController {
 
   // Observable variables
   final RxInt quantity = 1.obs;
-  final RxString selectedSize = 'S'.obs;
+  final RxString selectedSize = ''.obs;
+  final RxInt selectedSizeId = 0.obs;
+  final RxList<Map<String, dynamic>> rawSizes = <Map<String, dynamic>>[].obs;
   final RxBool isFavorite = false.obs;
   final RxInt currentImageIndex = 0.obs;
   final RxList<AdditionalOption> additionalOptions = <AdditionalOption>[].obs;
   final RxString comment = ''.obs;
   final RxList<ReviewModel> reviews = <ReviewModel>[].obs;
+
+  // Price calculation
+  final RxDouble calculatedTotalPrice = 0.0.obs;
+  final RxBool isCalculatingPrice = false.obs;
+  final RxMap<String, dynamic> priceBreakdown = <String, dynamic>{}.obs;
+  final RxMap<String, dynamic> selectedSizeDetail = <String, dynamic>{}.obs;
 
   // Loading states
   final RxBool isLoadingProduct = true.obs;
@@ -61,14 +70,54 @@ class ProductDetailsController extends GetxController {
       final productData = await _productDetailsService.getProductDetails(productId);
       product.value = productData;
 
+      // Get raw sizes data from service
+      rawSizes.value = _productDetailsService.rawSizes;
 
 
-      // Initialize reactive variables
-      selectedSize.value = productData.sizes.isNotEmpty ? productData.sizes.first : 'S';
+
+      // Initialize reactive variables from rawSizes if available
+      if (rawSizes.isNotEmpty) {
+        final firstSizeObj = rawSizes.first;
+        final displayName = LanguageService.instance.getLocalizedText(firstSizeObj['name']);
+        selectedSize.value = displayName;
+        selectedSizeId.value = firstSizeObj['id'] ?? 0;
+      } else if (productData.sizes.isNotEmpty) {
+        final firstSize = productData.sizes.first;
+        selectedSize.value = firstSize;
+        selectedSizeId.value = _extractSizeId(firstSize);
+      }
       additionalOptions.value = productData.additionalOptions;
+
+      if (kDebugMode) {
+        print('📏 SIZES: ${productData.sizes}');
+        print('🔧 ADDITIONAL OPTIONS: ${productData.additionalOptions.length}');
+
+        // Group options by group name for debugging
+        Map<String, List<dynamic>> groupedOptions = {};
+        for (var option in productData.additionalOptions) {
+          String groupKey = option.groupName ?? 'other';
+          if (!groupedOptions.containsKey(groupKey)) {
+            groupedOptions[groupKey] = [];
+          }
+          groupedOptions[groupKey]!.add(option);
+        }
+
+        groupedOptions.forEach((groupName, options) {
+          print('📦 GROUP: $groupName (${options.length} options)');
+          for (var option in options) {
+            print('   - ${option.name}: ${option.price} ر.س (Required: ${option.isRequired})');
+          }
+        });
+      }
+
+      // Check favorite status
+      await _checkFavoriteStatus();
 
       // Load reviews
       await _loadProductReviews();
+
+      // Calculate initial price
+      await _calculatePrice();
 
     } catch (e) {
       Get.snackbar(
@@ -80,6 +129,32 @@ class ProductDetailsController extends GetxController {
       );
     } finally {
       isLoadingProduct.value = false;
+    }
+  }
+
+  /// Check favorite status from server
+  Future<void> _checkFavoriteStatus() async {
+    try {
+      final productId = product.value?.id;
+      if (productId == null) return;
+
+      // Ensure favorites controller is initialized
+      FavoritesHelper.ensureInitialized();
+
+      // Check if product is favorited from server
+      final isFavorited = await FavoritesHelper.checkProductFavoriteFromServer(productId);
+      isFavorite.value = isFavorited;
+
+      if (kDebugMode) {
+        print('🤍 PRODUCT DETAILS: Favorite status checked from server - Product $productId is ${isFavorited ? 'favorited' : 'not favorited'}');
+      }
+
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ PRODUCT DETAILS: Error checking favorite status: $e');
+      }
+      // Default to false on error
+      isFavorite.value = false;
     }
   }
 
@@ -103,20 +178,82 @@ class ProductDetailsController extends GetxController {
   // Methods
   void increaseQuantity() {
     quantity.value++;
+    _calculatePrice(); // Recalculate price when quantity changes
   }
-  
+
   void decreaseQuantity() {
     if (quantity.value > 1) {
       quantity.value--;
+      _calculatePrice(); // Recalculate price when quantity changes
     }
   }
   
   void selectSize(String size) {
     selectedSize.value = size;
+    selectedSizeId.value = _extractSizeId(size);
+    _calculatePrice(); // Recalculate price when size changes
+  }
+
+  /// Extract size ID from size string or object
+  int _extractSizeId(dynamic size) {
+    if (size is Map && size.containsKey('id')) {
+      return size['id'] as int;
+    }
+
+    final targetName = size is String ? size : size.toString();
+    final languageService = LanguageService.instance;
+
+    // Match against localized names in rawSizes
+    for (var sizeObj in rawSizes) {
+      final localized = languageService.getLocalizedText(sizeObj['name']);
+      if (localized == targetName) {
+        return (sizeObj['id'] as int?) ?? 0;
+      }
+    }
+
+    return 0;
   }
   
-  void toggleFavorite() {
-    isFavorite.value = !isFavorite.value;
+  Future<void> toggleFavorite() async {
+    try {
+      if (kDebugMode) {
+        print('🤍 PRODUCT DETAILS: Toggling favorite for product ${product.value?.id}');
+      }
+
+      final productId = product.value?.id;
+      if (productId == null) {
+        if (kDebugMode) {
+          print('❌ PRODUCT DETAILS: Product ID is null, cannot toggle favorite');
+        }
+        return;
+      }
+
+      // Ensure favorites controller is initialized
+      FavoritesHelper.ensureInitialized();
+
+      // Toggle favorite using the helper and get the new state
+      final newFavoriteState = await FavoritesHelper.toggleProductFavorite(productId);
+
+      // Update local state to reflect the change
+      isFavorite.value = newFavoriteState;
+
+      if (kDebugMode) {
+        print('✅ PRODUCT DETAILS: Favorite toggled successfully. New state: ${isFavorite.value}');
+      }
+
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ PRODUCT DETAILS: Error toggling favorite: $e');
+      }
+
+      Get.snackbar(
+        'خطأ',
+        'فشل في تحديث المفضلة',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    }
   }
   
   void changeImage(int index) {
@@ -130,33 +267,68 @@ class ProductDetailsController extends GetxController {
         isSelected: !additionalOptions[index].isSelected,
       );
       additionalOptions.refresh();
+
+      // Recalculate price when options change
+      _calculatePrice();
+    }
+  }
+
+  /// Calculate total price with selected options using API
+  Future<void> _calculatePrice() async {
+    if (product.value == null) return;
+
+    try {
+      isCalculatingPrice.value = true;
+
+      final selectedOptionIds = additionalOptions
+          .where((option) => option.isSelected)
+          .map((option) => option.id)
+          .toList();
+
+      // Add selected size ID if available
+      if (selectedSizeId.value > 0) {
+        selectedOptionIds.add(selectedSizeId.value);
+      }
+
+      final priceData = await _productDetailsService.calculateProductPrice(
+        product.value!.id,
+        quantity: quantity.value,
+        selectedOptionIds: selectedOptionIds.isNotEmpty ? selectedOptionIds : null,
+      );
+
+      calculatedTotalPrice.value = priceData['total_price']?.toDouble() ?? 0.0;
+      priceBreakdown.value = priceData['price_breakdown'] ?? {};
+      if (priceData['selected_size'] != null) {
+        selectedSizeDetail.value = Map<String, dynamic>.from(priceData['selected_size']);
+      }
+
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ PRICE CALCULATION ERROR: $e');
+      }
+      // Fallback to local calculation
+      calculatedTotalPrice.value = totalPrice;
+    } finally {
+      isCalculatingPrice.value = false;
     }
   }
   
-  void addToCart() {
+  /// Add product to cart via server
+  Future<void> addToCart() async {
     if (product.value == null) return;
 
     try {
       final cartController = Get.find<CartController>();
 
-      cartController.addToCart(
+      await cartController.addToCart(
         product: product.value!,
         size: selectedSize.value,
         quantity: quantity.value,
         additionalOptions: additionalOptions.where((option) => option.isSelected).toList(),
+        specialInstructions: comment.value.isNotEmpty ? comment.value : null,
       );
 
-      // Show success message
-      Get.snackbar(
-        'تم بنجاح',
-        'تم إضافة ${product.value!.name} إلى السلة',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: const Color(0xFF4CAF50),
-        colorText: Colors.white,
-        duration: const Duration(seconds: 2),
-        margin: const EdgeInsets.all(16),
-        borderRadius: 8,
-      );
+      // Success message is handled in CartController
 
       if (kDebugMode) {
         print('✅ ADDED TO CART: ${product.value!.name}');
@@ -170,19 +342,13 @@ class ProductDetailsController extends GetxController {
             print('     * ${option.name}: ${option.price?.toStringAsFixed(1)} ر.س');
           }
         }
+        if (comment.value.isNotEmpty) {
+          print('   - Special Instructions: ${comment.value}');
+        }
       }
-    } catch (e) {
-      Get.snackbar(
-        'خطأ',
-        'فشل في إضافة المنتج إلى السلة',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-        duration: const Duration(seconds: 2),
-        margin: const EdgeInsets.all(16),
-        borderRadius: 8,
-      );
 
+    } catch (e) {
+      // Error handling is done in CartController
       if (kDebugMode) {
         print('❌ ADD TO CART ERROR: $e');
       }
@@ -332,6 +498,12 @@ class ProductDetailsController extends GetxController {
   
   // Getters
   double get totalPrice {
+    // Use calculated price from API if available, otherwise fallback to local calculation
+    if (calculatedTotalPrice.value > 0) {
+      return calculatedTotalPrice.value;
+    }
+
+    // Fallback to local calculation
     if (product.value == null) return 0.0;
 
     double total = product.value!.price * quantity.value;
