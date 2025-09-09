@@ -46,23 +46,79 @@ class HomeScreen extends GetView<HomeController> {
               
               // Kitchens section
               const SectionHeader(
-                title: 'Kitchens',
-                section: 'kitchens',
+                title: 'المطاعم',
+                section: 'restaurants',
               ),
               
               const SizedBox(height: 16),
               
-              // Kitchens horizontal list
+              // Restaurants horizontal list
               SizedBox(
                 height: 223,
                 child: Obx(() => ListView.builder(
                   scrollDirection: Axis.horizontal,
                   padding: const EdgeInsets.symmetric(horizontal: 24),
-                  itemCount: controller.kitchens.length,
+                  itemCount: controller.homeRestaurants.isNotEmpty
+                      ? controller.homeRestaurants.length
+                      : controller.kitchens.length,
                   itemBuilder: (context, index) {
-                    return KitchenCard(
-                      kitchen: controller.kitchens[index],
-                    );
+                    // If we have home restaurant data, use it; otherwise fallback to kitchens
+                    if (controller.homeRestaurants.isNotEmpty) {
+                      final restaurant = controller.homeRestaurants[index];
+
+                      // Parse restaurant name based on language
+                      String restaurantName = 'Restaurant';
+                      if (restaurant['name'] != null) {
+                        final name = restaurant['name'];
+                        if (name is Map) {
+                          // Get current language from controller or use Arabic as default
+                          final currentLang = Get.locale?.languageCode ?? 'ar';
+                          restaurantName = name[currentLang]?.toString() ??
+                                         name['ar']?.toString() ??
+                                         name['en']?.toString() ??
+                                         'Restaurant';
+                        } else if (name is String) {
+                          restaurantName = name;
+                        }
+                      } else if (restaurant['business_name'] != null) {
+                        final businessName = restaurant['business_name'];
+                        if (businessName is Map) {
+                          final currentLang = Get.locale?.languageCode ?? 'ar';
+                          restaurantName = businessName[currentLang]?.toString() ??
+                                         businessName['ar']?.toString() ??
+                                         businessName['en']?.toString() ??
+                                         'Restaurant';
+                        } else if (businessName is String) {
+                          restaurantName = businessName;
+                        }
+                      }
+
+                      // Parse logo URL
+                      String logoUrl = '';
+                      if (restaurant['logo'] != null && restaurant['logo'] != 'null') {
+                        logoUrl = restaurant['logo'].toString();
+                        // Convert relative path to full URL
+                        if (!logoUrl.startsWith('http')) {
+                          logoUrl = 'https://mr-shife-backend-main-ygodva.laravel.cloud/storage/$logoUrl';
+                        }
+                      }
+
+                      // Create restaurant data in kitchen format
+                      final restaurantAsKitchen = {
+                        'id': restaurant['id'] ?? index,
+                        'name': restaurantName,
+                        'image': logoUrl.isNotEmpty ? logoUrl : 'https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=400&h=300&fit=crop',
+                        'isActive': true,
+                      };
+
+                      return KitchenCard(
+                        kitchen: restaurantAsKitchen,
+                      );
+                    } else {
+                      return KitchenCard(
+                        kitchen: controller.kitchens[index],
+                      );
+                    }
                   },
                 )),
               ),

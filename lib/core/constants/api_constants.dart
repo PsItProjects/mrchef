@@ -18,7 +18,7 @@ class ApiConstants {
   // Customer endpoints
   static const String categories = '/customer/shopping/categories'; // Public route
   static const String products = '/customer/shopping/products'; // Public route
-  static const String kitchens = '/customer/shopping/kitchens';
+  static const String kitchens = '/customer/shopping/kitchens'; // Main kitchens/restaurants endpoint
   static const String categoriesPageData = '/customer/shopping/categories-page-data';
   static const String categoriesWithProducts = '/customer/shopping/categories-with-products'; // New combined endpoint
 
@@ -29,6 +29,15 @@ class ApiConstants {
   // Product details endpoints
   static String productDetails(int id) => '/customer/shopping/products/$id';
   static String productReviews(int id) => '/customer/shopping/products/$id/reviews';
+
+  // Kitchen details endpoints
+  static String kitchenDetails(int id) => '/customer/shopping/kitchens/$id';
+  static String kitchenProducts(int id) => '/customer/shopping/kitchens/$id/products';
+
+  // Favorites endpoints
+  static const String favorites = '/customer/shopping/favorites';
+  static String addKitchenToFavorites(int id) => '/customer/shopping/favorites/kitchens/$id';
+  static String removeKitchenFromFavorites(int id) => '/customer/shopping/favorites/kitchens/$id';
   
   // Headers
   static const Map<String, String> headers = {

@@ -79,11 +79,11 @@ class ProductImageSection extends GetView<ProductDetailsController> {
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(32),
                 child: Obx(() {
-                  final images = controller.product.value?.images ?? ['assets/images/pizza_main.png'];
+                  final images = controller.product.value?.images ?? ['https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=400&h=300&fit=crop'];
                   final currentIndex = controller.currentImageIndex.value;
                   final imageUrl = images.isNotEmpty && currentIndex < images.length
                       ? images[currentIndex]
-                      : 'assets/images/pizza_main.png';
+                      : 'https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=400&h=300&fit=crop';
 
                   print('🖼️ DISPLAYING IMAGE: $imageUrl');
                   print('🖼️ IMAGES LIST: $images');

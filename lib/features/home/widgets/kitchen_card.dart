@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mrsheaf/core/localization/translation_helper.dart';
@@ -18,7 +19,17 @@ class KitchenCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: (){
-        Get.toNamed(AppRoutes.STORE_DETAILS, parameters: {'storeId': 'store123'});
+        // Navigate to store details with restaurant data
+        final restaurantId = kitchen['id']?.toString();
+        if (kDebugMode) {
+          print('🏪 KITCHEN CARD: Navigating to restaurant ID: $restaurantId');
+          print('🏪 KITCHEN CARD: Restaurant data: $kitchen');
+        }
+
+        Get.toNamed(AppRoutes.STORE_DETAILS, arguments: {
+          'restaurantId': restaurantId ?? '1',
+          'restaurantData': kitchen,
+        });
       },
       child: KitchenGradientCard(
         margin: const EdgeInsets.only(right: 16),
@@ -64,12 +75,7 @@ class KitchenCard extends StatelessWidget {
                       shape: BoxShape.circle,
                     ),
                     child: ClipOval(
-                      child: Image.asset(
-                        'assets/images/kitchen_food.png',
-                        width: 70,
-                        height: 70,
-                        fit: BoxFit.cover,
-                      ),
+                      child: _buildKitchenImage(),
                     ),
                   ),
                 ),
@@ -97,5 +103,35 @@ class KitchenCard extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Widget _buildKitchenImage() {
+    final imageUrl = kitchen['image'] ?? '';
+
+    // If it's a network URL, use Image.network
+    if (imageUrl.startsWith('http')) {
+      return Image.network(
+        imageUrl,
+        width: 70,
+        height: 70,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          return Image.asset(
+            'assets/images/kitchen_food.png',
+            width: 70,
+            height: 70,
+            fit: BoxFit.cover,
+          );
+        },
+      );
+    } else {
+      // Use local asset
+      return Image.asset(
+        imageUrl.isNotEmpty ? imageUrl : 'assets/images/kitchen_food.png',
+        width: 70,
+        height: 70,
+        fit: BoxFit.cover,
+      );
+    }
   }
 }

@@ -3,6 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/features/store_details/controllers/store_details_controller.dart';
+import 'package:mrsheaf/core/constants/api_constants.dart';
 
 class StoreDetailsHeader extends GetView<StoreDetailsController> {
   const StoreDetailsHeader({super.key});
@@ -14,7 +15,7 @@ class StoreDetailsHeader extends GetView<StoreDetailsController> {
       child: Stack(
         children: [
           // Background image
-          Container(
+          Obx(() => Container(
             height: 289,
             width: double.infinity,
             decoration: BoxDecoration(
@@ -22,16 +23,28 @@ class StoreDetailsHeader extends GetView<StoreDetailsController> {
                 bottomLeft: Radius.circular(24),
                 bottomRight: Radius.circular(24),
               ),
-              image: DecorationImage(
-                image: AssetImage("assets/images/banner_bg.png"),
-                fit: BoxFit.cover,
-                colorFilter: ColorFilter.mode(
-                  Colors.black.withOpacity(0.2),
-                  BlendMode.darken,
-                ),
-              ),
+              image: controller.storeImage.value.isNotEmpty
+                  ? DecorationImage(
+                      image: NetworkImage('${ApiConstants.baseUrl}/storage/${controller.storeImage.value}'),
+                      fit: BoxFit.cover,
+                      colorFilter: ColorFilter.mode(
+                        Colors.black.withOpacity(0.2),
+                        BlendMode.darken,
+                      ),
+                      onError: (exception, stackTrace) {
+                        // Fallback to default image
+                      },
+                    )
+                  : DecorationImage(
+                      image: AssetImage("assets/images/banner_bg.png"),
+                      fit: BoxFit.cover,
+                      colorFilter: ColorFilter.mode(
+                        Colors.black.withOpacity(0.2),
+                        BlendMode.darken,
+                      ),
+                    ),
             ),
-          ),
+          )),
           
           // Status bar
           Positioned(
@@ -158,7 +171,7 @@ class StoreDetailsHeader extends GetView<StoreDetailsController> {
           Positioned(
             bottom: 0,
             left: 24,
-            child: Container(
+            child: Obx(() => Container(
               width: 155,
               height: 155,
               decoration: BoxDecoration(
@@ -174,13 +187,46 @@ class StoreDetailsHeader extends GetView<StoreDetailsController> {
                 margin: const EdgeInsets.all(3),
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  image: DecorationImage(
-                    image: AssetImage("assets/images/pizza_main.png"),
-                    fit: BoxFit.cover,
-                  ),
+                ),
+                child: ClipOval(
+                  child: controller.storeProfileImage.value.isNotEmpty
+                      ? Image.network(
+                          '${ApiConstants.baseUrl}/storage/${controller.storeProfileImage.value}',
+                          width: 150,
+                          height: 150,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Container(
+                              width: 150,
+                              height: 150,
+                              decoration: BoxDecoration(
+                                color: AppColors.primaryColor.withOpacity(0.1),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(
+                                Icons.restaurant,
+                                color: AppColors.primaryColor,
+                                size: 60,
+                              ),
+                            );
+                          },
+                        )
+                      : Container(
+                          width: 150,
+                          height: 150,
+                          decoration: BoxDecoration(
+                            color: AppColors.primaryColor.withOpacity(0.1),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            Icons.restaurant,
+                            color: AppColors.primaryColor,
+                            size: 60,
+                          ),
+                        ),
                 ),
               ),
-            ),
+            )),
           ),
         ],
       ),

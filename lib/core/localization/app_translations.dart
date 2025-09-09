@@ -732,6 +732,7 @@ class AppTranslations extends Translations {
       'home': 'الرئيسية',
       'menu': 'القائمة',
       'categories': 'الفئات',
+      'restaurants': 'المطاعم',
       'products': 'المنتجات',
       'services': 'الخدمات',
       'orders': 'الطلبات',

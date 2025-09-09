@@ -7,92 +7,46 @@ import 'package:mrsheaf/core/constants/api_constants.dart';
 import 'package:mrsheaf/core/services/language_service.dart';
 import 'package:mrsheaf/features/cart/controllers/cart_controller.dart';
 import 'package:mrsheaf/features/product_details/models/product_model.dart';
+import '../models/restaurant_model.dart';
+import '../services/restaurant_service.dart';
 
 class HomeController extends GetxController {
   // Observable variables for home screen state
   final RxInt selectedCategoryIndex = 0.obs;
   final RxInt currentBannerIndex = 0.obs;
   final ApiClient _apiClient = ApiClient.instance;
-  
+  final RestaurantService _restaurantService = RestaurantService();
+
+  // Loading states
+  final RxBool isLoadingRestaurants = false.obs;
+  final RxBool isLoadingFeatured = false.obs;
+
   // Categories for the filter section
   final List<String> categories = [
-    'Popular',
-    'Vegan',
-    'Natural',
-    'Dermatologically'
+    'الكل',
+    'مطاعم',
+    'حلويات',
+    'مشروبات'
   ];
+
+  // Restaurants data
+  final RxList<RestaurantModel> restaurants = <RestaurantModel>[].obs;
+  final RxList<RestaurantModel> featuredRestaurants = <RestaurantModel>[].obs;
+  final RxList<Map<String, dynamic>> restaurantsRawData = <Map<String, dynamic>>[].obs;
+
+  // Home screen data from API
+  final RxList<Map<String, dynamic>> homeRestaurants = <Map<String, dynamic>>[].obs;
+  final RxList<Map<String, dynamic>> homeProducts = <Map<String, dynamic>>[].obs;
+  final RxBool isLoadingHomeData = false.obs;
   
-  // Kitchen data
-  final RxList<Map<String, dynamic>> kitchens = <Map<String, dynamic>>[
-    {
-      'id': 1,
-      'name': 'Master chef',
-      'image': 'assets/kitchen_1.png',
-      'isActive': true,
-    },
-    {
-      'id': 2,
-      'name': 'Master chef',
-      'image': 'assets/kitchen_2.png',
-      'isActive': true,
-    },
-    {
-      'id': 3,
-      'name': 'Master chef',
-      'image': 'assets/kitchen_3.png',
-      'isActive': true,
-    },
-  ].obs;
+  // Kitchen data from backend
+  final RxList<Map<String, dynamic>> kitchens = <Map<String, dynamic>>[].obs;
   
-  // Best seller products
-  final RxList<Map<String, dynamic>> bestSellerProducts = <Map<String, dynamic>>[
-    {
-      'id': 1,
-      'name': 'Special beef burger',
-      'price': 16,
-      'image': 'assets/burger.png',
-      'isFavorite': false,
-    },
-    {
-      'id': 2,
-      'name': 'Special beef burger',
-      'price': 16,
-      'image': 'assets/burger.png',
-      'isFavorite': false,
-    },
-    {
-      'id': 3,
-      'name': 'Special beef burger',
-      'price': 16,
-      'image': 'assets/burger.png',
-      'isFavorite': false,
-    },
-  ].obs;
+  // Best seller products from backend
+  final RxList<Map<String, dynamic>> bestSellerProducts = <Map<String, dynamic>>[].obs;
   
-  // Back again products (same structure as best seller for now)
-  final RxList<Map<String, dynamic>> backAgainProducts = <Map<String, dynamic>>[
-    {
-      'id': 4,
-      'name': 'Special beef burger',
-      'price': 16,
-      'image': 'assets/burger.png',
-      'isFavorite': false,
-    },
-    {
-      'id': 5,
-      'name': 'Special beef burger',
-      'price': 16,
-      'image': 'assets/burger.png',
-      'isFavorite': false,
-    },
-    {
-      'id': 6,
-      'name': 'Special beef burger',
-      'price': 16,
-      'image': 'assets/burger.png',
-      'isFavorite': false,
-    },
-  ].obs;
+  // Back again products from backend
+  final RxList<Map<String, dynamic>> backAgainProducts = <Map<String, dynamic>>[].obs;
 
   // Loading states
   final RxBool isLoadingProducts = false.obs;
@@ -102,6 +56,11 @@ class HomeController extends GetxController {
     super.onInit();
     _loadProductsFromBackend();
     _setupLanguageListener();
+    // Load restaurants data
+    loadRestaurants();
+    loadFeaturedRestaurants();
+    // Load home screen data from new API
+    loadHomeScreenData();
   }
 
   /// Setup language change listener
@@ -135,7 +94,7 @@ class HomeController extends GetxController {
             : (responseData ?? []);
         print('🏠 HOME: Found ${productsData.length} products');
 
-        // Clear existing mock data
+        // Clear existing data
         bestSellerProducts.clear();
         backAgainProducts.clear();
 
@@ -163,7 +122,7 @@ class HomeController extends GetxController {
       }
     } catch (e) {
       print('🏠 HOME: Error loading products: $e');
-      // Keep mock data if API fails
+      // Handle API failure
     } finally {
       isLoadingProducts.value = false;
     }
@@ -192,7 +151,7 @@ class HomeController extends GetxController {
             : 'http://127.0.0.1:8000';
         return '$baseUrl/storage/$imageUrl';
       }
-      return 'assets/burger.png'; // fallback to local asset
+      return 'https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=400&h=300&fit=crop'; // fallback image
     }
 
     return {
@@ -325,4 +284,150 @@ class HomeController extends GetxController {
       arguments: {'productId': productId ?? 1},
     );
   }
+
+  /// Load restaurants from API
+  Future<void> loadRestaurants() async {
+    try {
+      isLoadingRestaurants.value = true;
+
+      // Load raw data directly from API
+      await loadRestaurantsRawData();
+
+      final loadedRestaurants = await _restaurantService.getRestaurants(
+        perPage: 20,
+        sortBy: 'rating',
+        sortOrder: 'desc',
+      );
+
+      restaurants.value = loadedRestaurants;
+
+      if (kDebugMode) {
+        print('✅ HOME CONTROLLER: Restaurants loaded successfully');
+        print('🏪 COUNT: ${restaurants.length}');
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ HOME CONTROLLER ERROR: $e');
+      }
+      Get.snackbar(
+        'خطأ',
+        'فشل في تحميل المطاعم',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    } finally {
+      isLoadingRestaurants.value = false;
+    }
+  }
+
+  /// Load restaurants raw data directly from API
+  Future<void> loadRestaurantsRawData() async {
+    try {
+      final response = await ApiClient.instance.get(
+        '/customer/shopping/kitchens',
+        queryParameters: {
+          'page': 1,
+          'per_page': 20,
+          'sort_by': 'rating',
+          'sort_order': 'desc',
+        },
+      );
+
+      if (response.data['success'] == true && response.data['data'] != null) {
+        final List<dynamic> rawData = response.data['data'];
+        restaurantsRawData.value = rawData.cast<Map<String, dynamic>>();
+
+        if (kDebugMode) {
+          print('✅ HOME CONTROLLER: Raw restaurants data loaded');
+          print('🏪 RAW COUNT: ${restaurantsRawData.length}');
+          if (restaurantsRawData.isNotEmpty) {
+            print('📦 SAMPLE DATA: ${restaurantsRawData.first}');
+          }
+        }
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ HOME CONTROLLER: Failed to load raw restaurants data: $e');
+      }
+    }
+  }
+
+  /// Load featured restaurants
+  Future<void> loadFeaturedRestaurants() async {
+    try {
+      isLoadingFeatured.value = true;
+
+      final featured = await _restaurantService.getFeaturedRestaurants(
+        limit: 10,
+      );
+
+      featuredRestaurants.value = featured;
+
+      if (kDebugMode) {
+        print('✅ HOME CONTROLLER: Featured restaurants loaded');
+        print('⭐ COUNT: ${featuredRestaurants.length}');
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ HOME CONTROLLER ERROR: $e');
+      }
+    } finally {
+      isLoadingFeatured.value = false;
+    }
+  }
+
+  /// Load home screen data from new API
+  Future<void> loadHomeScreenData() async {
+    try {
+      isLoadingHomeData.value = true;
+
+      final response = await _apiClient.get(
+        '/customer/shopping/home',
+      );
+
+      if (response.statusCode == 200) {
+        final data = response.data['data'];
+
+        // Update home restaurants (featured + nearby)
+        homeRestaurants.clear();
+        if (data['featured_restaurants'] != null) {
+          homeRestaurants.addAll(List<Map<String, dynamic>>.from(data['featured_restaurants']));
+        }
+        if (data['nearby_restaurants'] != null) {
+          homeRestaurants.addAll(List<Map<String, dynamic>>.from(data['nearby_restaurants']));
+        }
+
+        // Update home products (popular + trending)
+        homeProducts.clear();
+        if (data['popular_products'] != null) {
+          homeProducts.addAll(List<Map<String, dynamic>>.from(data['popular_products']));
+        }
+        if (data['trending_products'] != null) {
+          homeProducts.addAll(List<Map<String, dynamic>>.from(data['trending_products']));
+        }
+
+        if (kDebugMode) {
+          print('✅ HOME CONTROLLER: Home screen data loaded');
+          print('🏪 HOME RESTAURANTS: ${homeRestaurants.length}');
+          print('🍽️ HOME PRODUCTS: ${homeProducts.length}');
+        }
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ HOME CONTROLLER: Failed to load home screen data: $e');
+      }
+    } finally {
+      isLoadingHomeData.value = false;
+    }
+  }
+
+  /// Refresh all data
+  Future<void> refreshData() async {
+    await Future.wait([
+      loadRestaurants(),
+      loadFeaturedRestaurants(),
+      loadHomeScreenData(),
+    ]);
+  }
+
 }
