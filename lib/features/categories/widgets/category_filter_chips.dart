@@ -97,7 +97,7 @@ class CategoryFilterChips extends GetView<CategoriesController> {
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal:  8.0),
                       child: Text(
-                        chip.name,
+                        chip.displayName,
                         style: AppTheme.tabTextStyle.copyWith(
                           fontWeight: chip.isSelected ? FontWeight.w400 : FontWeight.w300,
                           color: chip.isSelected

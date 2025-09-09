@@ -7,6 +7,7 @@ import 'package:mrsheaf/core/constants/api_constants.dart';
 import 'package:mrsheaf/core/services/language_service.dart';
 import 'package:mrsheaf/features/cart/controllers/cart_controller.dart';
 import 'package:mrsheaf/features/product_details/models/product_model.dart';
+import 'package:mrsheaf/features/categories/models/category_model.dart';
 import '../models/restaurant_model.dart';
 import '../services/restaurant_service.dart';
 
@@ -21,13 +22,10 @@ class HomeController extends GetxController {
   final RxBool isLoadingRestaurants = false.obs;
   final RxBool isLoadingFeatured = false.obs;
 
-  // Categories for the filter section
-  final List<String> categories = [
-    'الكل',
-    'مطاعم',
-    'حلويات',
-    'مشروبات'
-  ];
+  // Categories for the filter section - now loaded from backend
+  final RxList<CategoryModel> categories = <CategoryModel>[].obs;
+  final RxInt selectedCategoryId = 0.obs; // 0 means "Popular" (no filter)
+  final RxBool isLoadingCategories = false.obs;
 
   // Restaurants data
   final RxList<RestaurantModel> restaurants = <RestaurantModel>[].obs;
@@ -48,12 +46,18 @@ class HomeController extends GetxController {
   // Back again products from backend
   final RxList<Map<String, dynamic>> backAgainProducts = <Map<String, dynamic>>[].obs;
 
+  // Filtered data based on selected category
+  final RxList<Map<String, dynamic>> filteredRestaurants = <Map<String, dynamic>>[].obs;
+  final RxList<Map<String, dynamic>> filteredProducts = <Map<String, dynamic>>[].obs;
+  final RxList<Map<String, dynamic>> filteredProductsByRating = <Map<String, dynamic>>[].obs;
+
   // Loading states
   final RxBool isLoadingProducts = false.obs;
 
   @override
   void onInit() {
     super.onInit();
+    _loadCategoriesFromBackend();
     _loadProductsFromBackend();
     _setupLanguageListener();
     // Load restaurants data
@@ -66,11 +70,54 @@ class HomeController extends GetxController {
   /// Setup language change listener
   void _setupLanguageListener() {
     final languageService = LanguageService.instance;
-    // Listen to language changes and reload products
+    // Listen to language changes and reload data
     ever(languageService.currentLanguageRx, (String language) {
-      print('🌐 HOME: Language changed to $language, reloading products...');
+      print('🌐 HOME: Language changed to $language, reloading data...');
+      _loadCategoriesFromBackend();
       _loadProductsFromBackend();
+      _applyCurrentFilter();
     });
+  }
+
+  /// Load categories from backend API
+  Future<void> _loadCategoriesFromBackend() async {
+    try {
+      isLoadingCategories.value = true;
+      print('🏠 HOME: Loading categories from backend...');
+
+      // Get categories from backend using categories-with-products endpoint
+      final response = await _apiClient.get(
+        '${ApiConstants.baseUrl}${ApiConstants.categoriesWithProducts}',
+      );
+
+      print('🏠 HOME: Categories API response: ${response.statusCode}');
+
+      if (response.data['success'] == true) {
+        final Map<String, dynamic> responseData = response.data['data'] ?? {};
+        final List<dynamic> categoriesData = responseData['categories'] ?? [];
+        print('🏠 HOME: Found ${categoriesData.length} categories');
+
+        // Clear existing categories
+        categories.clear();
+
+        // Convert backend data to CategoryModel
+        for (var categoryData in categoriesData) {
+          final category = CategoryModel.fromJson(categoryData);
+          categories.add(category);
+          print('🏠 HOME: Added category: ${category.name}');
+        }
+
+        // Force UI update
+        categories.refresh();
+        update();
+      } else {
+        print('🏠 HOME: Categories API returned success=false');
+      }
+    } catch (e) {
+      print('🏠 HOME: Error loading categories: $e');
+    } finally {
+      isLoadingCategories.value = false;
+    }
   }
 
   /// Load products from backend API
@@ -112,6 +159,9 @@ class HomeController extends GetxController {
         }
 
         print('🏠 HOME: Best sellers: ${bestSellerProducts.length}, Back again: ${backAgainProducts.length}');
+
+        // Apply current filter after loading products
+        _applyCurrentFilter();
 
         // Force UI update
         bestSellerProducts.refresh();
@@ -158,15 +208,16 @@ class HomeController extends GetxController {
       'id': backendData['id'],
       'name': getName(backendData['name']),
       'description': backendData['description'] ?? '',
-      'price': (backendData['price'] ?? 0).toDouble(),
-      'originalPrice': backendData['originalPrice']?.toDouble(),
+      'price': double.tryParse(backendData['price']?.toString() ?? '0') ?? 0.0,
+      'originalPrice': double.tryParse(backendData['originalPrice']?.toString() ?? '0'),
       'primary_image': getImageUrl(backendData['primary_image']),
       'images': backendData['images'] ?? [getImageUrl(backendData['primary_image'])],
       'rating': backendData['rating'] is Map
-          ? (backendData['rating']['average'] ?? 4.5).toDouble()
-          : (backendData['rating'] ?? 4.5).toDouble(),
+          ? double.tryParse(backendData['rating']['average']?.toString() ?? '4.5') ?? 4.5
+          : double.tryParse(backendData['rating']?.toString() ?? '4.5') ?? 4.5,
       'reviewCount': backendData['reviewCount'] ?? 0,
       'productCode': backendData['productCode'] ?? 'PRD-${backendData['id']}',
+      'categoryId': backendData['category_id'], // إضافة categoryId للفلترة
       'isFavorite': false,
     };
   }
@@ -174,6 +225,93 @@ class HomeController extends GetxController {
   // Methods
   void selectCategory(int index) {
     selectedCategoryIndex.value = index;
+  }
+
+  /// Select category by ID and apply filter
+  void selectCategoryById(int categoryId) {
+    selectedCategoryId.value = categoryId;
+    _applyCurrentFilter();
+    print('🏠 HOME: Selected category ID: $categoryId');
+  }
+
+  /// Apply current filter to restaurants and products
+  void _applyCurrentFilter() {
+    if (selectedCategoryId.value == 0) {
+      // "Popular" - show all data sorted by rating
+      _showPopularData();
+    } else {
+      // Filter by selected category
+      _filterByCategory(selectedCategoryId.value);
+    }
+  }
+
+  /// Show popular data (latest added products and all restaurants)
+  void _showPopularData() {
+    print('🏠 HOME: Showing popular data (no category filter)');
+
+    // For restaurants, show all restaurants (no filter)
+    filteredRestaurants.clear();
+    if (restaurantsRawData.isNotEmpty) {
+      filteredRestaurants.addAll(restaurantsRawData);
+    }
+
+    // For products, clear filtered products so UI uses original bestSeller and backAgain lists
+    filteredProducts.clear();
+    filteredProductsByRating.clear();
+
+    print('🏠 HOME: Popular data - ${filteredRestaurants.length} restaurants, using original product lists');
+  }
+
+  /// Filter restaurants and products by category
+  void _filterByCategory(int categoryId) {
+    print('🏠 HOME: Filtering by category ID: $categoryId');
+
+    // Filter restaurants by category - use restaurantsRawData which has categories
+    filteredRestaurants.clear();
+    for (var restaurant in restaurantsRawData) {
+      final restaurantCategories = restaurant['categories'] as List<dynamic>?;
+      print('🏪 RESTAURANT: ${restaurant['name']} - Categories: $restaurantCategories');
+      if (restaurantCategories != null) {
+        final hasCategory = restaurantCategories.any((cat) => cat['id'] == categoryId);
+        if (hasCategory) {
+          filteredRestaurants.add(restaurant);
+          print('✅ RESTAURANT MATCHED: ${restaurant['name']}');
+        }
+      }
+    }
+
+    // Filter products by category
+    filteredProducts.clear();
+    filteredProductsByRating.clear();
+    final allProducts = [...bestSellerProducts, ...backAgainProducts];
+    final categoryProducts = <Map<String, dynamic>>[];
+
+    for (var product in allProducts) {
+      final productCategoryId = product['categoryId'] ?? product['category_id'];
+      if (productCategoryId == categoryId) {
+        categoryProducts.add(product);
+      }
+    }
+
+    // For "مؤخراً" section: Sort by ID descending (newest first)
+    final latestProducts = List<Map<String, dynamic>>.from(categoryProducts);
+    latestProducts.sort((a, b) {
+      final idA = int.tryParse(a['id']?.toString() ?? '0') ?? 0;
+      final idB = int.tryParse(b['id']?.toString() ?? '0') ?? 0;
+      return idB.compareTo(idA); // Descending order (newest first)
+    });
+    filteredProducts.addAll(latestProducts);
+
+    // For "الأكثر مبيعاً" section: Sort by rating descending (best rated first)
+    final bestRatedProducts = List<Map<String, dynamic>>.from(categoryProducts);
+    bestRatedProducts.sort((a, b) {
+      final ratingA = double.tryParse(a['rating']?.toString() ?? '0') ?? 0.0;
+      final ratingB = double.tryParse(b['rating']?.toString() ?? '0') ?? 0.0;
+      return ratingB.compareTo(ratingA); // Descending order (highest rating first)
+    });
+    filteredProductsByRating.addAll(bestRatedProducts);
+
+    print('🏠 HOME: Filtered data - ${filteredRestaurants.length} restaurants, ${filteredProducts.length} products');
   }
   
   void updateBannerIndex(int index) {
@@ -405,6 +543,9 @@ class HomeController extends GetxController {
         if (data['trending_products'] != null) {
           homeProducts.addAll(List<Map<String, dynamic>>.from(data['trending_products']));
         }
+
+        // Apply current filter after loading home data
+        _applyCurrentFilter();
 
         if (kDebugMode) {
           print('✅ HOME CONTROLLER: Home screen data loaded');

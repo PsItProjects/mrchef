@@ -52,19 +52,23 @@ class HomeScreen extends GetView<HomeController> {
               
               const SizedBox(height: 16),
               
-              // Restaurants horizontal list
+              // Restaurants horizontal list (filtered)
               SizedBox(
                 height: 223,
-                child: Obx(() => ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  itemCount: controller.homeRestaurants.isNotEmpty
-                      ? controller.homeRestaurants.length
-                      : controller.kitchens.length,
-                  itemBuilder: (context, index) {
-                    // If we have home restaurant data, use it; otherwise fallback to kitchens
-                    if (controller.homeRestaurants.isNotEmpty) {
-                      final restaurant = controller.homeRestaurants[index];
+                child: Obx(() {
+                  // Use filtered restaurants if available, otherwise fallback to original data
+                  final restaurantsToShow = controller.filteredRestaurants.isNotEmpty
+                      ? controller.filteredRestaurants
+                      : (controller.homeRestaurants.isNotEmpty
+                          ? controller.homeRestaurants
+                          : controller.kitchens);
+
+                  return ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    itemCount: restaurantsToShow.length,
+                    itemBuilder: (context, index) {
+                      final restaurant = restaurantsToShow[index];
 
                       // Parse restaurant name based on language
                       String restaurantName = 'Restaurant';
@@ -114,13 +118,9 @@ class HomeScreen extends GetView<HomeController> {
                       return KitchenCard(
                         kitchen: restaurantAsKitchen,
                       );
-                    } else {
-                      return KitchenCard(
-                        kitchen: controller.kitchens[index],
-                      );
-                    }
-                  },
-                )),
+                    },
+                  );
+                }),
               ),
               
               const SizedBox(height: 24),
@@ -133,20 +133,28 @@ class HomeScreen extends GetView<HomeController> {
               
               const SizedBox(height: 16),
               
-              // Best seller horizontal list
+              // Best seller horizontal list (filtered)
               SizedBox(
                 height: 240,
-                child: Obx(() => ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  itemCount: controller.bestSellerProducts.length,
-                  itemBuilder: (context, index) {
-                    return ProductCard(
-                      product: controller.bestSellerProducts[index],
-                      section: 'bestSeller',
-                    );
-                  },
-                )),
+                child: Obx(() {
+                  // When category is selected, show best rated products from that category
+                  // When "Popular" is selected, show best seller products
+                  final productsToShow = controller.selectedCategoryId.value != 0
+                      ? controller.filteredProductsByRating.toList() // Show products sorted by rating
+                      : controller.bestSellerProducts;
+
+                  return ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    itemCount: productsToShow.length,
+                    itemBuilder: (context, index) {
+                      return ProductCard(
+                        product: productsToShow[index],
+                        section: 'bestSeller',
+                      );
+                    },
+                  );
+                }),
               ),
               
               const SizedBox(height: 24),
@@ -159,20 +167,28 @@ class HomeScreen extends GetView<HomeController> {
               
               const SizedBox(height: 16),
               
-              // Back again horizontal list
+              // Back again horizontal list (filtered)
               SizedBox(
                 height: 240,
-                child: Obx(() => ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  itemCount: controller.backAgainProducts.length,
-                  itemBuilder: (context, index) {
-                    return ProductCard(
-                      product: controller.backAgainProducts[index],
-                      section: 'backAgain',
-                    );
-                  },
-                )),
+                child: Obx(() {
+                  // When category is selected, show latest products from that category
+                  // When "Popular" is selected, show back again products
+                  final productsToShow = controller.selectedCategoryId.value != 0
+                      ? controller.filteredProducts.toList() // Show all filtered products (already sorted by latest)
+                      : controller.backAgainProducts;
+
+                  return ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    itemCount: productsToShow.length,
+                    itemBuilder: (context, index) {
+                      return ProductCard(
+                        product: productsToShow[index],
+                        section: 'backAgain',
+                      );
+                    },
+                  );
+                }),
               ),
               
               const SizedBox(height: 100), // Extra space for bottom navigation

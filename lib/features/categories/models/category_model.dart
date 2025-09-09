@@ -3,7 +3,7 @@ import 'package:mrsheaf/core/services/language_service.dart';
 
 class CategoryModel {
   final int id;
-  final String name;
+  final dynamic name; // Can be String or Map<String, dynamic> for multilingual
   final String icon;
   final int itemCount;
   final bool isSelected;
@@ -19,9 +19,9 @@ class CategoryModel {
   factory CategoryModel.fromJson(Map<String, dynamic> json) {
     return CategoryModel(
       id: json['id'],
-      name: json['name'],
-      icon: json['icon'],
-      itemCount: json['itemCount'],
+      name: json['name'], // Keep as dynamic to support both String and Map
+      icon: json['icon'] ?? 'default',
+      itemCount: json['itemCount'] ?? 0,
       isSelected: json['isSelected'] ?? false,
     );
   }
@@ -38,7 +38,7 @@ class CategoryModel {
 
   CategoryModel copyWith({
     int? id,
-    String? name,
+    dynamic name,
     String? icon,
     int? itemCount,
     bool? isSelected,
@@ -50,6 +50,20 @@ class CategoryModel {
       itemCount: itemCount ?? this.itemCount,
       isSelected: isSelected ?? this.isSelected,
     );
+  }
+
+  /// Get translated name based on current language
+  String get displayName {
+    if (name is Map<String, dynamic>) {
+      try {
+        final languageService = Get.find<LanguageService>();
+        final currentLang = languageService.currentLanguage;
+        return name[currentLang] ?? name['ar'] ?? name['en'] ?? '';
+      } catch (e) {
+        return name['ar'] ?? name['en'] ?? '';
+      }
+    }
+    return name?.toString() ?? '';
   }
 }
 
