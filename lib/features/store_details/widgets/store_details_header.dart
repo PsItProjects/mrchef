@@ -143,25 +143,32 @@ class StoreDetailsHeader extends GetView<StoreDetailsController> {
                   ),
                   
                   // Heart button
-                  Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.3),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Center(
-                      child: SvgPicture.asset(
-                        'assets/icons/heart_outline.svg',
-                        width: 24,
-                        height: 24,
-                        colorFilter: const ColorFilter.mode(
-                          Color(0xFF592E2C),
-                          BlendMode.srcIn,
+                  Obx(() => GestureDetector(
+                    onTap: controller.toggleFavorite,
+                    child: Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.3),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Center(
+                        child: SvgPicture.asset(
+                          controller.isFavorite.value
+                              ? 'assets/icons/heart_icon.svg'
+                              : 'assets/icons/heart_outline.svg',
+                          width: 24,
+                          height: 24,
+                          colorFilter: ColorFilter.mode(
+                            controller.isFavorite.value
+                                ? AppColors.errorColor
+                                : const Color(0xFF592E2C),
+                            BlendMode.srcIn,
+                          ),
                         ),
                       ),
                     ),
-                  ),
+                  )),
                 ],
               ),
             ),

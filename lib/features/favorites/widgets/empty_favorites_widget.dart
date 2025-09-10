@@ -65,37 +65,15 @@ class EmptyFavoritesWidget extends GetView<FavoritesController> {
                 ),
                 elevation: 0,
               ),
-              child: const Text(
-                'Checkout',
-                style: TextStyle(
+              child: Text(
+                'home'.tr,
+                style: const TextStyle(
                   fontFamily: 'Lato',
                   fontWeight: FontWeight.w700,
                   fontSize: 18,
                   color: Color(0xFF592E2C),
                   letterSpacing: -0.005,
                 ),
-              ),
-            ),
-          ),
-
-          const SizedBox(height: 16),
-
-          // Test button to add sample data
-          Container(
-            width: 380,
-            height: 50,
-            child: ElevatedButton(
-              onPressed: controller.refreshFavorites,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.searchIconColor,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                elevation: 0,
-              ),
-              child: Text(
-                'add_sample_favorites_test'.tr,
-                style: AppTheme.buttonTextStyle,
               ),
             ),
           ),

@@ -111,7 +111,7 @@ class FavoritesService {
       }
 
       final response = await _apiClient.post(
-        '${ApiConstants.baseUrl}/customer/shopping/favorites/merchants/$merchantId',
+        '${ApiConstants.baseUrl}/customer/shopping/favorites/kitchens/$merchantId',
       );
 
       if (response.data['success'] == true) {
@@ -139,7 +139,7 @@ class FavoritesService {
       }
 
       final response = await _apiClient.delete(
-        '${ApiConstants.baseUrl}/customer/shopping/favorites/merchants/$merchantId',
+        '${ApiConstants.baseUrl}/customer/shopping/favorites/kitchens/$merchantId',
       );
 
       if (response.data['success'] == true) {

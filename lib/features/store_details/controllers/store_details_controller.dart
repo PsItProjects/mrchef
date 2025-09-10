@@ -8,6 +8,7 @@ import 'package:mrsheaf/features/cart/controllers/cart_controller.dart';
 import 'package:mrsheaf/features/product_details/models/product_model.dart';
 import 'package:mrsheaf/core/network/api_client.dart';
 import 'package:mrsheaf/core/constants/api_constants.dart';
+import 'package:mrsheaf/features/favorites/utils/favorites_helper.dart';
 
 class StoreDetailsController extends GetxController {
   final KitchenService _kitchenService = KitchenService();
@@ -91,6 +92,9 @@ class StoreDetailsController extends GetxController {
   
   // Notification settings
   final RxBool notificationsEnabled = false.obs;
+
+  // Favorite status
+  final RxBool isFavorite = false.obs;
   
   @override
   void onInit() {
@@ -309,6 +313,9 @@ class StoreDetailsController extends GetxController {
       final restaurantData = await _kitchenService.getKitchenById(int.parse(storeId.value));
       _setRestaurantData(restaurantData);
 
+      // Check favorite status
+      await _checkFavoriteStatus();
+
       // Products are loaded separately in onInit
     } catch (e) {
       if (kDebugMode) {
@@ -458,6 +465,86 @@ class StoreDetailsController extends GetxController {
     // TODO: Implement API call to update notification settings
   }
   
+  /// Check favorite status from server
+  Future<void> _checkFavoriteStatus() async {
+    try {
+      final merchantId = int.tryParse(storeId.value);
+      if (merchantId == null) return;
+
+      // Ensure favorites controller is initialized
+      FavoritesHelper.ensureInitialized();
+
+      // Check if merchant is favorited from server
+      final isFavorited = await FavoritesHelper.checkMerchantFavoriteFromServer(merchantId);
+      isFavorite.value = isFavorited;
+
+      if (kDebugMode) {
+        print('🤍 STORE DETAILS: Favorite status checked from server - Merchant $merchantId is ${isFavorited ? 'favorited' : 'not favorited'}');
+      }
+
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ STORE DETAILS: Error checking favorite status: $e');
+      }
+      // Default to false on error
+      isFavorite.value = false;
+    }
+  }
+
+  /// Toggle store favorite status
+  Future<void> toggleFavorite() async {
+    try {
+      if (kDebugMode) {
+        print('🤍 STORE DETAILS: Toggling favorite for merchant ${storeId.value}');
+      }
+
+      final merchantId = int.tryParse(storeId.value);
+      if (merchantId == null) {
+        if (kDebugMode) {
+          print('❌ STORE DETAILS: Merchant ID is null, cannot toggle favorite');
+        }
+        return;
+      }
+
+      // Ensure favorites controller is initialized
+      FavoritesHelper.ensureInitialized();
+
+      // Toggle favorite using the helper
+      await FavoritesHelper.toggleMerchantFavorite(merchantId);
+
+      // Check the new state from server to ensure consistency
+      final newFavoriteState = await FavoritesHelper.checkMerchantFavoriteFromServer(merchantId);
+      isFavorite.value = newFavoriteState;
+
+      if (kDebugMode) {
+        print('✅ STORE DETAILS: Favorite toggled successfully. New state: ${isFavorite.value}');
+      }
+
+      // Show success message
+      Get.snackbar(
+        isFavorite.value ? 'تمت الإضافة' : 'تمت الإزالة',
+        isFavorite.value ? 'تم إضافة المطعم إلى المفضلة' : 'تم إزالة المطعم من المفضلة',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: isFavorite.value ? Colors.green : Colors.orange,
+        colorText: Colors.white,
+        duration: const Duration(seconds: 2),
+      );
+
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ STORE DETAILS: Error toggling favorite: $e');
+      }
+
+      Get.snackbar(
+        'خطأ',
+        'فشل في تحديث المفضلة',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    }
+  }
+
   void toggleProductFavorite(int productId) {
     final productIndex = storeProducts.indexWhere((product) => product['id'] == productId);
     if (productIndex != -1) {

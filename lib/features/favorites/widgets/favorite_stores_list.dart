@@ -19,6 +19,7 @@ class FavoriteStoresList extends GetView<FavoritesController> {
             child: FavoriteStoreWidget(
               store: store,
               onRemove: () => controller.removeStoreFromFavorites(store.id),
+              onTap: () => controller.navigateToStoreDetails(store.id),
             ),
           );
         },

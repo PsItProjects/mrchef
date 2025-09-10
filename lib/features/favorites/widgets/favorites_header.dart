@@ -27,9 +27,9 @@ class FavoritesHeader extends StatelessWidget {
           ),
           
           // Title
-          const Text(
-            'Favorites',
-            style: TextStyle(
+          Text(
+            'favorites'.tr,
+            style: const TextStyle(
               fontFamily: 'Lato',
               fontWeight: FontWeight.w600,
               fontSize: 16,
@@ -42,8 +42,8 @@ class FavoritesHeader extends StatelessWidget {
             onTap: () {
               // TODO: Implement search functionality
               Get.snackbar(
-                'Search',
-                'Search functionality coming soon',
+                'search'.tr,
+                'coming_soon'.tr,
                 snackPosition: SnackPosition.BOTTOM,
               );
             },

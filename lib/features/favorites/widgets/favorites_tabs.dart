@@ -21,7 +21,7 @@ class FavoritesTabs extends GetView<FavoritesController> {
                 Container(
                   width: 190,
                   child: Text(
-                    'Stores',
+                    'restaurants'.tr,
                     textAlign: TextAlign.center,
                     style: AppTheme.tabTextStyle.copyWith(
                       fontWeight: controller.isStoresTabSelected
@@ -56,7 +56,7 @@ class FavoritesTabs extends GetView<FavoritesController> {
                 Container(
                   width: 190,
                   child: Text(
-                    'Product',
+                    'products'.tr,
                     textAlign: TextAlign.center,
                     style: AppTheme.tabTextStyle.copyWith(
                       fontWeight: controller.isProductsTabSelected

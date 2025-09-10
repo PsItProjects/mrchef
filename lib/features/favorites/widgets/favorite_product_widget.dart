@@ -5,16 +5,20 @@ import 'package:mrsheaf/features/favorites/models/favorite_product_model.dart';
 class FavoriteProductWidget extends StatelessWidget {
   final FavoriteProductModel product;
   final VoidCallback onRemove;
+  final VoidCallback? onTap;
 
   const FavoriteProductWidget({
     super.key,
     required this.product,
     required this.onRemove,
+    this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
       margin: const EdgeInsets.only(bottom: 1),
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       decoration: const BoxDecoration(
@@ -122,21 +126,22 @@ class FavoriteProductWidget extends StatelessWidget {
             ),
           ),
           
-          // Remove button (+ icon as per Figma)
+          // Remove button (heart icon for favorites)
           GestureDetector(
             onTap: onRemove,
             child: Container(
-              width: 20,
-              height: 20,
+              width: 24,
+              height: 24,
               child: const Icon(
-                Icons.add,
+                Icons.favorite,
                 size: 20,
-                color: Color(0xFF000000),
+                color: Colors.red,
               ),
             ),
           ),
         ],
       ),
+    ),
     );
   }
 }

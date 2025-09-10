@@ -5,16 +5,20 @@ import 'package:mrsheaf/core/theme/app_theme.dart';
 class FavoriteStoreWidget extends StatelessWidget {
   final FavoriteStoreModel store;
   final VoidCallback onRemove;
+  final VoidCallback? onTap;
 
   const FavoriteStoreWidget({
     super.key,
     required this.store,
     required this.onRemove,
+    this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
       // width: 380,
       decoration: BoxDecoration(
         color: Colors.white,
@@ -112,48 +116,70 @@ class FavoriteStoreWidget extends StatelessWidget {
                   ],
                 ),
                 
-                // Rating section
-                Container(
-                  width: 54,
-                  height: 26,
-                  child: Row(
-                    children: [
-                      // Star icon
-                      Container(
+                // Rating and remove button section
+                Row(
+                  children: [
+                    // Rating section
+                    Container(
+                      width: 54,
+                      height: 26,
+                      child: Row(
+                        children: [
+                          // Star icon
+                          Container(
+                            width: 24,
+                            height: 24,
+                            child: Icon(
+                              Icons.star,
+                              size: 18,
+                              color: AppColors.primaryColor,
+                            ),
+                          ),
+
+                          const SizedBox(width: 4),
+
+                          // Rating text
+                          Container(
+                            width: 26,
+                            height: 26,
+                            child: Text(
+                              store.rating.toString(),
+                              style: const TextStyle(
+                                fontFamily: 'Lato',
+                                fontWeight: FontWeight.w700,
+                                fontSize: 18,
+                                color: Color(0xFF262626),
+                                letterSpacing: -0.005,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(width: 8),
+
+                    // Remove button (heart icon for favorites)
+                    GestureDetector(
+                      onTap: onRemove,
+                      child: Container(
                         width: 24,
                         height: 24,
-                        child: Icon(
-                          Icons.star,
-                          size: 18,
-                          color: AppColors.primaryColor,
+                        child: const Icon(
+                          Icons.favorite,
+                          size: 20,
+                          color: Colors.red,
                         ),
                       ),
-                      
-                      const SizedBox(width: 4),
-                      
-                      // Rating text
-                      Container(
-                        width: 26,
-                        height: 26,
-                        child: Text(
-                          store.rating.toString(),
-                          style: const TextStyle(
-                            fontFamily: 'Lato',
-                            fontWeight: FontWeight.w700,
-                            fontSize: 18,
-                            color: Color(0xFF262626),
-                            letterSpacing: -0.005,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ],
             ),
           ),
         ],
       ),
+    ),
     );
   }
 }

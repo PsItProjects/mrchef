@@ -58,13 +58,7 @@ class FavoritesController extends GetxController {
       // Parse merchants/stores
       final merchants = favorites['merchants'] as List<dynamic>;
       favoriteStores.value = merchants.map((merchantData) {
-        return FavoriteStoreModel.fromJson({
-          'id': merchantData['id'],
-          'name': merchantData['business_name'] ?? merchantData['name'],
-          'image': merchantData['logo'] ?? '',
-          'rating': merchantData['average_rating'] ?? 4.5,
-          'backgroundImage': merchantData['cover_image'] ?? '',
-        });
+        return FavoriteStoreModel.fromJson(merchantData);
       }).toList();
 
       if (kDebugMode) {
@@ -359,5 +353,15 @@ class FavoritesController extends GetxController {
     } else {
       return favoriteProducts.isEmpty;
     }
+  }
+
+  /// Navigate to store details page
+  void navigateToStoreDetails(int storeId) {
+    Get.toNamed('/store-details', arguments: {'restaurantId': storeId});
+  }
+
+  /// Navigate to product details page
+  void navigateToProductDetails(int productId) {
+    Get.toNamed('/product-details', arguments: {'productId': productId});
   }
 }

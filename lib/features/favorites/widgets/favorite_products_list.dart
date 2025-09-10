@@ -21,6 +21,7 @@ class FavoriteProductsList extends GetView<FavoritesController> {
                 return FavoriteProductWidget(
                   product: product,
                   onRemove: () => controller.removeProductFromFavorites(product.id),
+                  onTap: () => controller.navigateToProductDetails(product.id),
                 );
               },
             )),
@@ -48,9 +49,9 @@ class FavoriteProductsList extends GetView<FavoritesController> {
               ),
               elevation: 0,
             ),
-            child: const Text(
-              'Add to my cart',
-              style: TextStyle(
+            child: Text(
+              'add_to_cart'.tr,
+              style: const TextStyle(
                 fontFamily: 'Lato',
                 fontWeight: FontWeight.w700,
                 fontSize: 18,
