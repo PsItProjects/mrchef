@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mrsheaf/core/routes/app_routes.dart';
@@ -33,7 +34,10 @@ class OTPController extends GetxController {
 
     // Get arguments from previous screen
     final args = Get.arguments as Map<String, dynamic>?;
-    print('🔍 OTP Controller - Received arguments: $args');
+
+    if (kDebugMode) {
+      print('🔍 OTP Controller - Received arguments: $args');
+    }
 
     if (args != null) {
       phoneNumber = args['phone_number'];
@@ -41,15 +45,20 @@ class OTPController extends GetxController {
       userType = args['user_type'] ?? 'customer';
       purpose = args['purpose'] ?? 'registration';
 
-      print('📱 Phone Number: $phoneNumber');
-      print('🌍 Country Code: $countryCode');
-      print('👤 User Type: $userType');
-      print('🎯 Purpose: $purpose');
-    } else {
-      print('❌ No arguments received!');
-    }
+      if (kDebugMode) {
+        print('📱 Phone Number: $phoneNumber');
+        print('🌍 Country Code: $countryCode');
+        print('👤 User Type: $userType');
+        print('🎯 Purpose: $purpose');
+      }
 
-    _startCountdown();
+      _startCountdown();
+    } else {
+      if (kDebugMode) {
+        print('❌ No arguments received! OTP Controller initialized without navigation.');
+      }
+      // Don't start countdown if no arguments received
+    }
   }
 
   void _startCountdown() {

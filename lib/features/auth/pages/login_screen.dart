@@ -199,17 +199,16 @@ class _LoginScreenState extends State<LoginScreen> {
                           child: Container(
                             height: 60,
                             child: ElevatedButton(
-                              onPressed: controller.isPhoneNumberValid.value
+                              onPressed: (controller.isPhoneNumberValid.value && !controller.isLoading.value)
                                   ? () {
                                       // Send login OTP using controller
                                       final controller =
                                           Get.find<LoginController>();
                                       controller.sendLoginOTP();
                                     }
-                                  : null, // Disable button if phone number is invalid
+                                  : null, // Disable button if phone number is invalid or loading
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: controller
-                                        .isPhoneNumberValid.value
+                                backgroundColor: (controller.isPhoneNumberValid.value && !controller.isLoading.value)
                                     ? AppColors.primaryColor
                                     : AppColors.disabledColor,
                                 shape: RoundedRectangleBorder(
@@ -217,14 +216,23 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ),
                                 elevation: 0,
                               ),
-                              child: Text(
-                                TranslationHelper.tr('login'),
-                                style: AppTheme.buttonTextStyle.copyWith(
-                                  color: controller.isPhoneNumberValid.value
-                                      ? AppColors.searchIconColor
-                                      : AppColors.textLightColor,
-                                ),
-                              ),
+                              child: controller.isLoading.value
+                                  ? const SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                      ),
+                                    )
+                                  : Text(
+                                      TranslationHelper.tr('login'),
+                                      style: AppTheme.buttonTextStyle.copyWith(
+                                        color: controller.isPhoneNumberValid.value
+                                            ? AppColors.searchIconColor
+                                            : AppColors.textLightColor,
+                                      ),
+                                    ),
                             ),
                           ),
                         ),

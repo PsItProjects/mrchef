@@ -6,9 +6,11 @@ import 'package:mrsheaf/features/favorites/models/favorite_product_model.dart';
 import 'package:mrsheaf/features/favorites/services/favorites_service.dart';
 import 'package:mrsheaf/features/cart/controllers/cart_controller.dart';
 import 'package:mrsheaf/features/product_details/models/product_model.dart';
+import 'package:mrsheaf/features/auth/services/auth_service.dart';
 
 class FavoritesController extends GetxController {
   final FavoritesService _favoritesService = FavoritesService();
+  final AuthService _authService = Get.find<AuthService>();
 
   // Tab management
   final RxInt selectedTabIndex = 0.obs;
@@ -27,12 +29,37 @@ class FavoritesController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    loadFavorites();
+    // Only load favorites if user is authenticated and is a customer
+    if (_authService.isAuthenticated && _authService.isCustomer) {
+      loadFavorites();
+    } else if (!_authService.isAuthenticated) {
+      // Redirect to login if not authenticated
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Get.offAllNamed('/login');
+      });
+    } else {
+      // Show error if not a customer
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Get.snackbar(
+          'access_denied'.tr,
+          'customer_only_feature'.tr,
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red.withValues(alpha: 0.3),
+        );
+        Get.back();
+      });
+    }
   }
 
   /// Load favorites from server
   Future<void> loadFavorites() async {
     try {
+      // Double check authentication before making API call
+      if (!_authService.isAuthenticated || !_authService.isCustomer) {
+        print('❌ FAVORITES CONTROLLER: Authentication check failed during load');
+        return;
+      }
+
       isLoading.value = true;
 
       if (kDebugMode) {
@@ -96,6 +123,11 @@ class FavoritesController extends GetxController {
 
   // Store management
   Future<void> addStoreToFavorites(int storeId) async {
+    if (!_authService.isAuthenticated || !_authService.isCustomer) {
+      _showAuthenticationError();
+      return;
+    }
+
     try {
       isLoadingStores.value = true;
 
@@ -129,6 +161,11 @@ class FavoritesController extends GetxController {
   }
 
   Future<void> removeStoreFromFavorites(int storeId) async {
+    if (!_authService.isAuthenticated || !_authService.isCustomer) {
+      _showAuthenticationError();
+      return;
+    }
+
     try {
       isLoadingStores.value = true;
 
@@ -170,6 +207,11 @@ class FavoritesController extends GetxController {
 
   // Product management
   Future<void> addProductToFavorites(int productId) async {
+    if (!_authService.isAuthenticated || !_authService.isCustomer) {
+      _showAuthenticationError();
+      return;
+    }
+
     try {
       isLoadingProducts.value = true;
 
@@ -203,6 +245,11 @@ class FavoritesController extends GetxController {
   }
 
   Future<void> removeProductFromFavorites(int productId) async {
+    if (!_authService.isAuthenticated || !_authService.isCustomer) {
+      _showAuthenticationError();
+      return;
+    }
+
     try {
       isLoadingProducts.value = true;
 
@@ -363,5 +410,16 @@ class FavoritesController extends GetxController {
   /// Navigate to product details page
   void navigateToProductDetails(int productId) {
     Get.toNamed('/product-details', arguments: {'productId': productId});
+  }
+
+  /// Show authentication error and redirect to login
+  void _showAuthenticationError() {
+    Get.snackbar(
+      'authentication_required'.tr,
+      'please_login_to_continue'.tr,
+      snackPosition: SnackPosition.BOTTOM,
+      backgroundColor: Colors.orange.withValues(alpha: 0.3),
+    );
+    Get.offAllNamed('/login');
   }
 }

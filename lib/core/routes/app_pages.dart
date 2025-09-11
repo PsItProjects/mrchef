@@ -3,6 +3,7 @@ import 'package:mrsheaf/core/routes/app_routes.dart';
 import 'package:mrsheaf/core/middleware/auth_middleware.dart';
 import 'package:mrsheaf/features/profile/bindings/profile_binding.dart';
 import 'package:mrsheaf/features/auth/bindings/auth_binding.dart';
+import 'package:mrsheaf/features/auth/bindings/otp_binding.dart';
 import 'package:mrsheaf/features/splash/pages/splash_screen.dart';
 import 'package:mrsheaf/features/onboarding/pages/onboarding_screen.dart';
 import 'package:mrsheaf/features/onboarding/pages/final_onboarding_screen.dart';
@@ -22,6 +23,7 @@ import 'package:mrsheaf/features/home/pages/categories_screen.dart';
 import 'package:mrsheaf/features/categories/bindings/categories_binding.dart';
 import 'package:mrsheaf/features/store_details/pages/store_details_screen.dart';
 import 'package:mrsheaf/features/store_details/bindings/store_details_binding.dart';
+import 'package:mrsheaf/features/favorites/bindings/favorites_binding.dart';
 
 class AppPages {
   static const INITIAL = AppRoutes.SPLASH;
@@ -59,7 +61,7 @@ class AppPages {
     GetPage(
       name: AppRoutes.OTP_VERIFICATION,
       page: () => const OtpVerificationScreen(),
-      binding: AuthBinding(),
+      binding: OTPBinding(),
       transition: Transition.rightToLeft,
     ),
     GetPage(
@@ -85,7 +87,7 @@ class AppPages {
     GetPage(
       name: AppRoutes.HOME,
       page: () => const MainScreen(),
-      bindings: [ProfileBinding(), HomeBinding()],
+      bindings: [ProfileBinding(), HomeBinding(), FavoritesBinding()],
       middlewares: [AuthMiddleware()],
       transition: Transition.fadeIn,
     ),
