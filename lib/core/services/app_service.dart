@@ -28,9 +28,14 @@ class AppService extends GetxService {
       await Future.delayed(const Duration(milliseconds: 500));
       
       // Determine initial route based on authentication status
+              print("isuserMarchent oo");
+
       if (authService.isAuthenticated) {
         // Check if user needs to complete onboarding
         final user = authService.user;
+                final isuserMarchent =  user?.isMerchant ?? false;
+
+        print("isuserMarchent $isuserMarchent");
         if (user != null && user.isMerchant && user.registrationStep != 'completed') {
           // Redirect to appropriate onboarding step
           switch (user.registrationStep) {
@@ -47,10 +52,10 @@ class AppService extends GetxService {
               initialRoute.value = '/vendor-step4';
               break;
             default:
-              initialRoute.value = '/home';
+              initialRoute.value = isuserMarchent? '/merchant-home' : '/home';
           }
         } else {
-          initialRoute.value = '/home';
+          initialRoute.value = isuserMarchent? '/merchant-home' : '/home';
         }
       } else {
         // Check if user has seen onboarding
