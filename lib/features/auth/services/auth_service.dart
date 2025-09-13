@@ -14,6 +14,7 @@ class AuthService extends getx.GetxService {
   final getx.Rx<UserModel?> currentUser = getx.Rx<UserModel?>(null);
   final getx.RxBool isLoggedIn = false.obs;
   final getx.RxBool isLoading = false.obs;
+  final getx.RxString userType = ''.obs;
 
   @override
   void onInit() {
@@ -27,11 +28,17 @@ class AuthService extends getx.GetxService {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('auth_token');
       final userData = prefs.getString('user_data');
+      final savedUserType = prefs.getString('user_type');
 
       if (token != null && userData != null) {
         final userJson = jsonDecode(userData);
         currentUser.value = UserModel.fromJson(userJson);
         isLoggedIn.value = true;
+
+        // Load saved user type
+        if (savedUserType != null) {
+          userType.value = savedUserType;
+        }
       }
     } catch (e) {
       print('Error loading user from storage: $e');
@@ -61,17 +68,41 @@ class AuthService extends getx.GetxService {
     }
   }
 
+  // Save user type to local storage
+  Future<void> _saveUserType(String type) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('user_type', type);
+      userType.value = type;
+    } catch (e) {
+      print('Error saving user type: $e');
+    }
+  }
+
   // Clear user data from local storage
   Future<void> _clearUserFromStorage() async {
     try {
       final prefs = await SharedPreferences.getInstance();
+
+      // Check if token exists before clearing
+      final existingToken = prefs.getString('auth_token');
+      print('🗑️ CLEARING STORAGE: Token exists: ${existingToken != null}');
+
       await prefs.remove('auth_token');
       await prefs.remove('user_data');
+      await prefs.remove('user_type');
+
+      // Verify token is actually removed
+      final tokenAfterClear = prefs.getString('auth_token');
+      print('🗑️ STORAGE CLEARED: Token removed: ${tokenAfterClear == null}');
 
       currentUser.value = null;
       isLoggedIn.value = false;
+      userType.value = '';
+
+      print('🗑️ USER STATE CLEARED: isLoggedIn = ${isLoggedIn.value}, currentUser = ${currentUser.value}');
     } catch (e) {
-      print('Error clearing user from storage: $e');
+      print('❌ Error clearing user from storage: $e');
     }
   }
 
@@ -81,7 +112,8 @@ class AuthService extends getx.GetxService {
     try {
       isLoading.value = true;
 
-      const endpoint = '/customer/send-login-otp';
+      // Use unified endpoint that auto-detects user type
+      const endpoint = '/auth/send-login-otp';
 
       final response = await _apiClient.post(endpoint, data: request.toJson());
 
@@ -90,6 +122,12 @@ class AuthService extends getx.GetxService {
           response.data,
           (data) => SendOTPResponse.fromJson(data),
         );
+
+        // Store detected user type if available
+        if (response.data['data'] != null && response.data['data']['user_type'] != null) {
+          await _saveUserType(response.data['data']['user_type']);
+        }
+
         return apiResponse;
       } else {
         return ApiResponse<SendOTPResponse>(
@@ -121,21 +159,18 @@ class AuthService extends getx.GetxService {
     try {
       isLoading.value = true;
 
-      final userType = request.userType ?? 'customer';
-      final endpoint = userType == 'customer'
-          ? '/customer/verify-login-otp'
-          : '/merchant/verify-login-otp';
+      // Use unified endpoint that auto-detects user type
+      const endpoint = '/auth/verify-login-otp';
 
-      // Build payload to match unified backend expectation: use 'otp' for login OTP
+      // Build payload for unified backend
       final cleanedCode = request.otpCode.replaceAll(RegExp(r'[^0-9]'), '');
       final payload = {
         'phone_number': request.phoneNumber,
         'otp': cleanedCode,
         'country_code': request.countryCode,
-        if (request.userType != null) 'user_type': request.userType!,
       };
 
-      print('🚀 LOGIN OTP REQUEST: $endpoint');
+      print('🚀 UNIFIED LOGIN OTP REQUEST: $endpoint');
       print('📤 Payload: $payload');
 
       final response = await _apiClient.post(endpoint, data: payload);
@@ -149,6 +184,11 @@ class AuthService extends getx.GetxService {
         if (apiResponse.isSuccess && apiResponse.data != null) {
           await _saveUserToStorage(
               apiResponse.data!.user, apiResponse.data!.token);
+
+          // Save user type from response
+          if (response.data['data'] != null && response.data['data']['user_type'] != null) {
+            await _saveUserType(response.data['data']['user_type']);
+          }
         }
 
         return apiResponse;
@@ -315,16 +355,14 @@ class AuthService extends getx.GetxService {
     }
   }
 
-  // Resend OTP
+  // Resend OTP using unified endpoint
   Future<ApiResponse<SendOTPResponse>> resendOTP(
       ResendOTPRequest request) async {
     try {
       isLoading.value = true;
 
-      final userType = request.userType ?? 'customer';
-      final endpoint = userType == 'customer'
-          ? '/customer/resend-otp'
-          : '/merchant/resend-otp';
+      // Use unified endpoint
+      const endpoint = '/auth/resend-otp';
 
       final response = await _apiClient.post(endpoint, data: request.toJson());
 
@@ -333,6 +371,15 @@ class AuthService extends getx.GetxService {
           response.data,
           (data) => SendOTPResponse.fromJson(data),
         );
+
+        // Print OTP code clearly for testing
+        if (response.data['data'] != null && response.data['data']['verification_code'] != null) {
+          print('🎯🎯🎯 RESENT OTP CODE: ${response.data['data']['verification_code']} 🎯🎯🎯');
+          print('📱 Phone: ${request.phoneNumber}');
+          print('👤 User Type: ${request.userType}');
+          print('🎯🎯🎯 USE THIS CODE IN THE OTP SCREEN 🎯🎯🎯');
+        }
+
         return apiResponse;
       } else {
         return ApiResponse<SendOTPResponse>(
@@ -379,6 +426,9 @@ class AuthService extends getx.GetxService {
       // Clear local storage regardless of API response
       await _clearUserFromStorage();
 
+      // Also clear ApiClient auth data
+      await _apiClient.clearAuthData();
+
       return ApiResponse<void>(
         success: true,
         message: 'Logged out successfully',
@@ -387,6 +437,9 @@ class AuthService extends getx.GetxService {
       print('❌ LOGOUT ERROR: $e');
       // Clear local storage even if API call fails
       await _clearUserFromStorage();
+
+      // Also clear ApiClient auth data
+      await _apiClient.clearAuthData();
 
       return ApiResponse<void>(
         success: true,
@@ -403,14 +456,28 @@ class AuthService extends getx.GetxService {
   // Get current user
   UserModel? get user => currentUser.value;
 
-  // Get user type
-  String? get userType => currentUser.value?.userType;
+  // Get stored user type
+  String get storedUserType => userType.value;
 
   // Check if user is customer
   bool get isCustomer => currentUser.value?.isCustomer ?? false;
 
   // Check if user is merchant
   bool get isMerchant => currentUser.value?.isMerchant ?? false;
+
+  /// Get the appropriate home route based on user type
+  String getHomeRoute() {
+    if (storedUserType == 'merchant') {
+      return '/merchant-dashboard';
+    } else {
+      return '/home'; // Default for customers
+    }
+  }
+
+  /// Check if user should be redirected based on stored user type
+  bool shouldRedirectToMerchantDashboard() {
+    return isAuthenticated && storedUserType == 'merchant';
+  }
 
   // Update customer profile
   Future<ApiResponse<UserModel>> updateCustomerProfile(

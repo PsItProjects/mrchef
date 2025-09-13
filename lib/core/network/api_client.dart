@@ -22,8 +22,8 @@ class ApiClient {
   void _setupInterceptors() {
     _dio.options.baseUrl = ApiConstants.baseUrl;
     _dio.options.connectTimeout = const Duration(seconds: 30);
-    _dio.options.receiveTimeout = const Duration(seconds: 30);
-    _dio.options.sendTimeout = const Duration(seconds: 30);
+    _dio.options.receiveTimeout = const Duration(seconds: 60);
+    _dio.options.sendTimeout = const Duration(seconds: 120); // Increased for file uploads
 
     print('🔧 ApiClient initialized with: ${ApiConstants.currentServerInfo}');
     
@@ -88,6 +88,9 @@ class ApiClient {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('auth_token');
     await prefs.remove('user_data');
+    await prefs.remove('user_type');
+
+    print('🔒 UNAUTHORIZED: Token cleared due to 401 response');
 
     // Navigate to login screen
     getx.Get.offAllNamed('/login');
@@ -97,6 +100,20 @@ class ApiClient {
       'Please login again',
       snackPosition: getx.SnackPosition.BOTTOM,
     );
+  }
+
+  /// Clear authentication data (used during logout)
+  Future<void> clearAuthData() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('auth_token');
+      await prefs.remove('user_data');
+      await prefs.remove('user_type');
+
+      print('🗑️ API CLIENT: Authentication data cleared');
+    } catch (e) {
+      print('❌ API CLIENT: Error clearing auth data: $e');
+    }
   }
 
   /// Clear all cached data when language changes

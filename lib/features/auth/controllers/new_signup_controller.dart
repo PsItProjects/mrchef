@@ -21,6 +21,12 @@ class NewSignupController extends GetxController {
   final RxBool agreeToTerms = false.obs;
   final RxBool isPhoneNumberValid = false.obs;
   final RxBool isLoading = false.obs;
+
+  // Validation error messages
+  final RxString phoneNumberError = ''.obs;
+  final RxString emailError = ''.obs;
+  final RxString englishNameError = ''.obs;
+  final RxString arabicNameError = ''.obs;
   bool _isDisposed = false;
 
   final AuthService _authService = Get.find<AuthService>();
@@ -36,7 +42,23 @@ class NewSignupController extends GetxController {
   void validatePhoneNumber() {
     if (!_isDisposed) {
       String phoneNumber = phoneController.text.replaceAll(' ', '');
-      isPhoneNumberValid.value = phoneNumber.length >= 9;
+
+      // Clear previous error
+      phoneNumberError.value = '';
+
+      // Validate phone number format (Saudi format: 9 digits)
+      if (phoneNumber.isEmpty) {
+        phoneNumberError.value = 'phone_number_required'.tr;
+        isPhoneNumberValid.value = false;
+      } else if (phoneNumber.startsWith('0')) {
+        phoneNumberError.value = 'phone_number_no_zero'.tr;
+        isPhoneNumberValid.value = false;
+      } else if (!RegExp(r'^[0-9]{9}$').hasMatch(phoneNumber)) {
+        phoneNumberError.value = 'phone_number_9_digits'.tr;
+        isPhoneNumberValid.value = false;
+      } else {
+        isPhoneNumberValid.value = true;
+      }
     }
   }
 
@@ -78,6 +100,14 @@ class NewSignupController extends GetxController {
         final response = await _authService.registerMerchant(request);
 
         if (response.isSuccess) {
+          // Print OTP code clearly for testing
+          if (response.data != null && response.data!.verificationCode != null) {
+            print('🎯🎯🎯 OTP CODE FOR TESTING: ${response.data!.verificationCode} 🎯🎯🎯');
+            print('📱 Phone: ${phoneController.text.replaceAll(' ', '')}');
+            print('👤 User Type: merchant');
+            print('🎯🎯🎯 USE THIS CODE IN THE OTP SCREEN 🎯🎯🎯');
+          }
+
           Get.snackbar(
             'Registration Successful',
             response.message,
@@ -93,12 +123,8 @@ class NewSignupController extends GetxController {
             'purpose': 'registration',
           });
         } else {
-          Get.snackbar(
-            'Registration Failed',
-            response.message,
-            snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: Colors.red.withValues(alpha: 0.3),
-          );
+          // Handle validation errors from backend
+          _handleRegistrationErrors(response);
         }
       } else {
         // Register as customer
@@ -130,12 +156,8 @@ class NewSignupController extends GetxController {
             'purpose': 'registration',
           });
         } else {
-          Get.snackbar(
-            'Registration Failed',
-            response.message,
-            snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: Colors.red.withValues(alpha: 0.3),
-          );
+          // Handle validation errors from backend
+          _handleRegistrationErrors(response);
         }
       }
     } catch (e) {
@@ -148,6 +170,71 @@ class NewSignupController extends GetxController {
     } finally {
       isLoading.value = false;
     }
+  }
+
+  /// Handle registration errors from backend
+  void _handleRegistrationErrors(dynamic response) {
+    // Clear all previous errors
+    _clearValidationErrors();
+
+    // Check if response has errors object
+    if (response.errors != null && response.errors is Map) {
+      final errors = response.errors as Map<String, dynamic>;
+
+      // Handle specific field errors
+      if (errors.containsKey('phone_number')) {
+        final phoneErrors = errors['phone_number'];
+        if (phoneErrors is List && phoneErrors.isNotEmpty) {
+          phoneNumberError.value = phoneErrors.first.toString();
+        }
+      }
+
+      if (errors.containsKey('email')) {
+        final emailErrors = errors['email'];
+        if (emailErrors is List && emailErrors.isNotEmpty) {
+          emailError.value = emailErrors.first.toString();
+        }
+      }
+
+      if (errors.containsKey('english_full_name')) {
+        final nameErrors = errors['english_full_name'];
+        if (nameErrors is List && nameErrors.isNotEmpty) {
+          englishNameError.value = nameErrors.first.toString();
+        }
+      }
+
+      if (errors.containsKey('arabic_full_name')) {
+        final nameErrors = errors['arabic_full_name'];
+        if (nameErrors is List && nameErrors.isNotEmpty) {
+          arabicNameError.value = nameErrors.first.toString();
+        }
+      }
+
+      // Show general error message
+      Get.snackbar(
+        'registration_failed'.tr,
+        'please_check_errors_below'.tr,
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red.withValues(alpha: 0.3),
+        duration: const Duration(seconds: 4),
+      );
+    } else {
+      // Show general error message
+      Get.snackbar(
+        'registration_failed'.tr,
+        response.message ?? 'unknown_error_occurred'.tr,
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red.withValues(alpha: 0.3),
+      );
+    }
+  }
+
+  /// Clear all validation error messages
+  void _clearValidationErrors() {
+    phoneNumberError.value = '';
+    emailError.value = '';
+    englishNameError.value = '';
+    arabicNameError.value = '';
   }
 
   @override

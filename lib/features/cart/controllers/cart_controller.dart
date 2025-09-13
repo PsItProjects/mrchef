@@ -5,6 +5,7 @@ import 'package:mrsheaf/features/cart/models/cart_item_model.dart';
 import 'package:mrsheaf/features/cart/services/cart_service.dart';
 import 'package:mrsheaf/features/product_details/models/product_model.dart';
 import 'package:mrsheaf/core/routes/app_routes.dart';
+import 'package:mrsheaf/core/theme/app_theme.dart';
 
 class CartController extends GetxController {
   final CartService _cartService = CartService();
@@ -297,7 +298,7 @@ class CartController extends GetxController {
         'تم المسح',
         'تم مسح جميع العناصر من السلة',
         snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: const Color(0xFF4CAF50),
+        backgroundColor: AppColors.successColor,
         colorText: Colors.white,
       );
 

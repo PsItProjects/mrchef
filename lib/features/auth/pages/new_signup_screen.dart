@@ -11,6 +11,10 @@ class NewSignupScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Ensure controller is available
+    if (!Get.isRegistered<NewSignupController>()) {
+      Get.put(NewSignupController());
+    }
     final controller = Get.find<NewSignupController>();
 
     return Scaffold(
@@ -115,7 +119,7 @@ class NewSignupScreen extends StatelessWidget {
                         SizedBox(height: 20),
 
                         // Form fields
-                        Obx(() => _buildFormFields(controller)),
+                        _buildFormFields(controller),
                         SizedBox(height: 20),
 
                         // Terms and conditions
@@ -204,38 +208,59 @@ class NewSignupScreen extends StatelessWidget {
   }
 
   Widget _buildFormFields(NewSignupController controller) {
-    if (controller.isVendor.value) {
-      return Column(
-        children: [
-          _buildInputField('English Full Name', 'Enter your English Full name',
-              controller.englishFullNameController),
-          SizedBox(height: 20),
-          _buildInputField('Arabic Full Name', 'Enter your Arabic Full name',
-              controller.arabicFullNameController),
-          SizedBox(height: 20),
-          _buildInputField(
-              'Email', 'Enter your email', controller.emailController),
-          SizedBox(height: 20),
-          _buildPhoneField(controller),
-        ],
-      );
-    } else {
-      return Column(
-        children: [
-          _buildInputField('Full Name', 'Enter your Full name',
-              controller.fullNameController),
-          SizedBox(height: 20),
-          _buildInputField(
-              'Email', 'Enter your email', controller.emailController),
-          SizedBox(height: 20),
-          _buildPhoneField(controller),
-        ],
-      );
-    }
+    return Obx(() {
+      if (controller.isVendor.value) {
+        return Column(
+          children: [
+            _buildInputFieldWithError(
+              'English Full Name',
+              'Enter your English Full name',
+              controller.englishFullNameController,
+              controller.englishNameError,
+            ),
+            SizedBox(height: 20),
+            _buildInputFieldWithError(
+              'Arabic Full Name',
+              'Enter your Arabic Full name',
+              controller.arabicFullNameController,
+              controller.arabicNameError,
+            ),
+            SizedBox(height: 20),
+            _buildInputFieldWithError(
+              'Email',
+              'Enter your email',
+              controller.emailController,
+              controller.emailError,
+            ),
+            SizedBox(height: 20),
+            _buildPhoneField(controller),
+          ],
+        );
+      } else {
+        return Column(
+          children: [
+            _buildInputField(
+              'Full Name',
+              'Enter your Full name',
+              controller.fullNameController,
+            ),
+            SizedBox(height: 20),
+            _buildInputFieldWithError(
+              'Email',
+              'Enter your email',
+              controller.emailController,
+              controller.emailError,
+            ),
+            SizedBox(height: 20),
+            _buildPhoneField(controller),
+          ],
+        );
+      }
+    });
   }
 
   Widget _buildInputField(
-      String label, String placeholder, TextEditingController textController) {
+      String label, String placeholder, TextEditingController textController, {String? errorMessage}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -252,7 +277,12 @@ class NewSignupScreen extends StatelessWidget {
         Container(
           height: 50,
           decoration: BoxDecoration(
-            border: Border.all(color: Color(0xFFD2D2D2), width: 1),
+            border: Border.all(
+              color: errorMessage != null && errorMessage.isNotEmpty
+                  ? Colors.red
+                  : Color(0xFFD2D2D2),
+              width: 1
+            ),
             borderRadius: BorderRadius.circular(10),
           ),
           child: TextField(
@@ -271,12 +301,37 @@ class NewSignupScreen extends StatelessWidget {
             ),
           ),
         ),
+        // Error message
+        if (errorMessage != null && errorMessage.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: Text(
+              errorMessage,
+              style: TextStyle(
+                color: Colors.red,
+                fontSize: 12,
+                fontFamily: 'Lato',
+              ),
+            ),
+          ),
       ],
     );
   }
 
+  Widget _buildInputFieldWithError(
+      String label, String placeholder, TextEditingController textController, RxString errorObservable) {
+    return GetBuilder<NewSignupController>(
+      builder: (controller) => _buildInputField(
+        label,
+        placeholder,
+        textController,
+        errorMessage: errorObservable.value,
+      ),
+    );
+  }
+
   Widget _buildPhoneField(NewSignupController controller) {
-    return Column(
+    return Obx(() => Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
@@ -338,13 +393,19 @@ class NewSignupScreen extends StatelessWidget {
               child: Container(
                 height: 50,
                 decoration: BoxDecoration(
-                  border: Border.all(color: Color(0xFFE3E3E3), width: 1),
+                  border: Border.all(
+                    color: controller.phoneNumberError.value.isNotEmpty
+                        ? Colors.red
+                        : Color(0xFFE3E3E3),
+                    width: 1
+                  ),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: TextField(
                   controller: controller.phoneController,
+                  keyboardType: TextInputType.number,
                   decoration: InputDecoration(
-                    hintText: '00 000 0000',
+                    hintText: '50 123 4567',
                     hintStyle: TextStyle(
                       fontFamily: 'Lato',
                       fontWeight: FontWeight.w400,
@@ -360,8 +421,21 @@ class NewSignupScreen extends StatelessWidget {
             ),
           ],
         ),
+        // Error message
+        if (controller.phoneNumberError.value.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: Text(
+              controller.phoneNumberError.value,
+              style: TextStyle(
+                color: Colors.red,
+                fontSize: 12,
+                fontFamily: 'Lato',
+              ),
+            ),
+          ),
       ],
-    );
+    ));
   }
 
   Widget _buildTermsCheckbox(NewSignupController controller) {
@@ -410,9 +484,11 @@ class NewSignupScreen extends StatelessWidget {
           // width: 380,
           // height: 50,
           child: ElevatedButton(
-            onPressed: controller.agreeToTerms.value ? controller.signup : null,
+            onPressed: (controller.agreeToTerms.value && !controller.isLoading.value)
+                ? controller.signup
+                : null,
             style: ElevatedButton.styleFrom(
-              backgroundColor: controller.agreeToTerms.value
+              backgroundColor: (controller.agreeToTerms.value && !controller.isLoading.value)
                   ? AppColors.primaryColor
                   : AppColors.disabledColor,
               shape: RoundedRectangleBorder(
@@ -420,14 +496,23 @@ class NewSignupScreen extends StatelessWidget {
               ),
               elevation: 0,
             ),
-            child: Text(
-              controller.isVendor.value ? TranslationHelper.tr('continue') : TranslationHelper.tr('sign_up'),
-              style: AppTheme.buttonTextStyle.copyWith(
-                color: controller.agreeToTerms.value
-                    ? AppColors.searchIconColor
-                    : AppColors.textLightColor,
-              ),
-            ),
+            child: controller.isLoading.value
+                ? SizedBox(
+                    height: 20,
+                    width: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    ),
+                  )
+                : Text(
+                    controller.isVendor.value ? TranslationHelper.tr('continue') : TranslationHelper.tr('sign_up'),
+                    style: AppTheme.buttonTextStyle.copyWith(
+                      color: (controller.agreeToTerms.value && !controller.isLoading.value)
+                          ? AppColors.searchIconColor
+                          : AppColors.textLightColor,
+                    ),
+                  ),
           ),
         ));
   }

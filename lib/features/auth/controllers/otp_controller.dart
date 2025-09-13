@@ -18,7 +18,7 @@ class OTPController extends GetxController {
 
   final RxBool isLoading = false.obs;
   final RxBool canResend = false.obs;
-  final RxInt countdown = 60.obs;
+  final RxInt countdown = 30.obs;
 
   final AuthService _authService = Get.find<AuthService>();
 
@@ -42,7 +42,7 @@ class OTPController extends GetxController {
     if (args != null) {
       phoneNumber = args['phone_number'];
       countryCode = args['country_code'] ?? '+966';
-      userType = args['user_type'] ?? 'customer';
+      userType = args['user_type']; // Will be null for unified login
       purpose = args['purpose'] ?? 'registration';
 
       if (kDebugMode) {
@@ -62,14 +62,14 @@ class OTPController extends GetxController {
   }
 
   void _startCountdown() {
-    countdown.value = 60;
+    countdown.value = 30;
     canResend.value = false;
-    
+
     // Start countdown timer
     Future.doWhile(() async {
       await Future.delayed(const Duration(seconds: 1));
       countdown.value--;
-      
+
       if (countdown.value <= 0) {
         canResend.value = true;
         return false;
@@ -153,8 +153,8 @@ class OTPController extends GetxController {
             backgroundColor: Colors.green.withValues(alpha: 0.3),
           );
 
-          // Navigate to home screen
-          Get.offAllNamed(AppRoutes.HOME);
+          // Smart navigation based on user type
+          _navigateBasedOnUserType();
         } else {
           Get.snackbar(
             'Verification Failed',
@@ -257,6 +257,24 @@ class OTPController extends GetxController {
       controller.clear();
     }
     focusNodes[0].requestFocus();
+  }
+
+  /// Smart navigation based on detected user type
+  void _navigateBasedOnUserType() {
+    final authService = Get.find<AuthService>();
+    final detectedUserType = authService.storedUserType;
+
+    if (kDebugMode) {
+      print('🎯 SMART NAVIGATION: Detected user type: $detectedUserType');
+    }
+
+    if (detectedUserType == 'merchant') {
+      // Navigate to merchant dashboard
+      Get.offAllNamed(AppRoutes.MERCHANT_HOME);
+    } else {
+      // Default to customer home (includes 'customer' and empty/null cases)
+      Get.offAllNamed(AppRoutes.HOME);
+    }
   }
 
   @override

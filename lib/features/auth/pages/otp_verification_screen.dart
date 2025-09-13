@@ -198,31 +198,70 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                 bottom: 132,
                 left: 0,
                 right: 0,
-                child: Column(
+                child: Obx(() => Column(
                   children: [
-                    Text(
-                      'Resending Message after ',
-                      style: TextStyle(
-                        fontFamily: 'Lato',
-                        fontWeight: FontWeight.w400,
-                        fontSize: 16,
-                        color: Color(0xFF5E5E5E),
-                        height: 1.6,
+                    if (!controller.canResend.value) ...[
+                      Text(
+                        'Resending Message after',
+                        style: TextStyle(
+                          fontFamily: 'Lato',
+                          fontWeight: FontWeight.w400,
+                          fontSize: 16,
+                          color: Color(0xFF5E5E5E),
+                          height: 1.6,
+                        ),
                       ),
-                    ),
-                    SizedBox(height: 4),
-                    Text(
-                      '01:00',
-                      style: TextStyle(
-                        fontFamily: 'Lato',
-                        fontWeight: FontWeight.w700,
-                        fontSize: 16,
-                        color: Color(0xFF5E5E5E),
-                        height: 1.6,
+                      SizedBox(height: 4),
+                      Text(
+                        '00:${controller.countdown.value.toString().padLeft(2, '0')}',
+                        style: TextStyle(
+                          fontFamily: 'Lato',
+                          fontWeight: FontWeight.w700,
+                          fontSize: 16,
+                          color: Color(0xFF5E5E5E),
+                          height: 1.6,
+                        ),
                       ),
-                    ),
+                    ] else ...[
+                      GestureDetector(
+                        onTap: controller.isLoading.value ? null : controller.resendOTP,
+                        child: Container(
+                          padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                          decoration: BoxDecoration(
+                            color: controller.isLoading.value
+                                ? Colors.grey.withValues(alpha: 0.3)
+                                : AppColors.primaryColor.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: controller.isLoading.value
+                                  ? Colors.grey
+                                  : AppColors.primaryColor,
+                              width: 1,
+                            ),
+                          ),
+                          child: controller.isLoading.value
+                              ? SizedBox(
+                                  height: 16,
+                                  width: 16,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    valueColor: AlwaysStoppedAnimation<Color>(Colors.grey),
+                                  ),
+                                )
+                              : Text(
+                                  'Resend OTP',
+                                  style: TextStyle(
+                                    fontFamily: 'Lato',
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 16,
+                                    color: AppColors.primaryColor,
+                                  ),
+                                ),
+                        ),
+                      ),
+                    ],
                   ],
-                ),
+                )),
               ),
 
               // Navigation bar (bottom)

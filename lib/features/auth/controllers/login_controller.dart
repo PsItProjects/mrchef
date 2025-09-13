@@ -61,7 +61,6 @@ class LoginController extends GetxController {
         final arguments = {
           'phone_number': phoneController.text.replaceAll(' ', ''),
           'country_code': countryCodeController.text,
-          'user_type': 'customer',
           'purpose': 'login',
         };
 

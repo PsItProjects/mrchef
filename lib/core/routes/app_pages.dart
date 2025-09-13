@@ -24,6 +24,10 @@ import 'package:mrsheaf/features/categories/bindings/categories_binding.dart';
 import 'package:mrsheaf/features/store_details/pages/store_details_screen.dart';
 import 'package:mrsheaf/features/store_details/bindings/store_details_binding.dart';
 import 'package:mrsheaf/features/favorites/bindings/favorites_binding.dart';
+import 'package:mrsheaf/features/merchant/pages/simple_merchant_home.dart';
+import 'package:mrsheaf/features/merchant/pages/merchant_dashboard_screen.dart';
+import 'package:mrsheaf/features/merchant/bindings/merchant_dashboard_binding.dart';
+import 'package:mrsheaf/features/onboarding/bindings/vendor_step2_binding.dart';
 
 class AppPages {
   static const INITIAL = AppRoutes.SPLASH;
@@ -72,6 +76,7 @@ class AppPages {
     GetPage(
       name: AppRoutes.VENDOR_STEP2,
       page: () => const VendorStep2Screen(),
+      binding: VendorStep2Binding(),
       transition: Transition.rightToLeft,
     ),
     GetPage(
@@ -108,6 +113,18 @@ class AppPages {
       page: () => const StoreDetailsScreen(),
       binding: StoreDetailsBinding(),
       transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.MERCHANT_HOME,
+      page: () => const SimpleMerchantHome(),
+      transition: Transition.fadeIn,
+    ),
+    GetPage(
+      name: AppRoutes.MERCHANT_DASHBOARD,
+      page: () => const MerchantDashboardScreen(),
+      binding: MerchantDashboardBinding(),
+      middlewares: [AuthMiddleware()],
+      transition: Transition.fadeIn,
     ),
   ];
 }
