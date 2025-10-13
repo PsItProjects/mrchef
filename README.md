@@ -6,7 +6,7 @@ A Flutter application that implements the design from Figma.
 
 - Splash screen
 - Onboarding screens
-- Login and Signup screens
+- Login and Signup~~~~ screens
 - Responsive design
 - Follows Flutter best practices
 

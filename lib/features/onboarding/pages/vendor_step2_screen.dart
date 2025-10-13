@@ -4,6 +4,7 @@ import 'package:mrsheaf/core/routes/app_routes.dart';
 import 'package:mrsheaf/features/onboarding/widgets/vendor_stepper.dart';
 import '../controllers/vendor_step2_controller.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/localization/translation_helper.dart';
 
 class VendorStep2Screen extends StatelessWidget {
   const VendorStep2Screen({super.key});
@@ -13,21 +14,29 @@ class VendorStep2Screen extends StatelessWidget {
     // Initialize controller
     final controller = Get.put(VendorStep2Controller());
 
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            children: [
-              _buildHeader(),
-              const SizedBox(height: 30),
-              const VendorStepper(currentStep: 2),
-              const SizedBox(height: 40),
-              _buildStoreInformationForm(controller),
-              const SizedBox(height: 40),
-              _buildSignupButton(controller),
-            ],
+    // Get current language for RTL support
+    final isArabic = TranslationHelper.isArabic;
+
+    return Directionality(
+      textDirection: isArabic ? TextDirection.rtl : TextDirection.ltr,
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        body: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              children: [
+                _buildHeader(),
+                const SizedBox(height: 30),
+                const VendorStepper(currentStep: 2),
+                const SizedBox(height: 20),
+                _buildRequiredDocumentsWarning(),
+                const SizedBox(height: 20),
+                _buildStoreInformationForm(controller),
+                const SizedBox(height: 40),
+                _buildSignupButton(controller),
+              ],
+            ),
           ),
         ),
       ),
@@ -40,10 +49,10 @@ class VendorStep2Screen extends StatelessWidget {
       children: [
         GestureDetector(
           onTap: () => Get.back(),
-          child: SizedBox(
+          child: const SizedBox(
             width: 24,
             height: 24,
-            child: const Icon(
+            child: Icon(
               Icons.arrow_back_ios,
               size: 16,
               color: Color(0xFF262626),
@@ -80,48 +89,95 @@ class VendorStep2Screen extends StatelessWidget {
     );
   }
 
+  Widget _buildRequiredDocumentsWarning() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFF3CD),
+        border: Border.all(color: const Color(0xFFFFE69C), width: 1),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        children: [
+          const Icon(
+            Icons.warning_amber_rounded,
+            color: Color(0xFFFF9800),
+            size: 24,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  TranslationHelper.tr('required_documents_warning'),
+                  style: const TextStyle(
+                    fontFamily: 'Lato',
+                    fontWeight: FontWeight.w700,
+                    fontSize: 14,
+                    color: Color(0xFF856404),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  TranslationHelper.tr('required_documents_message'),
+                  style: const TextStyle(
+                    fontFamily: 'Lato',
+                    fontWeight: FontWeight.w400,
+                    fontSize: 12,
+                    color: Color(0xFF856404),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildStoreInformationForm(VendorStep2Controller controller) {
     return SizedBox(
       width: 380,
       child: Column(
         children: [
           _buildInputField(
-            'Store Name - English',
-            'Enter Store name',
+            TranslationHelper.tr('store_name_english'),
+            TranslationHelper.tr('enter_store_name'),
             controller.storeNameEn,
           ),
           const SizedBox(height: 20),
           _buildInputField(
-            'Store Name - Arabic',
-            'Enter Store name',
+            TranslationHelper.tr('store_name_arabic'),
+            TranslationHelper.tr('enter_store_name'),
             controller.storeNameAr,
           ),
           const SizedBox(height: 20),
           _buildInputField(
-            'Commercial registration number',
-            'Enter your Commercial registration number',
+            TranslationHelper.tr('commercial_registration_number'),
+            TranslationHelper.tr('enter_commercial_registration'),
             controller.commercialRegistrationNumber,
           ),
           const SizedBox(height: 20),
           _buildFileUploadField(
             controller,
             'work_permit',
-            'Work permit',
-            'Copy of work permit,\nplease upload file in PDF format',
+            TranslationHelper.tr('work_permit'),
+            TranslationHelper.tr('work_permit_description'),
           ),
           const SizedBox(height: 20),
           _buildFileUploadField(
             controller,
             'id_or_passport',
-            'ID or passport number',
-            'ID or passport number of the store owner,\nplease upload file in PDF format',
+            TranslationHelper.tr('id_or_passport'),
+            TranslationHelper.tr('id_or_passport_description'),
           ),
           const SizedBox(height: 20),
           _buildFileUploadField(
             controller,
             'health_certificate',
-            'Health certificate',
-            'Health certificate,\nplease upload file in PDF format',
+            TranslationHelper.tr('health_certificate'),
+            TranslationHelper.tr('health_certificate_description'),
           ),
         ],
       ),
@@ -245,9 +301,9 @@ class VendorStep2Screen extends StatelessWidget {
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
-                          const Text(
-                            'ملف PDF محدد',
-                            style: TextStyle(
+                          Text(
+                            controller.getFileTypeText(fileType),
+                            style: const TextStyle(
                               fontFamily: 'Lato',
                               fontWeight: FontWeight.w400,
                               fontSize: 12,
@@ -300,7 +356,7 @@ class VendorStep2Screen extends StatelessWidget {
         style: ElevatedButton.styleFrom(
           backgroundColor: controller.isLoading.value
             ? const Color(0xFFD2D2D2)
-            : AppColors.successColor,
+            : AppColors.primaryColor,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(10),
           ),
@@ -321,7 +377,7 @@ class VendorStep2Screen extends StatelessWidget {
                 fontFamily: 'Lato',
                 fontWeight: FontWeight.w700,
                 fontSize: 18,
-                color: Colors.white,
+                color: AppColors.secondaryColor,
                 letterSpacing: -0.005,
                 height: 1.45,
               ),

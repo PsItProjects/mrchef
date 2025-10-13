@@ -28,34 +28,26 @@ class AppService extends GetxService {
       await Future.delayed(const Duration(milliseconds: 500));
       
       // Determine initial route based on authentication status
-              print("isuserMarchent oo");
+      print("isuserMarchent oo");
 
       if (authService.isAuthenticated) {
         // Check if user needs to complete onboarding
         final user = authService.user;
-                final isuserMarchent =  user?.isMerchant ?? false;
+        final isuserMarchent = user?.isMerchant ?? false;
 
         print("isuserMarchent $isuserMarchent");
-        if (user != null && user.isMerchant && user.registrationStep != 'completed') {
-          // Redirect to appropriate onboarding step
-          switch (user.registrationStep) {
-            case 'basic_info':
-              initialRoute.value = '/vendor-step1';
-              break;
-            case 'business_info':
-              initialRoute.value = '/vendor-step2';
-              break;
-            case 'documents':
-              initialRoute.value = '/vendor-step3';
-              break;
-            case 'payment':
-              initialRoute.value = '/vendor-step4';
-              break;
-            default:
-              initialRoute.value = isuserMarchent? '/merchant-home' : '/home';
-          }
+
+        if (user != null && user.isMerchant) {
+          // For merchants, always check onboarding status via API
+          // Don't rely on local user.registrationStep as it might be outdated
+          print("🔍 MERCHANT DETECTED - Will check onboarding via API after navigation");
+
+          // Start with merchant home, but the actual onboarding check will happen
+          // when MerchantSettingsService is initialized and tries to load profile
+          initialRoute.value = '/merchant-home';
         } else {
-          initialRoute.value = isuserMarchent? '/merchant-home' : '/home';
+          // Customer - go to home
+          initialRoute.value = '/home';
         }
       } else {
         // Check if user has seen onboarding

@@ -1,10 +1,15 @@
 class ApiConstants {
   // 🎯 CONTROL VARIABLE - Change this to switch between servers
-  static const bool useProductionServer = true; // true = Production, false = Local (temporarily using local due to empty production DB)
+  static const bool useProductionServer = false; // true = Production, false = Local
 
   // Server URLs
   static const String _productionUrl = 'https://mr-shife-backend-main-ygodva.laravel.cloud/api';
-  static const String _localUrl = 'http://127.0.0.1:8000/api'; // Android emulator localhost
+
+  // Local server URL - Choose based on your device:
+  // For Physical Device: Use your computer's IP on local network (e.g., 10.20.20.250)
+  // For Android Emulator: Use 10.0.2.2
+  // For iOS Simulator: Use 127.0.0.1 or localhost
+  static const String _localUrl = 'http://10.20.20.241/laravel/MR_Shife/MR_Shife-Backend/public/api'; // Physical device - Computer IP
 
   // Base URL for the API (automatically switches based on useProductionServer)
   static String get baseUrl => useProductionServer ? _productionUrl : _localUrl;

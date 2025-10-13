@@ -1,19 +1,22 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/widgets.dart';
 import 'package:get/get.dart' as getx;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../constants/api_constants.dart';
 import '../services/language_service.dart';
+import '../localization/translation_helper.dart';
 
 class ApiClient {
-  
+
   late Dio _dio;
   static ApiClient? _instance;
-  
+  bool _isHandlingUnauthorized = false; // Flag to prevent multiple redirects
+
   ApiClient._internal() {
     _dio = Dio();
     _setupInterceptors();
   }
-  
+
   static ApiClient get instance {
     _instance ??= ApiClient._internal();
     return _instance!;
@@ -21,9 +24,9 @@ class ApiClient {
   
   void _setupInterceptors() {
     _dio.options.baseUrl = ApiConstants.baseUrl;
-    _dio.options.connectTimeout = const Duration(seconds: 30);
-    _dio.options.receiveTimeout = const Duration(seconds: 60);
-    _dio.options.sendTimeout = const Duration(seconds: 120); // Increased for file uploads
+    _dio.options.connectTimeout = const Duration(seconds: 60); // Increased for file uploads
+    _dio.options.receiveTimeout = const Duration(seconds: 300); // 5 minutes for large files
+    _dio.options.sendTimeout = const Duration(seconds: 300); // 5 minutes for file uploads
 
     print('🔧 ApiClient initialized with: ${ApiConstants.currentServerInfo}');
     
@@ -72,12 +75,20 @@ class ApiClient {
           print('❌ ERROR: ${error.response?.statusCode} ${error.requestOptions.uri}');
           print('❌ Message: ${error.message}');
           print('❌ Data: ${error.response?.data}');
-          
-          // Handle token expiration
+
+          // Handle token expiration (401 Unauthorized)
           if (error.response?.statusCode == 401) {
-            _handleUnauthorized();
+            // Only handle if it's a token expiration, not a login failure
+            final uri = error.requestOptions.uri.toString();
+            final isLoginRequest = uri.contains('/login') ||
+                                   uri.contains('/verify-login-otp') ||
+                                   uri.contains('/verify-otp');
+
+            if (!isLoginRequest) {
+              _handleUnauthorized();
+            }
           }
-          
+
           handler.next(error);
         },
       ),
@@ -85,21 +96,79 @@ class ApiClient {
   }
   
   void _handleUnauthorized() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('auth_token');
-    await prefs.remove('user_data');
-    await prefs.remove('user_type');
+    // Prevent multiple simultaneous redirects
+    if (_isHandlingUnauthorized) {
+      print('⚠️ UNAUTHORIZED: Already handling, skipping...');
+      return;
+    }
 
-    print('🔒 UNAUTHORIZED: Token cleared due to 401 response');
+    _isHandlingUnauthorized = true;
 
-    // Navigate to login screen
-    getx.Get.offAllNamed('/login');
+    try {
+      final prefs = await SharedPreferences.getInstance();
 
-    getx.Get.snackbar(
-      'Session Expired',
-      'Please login again',
-      snackPosition: getx.SnackPosition.BOTTOM,
-    );
+      // Get user type BEFORE clearing data
+      final userType = prefs.getString('user_type') ?? 'customer';
+
+      print('🔒 UNAUTHORIZED: Token expired for user type: $userType');
+
+      // Clear authentication data
+      await prefs.remove('auth_token');
+      await prefs.remove('user_data');
+      await prefs.remove('user_type');
+
+      // Use WidgetsBinding to ensure navigation happens after current frame
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        try {
+          // Check if GetX is ready and we have a valid context
+          if (getx.Get.isRegistered<getx.GetMaterialController>()) {
+            // Determine login route based on user type
+            final loginRoute = '/login'; // Same login screen for both types
+
+            print('🔄 UNAUTHORIZED: Redirecting to $loginRoute');
+
+            // Navigate to login screen
+            getx.Get.offAllNamed(loginRoute);
+
+            // Show session expired message ONCE
+            getx.Get.snackbar(
+              TranslationHelper.tr('session_expired'),
+              TranslationHelper.tr('please_login_again'),
+              snackPosition: getx.SnackPosition.BOTTOM,
+              backgroundColor: getx.Get.theme.colorScheme.error.withOpacity(0.1),
+              colorText: getx.Get.theme.colorScheme.error,
+              duration: const Duration(seconds: 3),
+            );
+
+            // Reset flag after navigation
+            Future.delayed(const Duration(seconds: 2), () {
+              _isHandlingUnauthorized = false;
+            });
+          } else {
+            print('⚠️ GetX not ready for navigation, will retry...');
+            // Retry after a short delay
+            Future.delayed(const Duration(milliseconds: 500), () {
+              if (getx.Get.isRegistered<getx.GetMaterialController>()) {
+                getx.Get.offAllNamed('/login');
+
+                // Reset flag after navigation
+                Future.delayed(const Duration(seconds: 2), () {
+                  _isHandlingUnauthorized = false;
+                });
+              } else {
+                _isHandlingUnauthorized = false;
+              }
+            });
+          }
+        } catch (e) {
+          print('❌ Navigation error in _handleUnauthorized: $e');
+          _isHandlingUnauthorized = false;
+        }
+      });
+    } catch (e) {
+      print('❌ Error in _handleUnauthorized: $e');
+      _isHandlingUnauthorized = false;
+    }
   }
 
   /// Clear authentication data (used during logout)

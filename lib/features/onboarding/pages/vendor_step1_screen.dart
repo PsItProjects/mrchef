@@ -1,17 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mrsheaf/core/routes/app_routes.dart';
+import 'package:mrsheaf/features/onboarding/controllers/vendor_step1_controller.dart';
 import 'package:mrsheaf/features/onboarding/widgets/vendor_stepper.dart';
 
-class VendorStep1Screen extends StatefulWidget {
+class VendorStep1Screen extends GetView<VendorStep1Controller> {
   const VendorStep1Screen({super.key});
-
-  @override
-  State<VendorStep1Screen> createState() => _VendorStep1ScreenState();
-}
-
-class _VendorStep1ScreenState extends State<VendorStep1Screen> {
-  int selectedPlan = 0; // 0: Annual, 1: Half year, 2: Monthly
 
   @override
   Widget build(BuildContext context) {
@@ -134,69 +128,98 @@ class _VendorStep1ScreenState extends State<VendorStep1Screen> {
 
 
   Widget _buildSubscriptionContent() {
-    return Container(
-      // width: 381,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          // Title and benefits
-          Container(
-            padding: EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  'Start Using MR SHeaf with Premium Benefits',
-                  style: TextStyle(
-                    fontFamily: 'Lato',
-                    fontWeight: FontWeight.w700,
-                    fontSize: 20,
-                    color: Color(0xFF262626),
-                    letterSpacing: 0.015,
+    return Obx(() {
+      if (controller.isLoadingPlans.value) {
+        return const Center(
+          child: CircularProgressIndicator(),
+        );
+      }
+
+      if (controller.subscriptionPlans.isEmpty) {
+        return const Center(
+          child: Text('No subscription plans available'),
+        );
+      }
+
+      // Get the first plan's benefits to display
+      final firstPlan = controller.subscriptionPlans.first;
+      final benefits = firstPlan.benefits.take(3).toList();
+
+      return Container(
+        // width: 381,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // Title and benefits
+            Container(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text(
+                    'Start Using MR SHeaf with Premium Benefits',
+                    style: TextStyle(
+                      fontFamily: 'Lato',
+                      fontWeight: FontWeight.w700,
+                      fontSize: 20,
+                      color: Color(0xFF262626),
+                      letterSpacing: 0.015,
+                    ),
+                    textAlign: TextAlign.center,
                   ),
-                  textAlign: TextAlign.center,
-                ),
-                SizedBox(height: 16),
+                  const SizedBox(height: 16),
 
-                // Benefits list
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    _buildBenefitItem(
-                        'Save unlimited notes to a single project'),
-                    SizedBox(height: 8),
-                    _buildBenefitItem('Create unlimited projects and teams'),
-                    SizedBox(height: 8),
-                    _buildBenefitItem('Daily backups to keep your data safe'),
-                  ],
-                ),
-                SizedBox(height: 16),
+                  // Benefits list
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: benefits
+                        .map((benefit) => Padding(
+                              padding: const EdgeInsets.only(bottom: 8),
+                              child: _buildBenefitItem(benefit),
+                            ))
+                        .toList(),
+                  ),
+                  const SizedBox(height: 16),
 
-                // Subscription plans
-                Row(
-                  children: [
-                    Expanded(
-                        child: _buildPlanCard(
-                            0, 'Annual', '\$79.99', 'per year', true)),
-                    SizedBox(width: 8),
-                    Expanded(
-                        child: _buildPlanCard(1, 'Half a year', '\$35.99',
-                            'per six months', false)),
-                    SizedBox(width: 8),
-                    Expanded(
-                        child: _buildPlanCard(
-                            2, 'Monthly', '\$7.99', 'per month', false)),
-                  ],
-                ),
-              ],
+                  // Subscription plans
+                  Row(
+                    children: controller.subscriptionPlans
+                        .asMap()
+                        .entries
+                        .map((entry) {
+                      final index = entry.key;
+                      final plan = entry.value;
+                      final isSelected =
+                          controller.selectedPlanIndex.value == index;
+
+                      return Expanded(
+                        child: Padding(
+                          padding: EdgeInsets.only(
+                            right: index < controller.subscriptionPlans.length - 1
+                                ? 8
+                                : 0,
+                          ),
+                          child: _buildPlanCard(
+                            index,
+                            plan.name,
+                            plan.price,
+                            plan.period,
+                            isSelected,
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
-      ),
-    );
+          ],
+        ),
+      );
+    });
   }
 
   Widget _buildBenefitItem(String text) {
@@ -225,9 +248,7 @@ class _VendorStep1ScreenState extends State<VendorStep1Screen> {
       int index, String title, String price, String period, bool isSelected) {
     return GestureDetector(
       onTap: () {
-        setState(() {
-          selectedPlan = index;
-        });
+        controller.selectPlan(index);
       },
       child: Container(
         padding: EdgeInsets.symmetric(vertical: 16, horizontal: 24),
@@ -277,30 +298,41 @@ class _VendorStep1ScreenState extends State<VendorStep1Screen> {
   }
 
   Widget _buildContinueButton() {
-    return Container(
-      // width: 380,
-      // height: 50,
-      child: ElevatedButton(
-        onPressed: () => Get.toNamed(AppRoutes.VENDOR_STEP2),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Color(0xFFFACD02),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
+    return Obx(() => Container(
+          // width: 380,
+          // height: 50,
+          child: ElevatedButton(
+            onPressed: controller.isSubmitting.value
+                ? null
+                : () => controller.submitSubscriptionPlan(),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Color(0xFFFACD02),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+              elevation: 0,
+            ),
+            child: controller.isSubmitting.value
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF592E2C)),
+                    ),
+                  )
+                : Text(
+                    'Continue',
+                    style: TextStyle(
+                      fontFamily: 'Lato',
+                      fontWeight: FontWeight.w700,
+                      fontSize: 18,
+                      color: Color(0xFF592E2C),
+                      letterSpacing: -0.005,
+                      height: 1.45,
+                    ),
+                  ),
           ),
-          elevation: 0,
-        ),
-        child: Text(
-          'Continue',
-          style: TextStyle(
-            fontFamily: 'Lato',
-            fontWeight: FontWeight.w700,
-            fontSize: 18,
-            color: Color(0xFF592E2C),
-            letterSpacing: -0.005,
-            height: 1.45,
-          ),
-        ),
-      ),
-    );
+        ));
   }
 }

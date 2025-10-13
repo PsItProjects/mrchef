@@ -7,7 +7,7 @@ plugins {
 
 android {
     namespace = "com.example.mrsheaf"
-    compileSdk = flutter.compileSdkVersion
+    compileSdk = 35  // Updated to 35 (required by plugins)
     ndkVersion = "27.0.12077973"
 
     compileOptions {
@@ -24,8 +24,8 @@ android {
         applicationId = "com.example.mrsheaf"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = flutter.minSdkVersion
-        targetSdk = flutter.targetSdkVersion
+        minSdk = 21  // Minimum SDK for image_cropper
+        targetSdk = 35  // Updated to 35
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }

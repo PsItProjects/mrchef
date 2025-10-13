@@ -56,7 +56,7 @@ class VendorStep2Controller extends GetxController {
     }
   }
 
-  /// Pick PDF file
+  /// Pick image file
   Future<void> pickFile(String fileType) async {
     try {
       // Request permission first
@@ -76,7 +76,7 @@ class VendorStep2Controller extends GetxController {
       // Pick file
       FilePickerResult? result = await FilePicker.platform.pickFiles(
         type: FileType.custom,
-        allowedExtensions: ['pdf'],
+        allowedExtensions: ['jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf'],
         allowMultiple: false,
       );
 
@@ -203,10 +203,36 @@ class VendorStep2Controller extends GetxController {
 
   /// Submit business information
   Future<void> submitBusinessInfo() async {
+    // Validate form first
     if (!_validateForm()) return;
+
+    // CRITICAL: Double-check files are selected before proceeding
+    print('🔍 Checking files before submission...');
+    print('   Work Permit: ${workPermitFile.value?.path ?? "NOT SELECTED"}');
+    print('   ID/Passport: ${idOrPassportFile.value?.path ?? "NOT SELECTED"}');
+    print('   Health Certificate: ${healthCertificateFile.value?.path ?? "NOT SELECTED"}');
+
+    if (workPermitFile.value == null ||
+        idOrPassportFile.value == null ||
+        healthCertificateFile.value == null) {
+      Get.snackbar(
+        '⚠️ ملفات ناقصة',
+        'يجب رفع جميع المستندات المطلوبة:\n• رخصة العمل\n• الهوية أو جواز السفر\n• الشهادة الصحية',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Get.theme.colorScheme.error,
+        colorText: Get.theme.colorScheme.onError,
+        duration: const Duration(seconds: 5),
+      );
+      return; // STOP HERE - DO NOT PROCEED
+    }
 
     try {
       isLoading.value = true;
+
+      print('📤 Submitting business info...');
+      print('📋 Store Name (EN): ${storeNameEn.value}');
+      print('📋 Store Name (AR): ${storeNameAr.value}');
+      print('📋 Commercial Reg: ${commercialRegistrationNumber.value}');
 
       // Create FormData for multipart request
       final formData = dio.FormData.fromMap({
@@ -228,8 +254,16 @@ class VendorStep2Controller extends GetxController {
         ),
       });
 
-      print('📤 Submitting business info...');
-      print('📋 Data: ${formData.fields}');
+      print('📋 Text Fields: ${formData.fields.length} fields');
+      print('📋 Files: ${formData.files.length} files');
+      for (var file in formData.files) {
+        print('   ✅ ${file.key}: ${file.value.filename}');
+      }
+
+      // CRITICAL CHECK: Ensure we have exactly 3 files
+      if (formData.files.length != 3) {
+        throw Exception('Missing files! Expected 3 files, got ${formData.files.length}');
+      }
 
       // Send request to backend
       final response = await _apiClient.post(
@@ -241,14 +275,42 @@ class VendorStep2Controller extends GetxController {
         print('✅ Business info submitted successfully');
         print('📥 Response: ${response.data}');
 
-        Get.snackbar(
-          'نجح',
-          'تم حفظ معلومات المتجر بنجاح',
-          snackPosition: SnackPosition.BOTTOM,
-        );
+        // Check if response indicates completion
+        final responseData = response.data;
+        final isCompleted = responseData is Map &&
+                           (responseData['message']?.toString().toLowerCase().contains('completed') == true ||
+                            responseData['data']?['next_step'] == 'home');
 
-        // Navigate to next step
-        Get.toNamed('/vendor-step3');
+        if (isCompleted) {
+          print('✅ Onboarding marked as completed by server');
+
+          // Show success message
+          Get.snackbar(
+            '🎉 تم إكمال التسجيل',
+            'تم حفظ معلومات المتجر بنجاح! جاري تحويلك إلى لوحة التحكم...',
+            snackPosition: SnackPosition.BOTTOM,
+            duration: const Duration(seconds: 3),
+            backgroundColor: Get.theme.colorScheme.primary,
+            colorText: Get.theme.colorScheme.onPrimary,
+          );
+
+          // Wait a moment for user to see the success message
+          await Future.delayed(const Duration(seconds: 2));
+
+          // Navigate directly to merchant dashboard (onboarding complete!)
+          print('🚀 Redirecting to merchant dashboard...');
+
+          // IMPORTANT: Use offAllNamed to clear navigation stack
+          // This prevents the middleware from redirecting back to Step 2
+          Get.offAllNamed('/merchant-home');
+        } else {
+          print('⚠️ Server response does not indicate completion');
+          Get.snackbar(
+            'تنبيه',
+            'تم حفظ البيانات لكن قد تحتاج لإكمال خطوات إضافية',
+            snackPosition: SnackPosition.BOTTOM,
+          );
+        }
       } else {
         throw Exception('Server returned ${response.statusCode}');
       }
@@ -311,6 +373,27 @@ class VendorStep2Controller extends GetxController {
         return isUploadingHealthCertificate.value;
       default:
         return false;
+    }
+  }
+
+  /// Get file type display text based on file extension
+  String getFileTypeText(String fileType) {
+    final fileName = getFileName(fileType);
+    if (fileName.isEmpty) return '';
+    
+    final extension = fileName.toLowerCase().split('.').last;
+    
+    switch (extension) {
+      case 'pdf':
+        return 'ملف PDF محدد';
+      case 'jpg':
+      case 'jpeg':
+      case 'png':
+      case 'gif':
+      case 'webp':
+        return 'صورة محددة';
+      default:
+        return 'ملف محدد';
     }
   }
 }

@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:mrsheaf/core/routes/app_routes.dart';
 import '../services/auth_service.dart';
 import '../models/auth_request.dart';
+import '../../merchant/services/merchant_settings_service.dart';
 
 class OTPController extends GetxController {
   final List<TextEditingController> otpControllers = List.generate(
@@ -260,7 +261,7 @@ class OTPController extends GetxController {
   }
 
   /// Smart navigation based on detected user type
-  void _navigateBasedOnUserType() {
+  void _navigateBasedOnUserType() async {
     final authService = Get.find<AuthService>();
     final detectedUserType = authService.storedUserType;
 
@@ -269,13 +270,67 @@ class OTPController extends GetxController {
     }
 
     if (detectedUserType == 'merchant') {
-      // Navigate to merchant dashboard
-      Get.offAllNamed(AppRoutes.MERCHANT_HOME);
+      // For merchants, check onboarding status first
+      await _checkMerchantOnboardingStatus();
     } else {
       // Default to customer home (includes 'customer' and empty/null cases)
       Get.offAllNamed(AppRoutes.HOME);
     }
   }
+
+  /// Check merchant onboarding status and navigate accordingly
+  Future<void> _checkMerchantOnboardingStatus() async {
+    if (kDebugMode) {
+      print('🔍 CHECKING MERCHANT ONBOARDING STATUS...');
+    }
+
+    // Directly check onboarding via API call to get fresh data
+    await _checkOnboardingViaAPI();
+  }
+
+  /// Check onboarding via direct API call
+  Future<void> _checkOnboardingViaAPI() async {
+    try {
+      if (kDebugMode) {
+        print('🔍 CHECKING ONBOARDING VIA API...');
+      }
+
+      // Create merchant settings service to check onboarding
+      final merchantService = MerchantSettingsService();
+
+      // Try to load merchant profile - this will trigger onboarding redirect if needed
+      await merchantService.loadMerchantProfile();
+
+      // If we reach here without exception, onboarding is complete
+      if (kDebugMode) {
+        print('✅ ONBOARDING COMPLETE - Navigating to merchant home');
+      }
+      Get.offAllNamed(AppRoutes.MERCHANT_HOME);
+
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ API onboarding check failed: $e');
+      }
+
+      // Check if the error contains onboarding information
+      final errorString = e.toString();
+      if (errorString.contains('403') && errorString.contains('onboarding')) {
+        if (kDebugMode) {
+          print('🔄 ONBOARDING REQUIRED - MerchantSettingsService will handle redirect');
+        }
+        // The MerchantSettingsService._handleOnboardingRequired will handle the redirect
+        // So we don't need to do anything here
+      } else {
+        // Unknown error - fallback to step 1
+        if (kDebugMode) {
+          print('🔄 UNKNOWN ERROR - Fallback to step 1');
+        }
+        Get.offAllNamed(AppRoutes.VENDOR_STEP1);
+      }
+    }
+  }
+
+
 
   @override
   void onClose() {
