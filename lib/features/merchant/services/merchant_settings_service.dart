@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -30,6 +29,7 @@ class MerchantSettingsService extends GetxService {
   Future<void> loadMerchantProfile() async {
     try {
       isLoading.value = true;
+      print('📊 === LOADING MERCHANT PROFILE ===');
 
       final response = await _apiClient.get(
         '${ApiConstants.baseUrl}/merchant/profile',
@@ -37,18 +37,68 @@ class MerchantSettingsService extends GetxService {
 
       if (response.statusCode == 200) {
         final data = response.data['data'];
+        print('✅ Profile API response received');
+        print('📦 Response structure: ${data.keys.toList()}');
+        print('📦 Has "merchant" key: ${data.containsKey('merchant')}');
 
         // Update merchant profile
-        merchantProfile.value = MerchantProfile.fromJson(data);
+        final merchantData = data['merchant'] ?? data; // Support both structures
+        print('📦 merchantData keys: ${merchantData.keys.toList()}');
+        print('📦 merchantData has "restaurant": ${merchantData.containsKey('restaurant')}');
+
+        merchantProfile.value = MerchantProfile.fromJson(merchantData);
+        print('✅ Merchant profile parsed');
 
         // Update restaurant info if available
-        if (data['restaurant'] != null) {
-          final restaurantData = data['restaurant'] as Map<String, dynamic>;
+        // Check both data['merchant']['restaurant'] and data['restaurant']
+        final restaurantData = merchantData['restaurant'] as Map<String, dynamic>?;
+
+        if (restaurantData != null) {
+          // Debug: Check if business_hours exists in API response
+          print('🏪 === RESTAURANT DATA DEBUG ===');
+          print('   All keys: ${restaurantData.keys.toList()}');
+          print('   Has business_hours key: ${restaurantData.containsKey('business_hours')}');
+
+          if (restaurantData.containsKey('business_hours')) {
+            final businessHoursRaw = restaurantData['business_hours'];
+            print('   business_hours type: ${businessHoursRaw.runtimeType}');
+            print('   business_hours value: $businessHoursRaw');
+
+            if (businessHoursRaw is Map) {
+              print('   business_hours is Map with ${businessHoursRaw.length} entries');
+              print('   Days in business_hours: ${businessHoursRaw.keys.toList()}');
+            } else if (businessHoursRaw == null) {
+              print('   ⚠️ business_hours is NULL');
+            } else {
+              print('   ⚠️ business_hours is unexpected type');
+            }
+          } else {
+            print('   ❌ business_hours key NOT FOUND in API response');
+          }
+
+          // Parse restaurant info
+          print('🔄 Parsing RestaurantInfo...');
           restaurantInfo.value = RestaurantInfo.fromJson(restaurantData);
+
+          // Debug: Check parsed result
+          print('🏪 === AFTER PARSING ===');
+          print('   restaurantInfo.value is null: ${restaurantInfo.value == null}');
+          if (restaurantInfo.value != null) {
+            print('   restaurantInfo.businessHours is null: ${restaurantInfo.value.businessHours == null}');
+            if (restaurantInfo.value.businessHours != null) {
+              print('   businessHours has ${restaurantInfo.value.businessHours!.length} days');
+              restaurantInfo.value.businessHours!.forEach((day, workingDay) {
+                print('   - $day: ${workingDay.isOpen ? "OPEN ${workingDay.openTime}-${workingDay.closeTime}" : "CLOSED"}');
+              });
+            }
+          }
+          print('🏪 === END DEBUG ===');
+        } else {
+          print('⚠️ No restaurant data in API response');
         }
 
         // Update notification settings
-        final settings = data['settings'] as Map<String, dynamic>?;
+        final settings = merchantData['settings'] as Map<String, dynamic>?;
         if (settings != null && settings['notifications'] != null) {
           notificationSettings.value = NotificationSettings.fromJson(
             settings['notifications'] as Map<String, dynamic>
@@ -230,7 +280,7 @@ class MerchantSettingsService extends GetxService {
       final response = await _apiClient.put(
         '${ApiConstants.baseUrl}/merchant/profile/restaurant-info',
         data: {
-          'business_hours': jsonEncode(businessHours),
+          'business_hours': businessHours,
         },
       );
       
@@ -503,23 +553,39 @@ class RestaurantInfo {
 
     // Parse business hours
     Map<String, WorkingDay>? businessHours;
-    final hoursJson = json['business_hours'] as Map<String, dynamic>?;
-    if (hoursJson != null) {
+    print('📅 === PARSING BUSINESS HOURS ===');
+    print('   json has business_hours key: ${json.containsKey('business_hours')}');
+
+    final hoursJson = json['business_hours'];
+    print('   business_hours raw value: $hoursJson');
+    print('   business_hours type: ${hoursJson.runtimeType}');
+
+    if (hoursJson != null && hoursJson is Map) {
       businessHours = {};
+      final hoursMap = hoursJson as Map<String, dynamic>;
+      print('   business_hours is Map with ${hoursMap.length} entries');
+
       final days = ['saturday', 'sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
       for (final day in days) {
-        final dayData = hoursJson[day] as Map<String, dynamic>?;
-        if (dayData != null) {
+        final dayData = hoursMap[day];
+        if (dayData != null && dayData is Map) {
+          final dayMap = dayData as Map<String, dynamic>;
           businessHours[day] = WorkingDay(
             isOpen: true,
-            openTime: dayData['open'] ?? '09:00',
-            closeTime: dayData['close'] ?? '22:00',
+            openTime: dayMap['open'] ?? '09:00',
+            closeTime: dayMap['close'] ?? '22:00',
           );
+          print('   ✅ $day: OPEN (${dayMap['open']} - ${dayMap['close']})');
         } else {
           businessHours[day] = WorkingDay(isOpen: false);
+          print('   ❌ $day: CLOSED (not in API response)');
         }
       }
+      print('   Final businessHours map has ${businessHours.length} days');
+    } else {
+      print('   ⚠️ business_hours is null or not a Map');
     }
+    print('📅 === END PARSING ===');
 
     return RestaurantInfo(
       nameEn: nameEn,

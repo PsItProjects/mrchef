@@ -4,6 +4,7 @@ import 'package:mrsheaf/features/profile/models/settings_model.dart';
 import 'package:mrsheaf/core/services/language_service.dart';
 import 'package:mrsheaf/features/profile/services/profile_service.dart';
 import 'package:mrsheaf/core/network/api_client.dart';
+import 'package:mrsheaf/features/profile/widgets/about_app_bottom_sheet.dart';
 
 class SettingsController extends GetxController {
   final ProfileService _profileService = Get.find<ProfileService>();
@@ -361,58 +362,7 @@ class SettingsController extends GetxController {
   }
 
   void showAboutApp() {
-    Get.dialog(
-      AlertDialog(
-        title: const Text(
-          'About MrSheaf App',
-          style: TextStyle(
-            fontFamily: 'Lato',
-            fontWeight: FontWeight.w600,
-            fontSize: 18,
-            color: Color(0xFF262626),
-          ),
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Version: ${settings.value.appVersion}',
-              style: const TextStyle(
-                fontFamily: 'Lato',
-                fontWeight: FontWeight.w400,
-                fontSize: 14,
-                color: Color(0xFF5E5E5E),
-              ),
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              'MrSheaf is your go-to food delivery app for delicious meals from your favorite restaurants.',
-              style: TextStyle(
-                fontFamily: 'Lato',
-                fontWeight: FontWeight.w400,
-                fontSize: 14,
-                color: Color(0xFF5E5E5E),
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Get.back(),
-            child: const Text(
-              'OK',
-              style: TextStyle(
-                fontFamily: 'Lato',
-                fontWeight: FontWeight.w600,
-                fontSize: 14,
-                color: Color(0xFF262626),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
+    AboutAppBottomSheet.show();
   }
 
   void inviteFriends() {

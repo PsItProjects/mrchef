@@ -27,6 +27,34 @@ class MerchantProfileService extends GetxService {
     }
   }
 
+  /// Update preferred language
+  Future<bool> updateLanguage(String languageCode) async {
+    try {
+      print('🌐 Updating preferred language to: $languageCode');
+
+      final response = await _apiClient.put(
+        '/merchant/profile/language',
+        data: {'preferred_language': languageCode},
+      );
+
+      print('📊 Response status: ${response.statusCode}');
+      print('📊 Response data: ${response.data}');
+
+      if (response.statusCode == 200) {
+        print('✅ Language updated successfully in backend');
+        final newLanguage = response.data['data']?['preferred_language'];
+        print('✅ New preferred_language from API: $newLanguage');
+        return true;
+      }
+      print('❌ Language update failed with status: ${response.statusCode}');
+      return false;
+    } on dio.DioException catch (e) {
+      print('❌ Error updating language: ${e.message}');
+      print('❌ Error response: ${e.response?.data}');
+      return false;
+    }
+  }
+
   /// Update personal info (name, email)
   Future<bool> updatePersonalInfo({
     String? nameEn,
@@ -35,7 +63,7 @@ class MerchantProfileService extends GetxService {
   }) async {
     try {
       print('📝 Updating personal info...');
-      
+
       final data = <String, dynamic>{};
       if (nameEn != null) data['name_en'] = nameEn;
       if (nameAr != null) data['name_ar'] = nameAr;
@@ -45,7 +73,7 @@ class MerchantProfileService extends GetxService {
         '/merchant/profile/personal-info',
         data: data,
       );
-      
+
       if (response.statusCode == 200) {
         print('✅ Personal info updated successfully');
         Get.snackbar(
@@ -69,56 +97,146 @@ class MerchantProfileService extends GetxService {
 
   /// Update restaurant info
   Future<bool> updateRestaurantInfo({
-    String? nameEn,
-    String? nameAr,
+    String? businessNameEn,
+    String? businessNameAr,
     String? descriptionEn,
     String? descriptionAr,
+    String? addressEn,
+    String? addressAr,
     String? businessType,
     String? phone,
     String? email,
     String? city,
     String? area,
-    double? deliveryFee,
-    double? minimumOrder,
+    double? latitude,
+    double? longitude,
   }) async {
     try {
       print('📝 Updating restaurant info...');
-      
+
       final data = <String, dynamic>{};
-      if (nameEn != null) data['name_en'] = nameEn;
-      if (nameAr != null) data['name_ar'] = nameAr;
+      if (businessNameEn != null) data['business_name_en'] = businessNameEn;
+      if (businessNameAr != null) data['business_name_ar'] = businessNameAr;
       if (descriptionEn != null) data['description_en'] = descriptionEn;
       if (descriptionAr != null) data['description_ar'] = descriptionAr;
+      if (addressEn != null) data['address_en'] = addressEn;
+      if (addressAr != null) data['address_ar'] = addressAr;
       if (businessType != null) data['business_type'] = businessType;
       if (phone != null) data['phone'] = phone;
       if (email != null) data['email'] = email;
       if (city != null) data['city'] = city;
       if (area != null) data['area'] = area;
-      if (deliveryFee != null) data['delivery_fee'] = deliveryFee;
-      if (minimumOrder != null) data['minimum_order'] = minimumOrder;
+      if (latitude != null) data['latitude'] = latitude;
+      if (longitude != null) data['longitude'] = longitude;
 
       final response = await _apiClient.put(
         '/merchant/profile/restaurant-info',
         data: data,
       );
-      
+
       if (response.statusCode == 200) {
         print('✅ Restaurant info updated successfully');
-        Get.snackbar(
-          'نجح',
-          'تم تحديث معلومات المطعم بنجاح',
-          snackPosition: SnackPosition.BOTTOM,
-        );
         return true;
       }
       return false;
     } on dio.DioException catch (e) {
       print('❌ Error updating restaurant info: ${e.message}');
-      Get.snackbar(
-        'خطأ',
-        'فشل تحديث معلومات المطعم',
-        snackPosition: SnackPosition.BOTTOM,
+      return false;
+    }
+  }
+
+  /// Upload restaurant logo
+  Future<bool> uploadRestaurantLogo(File imageFile) async {
+    try {
+      print('📝 Uploading restaurant logo...');
+
+      final formData = dio.FormData.fromMap({
+        'logo': await dio.MultipartFile.fromFile(
+          imageFile.path,
+          filename: 'restaurant_logo.jpg',
+        ),
+      });
+
+      final response = await _apiClient.post(
+        '/merchant/profile/restaurant/logo',
+        data: formData,
       );
+
+      if (response.statusCode == 200) {
+        print('✅ Restaurant logo uploaded successfully');
+        return true;
+      }
+      return false;
+    } on dio.DioException catch (e) {
+      print('❌ Error uploading restaurant logo: ${e.message}');
+      return false;
+    }
+  }
+
+  /// Delete restaurant logo
+  Future<bool> deleteRestaurantLogo() async {
+    try {
+      print('📝 Deleting restaurant logo...');
+
+      final response = await _apiClient.delete(
+        '/merchant/profile/restaurant/logo',
+      );
+
+      if (response.statusCode == 200) {
+        print('✅ Restaurant logo deleted successfully');
+        return true;
+      }
+      return false;
+    } on dio.DioException catch (e) {
+      print('❌ Error deleting restaurant logo: ${e.message}');
+      return false;
+    }
+  }
+
+  /// Upload restaurant cover image
+  Future<bool> uploadRestaurantCover(File imageFile) async {
+    try {
+      print('📝 Uploading restaurant cover...');
+
+      final formData = dio.FormData.fromMap({
+        'cover_image': await dio.MultipartFile.fromFile(
+          imageFile.path,
+          filename: 'restaurant_cover.jpg',
+        ),
+      });
+
+      final response = await _apiClient.post(
+        '/merchant/profile/restaurant/cover',
+        data: formData,
+      );
+
+      if (response.statusCode == 200) {
+        print('✅ Restaurant cover uploaded successfully');
+        return true;
+      }
+      return false;
+    } on dio.DioException catch (e) {
+      print('❌ Error uploading restaurant cover: ${e.message}');
+      return false;
+    }
+  }
+
+  /// Delete restaurant cover image
+  Future<bool> deleteRestaurantCover() async {
+    try {
+      print('📝 Deleting restaurant cover...');
+
+      final response = await _apiClient.delete(
+        '/merchant/profile/restaurant/cover',
+      );
+
+      if (response.statusCode == 200) {
+        print('✅ Restaurant cover deleted successfully');
+        return true;
+      }
+      return false;
+    } on dio.DioException catch (e) {
+      print('❌ Error deleting restaurant cover: ${e.message}');
       return false;
     }
   }
@@ -452,38 +570,6 @@ class MerchantProfileService extends GetxService {
       Get.snackbar(
         TranslationHelper.tr('error'),
         errorMessage,
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
-      return false;
-    }
-  }
-
-  /// Delete restaurant cover
-  Future<bool> deleteRestaurantCover() async {
-    try {
-      print('📝 Deleting restaurant cover...');
-
-      final response = await _apiClient.delete('/merchant/profile/restaurant/cover');
-
-      if (response.statusCode == 200) {
-        print('✅ Restaurant cover deleted successfully');
-        Get.snackbar(
-          TranslationHelper.tr('success'),
-          TranslationHelper.tr('cover_deleted_successfully'),
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: AppColors.successColor,
-          colorText: Colors.white,
-        );
-        return true;
-      }
-      return false;
-    } on dio.DioException catch (e) {
-      print('❌ Error deleting restaurant cover: ${e.message}');
-      Get.snackbar(
-        TranslationHelper.tr('error'),
-        TranslationHelper.tr('cover_delete_failed'),
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.red,
         colorText: Colors.white,

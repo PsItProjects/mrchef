@@ -9,7 +9,7 @@ class ApiConstants {
   // For Physical Device: Use your computer's IP on local network (e.g., 10.20.20.250)
   // For Android Emulator: Use 10.0.2.2
   // For iOS Simulator: Use 127.0.0.1 or localhost
-  static const String _localUrl = 'http://10.20.20.241/laravel/MR_Shife/MR_Shife-Backend/public/api'; // Physical device - Computer IP
+  static const String _localUrl = 'http://10.20.20.127/laravel/MR_Shife/MR_Shife-Backend/public/api'; // Physical device - Computer IP
 
   // Base URL for the API (automatically switches based on useProductionServer)
   static String get baseUrl => useProductionServer ? _productionUrl : _localUrl;
