@@ -91,11 +91,9 @@ class MerchantProductModel {
 
   /// Factory method to create from JSON
   factory MerchantProductModel.fromJson(Map<String, dynamic> json) {
-    // Extract base price from either 'base_price' or 'price' object
+    // Extract base price from 'price' object
     double basePrice = 0.0;
-    if (json['base_price'] != null) {
-      basePrice = _parseDouble(json['base_price']);
-    } else if (json['price'] != null) {
+    if (json['price'] != null) {
       if (json['price'] is Map) {
         basePrice = _parseDouble(json['price']['amount']);
       } else {
@@ -103,12 +101,23 @@ class MerchantProductModel {
       }
     }
 
+    // Extract discount price from 'discount_price' object
+    double? discountPrice;
+    if (json['discount_price'] != null) {
+      if (json['discount_price'] is Map) {
+        discountPrice = _parseDouble(json['discount_price']['amount']);
+      } else {
+        discountPrice = _parseDouble(json['discount_price']);
+      }
+    }
+
     // Debug: Print price extraction
     if (kDebugMode) {
       print('💰 Price extraction for product ${json['id']}:');
-      print('   base_price field: ${json['base_price']}');
       print('   price field: ${json['price']}');
+      print('   discount_price field: ${json['discount_price']}');
       print('   extracted basePrice: $basePrice');
+      print('   extracted discountPrice: $discountPrice');
     }
 
     // Extract restaurant_id from either direct field or nested availability object
@@ -156,7 +165,7 @@ class MerchantProductModel {
       categoryName: _extractCategoryName(json),
       basePrice: basePrice,
       discountPercentage: _parseDouble(json['discount_percentage']),
-      discountedPrice: _parseDouble(json['discounted_price']),
+      discountedPrice: discountPrice,
       isAvailable: isAvailable,
       isFeatured: json['is_featured'] ?? false,
       isPopular: json['is_popular'] ?? false,
