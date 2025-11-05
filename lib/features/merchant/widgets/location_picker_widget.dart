@@ -41,22 +41,35 @@ class _LocationPickerWidgetState extends State<LocationPickerWidget> {
 
   Future<void> _initializeLocation() async {
     try {
+      if (kDebugMode) {
+        print('🗺️ Initializing location picker...');
+      }
+
       // Check if initial location is provided
       if (widget.initialLatitude != null && widget.initialLongitude != null) {
+        final initialLocation = LatLng(widget.initialLatitude!, widget.initialLongitude!);
+        if (kDebugMode) {
+          print('📍 Using provided location: $initialLocation');
+        }
         setState(() {
-          _selectedLocation = LatLng(widget.initialLatitude!, widget.initialLongitude!);
+          _selectedLocation = initialLocation;
           _isLoading = false;
         });
+        _getAddressFromLatLng(initialLocation);
         return;
       }
 
       // Try to get current location
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
+        if (kDebugMode) {
+          print('⚠️ Location service disabled, using default location (Riyadh)');
+        }
         setState(() {
           _selectedLocation = _defaultLocation;
           _isLoading = false;
         });
+        _getAddressFromLatLng(_defaultLocation);
         return;
       }
 
@@ -64,33 +77,50 @@ class _LocationPickerWidgetState extends State<LocationPickerWidget> {
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
         if (permission == LocationPermission.denied) {
+          if (kDebugMode) {
+            print('⚠️ Location permission denied, using default location (Riyadh)');
+          }
           setState(() {
             _selectedLocation = _defaultLocation;
             _isLoading = false;
           });
+          _getAddressFromLatLng(_defaultLocation);
           return;
         }
       }
 
       if (permission == LocationPermission.deniedForever) {
+        if (kDebugMode) {
+          print('⚠️ Location permission denied forever, using default location (Riyadh)');
+        }
         setState(() {
           _selectedLocation = _defaultLocation;
           _isLoading = false;
         });
+        _getAddressFromLatLng(_defaultLocation);
         return;
       }
 
       Position position = await Geolocator.getCurrentPosition();
+      final currentLocation = LatLng(position.latitude, position.longitude);
+      if (kDebugMode) {
+        print('📍 Got current location: $currentLocation');
+      }
       setState(() {
-        _selectedLocation = LatLng(position.latitude, position.longitude);
+        _selectedLocation = currentLocation;
         _isLoading = false;
       });
+      _getAddressFromLatLng(currentLocation);
     } catch (e) {
-      print('Error getting location: $e');
+      if (kDebugMode) {
+        print('❌ Error getting location: $e');
+        print('📍 Using default location (Riyadh)');
+      }
       setState(() {
         _selectedLocation = _defaultLocation;
         _isLoading = false;
       });
+      _getAddressFromLatLng(_defaultLocation);
     }
   }
 
@@ -227,6 +257,10 @@ class _LocationPickerWidgetState extends State<LocationPickerWidget> {
                   ),
                   onMapCreated: (controller) {
                     _mapController = controller;
+                    if (kDebugMode) {
+                      print('🗺️ Map created successfully');
+                      print('📍 Initial location: ${_selectedLocation ?? _defaultLocation}');
+                    }
                   },
                   onTap: _onMapTapped,
                   markers: _selectedLocation != null
@@ -234,8 +268,16 @@ class _LocationPickerWidgetState extends State<LocationPickerWidget> {
                           Marker(
                             markerId: const MarkerId('selected_location'),
                             position: _selectedLocation!,
+                            draggable: true,
+                            onDragEnd: (newPosition) {
+                              setState(() {
+                                _selectedLocation = newPosition;
+                                _selectedAddress = null;
+                              });
+                              _getAddressFromLatLng(newPosition);
+                            },
                             icon: BitmapDescriptor.defaultMarkerWithHue(
-                              BitmapDescriptor.hueYellow,
+                              BitmapDescriptor.hueRed,
                             ),
                           ),
                         }
@@ -243,7 +285,14 @@ class _LocationPickerWidgetState extends State<LocationPickerWidget> {
                   myLocationEnabled: true,
                   myLocationButtonEnabled: true,
                   zoomControlsEnabled: true,
+                  zoomGesturesEnabled: true,
+                  scrollGesturesEnabled: true,
+                  tiltGesturesEnabled: true,
+                  rotateGesturesEnabled: true,
                   mapToolbarEnabled: false,
+                  compassEnabled: true,
+                  mapType: MapType.normal,
+                  minMaxZoomPreference: const MinMaxZoomPreference(5, 20),
                 ),
                 // Search Bar
                 Positioned(
