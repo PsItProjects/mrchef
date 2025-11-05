@@ -32,8 +32,14 @@ class _MerchantSettingsScreenState extends State<MerchantSettingsScreen> {
   }
 
   Future<void> _loadProfile() async {
+    print('🔄 Settings: Loading profile...');
     setState(() => _isLoading = true);
     final data = await _profileService.getProfile();
+    print('✅ Settings: Profile loaded');
+    print('   data keys: ${data?.keys.toList()}');
+    if (data != null && data.containsKey('merchant')) {
+      print('   merchant avatar: ${data['merchant']?['avatar']}');
+    }
     setState(() {
       _profileData = data;
       _isLoading = false;
@@ -108,6 +114,11 @@ class _MerchantSettingsScreenState extends State<MerchantSettingsScreen> {
     final avatarUrl = merchant?['avatar'];
     final firstLetter = merchantName.isNotEmpty ? merchantName[0].toUpperCase() : 'M';
 
+    print('🖼️ Settings: Building profile card');
+    print('   avatarUrl: $avatarUrl');
+    print('   merchantName: $merchantName');
+    print('   email: $email');
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20),
       padding: const EdgeInsets.all(20),
@@ -126,10 +137,13 @@ class _MerchantSettingsScreenState extends State<MerchantSettingsScreen> {
       child: Row(
         children: [
           CircleAvatar(
+            key: ValueKey(avatarUrl ?? 'no_avatar'), // Force rebuild when avatar changes
             radius: 30,
             backgroundColor: AppColors.primaryColor,
-            backgroundImage: avatarUrl != null ? NetworkImage(avatarUrl) : null,
-            child: avatarUrl == null
+            backgroundImage: avatarUrl != null && avatarUrl.isNotEmpty
+                ? NetworkImage(avatarUrl)
+                : null,
+            child: avatarUrl == null || avatarUrl.isEmpty
                 ? Text(
                     firstLetter,
                     style: TextStyle(
@@ -184,6 +198,13 @@ class _MerchantSettingsScreenState extends State<MerchantSettingsScreen> {
               _loadProfile();
             }
           },
+        ),
+        _buildSettingsTile(
+          icon: Icons.inventory_2,
+          iconColor: const Color(0xFF9C27B0),
+          title: 'products'.tr,
+          subtitle: 'manage_restaurant_products'.tr,
+          onTap: () => Get.toNamed('/merchant/products'),
         ),
         _buildSettingsTile(
           icon: Icons.schedule,

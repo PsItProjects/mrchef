@@ -25,7 +25,14 @@ import 'package:mrsheaf/features/store_details/pages/store_details_screen.dart';
 import 'package:mrsheaf/features/store_details/bindings/store_details_binding.dart';
 import 'package:mrsheaf/features/favorites/bindings/favorites_binding.dart';
 import 'package:mrsheaf/features/merchant/pages/merchant_dashboard_screen.dart';
+import 'package:mrsheaf/features/merchant/pages/merchant_products_screen.dart';
+import 'package:mrsheaf/features/merchant/pages/add_product_screen.dart';
+import 'package:mrsheaf/features/merchant/pages/product_details_screen.dart' as merchant_product_details;
+import 'package:mrsheaf/features/merchant/pages/edit_product_screen.dart';
 import 'package:mrsheaf/features/merchant/bindings/merchant_main_binding.dart';
+import 'package:mrsheaf/features/merchant/bindings/merchant_products_binding.dart';
+import 'package:mrsheaf/features/merchant/bindings/add_product_binding.dart';
+import 'package:mrsheaf/features/merchant/bindings/edit_product_binding.dart';
 import 'package:mrsheaf/features/onboarding/bindings/vendor_step1_binding.dart';
 import 'package:mrsheaf/features/onboarding/bindings/vendor_step2_binding.dart';
 
@@ -128,6 +135,34 @@ class AppPages {
       binding: MerchantMainBinding(),
       middlewares: [AuthMiddleware()],
       transition: Transition.fadeIn,
+    ),
+    GetPage(
+      name: AppRoutes.MERCHANT_PRODUCTS,
+      page: () => const MerchantProductsScreen(),
+      binding: MerchantProductsBinding(),
+      middlewares: [AuthMiddleware()],
+      transition: Transition.fadeIn,
+    ),
+    GetPage(
+      name: AppRoutes.MERCHANT_PRODUCTS_ADD,
+      page: () => const AddProductScreen(),
+      binding: AddProductBinding(),
+      middlewares: [AuthMiddleware()],
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: '${AppRoutes.MERCHANT_PRODUCTS_DETAILS}/:id',
+      page: () => const merchant_product_details.ProductDetailsScreen(),
+      binding: MerchantProductsBinding(),
+      middlewares: [AuthMiddleware()],
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: '${AppRoutes.MERCHANT_PRODUCTS_EDIT}/:id',
+      page: () => const EditProductScreen(),
+      binding: EditProductBinding(),
+      middlewares: [AuthMiddleware()],
+      transition: Transition.rightToLeft,
     ),
   ];
 }

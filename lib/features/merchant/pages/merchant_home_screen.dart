@@ -389,30 +389,29 @@ class _MerchantHomeScreenState extends State<MerchantHomeScreen> {
         const SizedBox(height: 16),
         Row(
           children: [
-            // Add Product & Manage Products - Hidden until implemented
-            // Expanded(
-            //   child: _buildActionCard(
-            //     title: 'إضافة منتج',
-            //     icon: Icons.add_circle_outline_rounded,
-            //     color: const Color(0xFFFF9800),
-            //     backgroundColor: const Color(0xFFFFF3E0),
-            //     onTap: () {
-            //       // TODO: Navigate to add product screen
-            //     },
-            //   ),
-            // ),
-            // const SizedBox(width: 16),
-            // Expanded(
-            //   child: _buildActionCard(
-            //     title: 'إدارة المنتجات',
-            //     icon: Icons.inventory_2_outlined,
-            //     color: const Color(0xFF9C27B0),
-            //     backgroundColor: const Color(0xFFF3E5F5),
-            //     onTap: () {
-            //       // TODO: Navigate to manage products screen
-            //     },
-            //   ),
-            // ),
+            Expanded(
+              child: _buildActionCard(
+                title: 'add_product'.tr,
+                icon: Icons.add_circle_outline_rounded,
+                color: const Color(0xFFFF9800),
+                backgroundColor: const Color(0xFFFFF3E0),
+                onTap: () {
+                  Get.toNamed('/merchant/products/add');
+                },
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: _buildActionCard(
+                title: 'manage_products'.tr,
+                icon: Icons.inventory_2_outlined,
+                color: const Color(0xFF9C27B0),
+                backgroundColor: const Color(0xFFF3E5F5),
+                onTap: () {
+                  Get.toNamed('/merchant/products');
+                },
+              ),
+            ),
           ],
         ),
       ],
