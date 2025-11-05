@@ -4,17 +4,31 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/features/merchant/controllers/merchant_products_controller.dart';
 
-class ProductDetailsScreen extends GetView<MerchantProductsController> {
+class ProductDetailsScreen extends StatefulWidget {
   const ProductDetailsScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  State<ProductDetailsScreen> createState() => _ProductDetailsScreenState();
+}
+
+class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
+  final controller = Get.find<MerchantProductsController>();
+  late final int productId;
+
+  @override
+  void initState() {
+    super.initState();
     // Get product ID from route parameters
-    final productId = int.parse(Get.parameters['id'] ?? '0');
+    productId = int.parse(Get.parameters['id'] ?? '0');
 
-    // Load product details
-    controller.loadProduct(productId);
+    // Load product details after the first frame
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      controller.loadProduct(productId);
+    });
+  }
 
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.backgroundColor,
       body: Obx(() {
