@@ -28,6 +28,8 @@ dependencies:
   path: ^1.8.3
   cached_network_image: ^3.3.1
   google_maps_flutter: ^2.13.1
+  google_maps_flutter_android: ^2.14.7
+  google_maps_flutter_platform_interface: ^2.9.0
   geolocator: ^14.0.2
   geocoding: ^4.0.0
 
