@@ -30,7 +30,6 @@ class ApiConstants {
   // Cart endpoints
   static const String cart = '/customer/shopping/cart';
   static const String addToCart = '/customer/shopping/cart/add';
-
   // Product details endpoints
   static String productDetails(int id) => '/customer/shopping/products/$id';
   static String productReviews(int id) => '/customer/shopping/products/$id/reviews';
@@ -64,4 +63,7 @@ class ApiConstants {
   // 🔄 Quick switch methods for debugging
   static String get productionUrl => _productionUrl;
   static String get localUrl => _localUrl;
+
+  // 🗺️ Google Maps API Key
+  static const String googleMapsApiKey = 'AIzaSyAE8QqJfHHu_KHxyNeBZ418O1ymMmQrWcM';
 }

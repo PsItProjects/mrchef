@@ -821,6 +821,11 @@ class AppTranslations extends Translations {
       'latitude': 'Latitude',
       'longitude': 'Longitude',
       'location_not_selected': 'Please select a location on the map',
+      'search_location': 'Search for a location...',
+      'selected_location': 'Selected Location',
+      'please_enter_search_query': 'Please enter a search query',
+      'location_not_found': 'Location not found',
+      'search_failed': 'Search failed. Please try again',
 
       // Working Hours
       'working_hours': 'Working Hours',
@@ -1815,6 +1820,11 @@ class AppTranslations extends Translations {
       'latitude': 'خط العرض',
       'longitude': 'خط الطول',
       'location_not_selected': 'الرجاء تحديد موقع على الخريطة',
+      'search_location': 'ابحث عن موقع...',
+      'selected_location': 'الموقع المحدد',
+      'please_enter_search_query': 'الرجاء إدخال استعلام بحث',
+      'location_not_found': 'الموقع غير موجود',
+      'search_failed': 'فشل البحث. يرجى المحاولة مرة أخرى',
 
       // Working Hours
       'working_hours': 'أوقات العمل',

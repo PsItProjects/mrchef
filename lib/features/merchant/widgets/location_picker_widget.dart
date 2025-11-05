@@ -1,7 +1,9 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:geocoding/geocoding.dart';
 import '../../../core/theme/app_theme.dart';
 
 class LocationPickerWidget extends StatefulWidget {
@@ -24,6 +26,9 @@ class _LocationPickerWidgetState extends State<LocationPickerWidget> {
   GoogleMapController? _mapController;
   LatLng? _selectedLocation;
   bool _isLoading = true;
+  final TextEditingController _searchController = TextEditingController();
+  bool _isSearching = false;
+  String? _selectedAddress;
 
   // Default location (Riyadh, Saudi Arabia)
   static const LatLng _defaultLocation = LatLng(24.7136, 46.6753);
@@ -92,7 +97,76 @@ class _LocationPickerWidgetState extends State<LocationPickerWidget> {
   void _onMapTapped(LatLng location) {
     setState(() {
       _selectedLocation = location;
+      _selectedAddress = null;
     });
+    _getAddressFromLatLng(location);
+  }
+
+  Future<void> _getAddressFromLatLng(LatLng location) async {
+    try {
+      List<Placemark> placemarks = await placemarkFromCoordinates(
+        location.latitude,
+        location.longitude,
+      );
+      if (placemarks.isNotEmpty) {
+        Placemark place = placemarks[0];
+        setState(() {
+          _selectedAddress = '${place.street}, ${place.locality}, ${place.country}';
+        });
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error getting address: $e');
+      }
+    }
+  }
+
+  Future<void> _searchLocation() async {
+    final query = _searchController.text.trim();
+    if (query.isEmpty) {
+      Get.snackbar(
+        'error'.tr,
+        'please_enter_search_query'.tr,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+      return;
+    }
+
+    setState(() => _isSearching = true);
+
+    try {
+      List<Location> locations = await locationFromAddress(query);
+      if (locations.isNotEmpty) {
+        final location = LatLng(locations[0].latitude, locations[0].longitude);
+        setState(() {
+          _selectedLocation = location;
+          _isSearching = false;
+        });
+        _mapController?.animateCamera(
+          CameraUpdate.newCameraPosition(
+            CameraPosition(target: location, zoom: 15),
+          ),
+        );
+        _getAddressFromLatLng(location);
+      } else {
+        setState(() => _isSearching = false);
+        Get.snackbar(
+          'error'.tr,
+          'location_not_found'.tr,
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+      }
+    } catch (e) {
+      setState(() => _isSearching = false);
+      Get.snackbar(
+        'error'.tr,
+        'search_failed'.tr,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    }
   }
 
   void _confirmLocation() {
@@ -171,8 +245,54 @@ class _LocationPickerWidgetState extends State<LocationPickerWidget> {
                   zoomControlsEnabled: true,
                   mapToolbarEnabled: false,
                 ),
+                // Search Bar
                 Positioned(
                   top: 16,
+                  left: 16,
+                  right: 16,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.1),
+                          blurRadius: 10,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: TextField(
+                      controller: _searchController,
+                      decoration: InputDecoration(
+                        hintText: 'search_location'.tr,
+                        prefixIcon: const Icon(Icons.search, color: AppColors.primaryColor),
+                        suffixIcon: _isSearching
+                            ? const Padding(
+                                padding: EdgeInsets.all(12.0),
+                                child: SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: AppColors.primaryColor,
+                                  ),
+                                ),
+                              )
+                            : IconButton(
+                                icon: const Icon(Icons.arrow_forward, color: AppColors.primaryColor),
+                                onPressed: _searchLocation,
+                              ),
+                        border: InputBorder.none,
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                      ),
+                      onSubmitted: (_) => _searchLocation(),
+                    ),
+                  ),
+                ),
+                // Location Info Card
+                Positioned(
+                  bottom: 16,
                   left: 16,
                   right: 16,
                   child: Container(
@@ -190,30 +310,52 @@ class _LocationPickerWidgetState extends State<LocationPickerWidget> {
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          'tap_to_select_location'.tr,
+                          'selected_location'.tr,
                           style: const TextStyle(
                             fontSize: 14,
                             color: AppColors.textDarkColor,
-                            fontWeight: FontWeight.w500,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
-                        if (_selectedLocation != null) ...[
+                        if (_selectedAddress != null) ...[
                           const SizedBox(height: 8),
                           Text(
-                            '${'latitude'.tr}: ${_selectedLocation!.latitude.toStringAsFixed(6)}',
+                            _selectedAddress!,
                             style: const TextStyle(
                               fontSize: 12,
-                              color: Colors.grey,
+                              color: AppColors.textDarkColor,
                             ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                          Text(
-                            '${'longitude'.tr}: ${_selectedLocation!.longitude.toStringAsFixed(6)}',
-                            style: const TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey,
-                            ),
+                        ],
+                        if (_selectedLocation != null) ...[
+                          const SizedBox(height: 8),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  '${'latitude'.tr}: ${_selectedLocation!.latitude.toStringAsFixed(6)}',
+                                  style: const TextStyle(
+                                    fontSize: 11,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  '${'longitude'.tr}: ${_selectedLocation!.longitude.toStringAsFixed(6)}',
+                                  style: const TextStyle(
+                                    fontSize: 11,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ],
@@ -228,6 +370,7 @@ class _LocationPickerWidgetState extends State<LocationPickerWidget> {
   @override
   void dispose() {
     _mapController?.dispose();
+    _searchController.dispose();
     super.dispose();
   }
 }
