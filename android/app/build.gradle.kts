@@ -5,6 +5,13 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+// Load .env file
+val envFile = rootProject.file("../.env")
+val envProperties = java.util.Properties()
+if (envFile.exists()) {
+    envFile.inputStream().use { envProperties.load(it) }
+}
+
 android {
     namespace = "com.example.mrsheaf"
     compileSdk = 35  // Updated to 35 (required by plugins)
@@ -29,6 +36,9 @@ android {
         versionCode = flutter.versionCode
         versionName = flutter.versionName
         multiDexEnabled = true
+
+        // Load Google Maps API Key from .env
+        manifestPlaceholders["GOOGLE_MAPS_API_KEY"] = envProperties.getProperty("GOOGLE_MAPS_API_KEY", "")
     }
 
     buildTypes {

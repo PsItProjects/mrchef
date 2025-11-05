@@ -73,3 +73,8 @@ app.*.map.json
 
 # FVM Version Cache
 .fvm/
+
+# Environment variables (API keys, secrets, etc.)
+.env
+.env.local
+.env.*.local

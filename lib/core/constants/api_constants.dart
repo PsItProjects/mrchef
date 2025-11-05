@@ -1,3 +1,5 @@
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
 class ApiConstants {
   // 🎯 CONTROL VARIABLE - Change this to switch between servers
   static const bool useProductionServer = true; // true = Production, false = Local
@@ -64,6 +66,6 @@ class ApiConstants {
   static String get productionUrl => _productionUrl;
   static String get localUrl => _localUrl;
 
-  // 🗺️ Google Maps API Key
-  static const String googleMapsApiKey = 'AIzaSyAE8QqJfHHu_KHxyNeBZ418O1ymMmQrWcM';
+  // 🗺️ Google Maps API Key (loaded from .env file)
+  static String get googleMapsApiKey => dotenv.env['GOOGLE_MAPS_API_KEY'] ?? '';
 }
