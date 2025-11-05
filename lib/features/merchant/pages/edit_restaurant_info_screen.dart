@@ -282,18 +282,20 @@ class _EditRestaurantInfoScreenState extends State<EditRestaurantInfoScreen> {
     );
   }
 
-  /// Open location picker
-  void _openLocationPicker() {
-    Get.to(() => LocationPickerWidget(
+  /// Open location picker as bottom sheet
+  Future<void> _openLocationPicker() async {
+    final result = await showLocationPickerBottomSheet(
+      context: context,
       initialLatitude: _latitude,
       initialLongitude: _longitude,
-      onLocationSelected: (latitude, longitude) {
-        setState(() {
-          _latitude = latitude;
-          _longitude = longitude;
-        });
-      },
-    ));
+    );
+
+    if (result != null) {
+      setState(() {
+        _latitude = result['latitude'];
+        _longitude = result['longitude'];
+      });
+    }
   }
 
   /// Save changes

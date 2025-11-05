@@ -2,20 +2,37 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 import '../../../core/theme/app_theme.dart';
+
+/// Shows a bottom sheet modal for location selection
+/// Returns a Map with 'latitude' and 'longitude' keys when location is selected
+Future<Map<String, double>?> showLocationPickerBottomSheet({
+  required BuildContext context,
+  double? initialLatitude,
+  double? initialLongitude,
+}) {
+  return showModalBottomSheet<Map<String, double>>(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    isDismissible: true,
+    enableDrag: true,
+    builder: (context) => LocationPickerWidget(
+      initialLatitude: initialLatitude,
+      initialLongitude: initialLongitude,
+    ),
+  );
+}
 
 class LocationPickerWidget extends StatefulWidget {
   final double? initialLatitude;
   final double? initialLongitude;
-  final Function(double latitude, double longitude) onLocationSelected;
 
   const LocationPickerWidget({
     Key? key,
     this.initialLatitude,
     this.initialLongitude,
-    required this.onLocationSelected,
   }) : super(key: key);
 
   @override
@@ -155,11 +172,11 @@ class _LocationPickerWidgetState extends State<LocationPickerWidget> {
 
   void _confirmLocation() {
     if (_selectedLocation != null) {
-      widget.onLocationSelected(
-        _selectedLocation!.latitude,
-        _selectedLocation!.longitude,
-      );
-      Get.back();
+      // Return the selected location as a Map
+      Navigator.of(context).pop({
+        'latitude': _selectedLocation!.latitude,
+        'longitude': _selectedLocation!.longitude,
+      });
     } else {
       Get.snackbar(
         'error'.tr,
@@ -172,35 +189,83 @@ class _LocationPickerWidgetState extends State<LocationPickerWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: AppColors.primaryColor,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.textDarkColor),
-          onPressed: () => Get.back(),
+    final screenHeight = MediaQuery.of(context).size.height;
+
+    return Container(
+      height: screenHeight * 0.9, // 90% of screen height
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(20),
+          topRight: Radius.circular(20),
         ),
-        title: Text(
-          'select_location_on_map'.tr,
-          style: const TextStyle(
-            color: AppColors.textDarkColor,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        actions: [
-          TextButton.icon(
-            onPressed: _confirmLocation,
-            icon: const Icon(Icons.check, color: AppColors.textDarkColor),
-            label: Text(
-              'confirm_location'.tr,
-              style: const TextStyle(
-                color: AppColors.textDarkColor,
-                fontWeight: FontWeight.bold,
-              ),
+      ),
+      child: Column(
+        children: [
+          // Drag handle
+          Container(
+            margin: const EdgeInsets.only(top: 12, bottom: 8),
+            width: 40,
+            height: 4,
+            decoration: BoxDecoration(
+              color: Colors.grey[300],
+              borderRadius: BorderRadius.circular(2),
             ),
           ),
-        ],
-      ),
-      body: _isLoading
+
+          // Header
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              border: Border(
+                bottom: BorderSide(color: Colors.grey[200]!),
+              ),
+            ),
+            child: Row(
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.close, color: AppColors.textDarkColor),
+                  onPressed: () => Navigator.of(context).pop(),
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'select_location_on_map'.tr,
+                    style: const TextStyle(
+                      color: AppColors.textDarkColor,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                ElevatedButton.icon(
+                  onPressed: _confirmLocation,
+                  icon: const Icon(Icons.check, size: 16),
+                  label: Text(
+                    'confirm'.tr,
+                    style: const TextStyle(fontSize: 13),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primaryColor,
+                    foregroundColor: AppColors.textDarkColor,
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    minimumSize: const Size(100, 36),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // Map content
+          Expanded(
+            child: _isLoading
           ? const Center(child: CircularProgressIndicator(color: AppColors.primaryColor))
           : Stack(
               children: [
@@ -367,6 +432,9 @@ class _LocationPickerWidgetState extends State<LocationPickerWidget> {
                 ),
               ],
             ),
+          ),
+        ],
+      ),
     );
   }
 
