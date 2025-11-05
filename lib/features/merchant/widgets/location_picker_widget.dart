@@ -55,72 +55,26 @@ class _LocationPickerWidgetState extends State<LocationPickerWidget> {
           _selectedLocation = initialLocation;
           _isLoading = false;
         });
-        _getAddressFromLatLng(initialLocation);
         return;
       }
 
-      // Try to get current location
-      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-      if (!serviceEnabled) {
-        if (kDebugMode) {
-          print('⚠️ Location service disabled, using default location (Riyadh)');
-        }
-        setState(() {
-          _selectedLocation = _defaultLocation;
-          _isLoading = false;
-        });
-        _getAddressFromLatLng(_defaultLocation);
-        return;
-      }
-
-      LocationPermission permission = await Geolocator.checkPermission();
-      if (permission == LocationPermission.denied) {
-        permission = await Geolocator.requestPermission();
-        if (permission == LocationPermission.denied) {
-          if (kDebugMode) {
-            print('⚠️ Location permission denied, using default location (Riyadh)');
-          }
-          setState(() {
-            _selectedLocation = _defaultLocation;
-            _isLoading = false;
-          });
-          _getAddressFromLatLng(_defaultLocation);
-          return;
-        }
-      }
-
-      if (permission == LocationPermission.deniedForever) {
-        if (kDebugMode) {
-          print('⚠️ Location permission denied forever, using default location (Riyadh)');
-        }
-        setState(() {
-          _selectedLocation = _defaultLocation;
-          _isLoading = false;
-        });
-        _getAddressFromLatLng(_defaultLocation);
-        return;
-      }
-
-      Position position = await Geolocator.getCurrentPosition();
-      final currentLocation = LatLng(position.latitude, position.longitude);
+      // Use default location (Riyadh, Saudi Arabia) as starting point
       if (kDebugMode) {
-        print('📍 Got current location: $currentLocation');
+        print('📍 Using default location (Riyadh, Saudi Arabia): $_defaultLocation');
       }
       setState(() {
-        _selectedLocation = currentLocation;
+        _selectedLocation = _defaultLocation;
         _isLoading = false;
       });
-      _getAddressFromLatLng(currentLocation);
     } catch (e) {
       if (kDebugMode) {
-        print('❌ Error getting location: $e');
+        print('❌ Error initializing location: $e');
         print('📍 Using default location (Riyadh)');
       }
       setState(() {
         _selectedLocation = _defaultLocation;
         _isLoading = false;
       });
-      _getAddressFromLatLng(_defaultLocation);
     }
   }
 
