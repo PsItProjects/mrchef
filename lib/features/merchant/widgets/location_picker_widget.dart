@@ -17,7 +17,7 @@ Future<Map<String, double>?> showLocationPickerBottomSheet({
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
     isDismissible: true,
-    enableDrag: true,
+    enableDrag: false, // Disable default drag - we'll handle it manually
     builder: (context) => LocationPickerWidget(
       initialLatitude: initialLatitude,
       initialLongitude: initialLongitude,
@@ -187,6 +187,77 @@ class _LocationPickerWidgetState extends State<LocationPickerWidget> {
     }
   }
 
+  /// Move camera to user's current location
+  Future<void> _goToMyLocation() async {
+    if (_mapController != null && _selectedLocation != null) {
+      _mapController!.animateCamera(
+        CameraUpdate.newCameraPosition(
+          CameraPosition(
+            target: _selectedLocation!,
+            zoom: 15,
+          ),
+        ),
+      );
+    }
+  }
+
+  /// Zoom in on the map
+  Future<void> _zoomIn() async {
+    if (_mapController != null) {
+      _mapController!.animateCamera(CameraUpdate.zoomIn());
+    }
+  }
+
+  /// Zoom out on the map
+  Future<void> _zoomOut() async {
+    if (_mapController != null) {
+      _mapController!.animateCamera(CameraUpdate.zoomOut());
+    }
+  }
+
+  /// Build a custom map control button with Marvel/Iron Man theme
+  Widget _buildMapControlButton({
+    required IconData icon,
+    required VoidCallback onPressed,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.15),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onPressed,
+          borderRadius: BorderRadius.circular(8),
+          child: Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: AppColors.primaryColor.withValues(alpha: 0.3),
+                width: 1,
+              ),
+            ),
+            child: Icon(
+              icon,
+              color: AppColors.primaryColor,
+              size: 24,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
@@ -202,14 +273,22 @@ class _LocationPickerWidgetState extends State<LocationPickerWidget> {
       ),
       child: Column(
         children: [
-          // Drag handle
-          Container(
-            margin: const EdgeInsets.only(top: 12, bottom: 8),
-            width: 40,
-            height: 4,
-            decoration: BoxDecoration(
-              color: Colors.grey[300],
-              borderRadius: BorderRadius.circular(2),
+          // Drag handle - only this area can dismiss the bottom sheet
+          GestureDetector(
+            onVerticalDragUpdate: (details) {
+              // If dragging down, dismiss the bottom sheet
+              if (details.delta.dy > 5) {
+                Navigator.of(context).pop();
+              }
+            },
+            child: Container(
+              margin: const EdgeInsets.only(top: 12, bottom: 8),
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(2),
+              ),
             ),
           ),
 
@@ -302,8 +381,8 @@ class _LocationPickerWidgetState extends State<LocationPickerWidget> {
                         }
                       : {},
                   myLocationEnabled: true,
-                  myLocationButtonEnabled: true,
-                  zoomControlsEnabled: true,
+                  myLocationButtonEnabled: false, // We'll use custom button
+                  zoomControlsEnabled: false, // We'll use custom buttons
                   zoomGesturesEnabled: true,
                   scrollGesturesEnabled: true,
                   tiltGesturesEnabled: true,
@@ -356,6 +435,33 @@ class _LocationPickerWidgetState extends State<LocationPickerWidget> {
                       ),
                       onSubmitted: (_) => _searchLocation(),
                     ),
+                  ),
+                ),
+
+                // Custom Map Controls - Right Side
+                Positioned(
+                  right: 16,
+                  top: 100,
+                  child: Column(
+                    children: [
+                      // Zoom In Button
+                      _buildMapControlButton(
+                        icon: Icons.add,
+                        onPressed: _zoomIn,
+                      ),
+                      const SizedBox(height: 8),
+                      // Zoom Out Button
+                      _buildMapControlButton(
+                        icon: Icons.remove,
+                        onPressed: _zoomOut,
+                      ),
+                      const SizedBox(height: 16),
+                      // My Location Button
+                      _buildMapControlButton(
+                        icon: Icons.my_location,
+                        onPressed: _goToMyLocation,
+                      ),
+                    ],
                   ),
                 ),
                 // Location Info Card
