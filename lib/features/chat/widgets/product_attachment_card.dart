@@ -17,6 +17,8 @@ class ProductAttachmentCard extends StatelessWidget {
     final items = attachments['items'] as List<dynamic>? ?? [];
     final totalAmount = attachments['total_amount'] ?? 0;
     final itemCount = attachments['item_count'] ?? items.length;
+    final orderId = attachments['order_id']; // For approved orders
+    final requestNumber = attachments['request_number']; // For pending requests
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -89,13 +91,53 @@ class ProductAttachmentCard extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        isArabic ? 'تفاصيل الطلب' : 'Order Details',
-                        style: const TextStyle(
-                          fontSize: 17,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF262626),
-                        ),
+                      Row(
+                        children: [
+                          Text(
+                            isArabic ? 'تفاصيل الطلب' : 'Order Details',
+                            style: const TextStyle(
+                              fontSize: 17,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF262626),
+                            ),
+                          ),
+                          // Show order ID if approved, otherwise show request number
+                          if (orderId != null) ...[
+                            const SizedBox(width: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF4CAF50), // Green for approved
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                '#$orderId',
+                                style: const TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ] else if (requestNumber != null) ...[
+                            const SizedBox(width: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                              decoration: BoxDecoration(
+                                color: AppColors.primaryColor,
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                '#$requestNumber',
+                                style: const TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
                       ),
                       const SizedBox(height: 2),
                       Text(
@@ -326,11 +368,53 @@ class ProductAttachmentCard extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                 ),
 
+                const SizedBox(height: 8),
+
+                // Quantity - Clear and prominent
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: AppColors.primaryColor.withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(
+                      color: AppColors.primaryColor.withOpacity(0.3),
+                      width: 1,
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.shopping_basket_outlined,
+                        size: 14,
+                        color: AppColors.primaryColor,
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        '${isArabic ? 'الكمية' : 'Quantity'}: ',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey[700],
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      Text(
+                        '$quantity',
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: AppColors.primaryColor,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
                 const SizedBox(height: 6),
 
                 // Unit price
                 Text(
-                  '${isArabic ? 'السعر' : 'Price'}: $unitPrice ${isArabic ? 'ر.س' : 'SAR'}',
+                  '${isArabic ? 'سعر الوحدة' : 'Unit Price'}: $unitPrice ${isArabic ? 'ر.س' : 'SAR'}',
                   style: TextStyle(
                     fontSize: 12,
                     color: Colors.grey[600],
