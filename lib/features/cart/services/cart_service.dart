@@ -344,7 +344,7 @@ class CartService {
       if (kDebugMode) {
         print('❌ CART SERVICE ERROR: ${e.response?.statusCode} ${e.message}');
       }
-      
+
       if (e.response?.statusCode == 401) {
         throw Exception('Authentication required');
       } else {
@@ -355,6 +355,59 @@ class CartService {
         print('❌ CART SERVICE ERROR: $e');
       }
       throw Exception('Failed to clear cart: $e');
+    }
+  }
+
+  /// Initiate order chat from cart
+  /// This creates a conversation with the restaurant and sends initial message with cart items
+  Future<Map<String, dynamic>> initiateOrderChat() async {
+    try {
+      if (kDebugMode) {
+        print('💬 CART SERVICE: Initiating order chat...');
+      }
+
+      // Check if user is authenticated first
+      final isAuth = await _isAuthenticated();
+      if (!isAuth) {
+        if (kDebugMode) {
+          print('🔒 CART SERVICE: User not authenticated, cannot initiate chat');
+        }
+        throw Exception('يجب تسجيل الدخول أولاً لبدء المحادثة');
+      }
+
+      final response = await _apiClient.post(
+        '/customer/shopping/cart/initiate-order-chat',
+      );
+
+      if (response.data['success'] == true) {
+        if (kDebugMode) {
+          print('✅ CART SERVICE: Order chat initiated successfully');
+          print('💬 CONVERSATION ID: ${response.data['data']['conversation']['id']}');
+        }
+
+        return response.data['data'];
+      } else {
+        throw Exception(response.data['message'] ?? 'Failed to initiate order chat');
+      }
+    } on DioException catch (e) {
+      if (kDebugMode) {
+        print('❌ CART SERVICE ERROR: ${e.response?.statusCode} ${e.message}');
+        print('❌ RESPONSE DATA: ${e.response?.data}');
+      }
+
+      if (e.response?.statusCode == 401) {
+        throw Exception('يجب تسجيل الدخول أولاً');
+      } else if (e.response?.statusCode == 400) {
+        final message = e.response?.data['message'] ?? 'السلة فارغة';
+        throw Exception(message);
+      } else {
+        throw Exception('Network error: ${e.message}');
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ CART SERVICE ERROR: $e');
+      }
+      rethrow;
     }
   }
 }

@@ -101,6 +101,11 @@ class CartController extends GetxController {
     } catch (e) {
       String errorMessage = e.toString();
 
+      // Remove "Exception: " prefix if present
+      if (errorMessage.startsWith('Exception: ')) {
+        errorMessage = errorMessage.substring(11);
+      }
+
       // Check if it's an authentication error
       if (errorMessage.contains('يجب تسجيل الدخول')) {
         Get.snackbar(
@@ -121,10 +126,11 @@ class CartController extends GetxController {
       } else {
         Get.snackbar(
           'خطأ',
-          'فشل في إضافة المنتج للسلة: $e',
+          errorMessage,
           snackPosition: SnackPosition.BOTTOM,
           backgroundColor: Colors.red,
           colorText: Colors.white,
+          duration: const Duration(seconds: 4),
         );
       }
     } finally {
@@ -395,16 +401,53 @@ class CartController extends GetxController {
     Get.offAllNamed(AppRoutes.HOME);
   }
 
-  // Proceed to checkout
-  void proceedToCheckout() {
+  // Proceed to checkout - now initiates chat with restaurant
+  Future<void> proceedToCheckout() async {
     if (cartItems.isEmpty) return;
 
-    Get.snackbar(
-      'Checkout',
-      'Proceeding to checkout with $totalItemsCount items',
-      snackPosition: SnackPosition.BOTTOM,
-    );
+    try {
+      isUpdating.value = true;
 
-    // TODO: Navigate to checkout screen when implemented
+      // Initiate order chat with restaurant
+      final chatData = await _cartService.initiateOrderChat();
+
+      // Clear cart after successful chat initiation
+      await loadCartItems();
+
+      // Navigate to chat screen
+      // TODO: Navigate to chat screen with conversation ID
+      final conversationId = chatData['conversation']['id'];
+
+      Get.snackbar(
+        'تم بنجاح',
+        'تم إرسال طلبك إلى المطعم',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: const Color(0xFF4CAF50),
+        colorText: Colors.white,
+        duration: const Duration(seconds: 2),
+      );
+
+      // TODO: Navigate to chat screen
+      // Get.toNamed('/chat/$conversationId');
+
+    } catch (e) {
+      String errorMessage = e.toString();
+
+      // Remove "Exception: " prefix if present
+      if (errorMessage.startsWith('Exception: ')) {
+        errorMessage = errorMessage.substring(11);
+      }
+
+      Get.snackbar(
+        'خطأ',
+        errorMessage,
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+        duration: const Duration(seconds: 3),
+      );
+    } finally {
+      isUpdating.value = false;
+    }
   }
 }
