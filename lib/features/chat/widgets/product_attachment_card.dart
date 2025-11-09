@@ -23,129 +23,63 @@ class ProductAttachmentCard extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Colors.white,
-            AppColors.primaryColor.withOpacity(0.02),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(16),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: AppColors.primaryColor.withOpacity(0.2),
-          width: 1.5,
+          color: Colors.grey[200]!,
+          width: 1,
         ),
         boxShadow: [
           BoxShadow(
-            color: AppColors.primaryColor.withOpacity(0.1),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-            spreadRadius: 0,
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header with gradient background
+          // Header - Simple and clean
           Container(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  AppColors.primaryColor.withOpacity(0.15),
-                  AppColors.primaryColor.withOpacity(0.05),
-                ],
-              ),
+              color: const Color(0xFFFAFAFA),
               borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(14),
-                topRight: Radius.circular(14),
+                topLeft: Radius.circular(11),
+                topRight: Radius.circular(11),
+              ),
+              border: Border(
+                bottom: BorderSide(
+                  color: Colors.grey[200]!,
+                  width: 1,
+                ),
               ),
             ),
             child: Row(
               children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: AppColors.primaryColor,
-                    borderRadius: BorderRadius.circular(8),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.primaryColor.withOpacity(0.3),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: const Icon(
-                    Icons.receipt_long,
-                    size: 20,
-                    color: Colors.white,
-                  ),
+                Icon(
+                  Icons.receipt_long_outlined,
+                  size: 20,
+                  color: AppColors.primaryColor,
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 10),
                 Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  child: Row(
                     children: [
-                      Row(
-                        children: [
-                          Text(
-                            isArabic ? 'تفاصيل الطلب' : 'Order Details',
-                            style: const TextStyle(
-                              fontSize: 17,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF262626),
-                            ),
-                          ),
-                          // Show order ID if approved, otherwise show request number
-                          if (orderId != null) ...[
-                            const SizedBox(width: 8),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF4CAF50), // Green for approved
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                              child: Text(
-                                '#$orderId',
-                                style: const TextStyle(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ),
-                          ] else if (requestNumber != null) ...[
-                            const SizedBox(width: 8),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                              decoration: BoxDecoration(
-                                color: AppColors.primaryColor,
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                              child: Text(
-                                '#$requestNumber',
-                                style: const TextStyle(
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ],
-                      ),
-                      const SizedBox(height: 2),
                       Text(
-                        isArabic
-                            ? '$itemCount ${itemCount == 1 ? 'منتج' : 'منتجات'}'
-                            : '$itemCount ${itemCount == 1 ? 'item' : 'items'}',
+                        isArabic ? 'تفاصيل الطلب' : 'Order Details',
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF262626),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        '($itemCount ${isArabic ? (itemCount == 1 ? 'منتج' : 'منتجات') : (itemCount == 1 ? 'item' : 'items')})',
                         style: TextStyle(
-                          fontSize: 12,
+                          fontSize: 13,
                           color: Colors.grey[600],
                           fontWeight: FontWeight.w500,
                         ),
@@ -153,6 +87,48 @@ class ProductAttachmentCard extends StatelessWidget {
                     ],
                   ),
                 ),
+                // Show order ID or request number - smaller and subtle
+                if (orderId != null) ...[
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF4CAF50).withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(4),
+                      border: Border.all(
+                        color: const Color(0xFF4CAF50).withOpacity(0.3),
+                        width: 1,
+                      ),
+                    ),
+                    child: Text(
+                      '#$orderId',
+                      style: const TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF4CAF50),
+                      ),
+                    ),
+                  ),
+                ] else if (requestNumber != null) ...[
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryColor.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(4),
+                      border: Border.all(
+                        color: AppColors.primaryColor.withOpacity(0.3),
+                        width: 1,
+                      ),
+                    ),
+                    child: Text(
+                      '#$requestNumber',
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.primaryColor,
+                      ),
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
@@ -167,31 +143,20 @@ class ProductAttachmentCard extends StatelessWidget {
             ),
           ),
 
-          // Divider
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Divider(
-              color: AppColors.primaryColor.withOpacity(0.2),
-              height: 1,
-              thickness: 1,
-            ),
-          ),
-
-          // Total section with gradient background
+          // Total section - clean and simple
           Container(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  AppColors.primaryColor.withOpacity(0.08),
-                  AppColors.primaryColor.withOpacity(0.03),
-                ],
-              ),
+              color: const Color(0xFFFAFAFA),
               borderRadius: const BorderRadius.only(
-                bottomLeft: Radius.circular(14),
-                bottomRight: Radius.circular(14),
+                bottomLeft: Radius.circular(11),
+                bottomRight: Radius.circular(11),
+              ),
+              border: Border(
+                top: BorderSide(
+                  color: Colors.grey[200]!,
+                  width: 1,
+                ),
               ),
             ),
             child: Row(
@@ -200,17 +165,17 @@ class ProductAttachmentCard extends StatelessWidget {
                 Row(
                   children: [
                     Icon(
-                      Icons.payments_outlined,
-                      size: 20,
-                      color: AppColors.primaryColor,
+                      Icons.receipt_outlined,
+                      size: 18,
+                      color: Colors.grey[700],
                     ),
                     const SizedBox(width: 8),
                     Text(
                       isArabic ? 'المجموع الكلي' : 'Total Amount',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF262626),
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.grey[700],
                       ),
                     ),
                   ],
@@ -219,7 +184,7 @@ class ProductAttachmentCard extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
                     color: AppColors.primaryColor,
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(6),
                     boxShadow: [
                       BoxShadow(
                         color: AppColors.primaryColor.withOpacity(0.3),
@@ -231,7 +196,7 @@ class ProductAttachmentCard extends StatelessWidget {
                   child: Text(
                     '$totalAmount ${isArabic ? 'ر.س' : 'SAR'}',
                     style: const TextStyle(
-                      fontSize: 17,
+                      fontSize: 15,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
                     ),
@@ -256,40 +221,34 @@ class ProductAttachmentCard extends StatelessWidget {
     final specialInstructions = item['special_instructions'];
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
+      margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        color: const Color(0xFFFAFAFA),
+        borderRadius: BorderRadius.circular(10),
         border: Border.all(
           color: Colors.grey[200]!,
           width: 1,
         ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.03),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
       ),
-      child: Row(
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Product Image
-          Stack(
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Product Image
               ClipRRect(
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(8),
                 child: productImage != null && productImage.toString().isNotEmpty
                     ? CachedNetworkImage(
                         imageUrl: productImage,
-                        width: 80,
-                        height: 80,
+                        width: 70,
+                        height: 70,
                         fit: BoxFit.cover,
                         placeholder: (context, url) => Container(
-                          width: 80,
-                          height: 80,
+                          width: 70,
+                          height: 70,
                           color: Colors.grey[200],
                           child: const Center(
                             child: CircularProgressIndicator(
@@ -298,226 +257,204 @@ class ProductAttachmentCard extends StatelessWidget {
                           ),
                         ),
                         errorWidget: (context, url, error) => Container(
-                          width: 80,
-                          height: 80,
+                          width: 70,
+                          height: 70,
                           color: Colors.grey[200],
                           child: Icon(
                             Icons.restaurant,
-                            size: 32,
+                            size: 28,
                             color: Colors.grey[400],
                           ),
                         ),
                       )
                     : Container(
-                        width: 80,
-                        height: 80,
+                        width: 70,
+                        height: 70,
                         color: Colors.grey[200],
                         child: Icon(
                           Icons.restaurant,
-                          size: 32,
+                          size: 28,
                           color: Colors.grey[400],
                         ),
                       ),
               ),
-              // Quantity badge
-              Positioned(
-                top: 4,
-                right: 4,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: AppColors.primaryColor,
-                    borderRadius: BorderRadius.circular(6),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.2),
-                        blurRadius: 4,
-                        offset: const Offset(0, 2),
+
+              const SizedBox(width: 12),
+
+              // Product Details
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Product name
+                    Text(
+                      productName,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF262626),
                       ),
-                    ],
-                  ),
-                  child: Text(
-                    '${quantity}x',
-                    style: const TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                  ),
+
+                    const SizedBox(height: 6),
+
+                    // Quantity and Unit Price in one row
+                    Row(
+                      children: [
+                        // Quantity badge
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: AppColors.primaryColor,
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            '${isArabic ? 'الكمية' : 'Qty'}: $quantity',
+                            style: const TextStyle(
+                              fontSize: 11,
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        // Unit price
+                        Text(
+                          '$unitPrice ${isArabic ? 'ر.س' : 'SAR'}',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey[700],
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        Text(
+                          ' ${isArabic ? '/ وحدة' : '/ unit'}',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Colors.grey[500],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
             ],
           ),
 
-          const SizedBox(width: 12),
+          // Additional details below image and name
+          const SizedBox(height: 10),
 
-          // Product Details
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+          // Size, Options, Notes in a clean list
+          if (size != null) ...[
+            _buildDetailRow(
+              icon: Icons.straighten,
+              label: isArabic ? 'الحجم' : 'Size',
+              value: size,
+              isArabic: isArabic,
+            ),
+          ],
+
+          if (selectedOptions.isNotEmpty) ...[
+            _buildDetailRow(
+              icon: Icons.add_circle_outline,
+              label: isArabic ? 'الإضافات' : 'Options',
+              value: selectedOptions.map((opt) => opt['name'] ?? opt['option_name']).join(', '),
+              isArabic: isArabic,
+            ),
+          ],
+
+          if (specialInstructions != null && specialInstructions.toString().isNotEmpty) ...[
+            _buildDetailRow(
+              icon: Icons.note_outlined,
+              label: isArabic ? 'ملاحظات' : 'Notes',
+              value: specialInstructions,
+              isArabic: isArabic,
+              isItalic: true,
+            ),
+          ],
+
+          // Total price - prominent at bottom
+          const SizedBox(height: 10),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+            decoration: BoxDecoration(
+              color: AppColors.primaryColor.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(6),
+              border: Border.all(
+                color: AppColors.primaryColor.withOpacity(0.3),
+                width: 1,
+              ),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                // Product name
                 Text(
-                  productName,
-                  style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF262626),
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-
-                const SizedBox(height: 8),
-
-                // Quantity - Clear and prominent
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: AppColors.primaryColor.withOpacity(0.15),
-                    borderRadius: BorderRadius.circular(6),
-                    border: Border.all(
-                      color: AppColors.primaryColor.withOpacity(0.3),
-                      width: 1,
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.shopping_basket_outlined,
-                        size: 14,
-                        color: AppColors.primaryColor,
-                      ),
-                      const SizedBox(width: 6),
-                      Text(
-                        '${isArabic ? 'الكمية' : 'Quantity'}: ',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey[700],
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      Text(
-                        '$quantity',
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: AppColors.primaryColor,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-
-                const SizedBox(height: 6),
-
-                // Unit price
-                Text(
-                  '${isArabic ? 'سعر الوحدة' : 'Unit Price'}: $unitPrice ${isArabic ? 'ر.س' : 'SAR'}',
+                  isArabic ? 'الإجمالي' : 'Total',
                   style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey[600],
-                    fontWeight: FontWeight.w500,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.grey[700],
                   ),
                 ),
-
-                // Size
-                if (size != null) ...[
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.straighten,
-                        size: 14,
-                        color: Colors.grey[600],
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        '${isArabic ? 'الحجم' : 'Size'}: $size',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey[600],
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-
-                // Selected options
-                if (selectedOptions.isNotEmpty) ...[
-                  const SizedBox(height: 4),
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Icon(
-                        Icons.add_circle_outline,
-                        size: 14,
-                        color: Colors.grey[600],
-                      ),
-                      const SizedBox(width: 4),
-                      Expanded(
-                        child: Text(
-                          '${isArabic ? 'الإضافات' : 'Options'}: ${selectedOptions.map((opt) => opt['name'] ?? opt['option_name']).join(', ')}',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey[600],
-                          ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-
-                // Special instructions
-                if (specialInstructions != null && specialInstructions.toString().isNotEmpty) ...[
-                  const SizedBox(height: 4),
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Icon(
-                        Icons.note_outlined,
-                        size: 14,
-                        color: Colors.grey[600],
-                      ),
-                      const SizedBox(width: 4),
-                      Expanded(
-                        child: Text(
-                          '${isArabic ? 'ملاحظات' : 'Notes'}: $specialInstructions',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey[600],
-                            fontStyle: FontStyle.italic,
-                          ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-
-                const SizedBox(height: 8),
-
-                // Total price with highlight
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: AppColors.primaryColor.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Text(
-                    '${isArabic ? 'الإجمالي' : 'Total'}: $totalPrice ${isArabic ? 'ر.س' : 'SAR'}',
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.primaryColor,
-                    ),
+                Text(
+                  '$totalPrice ${isArabic ? 'ر.س' : 'SAR'}',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.primaryColor,
                   ),
                 ),
               ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDetailRow({
+    required IconData icon,
+    required String label,
+    required String value,
+    required bool isArabic,
+    bool isItalic = false,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(
+            icon,
+            size: 14,
+            color: Colors.grey[600],
+          ),
+          const SizedBox(width: 6),
+          Expanded(
+            child: RichText(
+              text: TextSpan(
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey[700],
+                  fontStyle: isItalic ? FontStyle.italic : FontStyle.normal,
+                ),
+                children: [
+                  TextSpan(
+                    text: '$label: ',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  TextSpan(
+                    text: value,
+                  ),
+                ],
+              ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
             ),
           ),
         ],
