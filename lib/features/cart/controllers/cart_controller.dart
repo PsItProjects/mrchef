@@ -290,7 +290,7 @@ class CartController extends GetxController {
   }
 
   /// Clear all items from cart via server
-  Future<void> clearCart() async {
+  Future<void> clearCart({bool showNotification = true}) async {
     try {
       isUpdating.value = true;
 
@@ -300,13 +300,16 @@ class CartController extends GetxController {
       cartItems.clear();
       cartSummary.clear();
 
-      Get.snackbar(
-        'تم المسح',
-        'تم مسح جميع العناصر من السلة',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: AppColors.successColor,
-        colorText: Colors.white,
-      );
+      // Only show notification if explicitly requested
+      if (showNotification) {
+        Get.snackbar(
+          'تم المسح',
+          'تم مسح جميع العناصر من السلة',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: AppColors.successColor,
+          colorText: Colors.white,
+        );
+      }
 
     } catch (e) {
       String errorMessage = e.toString();
@@ -414,21 +417,12 @@ class CartController extends GetxController {
       // Get conversation ID and data
       final conversationId = chatData['conversation']['id'];
 
-      // Clear cart after successful chat initiation
-      await loadCartItems();
+      // Clear cart silently after successful chat initiation
+      await clearCart(showNotification: false);
 
       // Navigate to chat screen with conversation data
+      // Navigation itself is sufficient feedback for the user
       Get.toNamed('/chat/$conversationId', arguments: chatData['conversation']);
-
-      // Show success message
-      Get.snackbar(
-        'تم بنجاح',
-        'تم إرسال طلبك إلى المطعم',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: const Color(0xFF4CAF50),
-        colorText: Colors.white,
-        duration: const Duration(seconds: 2),
-      );
 
     } catch (e) {
       String errorMessage = e.toString();

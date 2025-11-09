@@ -15,8 +15,50 @@ class MessageBubble extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isFromCustomer = message.isFromCustomer;
+    final isSystemMessage = message.senderType == 'system';
     final isArabic = Get.locale?.languageCode == 'ar';
 
+    // System messages (order separators) - centered with special styling
+    if (isSystemMessage) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        child: Row(
+          children: [
+            Expanded(
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      AppColors.primaryColor.withOpacity(0.1),
+                      AppColors.primaryColor.withOpacity(0.05),
+                      AppColors.primaryColor.withOpacity(0.1),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: AppColors.primaryColor.withOpacity(0.3),
+                    width: 1,
+                  ),
+                ),
+                child: Text(
+                  message.message,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.primaryColor,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // Regular messages (customer/merchant)
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Row(
