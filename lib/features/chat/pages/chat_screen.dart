@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:mrsheaf/core/theme/app_colors.dart';
+import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/features/chat/controllers/chat_controller.dart';
 import 'package:mrsheaf/features/chat/widgets/message_bubble.dart';
 import 'package:mrsheaf/features/chat/widgets/product_attachment_card.dart';

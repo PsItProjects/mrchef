@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:mrsheaf/core/theme/app_colors.dart';
+import 'package:mrsheaf/core/theme/app_theme.dart';
 
 class ProductAttachmentCard extends StatelessWidget {
   final Map<String, dynamic> attachments;

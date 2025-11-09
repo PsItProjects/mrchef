@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
-import 'package:mrsheaf/core/services/api_client.dart';
+import 'package:mrsheaf/core/network/api_client.dart';
 import 'package:mrsheaf/features/chat/models/conversation_model.dart';
 
 class ChatService {

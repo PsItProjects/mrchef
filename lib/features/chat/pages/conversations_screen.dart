@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:mrsheaf/core/theme/app_colors.dart';
+import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/features/chat/controllers/conversations_controller.dart';
 import 'package:mrsheaf/features/chat/widgets/conversation_card.dart';
-import 'package:intl/intl.dart' as intl;
 
 class ConversationsScreen extends GetView<ConversationsController> {
   const ConversationsScreen({super.key});
