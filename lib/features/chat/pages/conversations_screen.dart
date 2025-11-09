@@ -65,9 +65,16 @@ class ConversationsScreen extends GetView<ConversationsController> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // Back button
+          // Back button - always goes to profile
           GestureDetector(
-            onTap: () => Get.back(),
+            onTap: () {
+              // Try to go back, if no previous route, go to profile
+              if (Get.previousRoute.isEmpty || Get.previousRoute == '/conversations') {
+                Get.offAllNamed('/profile');
+              } else {
+                Get.back();
+              }
+            },
             child: Icon(
               isArabic ? Icons.arrow_forward_ios : Icons.arrow_back_ios,
               size: 20,
