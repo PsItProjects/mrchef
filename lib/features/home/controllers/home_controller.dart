@@ -399,12 +399,7 @@ class HomeController extends GetxController {
   }
   
   void onChatTap() {
-    // TODO: Navigate to chat screen
-    Get.snackbar(
-      'Chat',
-      'Chat functionality coming soon',
-      snackPosition: SnackPosition.BOTTOM,
-    );
+    Get.toNamed('/conversations');
   }
   
   void onSeeAllTap(String section) {

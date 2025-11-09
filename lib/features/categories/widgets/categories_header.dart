@@ -18,11 +18,7 @@ class CategoriesHeader extends GetView<CategoriesController> {
           // Chat icon
           GestureDetector(
             onTap: () {
-              Get.snackbar(
-                'Chat',
-                'Chat functionality coming soon',
-                snackPosition: SnackPosition.BOTTOM,
-              );
+              Get.toNamed('/conversations');
             },
             child: SvgPicture.asset(
               'assets/icons/chat_icon.svg',

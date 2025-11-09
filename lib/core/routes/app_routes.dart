@@ -21,4 +21,8 @@ abstract class AppRoutes {
   static const VENDOR_STEP2 = '/vendor-step2';
   static const VENDOR_STEP3 = '/vendor-step3';
   static const VENDOR_STEP4 = '/vendor-step4';
+
+  // Chat routes
+  static const CONVERSATIONS = '/conversations';
+  static const CHAT = '/chat/:id';
 }

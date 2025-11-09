@@ -411,13 +411,16 @@ class CartController extends GetxController {
       // Initiate order chat with restaurant
       final chatData = await _cartService.initiateOrderChat();
 
+      // Get conversation ID and data
+      final conversationId = chatData['conversation']['id'];
+
       // Clear cart after successful chat initiation
       await loadCartItems();
 
-      // Navigate to chat screen
-      // TODO: Navigate to chat screen with conversation ID
-      final conversationId = chatData['conversation']['id'];
+      // Navigate to chat screen with conversation data
+      Get.toNamed('/chat/$conversationId', arguments: chatData['conversation']);
 
+      // Show success message
       Get.snackbar(
         'تم بنجاح',
         'تم إرسال طلبك إلى المطعم',
@@ -426,9 +429,6 @@ class CartController extends GetxController {
         colorText: Colors.white,
         duration: const Duration(seconds: 2),
       );
-
-      // TODO: Navigate to chat screen
-      // Get.toNamed('/chat/$conversationId');
 
     } catch (e) {
       String errorMessage = e.toString();

@@ -16,12 +16,7 @@ class ProfileHeader extends StatelessWidget {
           // Chat icon (as per Figma)
           GestureDetector(
             onTap: () {
-              // TODO: Implement chat functionality
-              Get.snackbar(
-                'Chat',
-                'Chat functionality coming soon',
-                snackPosition: SnackPosition.BOTTOM,
-              );
+              Get.toNamed('/conversations');
             },
             child: Container(
               width: 24,

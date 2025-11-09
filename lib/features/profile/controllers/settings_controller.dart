@@ -383,6 +383,10 @@ class SettingsController extends GetxController {
     // TODO: Navigate to payment methods screen
   }
 
+  void navigateToConversations() {
+    Get.toNamed('/conversations');
+  }
+
   void _saveSettings() {
     // TODO: Save settings to local storage
   }

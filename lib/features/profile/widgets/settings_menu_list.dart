@@ -37,7 +37,15 @@ class SettingsMenuList extends GetView<SettingsController> {
             showDivider: true,
             isLoading: controller.isChangingLanguage.value,
           )),
-          
+
+          // Conversations
+          SettingsMenuItem(
+            title: Get.locale?.languageCode == 'ar' ? 'المحادثات' : 'Conversations',
+            hasArrow: true,
+            onTap: controller.navigateToConversations,
+            showDivider: true,
+          ),
+
           // Notification
           SettingsMenuItem(
             title: 'Notification',
