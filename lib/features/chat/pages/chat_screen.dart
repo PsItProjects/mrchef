@@ -82,7 +82,7 @@ class ChatScreen extends GetView<ChatController> {
           color: const Color(0xFF262626),
           size: 20,
         ),
-        onPressed: () => Get.back(),
+        onPressed: () => Get.offAllNamed('/conversations'),
       ),
       title: Obx(() {
         final conv = controller.conversation.value;
