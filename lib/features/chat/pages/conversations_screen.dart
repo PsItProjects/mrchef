@@ -66,27 +66,20 @@ class ConversationsScreen extends GetView<ConversationsController> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // Back button - always goes to profile tab in home
+          // Back button - ALWAYS goes to profile tab in home
           GestureDetector(
             onTap: () {
-              // Try to go back, if no previous route or coming from chat, go to profile tab
-              if (Get.previousRoute.isEmpty ||
-                  Get.previousRoute == '/conversations' ||
-                  Get.previousRoute.startsWith('/chat/')) {
-                // Navigate to home and switch to profile tab (index 4)
-                Get.offAllNamed('/home');
-                // Use a small delay to ensure navigation completes before changing tab
-                Future.delayed(const Duration(milliseconds: 100), () {
-                  try {
-                    final mainController = Get.find<MainController>();
-                    mainController.changeTab(4); // Profile tab is at index 4
-                  } catch (e) {
-                    // Controller not found, ignore
-                  }
-                });
-              } else {
-                Get.back();
-              }
+              // Always navigate to home and switch to profile tab (index 4)
+              Get.offAllNamed('/home');
+              // Use a small delay to ensure navigation completes before changing tab
+              Future.delayed(const Duration(milliseconds: 100), () {
+                try {
+                  final mainController = Get.find<MainController>();
+                  mainController.changeTab(4); // Profile tab is at index 4
+                } catch (e) {
+                  // Controller not found, ignore
+                }
+              });
             },
             child: Icon(
               isArabic ? Icons.arrow_forward_ios : Icons.arrow_back_ios,
