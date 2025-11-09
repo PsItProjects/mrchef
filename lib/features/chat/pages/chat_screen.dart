@@ -42,10 +42,9 @@ class ChatScreen extends GetView<ChatController> {
                   itemCount: controller.messages.length,
                   itemBuilder: (context, index) {
                     final message = controller.messages[index];
-                    
-                    // Show product attachment for first message if it has attachments
-                    if (index == 0 && 
-                        message.messageType == 'product_attachment' &&
+
+                    // Show product attachment card for any message with product_attachment type
+                    if (message.messageType == 'product_attachment' &&
                         message.attachments != null) {
                       return Column(
                         children: [
@@ -58,6 +57,7 @@ class ChatScreen extends GetView<ChatController> {
                       );
                     }
 
+                    // Regular message bubble
                     return MessageBubble(message: message);
                   },
                 ),
