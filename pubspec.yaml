@@ -33,6 +33,8 @@ dependencies:
   geolocator: ^14.0.2
   geocoding: ^4.0.0
   flutter_dotenv: ^5.2.1
+  firebase_core:
+  cloud_firestore:
 
 dev_dependencies:
   flutter_test:

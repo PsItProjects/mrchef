@@ -1,5 +1,8 @@
 plugins {
     id("com.android.application")
+    // START: FlutterFire Configuration
+    id("com.google.gms.google-services")
+    // END: FlutterFire Configuration
     id("kotlin-android")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
@@ -24,7 +27,7 @@ android {
         applicationId = "com.example.mrsheaf"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = 21  // Minimum SDK for image_cropper
+        minSdk = flutter.minSdkVersion  // Minimum SDK for image_cropper
         targetSdk = 35  // Updated to 35
         versionCode = flutter.versionCode
         versionName = flutter.versionName
