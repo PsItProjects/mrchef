@@ -39,6 +39,8 @@ import 'package:mrsheaf/features/chat/pages/conversations_screen.dart';
 import 'package:mrsheaf/features/chat/pages/chat_screen.dart';
 import 'package:mrsheaf/features/chat/bindings/conversations_binding.dart';
 import 'package:mrsheaf/features/chat/bindings/chat_binding.dart';
+import 'package:mrsheaf/features/checkout/pages/checkout_screen.dart';
+import 'package:mrsheaf/features/checkout/bindings/checkout_binding.dart';
 
 class AppPages {
   static const INITIAL = AppRoutes.SPLASH;
@@ -179,6 +181,13 @@ class AppPages {
       name: AppRoutes.CHAT,
       page: () => const ChatScreen(),
       binding: ChatBinding(),
+      middlewares: [AuthMiddleware()],
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.CHECKOUT,
+      page: () => const CheckoutScreen(),
+      binding: CheckoutBinding(),
       middlewares: [AuthMiddleware()],
       transition: Transition.rightToLeft,
     ),

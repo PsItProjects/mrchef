@@ -404,44 +404,9 @@ class CartController extends GetxController {
     Get.offAllNamed(AppRoutes.HOME);
   }
 
-  // Proceed to checkout - now initiates chat with restaurant
-  Future<void> proceedToCheckout() async {
+  // Proceed to checkout - navigate to checkout screen
+  void proceedToCheckout() {
     if (cartItems.isEmpty) return;
-
-    try {
-      isUpdating.value = true;
-
-      // Initiate order chat with restaurant
-      final chatData = await _cartService.initiateOrderChat();
-
-      // Get conversation ID and data
-      final conversationId = chatData['conversation']['id'];
-
-      // Clear cart silently after successful chat initiation
-      await clearCart(showNotification: false);
-
-      // Navigate to chat screen with conversation data
-      // Navigation itself is sufficient feedback for the user
-      Get.toNamed('/chat/$conversationId', arguments: chatData['conversation']);
-
-    } catch (e) {
-      String errorMessage = e.toString();
-
-      // Remove "Exception: " prefix if present
-      if (errorMessage.startsWith('Exception: ')) {
-        errorMessage = errorMessage.substring(11);
-      }
-
-      Get.snackbar(
-        'خطأ',
-        errorMessage,
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-        duration: const Duration(seconds: 3),
-      );
-    } finally {
-      isUpdating.value = false;
-    }
+    Get.toNamed(AppRoutes.CHECKOUT);
   }
 }

@@ -360,7 +360,7 @@ class CartService {
 
   /// Initiate order chat from cart
   /// This creates a conversation with the restaurant and sends initial message with cart items
-  Future<Map<String, dynamic>> initiateOrderChat() async {
+  Future<Map<String, dynamic>> initiateOrderChat({int? addressId}) async {
     try {
       if (kDebugMode) {
         print('💬 CART SERVICE: Initiating order chat...');
@@ -377,6 +377,9 @@ class CartService {
 
       final response = await _apiClient.post(
         '/customer/shopping/cart/initiate-order-chat',
+        data: {
+          if (addressId != null) 'address_id': addressId,
+        },
       );
 
       if (response.data['success'] == true) {
