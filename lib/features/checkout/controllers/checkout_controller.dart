@@ -42,7 +42,7 @@ class CheckoutController extends GetxController {
       }
     } catch (e) {
       Get.snackbar(
-        'Error',
+        'error'.tr,
         'Failed to load addresses: ${e.toString()}',
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.red,
@@ -62,8 +62,8 @@ class CheckoutController extends GetxController {
   Future<void> createOrder() async {
     if (selectedAddress.value == null) {
       Get.snackbar(
-        'تنبيه',
-        'الرجاء اختيار عنوان التوصيل',
+        'warning'.tr,
+        'please_select_delivery_address'.tr,
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.orange,
         colorText: Colors.white,
@@ -95,7 +95,7 @@ class CheckoutController extends GetxController {
       }
 
       Get.snackbar(
-        'خطأ',
+        'error'.tr,
         errorMessage,
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.red,

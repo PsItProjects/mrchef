@@ -401,6 +401,14 @@ class AppTranslations extends Translations {
       'cold_food': 'Cold Food',
       'poor_quality': 'Poor Quality',
 
+      // Checkout
+      'order_summary': 'Order Summary',
+      'add_new_address': 'Add New Address',
+      'no_saved_addresses': 'No saved addresses',
+      'create_order': 'Create Order',
+      'chat_disclaimer': 'A text chat with the restaurant will be created with order details upon confirmation',
+      'please_select_delivery_address': 'Please select delivery address',
+
       // Addresses
       'my_addresses': 'My Addresses',
       'shipping_addresses': 'Shipping Addresses',
@@ -1400,6 +1408,14 @@ class AppTranslations extends Translations {
       'late_delivery': 'تأخير في التوصيل',
       'cold_food': 'طعام بارد',
       'poor_quality': 'جودة ضعيفة',
+
+      // Checkout
+      'order_summary': 'ملخص الطلب',
+      'add_new_address': 'إضافة عنوان جديد',
+      'no_saved_addresses': 'لا توجد عناوين محفوظة',
+      'create_order': 'إنشاء الطلب',
+      'chat_disclaimer': 'سيتم إنشاء محادثة نصية مع المطعم بتفاصيل الطلب عند التأكيد',
+      'please_select_delivery_address': 'الرجاء اختيار عنوان التوصيل',
 
       // Addresses
       'my_addresses': 'عناويني',

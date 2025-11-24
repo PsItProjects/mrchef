@@ -13,8 +13,8 @@ class CheckoutScreen extends GetView<CheckoutController> {
     return Scaffold(
       backgroundColor: const Color(0xFFF2F2F2),
       appBar: AppBar(
-        title: const Text(
-          'إتمام الطلب',
+        title:  Text(
+          'checkout'.tr,
           style: TextStyle(
             fontFamily: 'Lato',
             fontWeight: FontWeight.w700,
@@ -49,7 +49,7 @@ class CheckoutScreen extends GetView<CheckoutController> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // Cart Summary
-                      _buildSectionTitle('ملخص الطلب'),
+                      _buildSectionTitle('order_summary'.tr),
                       const SizedBox(height: 12),
                       _buildCartSummary(),
                       
@@ -59,12 +59,12 @@ class CheckoutScreen extends GetView<CheckoutController> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          _buildSectionTitle('عنوان التوصيل'),
+                          _buildSectionTitle('delivery_address'.tr),
                           TextButton.icon(
                             onPressed: controller.addNewAddress,
                             icon: const Icon(Icons.add, size: 18, color: AppColors.primaryColor),
-                            label: const Text(
-                              'إضافة عنوان',
+                            label:  Text(
+                              'add_address'.tr,
                               style: TextStyle(
                                 color: AppColors.primaryColor,
                                 fontWeight: FontWeight.bold,
@@ -118,19 +118,19 @@ class CheckoutScreen extends GetView<CheckoutController> {
       ),
       child: Column(
         children: [
-          _buildSummaryRow('عدد العناصر', '${cartController.totalItemsCount}'),
+          _buildSummaryRow('quantity'.tr, '${cartController.totalItemsCount}'),
           const Divider(height: 24),
-          _buildSummaryRow('المجموع الفرعي', '${cartController.subtotal.toStringAsFixed(2)} ر.س'),
+          _buildSummaryRow('subtotal'.tr, '${cartController.subtotal.toStringAsFixed(2)} ${'currency'.tr}'),
           const SizedBox(height: 8),
-          _buildSummaryRow('رسوم التوصيل', '${cartController.deliveryFee.toStringAsFixed(2)} ر.س'),
+          _buildSummaryRow('delivery_fee'.tr, '${cartController.deliveryFee.toStringAsFixed(2)} ${'currency'.tr}'),
           if (cartController.serviceFee > 0) ...[
             const SizedBox(height: 8),
-            _buildSummaryRow('رسوم الخدمة', '${cartController.serviceFee.toStringAsFixed(2)} ر.س'),
+            _buildSummaryRow('service_fee'.tr, '${cartController.serviceFee.toStringAsFixed(2)} ${'currency'.tr}'),
           ],
           const Divider(height: 24),
           _buildSummaryRow(
-            'الإجمالي',
-            '${cartController.totalAmount.toStringAsFixed(2)} ر.س',
+            'total'.tr,
+            '${cartController.totalAmount.toStringAsFixed(2)} ${'currency'.tr}',
             isTotal: true,
           ),
         ],
@@ -183,8 +183,8 @@ class CheckoutScreen extends GetView<CheckoutController> {
             children: [
               const Icon(Icons.location_off_outlined, size: 48, color: Colors.grey),
               const SizedBox(height: 12),
-              const Text(
-                'لا توجد عناوين محفوظة',
+               Text(
+                'no_saved_addresses'.tr,
                 style: TextStyle(
                   color: Colors.grey,
                   fontSize: 16,
@@ -199,7 +199,7 @@ class CheckoutScreen extends GetView<CheckoutController> {
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),
-                child: const Text('إضافة عنوان جديد'),
+                child: Text('add_new_address'.tr),
               ),
             ],
           ),
@@ -270,8 +270,8 @@ class CheckoutScreen extends GetView<CheckoutController> {
                                     color: AppColors.primaryColor.withOpacity(0.1),
                                     borderRadius: BorderRadius.circular(4),
                                   ),
-                                  child: const Text(
-                                    'الافتراضي',
+                                  child:  Text(
+                                    'default_address'.tr,
                                     style: TextStyle(
                                       fontSize: 10,
                                       color: AppColors.primaryColor,
@@ -344,9 +344,9 @@ class CheckoutScreen extends GetView<CheckoutController> {
               children: [
                 const Icon(Icons.info_outline, color: Colors.blue, size: 20),
                 const SizedBox(width: 12),
-                const Expanded(
+                 Expanded(
                   child: Text(
-                    'سيتم إنشاء محادثة نصية مع المطعم بتفاصيل الطلب عند التأكيد',
+                    'chat_disclaimer'.tr,
                     style: TextStyle(
                       color: Color(0xFF262626),
                       fontSize: 12,
@@ -371,8 +371,8 @@ class CheckoutScreen extends GetView<CheckoutController> {
                 ),
                 elevation: 0,
               ),
-              child: const Text(
-                'إنشاء الطلب',
+              child:  Text(
+                'create_order'.tr,
                 style: TextStyle(
                   fontFamily: 'Lato',
                   fontWeight: FontWeight.w700,
