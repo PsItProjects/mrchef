@@ -45,8 +45,8 @@ class HomeScreen extends GetView<HomeController> {
               const SizedBox(height: 24),
               
               // Kitchens section
-              const SectionHeader(
-                title: 'المطاعم',
+               SectionHeader(
+                title: 'restaurants'.tr,
                 section: 'restaurants',
               ),
               
