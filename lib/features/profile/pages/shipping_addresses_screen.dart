@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/features/profile/controllers/shipping_addresses_controller.dart';
 import 'package:mrsheaf/features/profile/widgets/shipping_addresses_header.dart';
 import 'package:mrsheaf/features/profile/widgets/addresses_list.dart';
@@ -19,10 +18,20 @@ class ShippingAddressesScreen extends GetView<ShippingAddressesController> {
           children: [
             // Header
             const ShippingAddressesHeader(),
-            
+
             // Content
             Expanded(
               child: Obx(() {
+                // Show loading indicator
+                if (controller.isLoading.value) {
+                  return const Center(
+                    child: CircularProgressIndicator(
+                      color: Color(0xFFD32F2F),
+                    ),
+                  );
+                }
+
+                // Show empty state or addresses list
                 if (!controller.hasAddresses) {
                   return const EmptyAddressesWidget();
                 } else {
@@ -30,7 +39,7 @@ class ShippingAddressesScreen extends GetView<ShippingAddressesController> {
                 }
               }),
             ),
-            
+
             // Add address button (floating)
             const AddAddressButton(),
           ],

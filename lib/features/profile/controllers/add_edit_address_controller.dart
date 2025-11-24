@@ -13,13 +13,13 @@ class AddEditAddressController extends GetxController {
   final stateController = TextEditingController();
   final addressLine1Controller = TextEditingController();
   final addressLine2Controller = TextEditingController();
-  
+
   // Form validation
   final formKey = GlobalKey<FormState>();
-  
+
   // Loading state
   final RxBool isLoading = false.obs;
-  
+
   // Address type and default setting
   final Rx<AddressType> selectedType = AddressType.home.obs;
   final RxBool isDefault = false.obs;
@@ -58,7 +58,7 @@ class AddEditAddressController extends GetxController {
     selectedType.value = type;
   }
 
-  void saveAddress() {
+  Future<void> saveAddress() async {
     if (!formKey.currentState!.validate()) {
       return;
     }
@@ -67,22 +67,26 @@ class AddEditAddressController extends GetxController {
 
     // Create address model
     final address = AddressModel(
-      id: existingAddress?.id ?? 0, // Will be set by controller if new
+      id: existingAddress?.id, // null for new address
       type: selectedType.value,
       addressLine1: addressLine1Controller.text.trim(),
       addressLine2: addressLine2Controller.text.trim(),
       city: cityController.text.trim(),
       state: stateController.text.trim(),
-      country: 'France', // Default country
+      country: 'Saudi arabia', // Default country
       isDefault: isDefault.value,
     );
 
-    // Simulate API call
-    Future.delayed(const Duration(seconds: 1), () {
+    try {
       final shippingController = Get.find<ShippingAddressesController>();
-      shippingController.saveAddress(address);
+      await shippingController.saveAddress(address);
+
+
+    } catch (e) {
+      // Error is already handled in ShippingAddressesController
+    } finally {
       isLoading.value = false;
-    });
+    }
   }
 
   // Form validation methods
@@ -102,8 +106,9 @@ class AddEditAddressController extends GetxController {
 
   // Getters for UI
   bool get isEditing => existingAddress != null;
-  
+
   String get screenTitle => isEditing ? 'Edit Address' : 'Add Address';
-  
-  String get typeDisplayName => selectedType.value.toString().split('.').last.toUpperCase();
+
+  String get typeDisplayName =>
+      selectedType.value.toString().split('.').last.toUpperCase();
 }

@@ -2,41 +2,37 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mrsheaf/features/profile/models/address_model.dart';
 import 'package:mrsheaf/features/profile/pages/add_edit_address_screen.dart';
+import 'package:mrsheaf/features/profile/services/address_service.dart';
 
 class ShippingAddressesController extends GetxController {
   // All addresses
   final RxList<AddressModel> addresses = <AddressModel>[].obs;
+  final RxBool isLoading = false.obs;
+  final AddressService _addressService = AddressService();
 
   @override
   void onInit() {
     super.onInit();
-    // _initializeSampleData(); // Temporarily disabled to test empty state
+    loadAddresses();
   }
 
-  void _initializeSampleData() {
-    // Add sample addresses
-    addresses.addAll([
-      AddressModel(
-        id: 1,
-        type: AddressType.home,
-        addressLine1: '25 rue Robert Latouche',
-        city: 'Nice',
-        postalCode: '06200',
-        state: 'Côte D\'azur',
-        country: 'France',
-        isDefault: true,
-      ),
-      AddressModel(
-        id: 2,
-        type: AddressType.work,
-        addressLine1: '25 rue Robert Latouche',
-        city: 'Nice',
-        postalCode: '06200',
-        state: 'Côte D\'azur',
-        country: 'France',
-        isDefault: false,
-      ),
-    ]);
+  /// Load addresses from API
+  Future<void> loadAddresses() async {
+    try {
+      isLoading.value = true;
+      final fetchedAddresses = await _addressService.getAddresses();
+      addresses.value = fetchedAddresses;
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'Failed to load addresses: ${e.toString()}',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: const Color(0xFFEB5757),
+        colorText: Colors.white,
+      );
+    } finally {
+      isLoading.value = false;
+    }
   }
 
   // Address actions
@@ -102,78 +98,118 @@ class ShippingAddressesController extends GetxController {
     );
   }
 
-  void _performDeleteAddress(AddressModel address) {
-    addresses.removeWhere((a) => a.id == address.id);
-    Get.snackbar(
-      'Address Deleted',
-      'Address has been deleted successfully',
-      snackPosition: SnackPosition.BOTTOM,
-    );
-  }
+  Future<void> _performDeleteAddress(AddressModel address) async {
+    if (address.id == null) return;
 
-  void setDefaultAddress(AddressModel address) {
-    // Remove default from all addresses
-    for (int i = 0; i < addresses.length; i++) {
-      addresses[i] = addresses[i].copyWith(isDefault: false);
-    }
-    
-    // Set the selected address as default
-    final index = addresses.indexWhere((a) => a.id == address.id);
-    if (index != -1) {
-      addresses[index] = addresses[index].copyWith(isDefault: true);
-    }
-    
-    Get.snackbar(
-      'Default Address Updated',
-      '${address.typeDisplayName} address set as default',
-      snackPosition: SnackPosition.BOTTOM,
-    );
-  }
-
-  void saveAddress(AddressModel address) {
-    final existingIndex = addresses.indexWhere((a) => a.id == address.id);
-    
-    if (existingIndex != -1) {
-      // Update existing address
-      addresses[existingIndex] = address;
+    try {
+      await _addressService.deleteAddress(address.id!);
+      addresses.removeWhere((a) => a.id == address.id);
       Get.snackbar(
-        'Address Updated',
-        'Address has been updated successfully',
+        'Address Deleted',
+        'Address has been deleted successfully',
         snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.green,
+        colorText: Colors.white,
       );
-    } else {
-      // Add new address
-      final newAddress = address.copyWith(id: _generateNewId());
-      addresses.add(newAddress);
+    } catch (e) {
       Get.snackbar(
-        'Address Added',
-        'New address has been added successfully',
+        'Error',
+        'Failed to delete address: ${e.toString()}',
         snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: const Color(0xFFEB5757),
+        colorText: Colors.white,
       );
     }
-    
-    Get.back();
   }
 
-  int _generateNewId() {
-    if (addresses.isEmpty) return 1;
-    return addresses.map((a) => a.id).reduce((a, b) => a > b ? a : b) + 1;
+  Future<void> setDefaultAddress(AddressModel address) async {
+    if (address.id == null) return;
+
+    try {
+      await _addressService.setDefaultAddress(address.id!);
+
+      // Update local state
+      for (int i = 0; i < addresses.length; i++) {
+        addresses[i] = addresses[i].copyWith(isDefault: false);
+      }
+
+      final index = addresses.indexWhere((a) => a.id == address.id);
+      if (index != -1) {
+        addresses[index] = addresses[index].copyWith(isDefault: true);
+      }
+
+      Get.snackbar(
+        'Default Address Updated',
+        '${address.typeDisplayName} address set as default',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.green,
+        colorText: Colors.white,
+      );
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'Failed to set default address: ${e.toString()}',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: const Color(0xFFEB5757),
+        colorText: Colors.white,
+      );
+    }
   }
 
-  // Add sample data for testing
-  void addSampleData() {
-    _initializeSampleData();
-  }
+  Future<void> saveAddress(AddressModel address) async {
+    try {
+      if (address.id != null) {
+        // Update existing address
+        final updatedAddress = await _addressService.updateAddress(address.id!, address);
+        final existingIndex = addresses.indexWhere((a) => a.id == address.id);
+        if (existingIndex != -1) {
+          addresses[existingIndex] = updatedAddress;
+        }
+        Get.back();
+        await Future.delayed(Duration(seconds: 1));
+        Get.snackbar(
+          'Address Updated',
+          'Address has been updated successfully',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.green,
+          colorText: Colors.white,
+        );
+      } else {
+        // Add new address
+        final newAddress = await _addressService.addAddress(address);
+        addresses.add(newAddress);
+        Get.back();
+       await Future.delayed(Duration(seconds: 1));
 
-  // Clear all addresses for testing empty state
-  void clearAllAddresses() {
-    addresses.clear();
+        Get.snackbar(
+          'Address Added',
+          'New address has been added successfully',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.green,
+          colorText: Colors.white,
+         // duration:  const Duration(seconds: 1)
+        );
+
+
+      }
+
+      Get.back();
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'Failed to save address: ${e.toString()}',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: const Color(0xFFEB5757),
+        colorText: Colors.white,
+      );
+    }
   }
 
   // Getters for UI
   bool get hasAddresses => addresses.isNotEmpty;
-  
+
   int get totalAddresses => addresses.length;
-  
-  AddressModel? get defaultAddress => addresses.firstWhereOrNull((a) => a.isDefault);
+
+  AddressModel? get defaultAddress =>
+      addresses.firstWhereOrNull((a) => a.isDefault);
 }

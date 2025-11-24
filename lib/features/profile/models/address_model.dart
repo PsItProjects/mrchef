@@ -5,7 +5,7 @@ enum AddressType {
 }
 
 class AddressModel {
-  final int id;
+  final int? id;
   final AddressType type;
   final String addressLine1;
   final String addressLine2;
@@ -13,10 +13,15 @@ class AddressModel {
   final String state;
   final String country;
   final String postalCode;
+  final double? latitude;
+  final double? longitude;
+  final String notes;
   final bool isDefault;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
 
   AddressModel({
-    required this.id,
+    this.id,
     required this.type,
     required this.addressLine1,
     this.addressLine2 = '',
@@ -24,7 +29,12 @@ class AddressModel {
     this.state = '',
     required this.country,
     this.postalCode = '',
+    this.latitude,
+    this.longitude,
+    this.notes = '',
     this.isDefault = false,
+    this.createdAt,
+    this.updatedAt,
   });
 
   factory AddressModel.fromJson(Map<String, dynamic> json) {
@@ -34,28 +44,50 @@ class AddressModel {
         (e) => e.toString().split('.').last == json['type'],
         orElse: () => AddressType.home,
       ),
-      addressLine1: json['addressLine1'],
-      addressLine2: json['addressLine2'] ?? '',
-      city: json['city'],
+      addressLine1: json['address_line_1'] ?? '',
+      addressLine2: json['address_line_2'] ?? '',
+      city: json['city'] ?? '',
       state: json['state'] ?? '',
-      country: json['country'],
-      postalCode: json['postalCode'] ?? '',
-      isDefault: json['isDefault'] ?? false,
+      country: json['country'] ?? '',
+      postalCode: json['postal_code'] ?? '',
+      latitude: json['latitude'] != null
+          ? double.tryParse(json['latitude'].toString())
+          : null,
+      longitude: json['longitude'] != null
+          ? double.tryParse(json['longitude'].toString())
+          : null,
+      notes: json['notes'] ?? '',
+      isDefault: json['is_default'] ?? false,
+      createdAt: json['created_at'] != null
+          ? DateTime.tryParse(json['created_at'])
+          : null,
+      updatedAt: json['updated_at'] != null
+          ? DateTime.tryParse(json['updated_at'])
+          : null,
     );
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      'id': id,
+    final Map<String, dynamic> data = {
       'type': type.toString().split('.').last,
-      'addressLine1': addressLine1,
-      'addressLine2': addressLine2,
+      'address_line_1': addressLine1,
+      'address_line_2': addressLine2,
       'city': city,
       'state': state,
       'country': country,
-      'postalCode': postalCode,
-      'isDefault': isDefault,
+      'postal_code': postalCode,
+      'latitude': latitude,
+      'longitude': longitude,
+      'notes': notes,
+      'is_default': isDefault,
     };
+
+    // Only include id if it exists (for updates)
+    if (id != null) {
+      data['id'] = id;
+    }
+
+    return data;
   }
 
   AddressModel copyWith({
@@ -67,7 +99,12 @@ class AddressModel {
     String? state,
     String? country,
     String? postalCode,
+    double? latitude,
+    double? longitude,
+    String? notes,
     bool? isDefault,
+    DateTime? createdAt,
+    DateTime? updatedAt,
   }) {
     return AddressModel(
       id: id ?? this.id,
@@ -78,7 +115,12 @@ class AddressModel {
       state: state ?? this.state,
       country: country ?? this.country,
       postalCode: postalCode ?? this.postalCode,
+      latitude: latitude ?? this.latitude,
+      longitude: longitude ?? this.longitude,
+      notes: notes ?? this.notes,
       isDefault: isDefault ?? this.isDefault,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
     );
   }
 
@@ -96,23 +138,23 @@ class AddressModel {
 
   String get fullAddress {
     List<String> parts = [addressLine1];
-    
+
     if (addressLine2.isNotEmpty) {
       parts.add(addressLine2);
     }
-    
+
     parts.add(city);
-    
+
     if (postalCode.isNotEmpty) {
       parts.add(postalCode);
     }
-    
+
     if (state.isNotEmpty) {
       parts.add(state);
     }
-    
+
     parts.add(country);
-    
+
     return parts.join(', ');
   }
 

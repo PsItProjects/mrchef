@@ -7,6 +7,7 @@ import 'package:mrsheaf/features/profile/pages/my_orders_screen.dart';
 import 'package:mrsheaf/features/profile/pages/my_reviews_screen.dart';
 import 'package:mrsheaf/features/profile/pages/settings_screen.dart';
 import 'package:mrsheaf/features/profile/pages/shipping_addresses_screen.dart';
+import 'package:mrsheaf/features/profile/services/address_service.dart';
 import '../../auth/services/auth_service.dart';
 
 class ProfileController extends GetxController {
@@ -24,14 +25,27 @@ class ProfileController extends GetxController {
 
   // Profile stats
   final RxInt orderCount = 10.obs;
-  final RxInt addressCount = 3.obs;
+  final RxInt addressCount = 0.obs;
   final RxInt cardCount = 2.obs;
   final RxInt reviewCount = 5.obs;
+
+  final AddressService _addressService = AddressService();
 
   @override
   void onInit() {
     super.onInit();
     _loadUserProfile();
+    _loadAddressCount();
+  }
+
+  Future<void> _loadAddressCount() async {
+    try {
+      final addresses = await _addressService.getAddresses();
+      addressCount.value = addresses.length;
+    } catch (e) {
+      print('Error loading address count: $e');
+      // Keep default value if API fails
+    }
   }
 
   Future<void> _loadUserProfile() async {
@@ -59,15 +73,16 @@ class ProfileController extends GetxController {
   void navigateToEditProfile() {
     // Get.toNamed('/profile/edit');
     Get.to(() => const EditProfileScreen());
-
   }
 
   void navigateToMyOrders() {
     Get.to(() => const MyOrdersScreen());
   }
 
-  void navigateToShippingAddresses() {
-    Get.to(() => const ShippingAddressesScreen());
+  void navigateToShippingAddresses() async {
+    await Get.to(() => const ShippingAddressesScreen());
+    // Reload address count when returning from shipping addresses screen
+    _loadAddressCount();
   }
 
   void navigateToPaymentMethods() {
@@ -195,7 +210,8 @@ class ProfileController extends GetxController {
 
   // Getters for UI
   String get orderCountText => 'Already have $orderCount orders';
-  String get addressCountText => '${addressCount.toString().padLeft(2, '0')} Addresses';
+  String get addressCountText =>
+      '${addressCount.toString().padLeft(2, '0')} Addresses';
   String get cardCountText => 'You have $cardCount cards';
   String get reviewCountText => 'Reviews for $reviewCount items';
 }
