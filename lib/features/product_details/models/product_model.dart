@@ -18,6 +18,7 @@ class ProductModel {
   final List<AdditionalOption> additionalOptions;
   final List<String> images;
   final int? categoryId; // إضافة معرف التصنيف
+  final int? restaurantId; // إضافة معرف المطعم
 
   ProductModel({
     required this.id,
@@ -34,6 +35,7 @@ class ProductModel {
     required this.additionalOptions,
     required this.images,
     this.categoryId, // إضافة معرف التصنيف
+    this.restaurantId, // إضافة معرف المطعم
   });
 
   factory ProductModel.fromJson(Map<String, dynamic> json) {
@@ -79,6 +81,14 @@ class ProductModel {
       return 'https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=400&h=300&fit=crop'; // fallback image
     }
 
+    // Extract restaurant ID from restaurant object or direct field
+    int? restaurantId;
+    if (json['restaurant'] != null && json['restaurant'] is Map) {
+      restaurantId = json['restaurant']['id'];
+    } else if (json['restaurant_id'] != null) {
+      restaurantId = json['restaurant_id'];
+    }
+
     return ProductModel(
       id: json['id'],
       name: getName(json['name']),
@@ -94,6 +104,7 @@ class ProductModel {
       additionalOptions: _extractAdditionalOptions(json['additionalOptions']),
       images: List<String>.from(json['images'] ?? [json['primary_image'] ?? '']),
       categoryId: json['internal_category_id'] ?? json['categoryId'] ?? json['category']?['id'],
+      restaurantId: restaurantId,
     );
   }
 
@@ -206,6 +217,7 @@ class ProductModel {
       'additionalOptions': additionalOptions.map((option) => option.toJson()).toList(),
       'images': images,
       'categoryId': categoryId, // إضافة معرف التصنيف
+      'restaurantId': restaurantId, // إضافة معرف المطعم
     };
   }
 }

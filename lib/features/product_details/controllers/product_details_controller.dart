@@ -376,12 +376,31 @@ class ProductDetailsController extends GetxController {
   }
 
   void goToStore() {
-    Get.toNamed(AppRoutes.STORE_DETAILS, parameters: {'storeId':  '1'});
-    // Get.snackbar(
-    //   'Go to Store',
-    //   'Navigating to store page...',
-    //   snackPosition: SnackPosition.BOTTOM,
-    // );
+    // Get restaurant ID from product
+    final restaurantId = product.value?.restaurantId;
+
+    if (restaurantId != null) {
+      if (kDebugMode) {
+        print('🏪 PRODUCT DETAILS: Navigating to restaurant ID: $restaurantId');
+      }
+
+      Get.toNamed(
+        AppRoutes.STORE_DETAILS,
+        arguments: {
+          'restaurantId': restaurantId.toString(),
+        },
+      );
+    } else {
+      if (kDebugMode) {
+        print('❌ PRODUCT DETAILS: Restaurant ID not found in product');
+      }
+
+      Get.snackbar(
+        'خطأ',
+        'لم يتم العثور على معلومات المطعم',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    }
   }
 
   void updateComment(String value) {
