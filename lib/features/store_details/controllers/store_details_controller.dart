@@ -89,9 +89,6 @@ class StoreDetailsController extends GetxController {
   
   // Store products from backend
   final RxList<Map<String, dynamic>> storeProducts = <Map<String, dynamic>>[].obs;
-  
-  // Notification settings
-  final RxBool notificationsEnabled = false.obs;
 
   // Favorite status
   final RxBool isFavorite = false.obs;
@@ -201,8 +198,12 @@ class StoreDetailsController extends GetxController {
     String address = '';
     if (rawData['address'] != null) {
       final addr = rawData['address'];
-      if (addr is Map && addr['current'] != null) {
-        address = addr['current'].toString();
+      if (addr is Map) {
+        final currentLang = Get.locale?.languageCode ?? 'ar';
+        address = addr[currentLang]?.toString() ??
+                 addr['ar']?.toString() ??
+                 addr['en']?.toString() ??
+                 '';
       } else if (addr is String) {
         address = addr;
       }
@@ -228,6 +229,24 @@ class StoreDetailsController extends GetxController {
       'whatsapp': rawData['phone']?.toString() ?? '',
       'facebook': '', // Not available in API
     };
+
+    // Update working hours from API
+    if (rawData['business_hours'] != null && rawData['business_hours'] is Map) {
+      _updateWorkingHours(Map<String, dynamic>.from(rawData['business_hours']));
+    }
+
+    // Update location from API
+    if (rawData['latitude'] != null && rawData['longitude'] != null) {
+      locations.value = [
+        {
+          'address': address,
+          'latitude': rawData['latitude'],
+          'longitude': rawData['longitude'],
+          'city': rawData['city']?.toString() ?? '',
+          'area': rawData['area']?.toString() ?? '',
+        }
+      ];
+    }
 
     // Products will be loaded separately
   }
@@ -290,18 +309,37 @@ class StoreDetailsController extends GetxController {
       if (businessHours.containsKey(apiDay)) {
         final dayData = businessHours[apiDay];
         if (dayData is Map<String, dynamic>) {
+          final isOpen = dayData['is_open'] ?? false;
+          final openTime = dayData['open']?.toString() ?? '';
+          final closeTime = dayData['close']?.toString() ?? '';
+
           updatedHours.add({
             'day': displayDay,
-            'startTime': dayData['open'] ?? '',
-            'endTime': dayData['close'] ?? '',
-            'isOff': dayData['open'] == null || dayData['open'] == '',
+            'startTime': isOpen && openTime.isNotEmpty ? openTime : '',
+            'endTime': isOpen && closeTime.isNotEmpty ? closeTime : '',
+            'isOff': !isOpen || openTime.isEmpty,
           });
         }
+      } else {
+        // If day not found in API, mark as OFF
+        updatedHours.add({
+          'day': displayDay,
+          'startTime': '',
+          'endTime': '',
+          'isOff': true,
+        });
       }
     });
 
     if (updatedHours.isNotEmpty) {
       workingHours.value = updatedHours;
+
+      if (kDebugMode) {
+        print('📅 STORE DETAILS: Working hours updated from API');
+        for (var day in updatedHours) {
+          print('   ${day['day']}: ${day['isOff'] ? 'OFF' : '${day['startTime']} - ${day['endTime']}'}');
+        }
+      }
     }
   }
 
@@ -350,6 +388,42 @@ class StoreDetailsController extends GetxController {
           print('📦 RAW PRODUCTS DATA: ${productsData.length} products found');
           if (productsData.isNotEmpty) {
             print('📸 FIRST PRODUCT: ${productsData[0]['name']} - Image: ${productsData[0]['primary_image']}');
+          }
+        }
+
+        // Update working hours if available
+        if (storeData['business_hours'] != null && storeData['business_hours'] is Map) {
+          _updateWorkingHours(Map<String, dynamic>.from(storeData['business_hours']));
+        }
+
+        // Update location if available
+        if (storeData['latitude'] != null && storeData['longitude'] != null) {
+          String address = '';
+          if (storeData['address'] != null) {
+            final addr = storeData['address'];
+            if (addr is Map) {
+              final currentLang = Get.locale?.languageCode ?? 'ar';
+              address = addr[currentLang]?.toString() ??
+                       addr['ar']?.toString() ??
+                       addr['en']?.toString() ??
+                       '';
+            } else if (addr is String) {
+              address = addr;
+            }
+          }
+
+          locations.value = [
+            {
+              'address': address,
+              'latitude': storeData['latitude'],
+              'longitude': storeData['longitude'],
+              'city': storeData['city']?.toString() ?? '',
+              'area': storeData['area']?.toString() ?? '',
+            }
+          ];
+
+          if (kDebugMode) {
+            print('📍 STORE DETAILS: Location updated - $address');
           }
         }
 
@@ -459,12 +533,7 @@ class StoreDetailsController extends GetxController {
   void hideStoreInfoBottomSheet() {
     isBottomSheetVisible.value = false;
   }
-  
-  void toggleNotifications() {
-    notificationsEnabled.value = !notificationsEnabled.value;
-    // TODO: Implement API call to update notification settings
-  }
-  
+
   /// Check favorite status from server
   Future<void> _checkFavoriteStatus() async {
     try {

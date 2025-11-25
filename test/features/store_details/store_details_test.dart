@@ -25,7 +25,6 @@ void main() {
         expect(controller.storeLocation.value, 'Lagos, Nigeria');
         expect(controller.storeRating.value, 4.8);
         expect(controller.isBottomSheetVisible.value, false);
-        expect(controller.notificationsEnabled.value, false);
       });
 
       test('should show and hide bottom sheet', () {
@@ -34,16 +33,6 @@ void main() {
 
         controller.hideStoreInfoBottomSheet();
         expect(controller.isBottomSheetVisible.value, false);
-      });
-
-      test('should toggle notifications', () {
-        expect(controller.notificationsEnabled.value, false);
-        
-        controller.toggleNotifications();
-        expect(controller.notificationsEnabled.value, true);
-        
-        controller.toggleNotifications();
-        expect(controller.notificationsEnabled.value, false);
       });
 
       test('should have correct working hours data', () {

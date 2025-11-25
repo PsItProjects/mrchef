@@ -81,12 +81,7 @@ class StoreInfoBottomSheet extends GetView<StoreDetailsController> {
                         child: Column(
                           children: [
                             const SizedBox(height: 16),
-                            
-                            // Notifications toggle section
-                            _buildNotificationSection(),
-                            
-                            _buildDivider(),
-                            
+
                             // Working Hours section
                             _buildMenuSection(
                               title: 'working_hours'.tr,
@@ -111,15 +106,6 @@ class StoreInfoBottomSheet extends GetView<StoreDetailsController> {
 
                             _buildDivider(),
 
-                            // Block Store section
-                            _buildMenuSection(
-                              title: 'block_store'.tr,
-                              titleColor: const Color(0xFFEB5757),
-                              onTap: () => _blockStore(),
-                            ),
-                            
-                            _buildDivider(),
-                            
                             const SizedBox(height: 100), // Bottom padding
                           ],
                         ),
@@ -131,51 +117,6 @@ class StoreInfoBottomSheet extends GetView<StoreDetailsController> {
             },
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildNotificationSection() {
-    return Container(
-      width: 428,
-      child: Column(
-        children: [
-          Container(
-            width: 428,
-            height: 1,
-            color: const Color(0xFFE3E3E3),
-          ),
-          
-          Container(
-            width: 380,
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'turn_on_store_notifications'.tr,
-                  style: const TextStyle(
-                    fontFamily: 'Lato',
-                    fontWeight: FontWeight.w600,
-                    fontSize: 16,
-                    color: Color(0xFF262626),
-                  ),
-                ),
-                
-                GestureDetector(
-                  onTap: () => controller.toggleNotifications(),
-                  child: Obx(() => Container(
-                    width: 24,
-                    height: 24,
-                    child: controller.notificationsEnabled.value
-                        ? SvgPicture.asset('assets/icons/toggle_on.svg')
-                        : SvgPicture.asset('assets/icons/toggle_off.svg'),
-                  )),
-                ),
-              ],
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -244,14 +185,5 @@ class StoreInfoBottomSheet extends GetView<StoreDetailsController> {
 
   void _showContactInfo(BuildContext context) {
     Get.to(() => const ContactInfoSection());
-  }
-
-  void _blockStore() {
-    // TODO: Implement block store functionality
-    Get.snackbar(
-      'Block Store',
-      'This feature will be implemented soon',
-      snackPosition: SnackPosition.BOTTOM,
-    );
   }
 }

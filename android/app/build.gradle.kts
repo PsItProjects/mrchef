@@ -27,7 +27,7 @@ android {
         applicationId = "com.example.mrsheaf"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = flutter.minSdkVersion  // Minimum SDK for image_cropper
+        minSdk = 23  // Required by cloud_firestore plugin
         targetSdk = 35  // Updated to 35
         versionCode = flutter.versionCode
         versionName = flutter.versionName
