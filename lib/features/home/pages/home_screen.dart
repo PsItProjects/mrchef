@@ -40,7 +40,7 @@ class HomeScreen extends GetView<HomeController> {
               const SizedBox(height: 24),
               
               // Featured banner
-              const FeaturedBanner(),
+               FeaturedBanner(),
               
               const SizedBox(height: 24),
               

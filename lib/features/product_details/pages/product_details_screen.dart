@@ -24,8 +24,8 @@ class ProductDetailsScreen extends GetView<ProductDetailsController> {
         }
 
         if (controller.product.value == null) {
-          return const Center(
-            child: Text('Product not found'),
+          return Center(
+            child: Text('product_not_found'.tr),
           );
         }
 

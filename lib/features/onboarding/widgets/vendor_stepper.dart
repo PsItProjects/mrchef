@@ -1,5 +1,6 @@
 import 'package:easy_stepper/easy_stepper.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 class VendorStepper extends StatelessWidget {
   final int currentStep;
@@ -40,7 +41,7 @@ class VendorStepper extends StatelessWidget {
                 ? Icon(Icons.check, color: Colors.white, size: 20)
                 : Container(),
           ),
-          title: 'User information',
+          title: 'user_information'.tr,
 
           // titleStyle: TextStyle(
           //   fontFamily: 'Lato',
@@ -76,7 +77,7 @@ class VendorStepper extends StatelessWidget {
                       )
                     : Container(),
           ),
-          title: 'Subscription',
+          title: 'subscription'.tr,
           // titleStyle: TextStyle(
           //   fontFamily: 'Lato',
           //   fontWeight: FontWeight.w600,
@@ -112,7 +113,7 @@ class VendorStepper extends StatelessWidget {
                       )
                     : Container(),
           ),
-          title: 'Store information',
+          title: 'store_information'.tr,
           // titleStyle: TextStyle(
           //   fontFamily: 'Lato',
           //   fontWeight: FontWeight.w600,

@@ -191,8 +191,10 @@ class StoreDetailsHeader extends GetView<StoreDetailsController> {
               child: Container(
                 width: 150,
                 height: 150,
+
                 margin: const EdgeInsets.all(3),
                 decoration: BoxDecoration(
+                  color: Colors.white,
                   shape: BoxShape.circle,
                 ),
                 child: ClipOval(

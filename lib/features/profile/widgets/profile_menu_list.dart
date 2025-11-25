@@ -30,29 +30,29 @@ class ProfileMenuList extends GetView<ProfileController> {
         const SizedBox(height: 16),
 
         // Payment Method
-        Obx(() => ProfileMenuItem(
-          title: TranslationHelper.tr('payment_methods'),
-          subtitle: controller.cardCountText,
-          onTap: controller.navigateToPaymentMethods,
-        )),
-
-        const SizedBox(height: 16),
-
-        // My reviews
-        Obx(() => ProfileMenuItem(
-          title: TranslationHelper.tr('my_reviews'),
-          subtitle: controller.reviewCountText,
-          onTap: controller.navigateToMyReviews,
-        )),
-        
-        const SizedBox(height: 16),
-        
-        // Setting
-        ProfileMenuItem(
-          title: 'settings'.tr,
-          subtitle: 'notification_password_faq_content'.tr,
-          onTap: controller.navigateToSettings,
-        ),
+        // Obx(() => ProfileMenuItem(
+        //   title: TranslationHelper.tr('payment_methods'),
+        //   subtitle: controller.cardCountText,
+        //   onTap: controller.navigateToPaymentMethods,
+        // )),
+        //
+        // const SizedBox(height: 16),
+        //
+        // // My reviews
+        // Obx(() => ProfileMenuItem(
+        //   title: TranslationHelper.tr('my_reviews'),
+        //   subtitle: controller.reviewCountText,
+        //   onTap: controller.navigateToMyReviews,
+        // )),
+        //
+        // const SizedBox(height: 16),
+        //
+        // // Setting
+        // ProfileMenuItem(
+        //   title: 'settings'.tr,
+        //   subtitle: 'notification_password_faq_content'.tr,
+        //   onTap: controller.navigateToSettings,
+        // ),
         
         const SizedBox(height: 16),
         

@@ -1008,7 +1008,95 @@ class AppTranslations extends Translations {
       'eight_pieces': '8 pieces',
       'regular_size': 'Regular size',
       'grams_200': '200 grams',
-      'grams_300': '300 grams'
+      'grams_300': '300 grams',
+
+      // Signup Screen
+      'create_your_account': 'Create Your Account',
+      'please_fill_details': 'Please fill in the details to create your account',
+      'enter_your_full_name': 'Enter your full name',
+      'please_enter_your_name': 'Please enter your name',
+      'enter_your_email': 'Enter your email',
+      'please_enter_your_email': 'Please enter your email',
+      'please_enter_valid_email': 'Please enter a valid email',
+      'enter_your_password': 'Enter your password',
+      'please_enter_your_password': 'Please enter your password',
+      'password_min_6_chars': 'Password must be at least 6 characters',
+      'confirm_your_password': 'Confirm your password',
+      'please_confirm_your_password': 'Please confirm your password',
+      'passwords_do_not_match': 'Passwords do not match',
+      'agree_terms_privacy': 'I agree to the Terms and Conditions and Privacy Policy',
+      'or_sign_up_with': 'Or sign up with',
+
+      // Store Info Section
+      'rating': 'Rating',
+      'reviews_count': 'Reviews',
+      'total_products': 'Products',
+      'delivery_fee_label': 'Delivery Fee',
+      'minimum_order_label': 'Minimum Order',
+      'preparation_time_label': 'Preparation Time',
+      'minutes': 'minutes',
+      'minute': 'minute',
+
+      // Settings Menu
+      'dark_mode': 'Dark Mode',
+      'currency_label': 'Currency',
+      'language_label': 'Language',
+      'conversations': 'Conversations',
+      'notification_label': 'Notification',
+      'security': 'Security',
+
+      // Comment Input
+      'write_your_comment_here': 'Write your comment here...',
+
+      // Product Details
+      'product_not_found': 'Product not found',
+
+      // Vendor Onboarding
+      'vendor_step_3': 'Vendor Step 3',
+      'vendor_step_4': 'Vendor Step 4',
+      'no_subscription_plans': 'No subscription plans available',
+      'user_information': 'User information',
+      'subscription': 'Subscription',
+
+      // Misc
+      'camera': 'Camera',
+      'gallery': 'Gallery',
+      'confirm_delete': 'Confirm Delete',
+      'delete_product_confirmation': 'Are you sure you want to delete this product?',
+      '500+': '500+',
+      '10K+': '10K+',
+      '50K+': '50K+',
+
+      // Onboarding Pages
+      'onboarding_page1_title': 'Welcome to a World of Cooking!',
+      'onboarding_page1_description': 'Discover the finest flavors and connect with passionate chefs who bring culinary excellence to your doorstep.',
+      'onboarding_page2_title': 'Shop with Ease!',
+      'onboarding_page2_description': 'Browse a wide variety of meals and choose what suits your taste. We make food ordering simple and convenient.',
+      'onboarding_page3_title': 'Support Local Chefs',
+      'onboarding_page3_description': 'Help your local chefs by ordering their amazing food and supporting their culinary journey in your community.',
+      'english': 'English',
+      'arabic': 'العربية',
+
+      // Final Onboarding Screen
+      'ready_to_start': 'Ready to Start?',
+      'ready_to_start_description': 'Join now and embark on your journey with delightful flavors and a diverse selection!',
+
+      // New Signup Screen
+      'english_full_name': 'English Full Name',
+      'enter_english_full_name': 'Enter your English Full name',
+      'arabic_full_name': 'Arabic Full Name',
+      'enter_arabic_full_name': 'Enter your Arabic Full name',
+      'enter_full_name': 'Enter your Full name',
+      'phone_number': 'Phone Number',
+      'agree': 'Agree ',
+      'terms_conditions': 'Terms & Conditions',
+
+      // OTP Verification Screen
+      'verification': 'Verification',
+      'enter_otp_description': 'Enter OTP Code We Just Sent you On Your Phone Number',
+      'verify': 'Verify',
+      'resending_message_after': 'Resending Message after',
+      'resend_otp': 'Resend OTP'
     },
     'ar': {
       // Common
@@ -2014,7 +2102,95 @@ class AppTranslations extends Translations {
       'eight_pieces': '8 قطع',
       'regular_size': 'حجم عادي',
       'grams_200': '200 جرام',
-      'grams_300': '300 جرام'
+      'grams_300': '300 جرام',
+
+      // Signup Screen
+      'create_your_account': 'إنشاء حسابك',
+      'please_fill_details': 'يرجى ملء التفاصيل لإنشاء حسابك',
+      'enter_your_full_name': 'أدخل اسمك الكامل',
+      'please_enter_your_name': 'يرجى إدخال اسمك',
+      'enter_your_email': 'أدخل بريدك الإلكتروني',
+      'please_enter_your_email': 'يرجى إدخال بريدك الإلكتروني',
+      'please_enter_valid_email': 'يرجى إدخال بريد إلكتروني صحيح',
+      'enter_your_password': 'أدخل كلمة المرور',
+      'please_enter_your_password': 'يرجى إدخال كلمة المرور',
+      'password_min_6_chars': 'يجب أن تكون كلمة المرور 6 أحرف على الأقل',
+      'confirm_your_password': 'تأكيد كلمة المرور',
+      'please_confirm_your_password': 'يرجى تأكيد كلمة المرور',
+      'passwords_do_not_match': 'كلمات المرور غير متطابقة',
+      'agree_terms_privacy': 'أوافق على الشروط والأحكام وسياسة الخصوصية',
+      'or_sign_up_with': 'أو سجل باستخدام',
+
+      // Store Info Section
+      'rating': 'التقييم',
+      'reviews_count': 'التقييمات',
+      'total_products': 'المنتجات',
+      'delivery_fee_label': 'رسوم التوصيل',
+      'minimum_order_label': 'أقل طلب',
+      'preparation_time_label': 'وقت التحضير',
+      'minutes': 'دقيقة',
+      'minute': 'دقيقة',
+
+      // Settings Menu
+      'dark_mode': 'الوضع الداكن',
+      'currency_label': 'العملة',
+      'language_label': 'اللغة',
+      'conversations': 'المحادثات',
+      'notification_label': 'الإشعارات',
+      'security': 'الأمان',
+
+      // Comment Input
+      'write_your_comment_here': 'اكتب تعليقك هنا...',
+
+      // Product Details
+      'product_not_found': 'المنتج غير موجود',
+
+      // Vendor Onboarding
+      'vendor_step_3': 'الخطوة 3 للبائع',
+      'vendor_step_4': 'الخطوة 4 للبائع',
+      'no_subscription_plans': 'لا توجد خطط اشتراك متاحة',
+      'user_information': 'معلومات المستخدم',
+      'subscription': 'الاشتراك',
+
+      // Misc
+      'camera': 'الكاميرا',
+      'gallery': 'المعرض',
+      'confirm_delete': 'تأكيد الحذف',
+      'delete_product_confirmation': 'هل أنت متأكد من حذف هذا المنتج؟',
+      '500+': '500+',
+      '10K+': '10K+',
+      '50K+': '50K+',
+
+      // Onboarding Pages
+      'onboarding_page1_title': 'مرحباً بك في عالم الطهي!',
+      'onboarding_page1_description': 'اكتشف أفضل النكهات وتواصل مع الطهاة المتحمسين الذين يقدمون التميز الطهوي إلى عتبة بابك.',
+      'onboarding_page2_title': 'تسوق بسهولة!',
+      'onboarding_page2_description': 'تصفح مجموعة واسعة من الوجبات واختر ما يناسب ذوقك. نجعل طلب الطعام بسيطاً ومريحاً.',
+      'onboarding_page3_title': 'ادعم الطهاة المحليين',
+      'onboarding_page3_description': 'ساعد الطهاة المحليين من خلال طلب طعامهم الرائع ودعم رحلتهم الطهوية في مجتمعك.',
+      'english': 'English',
+      'arabic': 'العربية',
+
+      // Final Onboarding Screen
+      'ready_to_start': 'هل أنت مستعد للبدء؟',
+      'ready_to_start_description': 'انضم الآن وابدأ رحلتك مع نكهات لذيذة ومجموعة متنوعة!',
+
+      // New Signup Screen
+      'english_full_name': 'الاسم الكامل بالإنجليزية',
+      'enter_english_full_name': 'أدخل اسمك الكامل بالإنجليزية',
+      'arabic_full_name': 'الاسم الكامل بالعربية',
+      'enter_arabic_full_name': 'أدخل اسمك الكامل بالعربية',
+      'enter_full_name': 'أدخل اسمك الكامل',
+      'phone_number': 'رقم الهاتف',
+      'agree': 'أوافق ',
+      'terms_conditions': 'الشروط والأحكام',
+
+      // OTP Verification Screen
+      'verification': 'التحقق',
+      'enter_otp_description': 'أدخل رمز التحقق الذي أرسلناه إلى رقم هاتفك',
+      'verify': 'تحقق',
+      'resending_message_after': 'إعادة إرسال الرسالة بعد',
+      'resend_otp': 'إعادة إرسال الرمز'
     },
   };
 }

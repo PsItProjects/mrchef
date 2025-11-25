@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/services/language_service.dart';
 import 'package:mrsheaf/core/routes/app_routes.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 
@@ -116,35 +117,48 @@ class FinalOnboardingScreen extends StatelessWidget {
             Positioned(
               top: 68,
               right: 24,
-              child: Container(
-                padding: const EdgeInsets.all(4),
-                decoration: BoxDecoration(
-                  border: Border.all(color: Color(0xFFE3E3E3), width: 1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      width: 18,
-                      height: 18,
-                      child:
-                          Icon(Icons.language, size: 16, color: Colors.white),
-                    ),
-                    SizedBox(width: 4),
-                    Text(
-                      'English',
-                      style: TextStyle(
-                        fontFamily: 'Lato',
-                        fontWeight: FontWeight.w400,
-                        fontSize: 12,
-                        color: Colors.white,
+              child: GestureDetector(
+                onTap: () {
+                  // Toggle language
+                  final languageService = Get.find<LanguageService>();
+                  final newLanguage = languageService.currentLanguage == 'ar' ? 'en' : 'ar';
+                  languageService.setLanguage(newLanguage);
+                  Get.updateLocale(Locale(newLanguage, newLanguage == 'ar' ? 'SA' : 'US'));
+                },
+                child: Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Color(0xFFE3E3E3), width: 1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: 18,
+                        height: 18,
+                        child:
+                            Icon(Icons.language, size: 16, color: Colors.white),
                       ),
-                    ),
-                    SizedBox(width: 4),
-                    Icon(Icons.keyboard_arrow_down,
-                        size: 10, color: Colors.white),
-                  ],
+                      SizedBox(width: 4),
+                      Obx(() {
+                        final languageService = Get.find<LanguageService>();
+                        final isArabic = languageService.currentLanguageRx.value == 'ar';
+                        return Text(
+                          isArabic ? 'arabic'.tr : 'english'.tr,
+                          style: TextStyle(
+                            fontFamily: 'Lato',
+                            fontWeight: FontWeight.w400,
+                            fontSize: 12,
+                            color: Colors.white,
+                          ),
+                        );
+                      }),
+                      SizedBox(width: 4),
+                      Icon(Icons.keyboard_arrow_down,
+                          size: 10, color: Colors.white),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -176,14 +190,14 @@ class FinalOnboardingScreen extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         Text(
-                          'Ready to Start?',
+                          'ready_to_start'.tr,
                           style: AppTheme.headingStyle.copyWith(
                             color: AppColors.brownTextColor,
                           ),
                         ),
                         SizedBox(height: 8),
                         Text(
-                          'Join now and embark on your journey with delightful flavors and a diverse selection!',
+                          'ready_to_start_description'.tr,
                           style: AppTheme.subheadingStyle.copyWith(
                             color: AppColors.lightGreyTextColor,
                           ),
@@ -202,7 +216,7 @@ class FinalOnboardingScreen extends StatelessWidget {
                             onPressed: () => Get.toNamed(AppRoutes.LOGIN),
                             style: AppTheme.primaryButtonStyle,
                             child: Text(
-                              'Login',
+                              'login'.tr,
                               style: AppTheme.buttonTextStyle.copyWith(
                                 color: AppColors.searchIconColor,
                               ),
@@ -217,7 +231,7 @@ class FinalOnboardingScreen extends StatelessWidget {
                             onPressed: () => Get.toNamed(AppRoutes.SIGNUP),
                             style: AppTheme.secondaryButtonStyle,
                             child: Text(
-                              'Sign up',
+                              'sign_up'.tr,
                               style: AppTheme.buttonTextStyle.copyWith(
                                 color: AppColors.primaryColor,
                               ),

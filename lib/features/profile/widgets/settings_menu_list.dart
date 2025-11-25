@@ -14,7 +14,7 @@ class SettingsMenuList extends GetView<SettingsController> {
         children: [
           // Dark Mode
           Obx(() => SettingsMenuItem(
-            title: 'Dark Mode',
+            title: 'dark_mode'.tr,
             hasToggle: true,
             toggleValue: controller.isDarkMode,
             onToggleChanged: controller.toggleDarkMode,
@@ -23,7 +23,7 @@ class SettingsMenuList extends GetView<SettingsController> {
           
           // Currency
           Obx(() => SettingsMenuItem(
-            title: 'Currency',
+            title: 'currency_label'.tr,
             subtitle: controller.currency,
             onTap: controller.changeCurrency,
             showDivider: true,
@@ -31,7 +31,7 @@ class SettingsMenuList extends GetView<SettingsController> {
 
           // Language
           Obx(() => SettingsMenuItem(
-            title: 'Language',
+            title: 'language_label'.tr,
             subtitle: controller.languageDisplayName,
             onTap: controller.isChangingLanguage.value ? null : controller.changeLanguage,
             showDivider: true,
@@ -40,7 +40,7 @@ class SettingsMenuList extends GetView<SettingsController> {
 
           // Conversations
           SettingsMenuItem(
-            title: Get.locale?.languageCode == 'ar' ? 'المحادثات' : 'Conversations',
+            title: 'conversations'.tr,
             hasArrow: true,
             onTap: controller.navigateToConversations,
             showDivider: true,
@@ -48,7 +48,7 @@ class SettingsMenuList extends GetView<SettingsController> {
 
           // Notification
           SettingsMenuItem(
-            title: 'Notification',
+            title: 'notification_label'.tr,
             hasArrow: true,
             onTap: controller.openNotificationSettings,
             showDivider: true,
@@ -56,7 +56,7 @@ class SettingsMenuList extends GetView<SettingsController> {
           
           // Security
           SettingsMenuItem(
-            title: 'Security',
+            title: 'security'.tr,
             hasArrow: true,
             onTap: controller.openSecuritySettings,
             showDivider: true,

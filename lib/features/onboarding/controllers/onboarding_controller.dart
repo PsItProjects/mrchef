@@ -10,21 +10,18 @@ class OnboardingController extends GetxController {
   final List<OnboardingPageModel> pages = [
     OnboardingPageModel(
       image: 'assets/onboarding_image_3.png',
-      title: 'Welcome to a World of Cooking!',
-      description:
-          'Discover the finest flavors and connect with passionate chefs who bring culinary excellence to your doorstep.',
+      title: 'onboarding_page1_title',
+      description: 'onboarding_page1_description',
     ),
     OnboardingPageModel(
       image: 'assets/onboarding_image_2.png',
-      title: 'Shop with Ease!',
-      description:
-          'Browse a wide variety of meals and choose what suits your taste. We make food ordering simple and convenient.',
+      title: 'onboarding_page2_title',
+      description: 'onboarding_page2_description',
     ),
     OnboardingPageModel(
       image: 'assets/onboarding_image_3.png',
-      title: 'Support Local Chefs',
-      description:
-          'Help your local chefs by ordering their amazing food and supporting their culinary journey in your community.',
+      title: 'onboarding_page3_title',
+      description: 'onboarding_page3_description',
     ),
   ];
 

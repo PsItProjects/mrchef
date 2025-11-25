@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 
 class OnboardingPage extends StatelessWidget {
@@ -41,7 +42,7 @@ class OnboardingPage extends StatelessWidget {
           ),
           SizedBox(height: screenHeight * 0.05), // 5% of screen height
           Text(
-            title,
+            title.tr,
             style: AppTheme.headingStyle,
             textAlign: TextAlign.center,
           ),
@@ -49,7 +50,7 @@ class OnboardingPage extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24.0),
             child: Text(
-              description,
+              description.tr,
               style: AppTheme.bodyStyle,
               textAlign: TextAlign.center,
             ),

@@ -85,7 +85,7 @@ class StoreInfoSection extends GetView<StoreDetailsController> {
                 icon: Icons.star,
                 iconColor: Colors.amber,
                 value: controller.storeRating.value.toStringAsFixed(1),
-                label: 'التقييم',
+                label: 'rating'.tr,
               ),
 
               // Reviews
@@ -93,7 +93,7 @@ class StoreInfoSection extends GetView<StoreDetailsController> {
                 icon: Icons.reviews,
                 iconColor: AppColors.primaryColor,
                 value: controller.reviewsCount.value.toString(),
-                label: 'التقييمات',
+                label: 'reviews_count'.tr,
               ),
 
               // Products
@@ -101,7 +101,7 @@ class StoreInfoSection extends GetView<StoreDetailsController> {
                 icon: Icons.restaurant_menu,
                 iconColor: AppColors.primaryColor,
                 value: controller.totalProducts.value.toString(),
-                label: 'المنتجات',
+                label: 'total_products'.tr,
               ),
             ],
           )),
@@ -122,22 +122,22 @@ class StoreInfoSection extends GetView<StoreDetailsController> {
                 // Delivery fee
                 _buildDeliveryInfo(
                   icon: Icons.delivery_dining,
-                  title: 'رسوم التوصيل',
+                  title: 'delivery_fee_label'.tr,
                   value: '${controller.deliveryFee.value.toStringAsFixed(0)} ر.س',
                 ),
 
                 // Minimum order
                 _buildDeliveryInfo(
                   icon: Icons.shopping_cart,
-                  title: 'أقل طلب',
+                  title: 'minimum_order_label'.tr,
                   value: '${controller.minimumOrder.value.toStringAsFixed(0)} ر.س',
                 ),
 
                 // Preparation time
                 _buildDeliveryInfo(
                   icon: Icons.timer,
-                  title: 'وقت التحضير',
-                  value: '${controller.preparationTime.value} دقيقة',
+                  title: 'preparation_time_label'.tr,
+                  value: '${controller.preparationTime.value} ${'minute'.tr}',
                 ),
               ],
             ),

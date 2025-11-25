@@ -41,8 +41,8 @@ class CommentInputSection extends GetView<ProductDetailsController> {
               padding: const EdgeInsets.all(16.0),
               child: TextField(
                 maxLines: 3,
-                decoration: const InputDecoration(
-                  hintText: 'Write your comment here...',
+                decoration: InputDecoration(
+                  hintText: 'write_your_comment_here'.tr,
                   hintStyle: TextStyle(
                     fontFamily: 'Lato',
                     fontWeight: FontWeight.w400,

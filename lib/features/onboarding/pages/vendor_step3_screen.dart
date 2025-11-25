@@ -11,7 +11,7 @@ class VendorStep3Screen extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: Text('Vendor Step 3'),
+        title: Text('vendor_step_3'.tr),
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
           onPressed: () => Get.back(),

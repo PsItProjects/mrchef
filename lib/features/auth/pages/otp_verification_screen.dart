@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mrsheaf/core/routes/app_routes.dart';
+import 'package:mrsheaf/core/services/language_service.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import '../controllers/otp_controller.dart';
 
@@ -28,30 +29,43 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
               Positioned(
                 top: 20,
                 right: 24,
-                child: Container(
-                  padding: const EdgeInsets.all(4),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Color(0xFFD2D2D2), width: 1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.language, size: 18, color: Color(0xFF262626)),
-                      SizedBox(width: 4),
-                      Text(
-                        'English',
-                        style: TextStyle(
-                          fontFamily: 'Lato',
-                          fontWeight: FontWeight.w400,
-                          fontSize: 12,
-                          color: Color(0xFF262626),
-                        ),
-                      ),
-                      SizedBox(width: 4),
-                      Icon(Icons.keyboard_arrow_down,
-                          size: 10, color: Color(0xFF262626)),
-                    ],
+                child: GestureDetector(
+                  onTap: () {
+                    // Toggle language
+                    final languageService = Get.find<LanguageService>();
+                    final newLanguage = languageService.currentLanguage == 'ar' ? 'en' : 'ar';
+                    languageService.setLanguage(newLanguage);
+                    Get.updateLocale(Locale(newLanguage, newLanguage == 'ar' ? 'SA' : 'US'));
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Color(0xFFD2D2D2), width: 1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.language, size: 18, color: Color(0xFF262626)),
+                        SizedBox(width: 4),
+                        Obx(() {
+                          final languageService = Get.find<LanguageService>();
+                          final isArabic = languageService.currentLanguageRx.value == 'ar';
+                          return Text(
+                            isArabic ? 'arabic'.tr : 'english'.tr,
+                            style: TextStyle(
+                              fontFamily: 'Lato',
+                              fontWeight: FontWeight.w400,
+                              fontSize: 12,
+                              color: Color(0xFF262626),
+                            ),
+                          );
+                        }),
+                        SizedBox(width: 4),
+                        Icon(Icons.keyboard_arrow_down,
+                            size: 10, color: Color(0xFF262626)),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -79,7 +93,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                   children: [
                     // Verification title
                     Text(
-                      'Verification',
+                      'verification'.tr,
                       style: TextStyle(
                         fontFamily: 'Lato',
                         fontWeight: FontWeight.w700,
@@ -95,7 +109,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 51),
                       child: Text(
-                        'Enter OTP Code We Just Sent you On Your Phone Number',
+                        'enter_otp_description'.tr,
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontFamily: 'Lato',
@@ -175,8 +189,8 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                               ? const CircularProgressIndicator(
                                   color: Color(0xFF592E2C),
                                 )
-                              : const Text(
-                                  'Verify',
+                              : Text(
+                                  'verify'.tr,
                                   style: TextStyle(
                                     fontFamily: 'Lato',
                                     fontWeight: FontWeight.w700,
@@ -202,7 +216,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                   children: [
                     if (!controller.canResend.value) ...[
                       Text(
-                        'Resending Message after',
+                        'resending_message_after'.tr,
                         style: TextStyle(
                           fontFamily: 'Lato',
                           fontWeight: FontWeight.w400,
@@ -249,7 +263,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                                   ),
                                 )
                               : Text(
-                                  'Resend OTP',
+                                  'resend_otp'.tr,
                                   style: TextStyle(
                                     fontFamily: 'Lato',
                                     fontWeight: FontWeight.w600,

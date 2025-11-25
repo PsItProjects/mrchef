@@ -2,9 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/features/home/controllers/home_controller.dart';
+import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
 class FeaturedBanner extends GetView<HomeController> {
-  const FeaturedBanner({super.key});
+  final PageController _pageController = PageController(initialPage: 0);
+
+  // 2. List of image URLs
+   final  List<String> _imageUrls = [
+    'https://picsum.photos/200',
+    'https://picsum.photos/200',
+    'https://picsum.photos/200',
+    'https://picsum.photos/200',
+
+  ];
+
+  FeaturedBanner({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -12,10 +24,12 @@ class FeaturedBanner extends GetView<HomeController> {
       padding: const EdgeInsets.symmetric(horizontal: 24.0),
       child: Column(
         children: [
+
           // Main banner container
           Container(
             width: double.infinity,
             height: 220,
+            clipBehavior:Clip.antiAlias ,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(24),
               gradient: LinearGradient(
@@ -28,95 +42,68 @@ class FeaturedBanner extends GetView<HomeController> {
               ),
             ),
             child: Stack(
+              fit: StackFit.expand,
               children: [
-                // Background image
-                Positioned.fill(
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(24),
-                    child: Image.asset(
-                      'assets/images/banner_bg.png',
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                ),
 
-                // Food image overlay
-                Positioned(
-                  right: 0,
-                  top: 30,
-                  child: ClipRRect(
-                    borderRadius: const BorderRadius.only(
-                      topRight: Radius.circular(24),
-                      bottomRight: Radius.circular(24),
-                    ),
-                    child: Image.asset(
-                      'assets/images/banner_food.png',
-                      width: 311,
-                      height: 188,
-                      fit: BoxFit.cover,
-                    ),
+                // 3. PageView for images
+                SizedBox(
+                  // height: 200,
+                  child: PageView.builder(
+                    controller: _pageController,
+                    itemCount: _imageUrls.length,
+                    itemBuilder: (context, index) {
+                      return Image.network(
+                        _imageUrls[index],
+                        fit: BoxFit.cover,
+                      );
+                    },
                   ),
                 ),
-                
-                // Content overlay
+                // 4. Dot Indicator positioned at the bottom center
                 Positioned(
-                  bottom: 16,
+                  bottom: 10,
                   left: 0,
                   right: 0,
-                  child: Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 16),
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFFEF0B4),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Row(
-                      children: [
-                        const Expanded(
-                          child: Text(
-                            'Taste the best foods in our group of stores',
-                            style: TextStyle(
-                              fontFamily: 'Lato',
-                              fontWeight: FontWeight.w700,
-                              fontSize: 14,
-                              color: AppColors.primaryColor,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Icon(
-                          Icons.arrow_forward,
-                          color: AppColors.primaryColor,
-                          size: 14,
-                        ),
-                      ],
+                  child: Center(
+                    child: SmoothPageIndicator(
+                      controller: _pageController, // The controller
+                      count: _imageUrls.length, // Total number of dots
+                      effect: const ExpandingDotsEffect(
+                        activeDotColor: AppColors.primaryColor,
+                        dotColor: Colors.grey,
+                        dotHeight: 10,
+                        dotWidth: 10,
+                        spacing: 8.0,
+                      ),
                     ),
                   ),
                 ),
+                // Background image
+
               ],
             ),
           ),
           
-          const SizedBox(height: 16),
-          
-          // Carousel indicators
-          Obx(() => Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: List.generate(
-              3, // Number of banner slides
-              (index) => Container(
-                margin: const EdgeInsets.symmetric(horizontal: 5),
-                width: index == controller.currentBannerIndex.value ? 12 : 8,
-                height: index == controller.currentBannerIndex.value ? 12 : 8,
-                decoration: BoxDecoration(
-                  color: index == controller.currentBannerIndex.value
-                      ? AppColors.primaryColor
-                      : const Color(0xFFFEF0B4),
-                  shape: BoxShape.circle,
-                ),
-              ),
-            ),
-          )),
+          // const SizedBox(height: 16),
+          //
+          // // Carousel indicators
+          // Obx(() => Row(
+          //   mainAxisAlignment: MainAxisAlignment.center,
+          //   children: List.generate(
+          //     3, // Number of banner slides
+          //     (index) => Container(
+          //       margin: const EdgeInsets.symmetric(horizontal: 5),
+          //       width: index == controller.currentBannerIndex.value ? 12 : 8,
+          //       height: index == controller.currentBannerIndex.value ? 12 : 8,
+          //       decoration: BoxDecoration(
+          //         color: index == controller.currentBannerIndex.value
+          //             ? AppColors.primaryColor
+          //             : const Color(0xFFFEF0B4),
+          //         shape: BoxShape.circle,
+          //       ),
+          //     ),
+          //   ),
+          // )),
         ],
       ),
     );

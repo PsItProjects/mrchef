@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mrsheaf/core/localization/translation_helper.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
+import 'package:mrsheaf/core/widgets/language_switcher.dart';
 import 'package:mrsheaf/features/auth/controllers/new_signup_controller.dart';
 import 'package:mrsheaf/core/routes/app_routes.dart';
 import 'package:segmented_button_slide/segmented_button_slide.dart';
@@ -43,33 +44,21 @@ class NewSignupScreen extends StatelessWidget {
                       ),
                     ),
 
-                    // Language selector
+
                     Container(
-                      padding: const EdgeInsets.all(4),
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Color(0xFFD2D2D2), width: 1),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
+                      margin: EdgeInsets.symmetric(horizontal: 10),
                       child: Row(
-                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.language, size: 18, color: Color(0xFF262626)),
-                          SizedBox(width: 4),
-                          Text(
-                            'English',
-                            style: TextStyle(
-                              fontFamily: 'Lato',
-                              fontWeight: FontWeight.w400,
-                              fontSize: 12,
-                              color: Color(0xFF262626),
-                            ),
+                          const LanguageSwitcher(
+                            isCompact: true,
+                            showLabel: false,
                           ),
-                          SizedBox(width: 4),
-                          Icon(Icons.keyboard_arrow_down,
-                              size: 10, color: Color(0xFF262626)),
+
                         ],
                       ),
                     ),
+                    // Language selector
+
                   ],
                 ),
               ),
@@ -168,7 +157,7 @@ class NewSignupScreen extends StatelessWidget {
               SegmentedButtonSlideEntry(label: TranslationHelper.tr('customer')),
               SegmentedButtonSlideEntry(label: TranslationHelper.tr('vendor')),
             ],
-            selectedEntry: controller.isVendor.value ? 1 : 0,
+            selectedEntry: controller.isVendor.value ? 0 : 1,
             onChange: (index) => controller.toggleUserType(index == 1),
             colors: SegmentedButtonSlideColors(
               barColor: Color(0xFFE3E3E3),
@@ -204,22 +193,22 @@ class NewSignupScreen extends StatelessWidget {
         return Column(
           children: [
             _buildInputFieldWithError(
-              'English Full Name',
-              'Enter your English Full name',
+              'english_full_name'.tr,
+              'enter_english_full_name'.tr,
               controller.englishFullNameController,
               controller.englishNameError,
             ),
             SizedBox(height: 20),
             _buildInputFieldWithError(
-              'Arabic Full Name',
-              'Enter your Arabic Full name',
+              'arabic_full_name'.tr,
+              'enter_arabic_full_name'.tr,
               controller.arabicFullNameController,
               controller.arabicNameError,
             ),
             SizedBox(height: 20),
             _buildInputFieldWithError(
-              'Email',
-              'Enter your email',
+              'email'.tr,
+              'enter_your_email'.tr,
               controller.emailController,
               controller.emailError,
             ),
@@ -231,14 +220,14 @@ class NewSignupScreen extends StatelessWidget {
         return Column(
           children: [
             _buildInputField(
-              'Full Name',
-              'Enter your Full name',
+              'full_name'.tr,
+              'enter_full_name'.tr,
               controller.fullNameController,
             ),
             SizedBox(height: 20),
             _buildInputFieldWithError(
-              'Email',
-              'Enter your email',
+              'email'.tr,
+              'enter_your_email'.tr,
               controller.emailController,
               controller.emailError,
             ),
@@ -326,7 +315,7 @@ class NewSignupScreen extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Phone Number',
+          'phone_number'.tr,
           style: TextStyle(
             fontFamily: 'Lato',
             fontWeight: FontWeight.w600,
@@ -449,7 +438,7 @@ class NewSignupScreen extends StatelessWidget {
             ),
             SizedBox(width: 8),
             Text(
-              'Agree ',
+              'agree'.tr,
               style: TextStyle(
                 fontFamily: 'Lato',
                 fontWeight: FontWeight.w600,
@@ -458,7 +447,7 @@ class NewSignupScreen extends StatelessWidget {
               ),
             ),
             Text(
-              'Terms & Conditions',
+              'terms_conditions'.tr,
               style: TextStyle(
                 fontFamily: 'Lato',
                 fontWeight: FontWeight.w700,

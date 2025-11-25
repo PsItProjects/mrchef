@@ -75,48 +75,52 @@ class MainScreen extends GetView<MainController> {
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 8),
             child: Obx(() => Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              // mainAxisAlignment: MainAxisAlignment.,
+
               children: List.generate(navItems.length, (index) {
                 final item = navItems[index];
                 final isSelected = controller.currentIndex.value == index;
 
-                return GestureDetector(
-                  onTap: () => controller.changeTab(index),
-                  child: Container(
-                    // width: 50,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        // Icon
-                        Container(
-                          width: 24,
-                          height: 24,
-                          child: SvgPicture.asset(
-                            item['icon'],
+                return Expanded(
+                  child: GestureDetector(
+                    onTap: () => controller.changeTab(index),
+                    behavior:HitTestBehavior.opaque ,
+                    child: Container(
+                      // width: 50,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          // Icon
+                          Container(
                             width: 24,
                             height: 24,
-                            colorFilter: ColorFilter.mode(
-                              isSelected
-                                ? AppColors.primaryColor
-                                : AppColors.lightGreyTextColor,
-                              BlendMode.srcIn,
+                            child: SvgPicture.asset(
+                              item['icon'],
+                              width: 24,
+                              height: 24,
+                              colorFilter: ColorFilter.mode(
+                                isSelected
+                                  ? AppColors.primaryColor
+                                  : AppColors.lightGreyTextColor,
+                                BlendMode.srcIn,
+                              ),
                             ),
                           ),
-                        ),
-                        const SizedBox(height: 8),
-                        // Title
-                        Text(
-                          item['title'],
-                          style: TextStyle(
-                            fontFamily: 'Lato',
-                            fontWeight: FontWeight.w400,
-                            fontSize: 12,
-                            color: isSelected
-                              ? AppColors.primaryColor
-                              : AppColors.lightGreyTextColor,
+                          const SizedBox(height: 8),
+                          // Title
+                          Text(
+                            item['title'],
+                            style: TextStyle(
+                              fontFamily: 'Lato',
+                              fontWeight: FontWeight.w400,
+                              fontSize: 12,
+                              color: isSelected
+                                ? AppColors.primaryColor
+                                : AppColors.lightGreyTextColor,
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 );

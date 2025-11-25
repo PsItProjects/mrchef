@@ -13,7 +13,7 @@ class SignupScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Create Account'),
+        title: Text('create_account'.tr),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Get.back(),
@@ -28,25 +28,25 @@ class SignupScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Create Your Account',
+                  'create_your_account'.tr,
                   style: AppTheme.headingStyle,
                 ),
                 const SizedBox(height: 20),
                 Text(
-                  'Please fill in the details to create your account',
+                  'please_fill_details'.tr,
                   style: AppTheme.bodyStyle,
                 ),
                 const SizedBox(height: 32),
                 TextFormField(
                   controller: controller.nameController,
-                  decoration: const InputDecoration(
-                    labelText: 'Full Name',
-                    hintText: 'Enter your full name',
+                  decoration: InputDecoration(
+                    labelText: 'full_name'.tr,
+                    hintText: 'enter_your_full_name'.tr,
                     prefixIcon: Icon(Icons.person_outline),
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Please enter your name';
+                      return 'please_enter_your_name'.tr;
                     }
                     return null;
                   },
@@ -54,19 +54,19 @@ class SignupScreen extends StatelessWidget {
                 const SizedBox(height: 20),
                 TextFormField(
                   controller: controller.emailController,
-                  decoration: const InputDecoration(
-                    labelText: 'Email',
-                    hintText: 'Enter your email',
+                  decoration: InputDecoration(
+                    labelText: 'email'.tr,
+                    hintText: 'enter_your_email'.tr,
                     prefixIcon: Icon(Icons.email_outlined),
                   ),
                   keyboardType: TextInputType.emailAddress,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Please enter your email';
+                      return 'please_enter_your_email'.tr;
                     }
                     if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
                         .hasMatch(value)) {
-                      return 'Please enter a valid email';
+                      return 'please_enter_valid_email'.tr;
                     }
                     return null;
                   },
@@ -76,8 +76,8 @@ class SignupScreen extends StatelessWidget {
                   builder: (controller) => TextFormField(
                     controller: controller.passwordController,
                     decoration: InputDecoration(
-                      labelText: 'Password',
-                      hintText: 'Enter your password',
+                      labelText: 'password'.tr,
+                      hintText: 'enter_your_password'.tr,
                       prefixIcon: const Icon(Icons.lock_outline),
                       suffixIcon: IconButton(
                         icon: Icon(
@@ -91,10 +91,10 @@ class SignupScreen extends StatelessWidget {
                     obscureText: controller.obscurePassword.value,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Please enter your password';
+                        return 'please_enter_your_password'.tr;
                       }
                       if (value.length < 6) {
-                        return 'Password must be at least 6 characters';
+                        return 'password_min_6_chars'.tr;
                       }
                       return null;
                     },
@@ -105,8 +105,8 @@ class SignupScreen extends StatelessWidget {
                   builder: (controller) => TextFormField(
                     controller: controller.confirmPasswordController,
                     decoration: InputDecoration(
-                      labelText: 'Confirm Password',
-                      hintText: 'Confirm your password',
+                      labelText: 'confirm_password'.tr,
+                      hintText: 'confirm_your_password'.tr,
                       prefixIcon: const Icon(Icons.lock_outline),
                       suffixIcon: IconButton(
                         icon: Icon(
@@ -120,10 +120,10 @@ class SignupScreen extends StatelessWidget {
                     obscureText: controller.obscureConfirmPassword.value,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Please confirm your password';
+                        return 'please_confirm_your_password'.tr;
                       }
                       if (value != controller.passwordController.text) {
-                        return 'Passwords do not match';
+                        return 'passwords_do_not_match'.tr;
                       }
                       return null;
                     },
@@ -139,7 +139,7 @@ class SignupScreen extends StatelessWidget {
                         )),
                     Expanded(
                       child: Text(
-                        'I agree to the Terms and Conditions and Privacy Policy',
+                        'agree_terms_privacy'.tr,
                         style: AppTheme.bodyStyle.copyWith(fontSize: 14),
                       ),
                     ),
@@ -151,7 +151,7 @@ class SignupScreen extends StatelessWidget {
                   child: ElevatedButton(
                     onPressed: controller.signup,
                     style: AppTheme.primaryButtonStyle,
-                    child: const Text('Create Account'),
+                    child: Text('create_account'.tr),
                   ),
                 ),
                 const SizedBox(height: 24),
@@ -161,7 +161,7 @@ class SignupScreen extends StatelessWidget {
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: Text(
-                        'Or sign up with',
+                        'or_sign_up_with'.tr,
                         style: AppTheme.bodyStyle
                             .copyWith(color: AppColors.darkGreyColor),
                       ),

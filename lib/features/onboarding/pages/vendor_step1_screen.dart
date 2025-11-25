@@ -136,8 +136,8 @@ class VendorStep1Screen extends GetView<VendorStep1Controller> {
       }
 
       if (controller.subscriptionPlans.isEmpty) {
-        return const Center(
-          child: Text('No subscription plans available'),
+        return Center(
+          child: Text('no_subscription_plans'.tr),
         );
       }
 
