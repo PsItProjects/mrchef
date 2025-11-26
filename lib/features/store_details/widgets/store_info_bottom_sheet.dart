@@ -5,13 +5,20 @@ import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/features/store_details/controllers/store_details_controller.dart';
 import 'package:mrsheaf/features/store_details/widgets/working_hours_section.dart';
 import 'package:mrsheaf/features/store_details/widgets/locations_section.dart';
-import 'package:mrsheaf/features/store_details/widgets/contact_info_section.dart';
 
-class StoreInfoBottomSheet extends GetView<StoreDetailsController> {
+class StoreInfoBottomSheet extends StatefulWidget {
   const StoreInfoBottomSheet({super.key});
 
   @override
+  State<StoreInfoBottomSheet> createState() => _StoreInfoBottomSheetState();
+}
+
+class _StoreInfoBottomSheetState extends State<StoreInfoBottomSheet> {
+  bool _isNavigating = false;
+
+  @override
   Widget build(BuildContext context) {
+    final controller = Get.find<StoreDetailsController>();
     return GestureDetector(
       onTap: () => controller.hideStoreInfoBottomSheet(),
       child: Container(
@@ -98,14 +105,6 @@ class StoreInfoBottomSheet extends GetView<StoreDetailsController> {
 
                             _buildDivider(),
 
-                            // Contact Information section
-                            _buildMenuSection(
-                              title: 'contact_information'.tr,
-                              onTap: () => _showContactInfo(context),
-                            ),
-
-                            _buildDivider(),
-
                             const SizedBox(height: 100), // Bottom padding
                           ],
                         ),
@@ -126,43 +125,36 @@ class StoreInfoBottomSheet extends GetView<StoreDetailsController> {
     required VoidCallback onTap,
     Color titleColor = const Color(0xFF262626),
   }) {
-    return Container(
-      width: 428,
-      child: Column(
-        children: [
-          GestureDetector(
-            onTap: onTap,
-            child: Container(
-              width: 380,
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    title,
-                    style: TextStyle(
-                      fontFamily: 'Lato',
-                      fontWeight: FontWeight.w600,
-                      fontSize: 16,
-                      color: titleColor,
-                    ),
-                  ),
-                  
-                  if (titleColor != const Color(0xFFEB5757))
-                    SvgPicture.asset(
-                      'assets/icons/arrow_right.svg',
-                      width: 24,
-                      height: 24,
-                      colorFilter: const ColorFilter.mode(
-                        Color(0xFF262626),
-                        BlendMode.srcIn,
-                      ),
-                    ),
-                ],
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              title,
+              style: TextStyle(
+                fontFamily: 'Lato',
+                fontWeight: FontWeight.w600,
+                fontSize: 16,
+                color: titleColor,
               ),
             ),
-          ),
-        ],
+
+            if (titleColor != const Color(0xFFEB5757))
+              SvgPicture.asset(
+                'assets/icons/arrow_right.svg',
+                width: 24,
+                height: 24,
+                colorFilter: const ColorFilter.mode(
+                  Color(0xFF262626),
+                  BlendMode.srcIn,
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }
@@ -176,14 +168,43 @@ class StoreInfoBottomSheet extends GetView<StoreDetailsController> {
   }
 
   void _showWorkingHours(BuildContext context) {
+    // Prevent multiple taps
+    if (_isNavigating) return;
+    setState(() => _isNavigating = true);
+
+    // Navigate immediately
     Get.to(() => const WorkingHoursSection());
+
+    // Load data in background
+    final controller = Get.find<StoreDetailsController>();
+    controller.loadWorkingHours();
+
+    // Reset flag after navigation
+    Future.delayed(const Duration(milliseconds: 500), () {
+      if (mounted) {
+        setState(() => _isNavigating = false);
+      }
+    });
   }
 
   void _showLocations(BuildContext context) {
+    // Prevent multiple taps
+    if (_isNavigating) return;
+    setState(() => _isNavigating = true);
+
+    // Navigate immediately
     Get.to(() => const LocationsSection());
+
+    // Load data in background
+    final controller = Get.find<StoreDetailsController>();
+    controller.loadLocation();
+
+    // Reset flag after navigation
+    Future.delayed(const Duration(milliseconds: 500), () {
+      if (mounted) {
+        setState(() => _isNavigating = false);
+      }
+    });
   }
 
-  void _showContactInfo(BuildContext context) {
-    Get.to(() => const ContactInfoSection());
-  }
 }

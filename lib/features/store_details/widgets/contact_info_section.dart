@@ -77,54 +77,65 @@ class ContactInfoSection extends GetView<StoreDetailsController> {
             
             // Contact options
             Expanded(
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: Column(
-                  children: [
-                    const SizedBox(height: 16),
-                    
-                    // Phone contact
-                    _buildContactCard(
-                      icon: 'assets/icons/phone.svg',
-                      title: 'phone_number'.tr,
-                      subtitle: controller.contactInfo['phone'],
-                      onTap: () => controller.callStore(),
+              child: Obx(() {
+                // Show loading indicator while fetching data
+                if (controller.isLoading.value) {
+                  return const Center(
+                    child: CircularProgressIndicator(
+                      color: AppColors.primaryColor,
                     ),
+                  );
+                }
 
-                    const SizedBox(height: 16),
+                return Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: Column(
+                    children: [
+                      const SizedBox(height: 16),
 
-                    // Email contact
-                    _buildContactCard(
-                      icon: 'assets/icons/email.svg',
-                      title: 'email'.tr,
-                      subtitle: controller.contactInfo['email'],
-                      onTap: () => controller.emailStore(),
-                    ),
+                      // Phone contact
+                      _buildContactCard(
+                        icon: 'assets/icons/phone.svg',
+                        title: 'phone_number'.tr,
+                        subtitle: controller.contactInfo['phone'],
+                        onTap: () => controller.callStore(),
+                      ),
 
-                    const SizedBox(height: 16),
+                      const SizedBox(height: 16),
 
-                    // WhatsApp contact
-                    _buildContactCard(
-                      icon: 'assets/icons/whatsapp.svg',
-                      title: 'whatsapp'.tr,
-                      subtitle: controller.contactInfo['whatsapp'],
-                      onTap: () => controller.openWhatsApp(),
-                      isWhatsApp: true,
-                    ),
+                      // Email contact
+                      _buildContactCard(
+                        icon: 'assets/icons/email.svg',
+                        title: 'email'.tr,
+                        subtitle: controller.contactInfo['email'],
+                        onTap: () => controller.emailStore(),
+                      ),
 
-                    const SizedBox(height: 16),
+                      const SizedBox(height: 16),
 
-                    // Facebook contact
-                    _buildContactCard(
-                      icon: 'assets/icons/facebook.svg',
-                      title: 'facebook'.tr,
-                      subtitle: controller.contactInfo['facebook'],
-                      onTap: () => controller.openFacebook(),
-                      isFacebook: true,
-                    ),
-                  ],
-                ),
-              ),
+                      // WhatsApp contact
+                      _buildContactCard(
+                        icon: 'assets/icons/whatsapp.svg',
+                        title: 'whatsapp'.tr,
+                        subtitle: controller.contactInfo['whatsapp'],
+                        onTap: () => controller.openWhatsApp(),
+                        isWhatsApp: true,
+                      ),
+
+                      const SizedBox(height: 16),
+
+                      // Facebook contact
+                      _buildContactCard(
+                        icon: 'assets/icons/facebook.svg',
+                        title: 'facebook'.tr,
+                        subtitle: controller.contactInfo['facebook'],
+                        onTap: () => controller.openFacebook(),
+                        isFacebook: true,
+                      ),
+                    ],
+                  ),
+                );
+              }),
             ),
             
             // Bottom navigation

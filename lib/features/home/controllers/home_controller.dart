@@ -381,12 +381,7 @@ class HomeController extends GetxController {
   }
   
   void onSearchTap() {
-    // TODO: Navigate to search screen
-    Get.snackbar(
-      'Search',
-      'Search functionality coming soon',
-      snackPosition: SnackPosition.BOTTOM,
-    );
+    Get.toNamed(AppRoutes.SEARCH);
   }
   
   void onNotificationTap() {

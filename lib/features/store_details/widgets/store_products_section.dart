@@ -48,35 +48,35 @@ class StoreProductsSection extends GetView<StoreDetailsController> {
                   ),
                 ),
 
-                // Rating section
-                Container(
-                  // width: 54,
-                  // height: 26,
-                  child: Row(
-                    children: [
-                      SvgPicture.asset(
-                        'assets/icons/star_icon.svg',
-                        width: 24,
-                        height: 24,
-                        colorFilter: const ColorFilter.mode(
-                          Color(0xFFFACD02),
-                          BlendMode.srcIn,
-                        ),
-                      ),
-                      const SizedBox(width: 4),
-                      Obx(() => Text(
-                        controller.storeRating.value.toString(),
-                        style: const TextStyle(
-                          fontFamily: 'Lato',
-                          fontWeight: FontWeight.w700,
-                          fontSize: 18,
-                          letterSpacing: -0.09,
-                          color: Color(0xFF262626),
-                        ),
-                      )),
-                    ],
-                  ),
-                ),
+                // Rating section - HIDDEN as per user request
+                // Container(
+                //   // width: 54,
+                //   // height: 26,
+                //   child: Row(
+                //     children: [
+                //       SvgPicture.asset(
+                //         'assets/icons/star_icon.svg',
+                //         width: 24,
+                //         height: 24,
+                //         colorFilter: const ColorFilter.mode(
+                //           Color(0xFFFACD02),
+                //           BlendMode.srcIn,
+                //         ),
+                //       ),
+                //       const SizedBox(width: 4),
+                //       Obx(() => Text(
+                //         controller.storeRating.value.toString(),
+                //         style: const TextStyle(
+                //           fontFamily: 'Lato',
+                //           fontWeight: FontWeight.w700,
+                //           fontSize: 18,
+                //           letterSpacing: -0.09,
+                //           color: Color(0xFF262626),
+                //         ),
+                //       )),
+                //     ],
+                //   ),
+                // ),
               ],
             ),
           ),

@@ -41,6 +41,8 @@ import 'package:mrsheaf/features/chat/bindings/conversations_binding.dart';
 import 'package:mrsheaf/features/chat/bindings/chat_binding.dart';
 import 'package:mrsheaf/features/checkout/pages/checkout_screen.dart';
 import 'package:mrsheaf/features/checkout/bindings/checkout_binding.dart';
+import 'package:mrsheaf/features/search/pages/search_screen.dart';
+import 'package:mrsheaf/features/search/bindings/search_binding.dart';
 
 class AppPages {
   static const INITIAL = AppRoutes.SPLASH;
@@ -189,6 +191,12 @@ class AppPages {
       page: () => const CheckoutScreen(),
       binding: CheckoutBinding(),
       middlewares: [AuthMiddleware()],
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.SEARCH,
+      page: () => const SearchScreen(),
+      binding: SearchBinding(),
       transition: Transition.rightToLeft,
     ),
   ];

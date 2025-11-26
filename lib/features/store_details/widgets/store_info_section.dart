@@ -76,37 +76,37 @@ class StoreInfoSection extends GetView<StoreDetailsController> {
 
           const SizedBox(height: 16),
 
-          // Store stats (Rating, Reviews, Products)
-          Obx(() => Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              // Rating
-              _buildStatItem(
-                icon: Icons.star,
-                iconColor: Colors.amber,
-                value: controller.storeRating.value.toStringAsFixed(1),
-                label: 'rating'.tr,
-              ),
+          // Store stats (Rating, Reviews, Products) - HIDDEN as per user request
+          // Obx(() => Row(
+          //   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          //   children: [
+          //     // Rating
+          //     _buildStatItem(
+          //       icon: Icons.star,
+          //       iconColor: Colors.amber,
+          //       value: controller.storeRating.value.toStringAsFixed(1),
+          //       label: 'rating'.tr,
+          //     ),
 
-              // Reviews
-              _buildStatItem(
-                icon: Icons.reviews,
-                iconColor: AppColors.primaryColor,
-                value: controller.reviewsCount.value.toString(),
-                label: 'reviews_count'.tr,
-              ),
+          //     // Reviews
+          //     _buildStatItem(
+          //       icon: Icons.reviews,
+          //       iconColor: AppColors.primaryColor,
+          //       value: controller.reviewsCount.value.toString(),
+          //       label: 'reviews_count'.tr,
+          //     ),
 
-              // Products
-              _buildStatItem(
-                icon: Icons.restaurant_menu,
-                iconColor: AppColors.primaryColor,
-                value: controller.totalProducts.value.toString(),
-                label: 'total_products'.tr,
-              ),
-            ],
-          )),
+          //     // Products
+          //     _buildStatItem(
+          //       icon: Icons.restaurant_menu,
+          //       iconColor: AppColors.primaryColor,
+          //       value: controller.totalProducts.value.toString(),
+          //       label: 'total_products'.tr,
+          //     ),
+          //   ],
+          // )),
 
-          const SizedBox(height: 16),
+          // const SizedBox(height: 16),
 
           // Delivery info
           Obx(() => Container(
@@ -147,41 +147,7 @@ class StoreInfoSection extends GetView<StoreDetailsController> {
     );
   }
 
-  Widget _buildStatItem({
-    required IconData icon,
-    required Color iconColor,
-    required String value,
-    required String label,
-  }) {
-    return Column(
-      children: [
-        Icon(
-          icon,
-          color: iconColor,
-          size: 24,
-        ),
-        const SizedBox(height: 4),
-        Text(
-          value,
-          style: const TextStyle(
-            fontFamily: 'Lato',
-            fontWeight: FontWeight.w700,
-            fontSize: 16,
-            color: Color(0xFF262626),
-          ),
-        ),
-        Text(
-          label,
-          style: const TextStyle(
-            fontFamily: 'Lato',
-            fontWeight: FontWeight.w400,
-            fontSize: 12,
-            color: Color(0xFF5E5E5E),
-          ),
-        ),
-      ],
-    );
-  }
+  // Removed _buildStatItem as ratings section is hidden
 
   Widget _buildDeliveryInfo({
     required IconData icon,

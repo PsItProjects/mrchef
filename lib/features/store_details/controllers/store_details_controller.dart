@@ -313,10 +313,18 @@ class StoreDetailsController extends GetxController {
           final openTime = dayData['open']?.toString() ?? '';
           final closeTime = dayData['close']?.toString() ?? '';
 
+          // Format times to 12-hour format with AM/PM
+          final formattedOpenTime = isOpen && openTime.isNotEmpty
+              ? _formatTimeTo12Hour(openTime)
+              : '';
+          final formattedCloseTime = isOpen && closeTime.isNotEmpty
+              ? _formatTimeTo12Hour(closeTime)
+              : '';
+
           updatedHours.add({
             'day': displayDay,
-            'startTime': isOpen && openTime.isNotEmpty ? openTime : '',
-            'endTime': isOpen && closeTime.isNotEmpty ? closeTime : '',
+            'startTime': formattedOpenTime,
+            'endTime': formattedCloseTime,
             'isOff': !isOpen || openTime.isEmpty,
           });
         }
@@ -339,6 +347,153 @@ class StoreDetailsController extends GetxController {
         for (var day in updatedHours) {
           print('   ${day['day']}: ${day['isOff'] ? 'OFF' : '${day['startTime']} - ${day['endTime']}'}');
         }
+      }
+    }
+  }
+
+  /// Convert 24-hour time format (HH:mm) to 12-hour format (hh:mm AM/PM)
+  String _formatTimeTo12Hour(String time24) {
+    try {
+      // Parse time string (expected format: "09:00" or "09:00:00")
+      final parts = time24.split(':');
+      if (parts.isEmpty) return time24;
+
+      final hour24 = int.tryParse(parts[0]) ?? 0;
+      final minute = parts.length > 1 ? parts[1] : '00';
+
+      // Convert to 12-hour format
+      final hour12 = hour24 == 0 ? 12 : (hour24 > 12 ? hour24 - 12 : hour24);
+      final period = hour24 < 12 ? 'AM' : 'PM';
+
+      return '$hour12:$minute $period';
+    } catch (e) {
+      if (kDebugMode) {
+        print('⚠️ Error formatting time: $time24 - $e');
+      }
+      return time24; // Return original if parsing fails
+    }
+  }
+
+  /// Load location from API
+  Future<void> loadLocation() async {
+    if (storeId.value.isEmpty) {
+      if (kDebugMode) {
+        print('⚠️ STORE DETAILS: Cannot load location - store ID is empty');
+      }
+      return;
+    }
+
+    try {
+      isLoading.value = true;
+
+      if (kDebugMode) {
+        print('📍 STORE DETAILS: Loading location for store ${storeId.value}...');
+      }
+
+      final response = await ApiClient.instance.get(
+        ApiConstants.kitchenLocation(int.parse(storeId.value)),
+      );
+
+      if (response.statusCode == 200 && response.data['success'] == true) {
+        final data = response.data['data'];
+
+        if (kDebugMode) {
+          print('✅ STORE DETAILS: Location loaded successfully');
+          print('   Latitude: ${data['latitude']} (${data['latitude'].runtimeType})');
+          print('   Longitude: ${data['longitude']} (${data['longitude'].runtimeType})');
+          print('   Address: ${data['address']}');
+        }
+
+        // Parse latitude and longitude safely (handle both String and double)
+        double? latitude;
+        double? longitude;
+
+        if (data['latitude'] != null) {
+          if (data['latitude'] is double) {
+            latitude = data['latitude'];
+          } else if (data['latitude'] is String) {
+            latitude = double.tryParse(data['latitude']);
+          } else if (data['latitude'] is int) {
+            latitude = (data['latitude'] as int).toDouble();
+          }
+        }
+
+        if (data['longitude'] != null) {
+          if (data['longitude'] is double) {
+            longitude = data['longitude'];
+          } else if (data['longitude'] is String) {
+            longitude = double.tryParse(data['longitude']);
+          } else if (data['longitude'] is int) {
+            longitude = (data['longitude'] as int).toDouble();
+          }
+        }
+
+        // Update locations list
+        locations.value = [
+          {
+            'address': data['address'] ?? '',
+            'latitude': latitude,
+            'longitude': longitude,
+            'city': data['city'] ?? '',
+            'area': data['area'] ?? '',
+            'building': data['building'] ?? '',
+            'floor': data['floor'] ?? '',
+            'postal_code': data['postal_code'] ?? '',
+            'location_notes': data['location_notes'] ?? '',
+          }
+        ];
+
+        if (kDebugMode) {
+          print('   Parsed Latitude: $latitude');
+          print('   Parsed Longitude: $longitude');
+        }
+      } else {
+        if (kDebugMode) {
+          print('❌ STORE DETAILS: Failed to load location - ${response.data['message']}');
+        }
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ STORE DETAILS: Error loading location - $e');
+      }
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  /// Load working hours from dedicated API endpoint
+  Future<void> loadWorkingHours() async {
+    if (storeId.value.isEmpty) return;
+
+    try {
+      if (kDebugMode) {
+        print('🕐 STORE DETAILS: Loading working hours for restaurant ${storeId.value}');
+      }
+
+      final response = await ApiClient.instance.get(
+        ApiConstants.kitchenWorkingHours(int.parse(storeId.value))
+      );
+
+      if (response.statusCode == 200 && response.data['success'] == true) {
+        final data = response.data['data'];
+        final businessHours = data['business_hours'];
+
+        if (businessHours != null && businessHours is Map) {
+          _updateWorkingHours(Map<String, dynamic>.from(businessHours));
+
+          if (kDebugMode) {
+            print('✅ STORE DETAILS: Working hours loaded successfully');
+            print('   Is open now: ${data['is_open_now']}');
+          }
+        }
+      } else {
+        if (kDebugMode) {
+          print('⚠️ STORE DETAILS: Failed to load working hours - ${response.data['message']}');
+        }
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ STORE DETAILS: Error loading working hours: $e');
       }
     }
   }

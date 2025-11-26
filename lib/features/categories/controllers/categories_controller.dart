@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/routes/app_routes.dart';
 import 'package:mrsheaf/features/categories/models/category_model.dart';
 import 'package:mrsheaf/features/product_details/models/product_model.dart';
 import 'package:mrsheaf/features/categories/widgets/filters_bottom_sheet.dart';
@@ -278,6 +279,10 @@ class CategoriesController extends GetxController with GetSingleTickerProviderSt
 
   void updateSearchQuery(String query) {
     searchQuery.value = query;
+  }
+
+  void onSearchTap() {
+    Get.toNamed(AppRoutes.SEARCH);
   }
 
 

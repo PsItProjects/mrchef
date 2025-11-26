@@ -34,6 +34,7 @@ class ApiConstants {
       '/customer/shopping/categories-page-data';
   static const String categoriesWithProducts =
       '/customer/shopping/categories-with-products'; // New combined endpoint
+  static const String filteredProducts = '/customer/shopping/filtered-products'; // Search and filter products
 
   // Cart endpoints
   static const String cart = '/customer/shopping/cart';
@@ -45,6 +46,8 @@ class ApiConstants {
 
   // Kitchen details endpoints
   static String kitchenDetails(int id) => '/customer/shopping/kitchens/$id';
+  static String kitchenWorkingHours(int id) => '/customer/shopping/kitchens/$id/working-hours';
+  static String kitchenLocation(int id) => '/customer/shopping/kitchens/$id/location';
   static String kitchenProducts(int id) =>
       '/customer/shopping/kitchens/$id/products';
 

@@ -17,15 +17,18 @@ class ProductCard extends GetView<HomeController> {
 
   @override
   Widget build(BuildContext context) {
+    // Check if this card is in a horizontal list (has margin) or grid (no margin)
+    final bool isInHorizontalList = section != 'search';
+
     return GestureDetector(
       onTap: () => Get.toNamed(
         AppRoutes.PRODUCT_DETAILS,
         arguments: {'productId': product['id'] ?? 1},
       ),
       child: Container(
-      width: 182,
-      // height: 240, // Fixed height to prevent overflow
-      margin: const EdgeInsets.only(right: 16),
+      width: isInHorizontalList ? 182 : null, // Full width in grid
+      height: isInHorizontalList ? 240 : null, // Auto height in grid
+      margin: isInHorizontalList ? const EdgeInsets.only(right: 16) : EdgeInsets.zero,
       decoration: BoxDecoration(
         color: AppColors.cardBackgroundColor.withOpacity(0.1),
         borderRadius: BorderRadius.circular(32),
@@ -44,8 +47,8 @@ class ProductCard extends GetView<HomeController> {
           children: [
             // Product image with background circle
             Container(
-              width: 120,
-              height: 120,
+              width: isInHorizontalList ? 120 : 110,
+              height: isInHorizontalList ? 120 : 110,
               decoration: BoxDecoration(
                 color: AppColors.cardBackgroundColor.withOpacity(0.1),
                 shape: BoxShape.circle,
@@ -61,23 +64,27 @@ class ProductCard extends GetView<HomeController> {
                 children: [
                   // Product image
                   Positioned(
-                    top: 15,
-                    left: 10,
+                    top: isInHorizontalList ? 15 : 10,
+                    left: isInHorizontalList ? 10 : 5,
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(8),
                       child: () {
-                        final imageUrl = product['primary_image'] as String? ?? '';
-                        if (imageUrl.startsWith('http')) {
+                        // Try both 'image' and 'primary_image' keys
+                        final imageUrl = (product['image'] ?? product['primary_image'] ?? '') as String;
+                        final imageSize = isInHorizontalList ? 100.0 : 90.0;
+                        final imageHeight = isInHorizontalList ? 90.0 : 85.0;
+
+                        if (imageUrl.isNotEmpty && imageUrl.startsWith('http')) {
                           return Image.network(
                             imageUrl,
-                            width: 100,
-                            height: 90,
+                            width: imageSize,
+                            height: imageHeight,
                             fit: BoxFit.cover,
                             errorBuilder: (context, error, stackTrace) {
                               return Image.asset(
                                 'assets/images/burger.png',
-                                width: 100,
-                                height: 90,
+                                width: imageSize,
+                                height: imageHeight,
                                 fit: BoxFit.cover,
                               );
                             },
@@ -85,8 +92,8 @@ class ProductCard extends GetView<HomeController> {
                         } else {
                           return Image.asset(
                             imageUrl.isNotEmpty ? imageUrl : 'assets/images/burger.png',
-                            width: 100,
-                            height: 90,
+                            width: imageSize,
+                            height: imageHeight,
                             fit: BoxFit.cover,
                           );
                         }
@@ -115,20 +122,22 @@ class ProductCard extends GetView<HomeController> {
                         children: [
                           Text(
                             product['name'] ?? 'Special beef burger',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontFamily: 'Tajawal',
                               fontWeight: FontWeight.w500,
-                              fontSize: 12,
-                              color: Color(0xFF1A2023),
+                              fontSize: isInHorizontalList ? 12 : 13,
+                              color: const Color(0xFF1A2023),
                               letterSpacing: -0.04,
                             ),
-                            maxLines: 1,
+                            maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                           ),
-                          const SizedBox(height: 2),
+                          const SizedBox(height: 4),
                           Text(
                             CurrencyHelper.formatPrice(double.tryParse('${product['price'] ?? 16}') ?? 16.0),
-                            style: AppTheme.priceTextStyle,
+                            style: AppTheme.priceTextStyle.copyWith(
+                              fontSize: isInHorizontalList ? 14 : 15,
+                            ),
                           ),
                         ],
                       ),
@@ -141,19 +150,19 @@ class ProductCard extends GetView<HomeController> {
                       onTap: () => controller.addToCart(product['id']),
                       child: Container(
                         width: double.infinity,
-                        height: 26,
+                        height: isInHorizontalList ? 26 : 32,
                         decoration: BoxDecoration(
                           color: AppColors.primaryColor,
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: const Center(
+                        child: Center(
                           child: Text(
                             'Add to Cart',
                             style: TextStyle(
                               fontFamily: 'Lato',
                               fontWeight: FontWeight.w700,
-                              fontSize: 10,
-                              color: Color(0xFF592E2C),
+                              fontSize: isInHorizontalList ? 10 : 11,
+                              color: const Color(0xFF592E2C),
                             ),
                           ),
                         ),
