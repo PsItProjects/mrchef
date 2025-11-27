@@ -9,83 +9,47 @@ class MyOrdersTabs extends GetView<MyOrdersController> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          // Delivered tab
-          Obx(() => GestureDetector(
-            onTap: () => controller.switchTab(0),
-            child: Column(
-              children: [
-                Text(
-                  'Delivered',
-                  style: TextStyle(
-                    fontFamily: 'Lato',
-                    fontWeight: controller.isDeliveredTabSelected 
-                        ? FontWeight.w700 
-                        : FontWeight.w600,
-                    fontSize: 18,
-                    color: controller.isDeliveredTabSelected 
-                        ? AppColors.primaryColor 
-                        : const Color(0xFF999999),
-                    letterSpacing: -0.005,
+      height: 50,
+      padding: const EdgeInsets.only(left: 24, top: 8, bottom: 8),
+      child: Obx(() {
+        // Access observable to trigger reactivity
+        final selectedIndex = controller.selectedTabIndex.value;
+        final tabLabels = controller.tabLabels;
+
+        return ListView.builder(
+          scrollDirection: Axis.horizontal,
+          itemCount: tabLabels.length,
+          itemBuilder: (context, index) {
+            final isSelected = selectedIndex == index;
+            return GestureDetector(
+              onTap: () => controller.switchTab(index),
+              child: Container(
+                margin: const EdgeInsets.only(right: 16),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(
+                  color: isSelected ? AppColors.primaryColor : Colors.transparent,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: isSelected ? AppColors.primaryColor : const Color(0xFFE0E0E0),
+                    width: 1,
                   ),
                 ),
-                const SizedBox(height: 4),
-                Container(
-                  width: 8,
-                  height: 8,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: controller.isDeliveredTabSelected 
-                        ? AppColors.primaryColor 
-                        : Colors.transparent,
+                child: Center(
+                  child: Text(
+                    tabLabels[index],
+                    style: TextStyle(
+                      fontFamily: 'Lato',
+                      fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+                      fontSize: 14,
+                      color: isSelected ? Colors.white : const Color(0xFF999999),
+                    ),
                   ),
                 ),
-              ],
-            ),
-          )),
-          
-          // Processing tab
-          Obx(() => GestureDetector(
-            onTap: () => controller.switchTab(1),
-            child: Text(
-              'Processing',
-              style: TextStyle(
-                fontFamily: 'Lato',
-                fontWeight: controller.isProcessingTabSelected 
-                    ? FontWeight.w700 
-                    : FontWeight.w600,
-                fontSize: 18,
-                color: controller.isProcessingTabSelected 
-                    ? AppColors.primaryColor 
-                    : const Color(0xFF999999),
-                letterSpacing: -0.005,
               ),
-            ),
-          )),
-          
-          // Canceled tab
-          Obx(() => GestureDetector(
-            onTap: () => controller.switchTab(2),
-            child: Text(
-              'Canceled',
-              style: TextStyle(
-                fontFamily: 'Lato',
-                fontWeight: controller.isCanceledTabSelected 
-                    ? FontWeight.w700 
-                    : FontWeight.w600,
-                fontSize: 18,
-                color: controller.isCanceledTabSelected 
-                    ? AppColors.primaryColor 
-                    : const Color(0xFF999999),
-                letterSpacing: -0.005,
-              ),
-            ),
-          )),
-        ],
-      ),
+            );
+          },
+        );
+      }),
     );
   }
 }

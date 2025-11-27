@@ -1,51 +1,75 @@
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mrsheaf/features/profile/models/order_model.dart';
+import 'package:mrsheaf/features/profile/services/order_service.dart';
+import 'package:mrsheaf/core/network/api_client.dart';
+import 'package:mrsheaf/features/profile/widgets/order_details_bottom_sheet.dart';
 
 class MyOrdersController extends GetxController {
-  // Selected tab index (0: Delivered, 1: Processing, 2: Canceled)
+  // Selected tab index (0: All, 1: Pending, 2: Confirmed, 3: Preparing, 4: Out for Delivery, 5: Delivered, 6: Cancelled)
   final RxInt selectedTabIndex = 0.obs;
-  
+
   // All orders
   final RxList<OrderModel> allOrders = <OrderModel>[].obs;
+
+  // Loading state
+  final RxBool isLoading = false.obs;
+
+  // Error state
+  final RxString errorMessage = ''.obs;
+
+  // Search query
+  final RxString searchQuery = ''.obs;
+
+  // Search mode
+  final RxBool isSearching = false.obs;
+
+  // Tab labels
+  final List<String> tabLabels = [
+    'All',
+    'Pending',
+    'Confirmed',
+    'Preparing',
+    'Out for Delivery',
+    'Delivered',
+    'Cancelled',
+  ];
+
+  // Service
+  late final OrderService _orderService;
 
   @override
   void onInit() {
     super.onInit();
-    // _initializeSampleData(); // Temporarily disabled to test empty state
+    _orderService = OrderService(Get.find<ApiClient>());
+    fetchOrders();
   }
 
-  void _initializeSampleData() {
-    // Add sample orders
-    allOrders.addAll([
-      OrderModel(
-        orderCode: '#75653448',
-        orderDate: DateTime(2022, 3, 20),
-        quantity: 3,
-        totalAmount: 150.0,
-        status: OrderStatus.delivered,
-      ),
-      OrderModel(
-        orderCode: '#75653449',
-        orderDate: DateTime(2022, 3, 18),
-        quantity: 2,
-        totalAmount: 85.0,
-        status: OrderStatus.delivered,
-      ),
-      OrderModel(
-        orderCode: '#75653450',
-        orderDate: DateTime(2022, 3, 15),
-        quantity: 1,
-        totalAmount: 45.0,
-        status: OrderStatus.processing,
-      ),
-      OrderModel(
-        orderCode: '#75653451',
-        orderDate: DateTime(2022, 3, 12),
-        quantity: 4,
-        totalAmount: 200.0,
-        status: OrderStatus.canceled,
-      ),
-    ]);
+  /// Fetch orders from API
+  Future<void> fetchOrders() async {
+    try {
+      isLoading.value = true;
+      errorMessage.value = '';
+
+      final response = await _orderService.getOrders();
+      final ordersData = response['orders'] as List;
+
+      allOrders.value = ordersData
+          .map((json) => OrderModel.fromJson(json))
+          .toList();
+
+      print('✅ ORDERS CONTROLLER: Fetched ${allOrders.length} orders');
+    } catch (e) {
+      print('❌ ORDERS CONTROLLER: Error fetching orders - $e');
+      errorMessage.value = e.toString();
+      Get.snackbar(
+        'Error',
+        'Failed to load orders: $e',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    } finally {
+      isLoading.value = false;
+    }
   }
 
   // Tab switching
@@ -53,37 +77,99 @@ class MyOrdersController extends GetxController {
     selectedTabIndex.value = index;
   }
 
-  // Get filtered orders based on selected tab
+  // Get filtered orders based on selected tab and search query
   List<OrderModel> get filteredOrders {
-    switch (selectedTabIndex.value) {
-      case 0: // Delivered
-        return allOrders.where((order) => order.status == OrderStatus.delivered).toList();
-      case 1: // Processing
-        return allOrders.where((order) => order.status == OrderStatus.processing).toList();
-      case 2: // Canceled
-        return allOrders.where((order) => order.status == OrderStatus.canceled).toList();
+    // Access observables to trigger reactivity
+    final currentTab = selectedTabIndex.value;
+    final searching = isSearching.value;
+    final query = searchQuery.value;
+    final orders = allOrders;
+
+    // First filter by tab
+    List<OrderModel> tabFiltered;
+    switch (currentTab) {
+      case 0: // All
+        tabFiltered = orders.toList();
+        break;
+      case 1: // Pending
+        tabFiltered = orders.where((order) => order.status == OrderStatus.pending).toList();
+        break;
+      case 2: // Confirmed
+        tabFiltered = orders.where((order) => order.status == OrderStatus.confirmed).toList();
+        break;
+      case 3: // Preparing
+        tabFiltered = orders.where((order) => order.status == OrderStatus.preparing).toList();
+        break;
+      case 4: // Out for Delivery
+        tabFiltered = orders.where((order) => order.status == OrderStatus.outForDelivery).toList();
+        break;
+      case 5: // Delivered
+        tabFiltered = orders.where((order) => order.status == OrderStatus.delivered).toList();
+        break;
+      case 6: // Cancelled
+        tabFiltered = orders.where((order) => order.status == OrderStatus.cancelled || order.status == OrderStatus.rejected).toList();
+        break;
       default:
-        return allOrders.toList();
+        tabFiltered = orders.toList();
     }
+
+    // Then filter by search query if searching
+    if (searching && query.isNotEmpty) {
+      final searchQuery = query.toLowerCase();
+      return tabFiltered.where((order) {
+        // Search in order code
+        if (order.orderCode.toLowerCase().contains(searchQuery)) return true;
+
+        // Search in restaurant name
+        if (order.restaurantName?.toLowerCase().contains(searchQuery) ?? false) return true;
+
+        // Search in status text
+        if (order.statusText.toLowerCase().contains(searchQuery)) return true;
+
+        return false;
+      }).toList();
+    }
+
+    return tabFiltered;
+  }
+
+  // Search methods
+  void startSearch() {
+    isSearching.value = true;
+  }
+
+  void stopSearch() {
+    isSearching.value = false;
+    searchQuery.value = '';
+  }
+
+  void updateSearchQuery(String query) {
+    searchQuery.value = query;
   }
 
   // Check if current tab has orders
-  bool get hasOrdersInCurrentTab => filteredOrders.isNotEmpty;
+  bool get hasOrdersInCurrentTab {
+    // Access observables to trigger reactivity
+    final currentTab = selectedTabIndex.value;
+    final searching = isSearching.value;
+    final query = searchQuery.value;
+    final orders = allOrders;
 
-  // Get tab titles
-  List<String> get tabTitles => ['Delivered', 'Processing', 'Canceled'];
+    return filteredOrders.isNotEmpty;
+  }
 
   // Get current tab title
-  String get currentTabTitle => tabTitles[selectedTabIndex.value];
+  String get currentTabTitle => tabLabels[selectedTabIndex.value];
 
   // Order actions
   void viewOrderDetails(OrderModel order) {
-    Get.snackbar(
-      'Order Details',
-      'Viewing details for order ${order.orderCode}',
-      snackPosition: SnackPosition.BOTTOM,
+    Get.bottomSheet(
+      OrderDetailsBottomSheet(orderId: order.id),
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      isDismissible: true,
+      enableDrag: true,
     );
-    // TODO: Navigate to order details screen
   }
 
   void reorderItems(OrderModel order) {
@@ -100,23 +186,8 @@ class MyOrdersController extends GetxController {
     Get.offAllNamed('/home');
   }
 
-  // Add sample data for testing
-  void addSampleData() {
-    _initializeSampleData();
+  // Refresh orders
+  Future<void> refreshOrders() async {
+    await fetchOrders();
   }
-
-  // Clear all orders for testing empty state
-  void clearAllOrders() {
-    allOrders.clear();
-  }
-
-  // Getters for UI
-  bool get isDeliveredTabSelected => selectedTabIndex.value == 0;
-  bool get isProcessingTabSelected => selectedTabIndex.value == 1;
-  bool get isCanceledTabSelected => selectedTabIndex.value == 2;
-
-  // Get count for each status
-  int get deliveredCount => allOrders.where((order) => order.status == OrderStatus.delivered).length;
-  int get processingCount => allOrders.where((order) => order.status == OrderStatus.processing).length;
-  int get canceledCount => allOrders.where((order) => order.status == OrderStatus.canceled).length;
 }

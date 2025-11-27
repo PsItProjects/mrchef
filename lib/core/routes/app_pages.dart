@@ -43,6 +43,8 @@ import 'package:mrsheaf/features/checkout/pages/checkout_screen.dart';
 import 'package:mrsheaf/features/checkout/bindings/checkout_binding.dart';
 import 'package:mrsheaf/features/search/pages/search_screen.dart';
 import 'package:mrsheaf/features/search/bindings/search_binding.dart';
+import 'package:mrsheaf/features/restaurants/pages/all_restaurants_screen.dart';
+import 'package:mrsheaf/features/restaurants/bindings/all_restaurants_binding.dart';
 
 class AppPages {
   static const INITIAL = AppRoutes.SPLASH;
@@ -197,6 +199,12 @@ class AppPages {
       name: AppRoutes.SEARCH,
       page: () => const SearchScreen(),
       binding: SearchBinding(),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.ALL_RESTAURANTS,
+      page: () => const AllRestaurantsScreen(),
+      binding: AllRestaurantsBinding(),
       transition: Transition.rightToLeft,
     ),
   ];

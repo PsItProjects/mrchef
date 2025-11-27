@@ -19,18 +19,33 @@ class MyOrdersScreen extends GetView<MyOrdersController> {
           children: [
             // Header
             const MyOrdersHeader(),
-            
+
             // Tabs
             const MyOrdersTabs(),
-            
+
             // Content
             Expanded(
               child: Obx(() {
-                if (!controller.hasOrdersInCurrentTab) {
-                  return const EmptyOrdersWidget();
-                } else {
-                  return const OrdersList();
+                // Access observables to trigger reactivity
+                final isLoading = controller.isLoading.value;
+                final hasOrders = controller.hasOrdersInCurrentTab;
+
+                // Show loading indicator while fetching orders
+                if (isLoading) {
+                  return Center(
+                    child: CircularProgressIndicator(
+                      color: AppColors.primaryColor,
+                    ),
+                  );
                 }
+
+                // Show empty state if no orders
+                if (!hasOrders) {
+                  return const EmptyOrdersWidget();
+                }
+
+                // Show orders list
+                return const OrdersList();
               }),
             ),
           ],

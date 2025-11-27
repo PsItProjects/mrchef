@@ -982,6 +982,13 @@ class AppTranslations extends Translations {
       'clear_app_cache': 'Clear app cache',
       'rate_the_app': 'Rate the app',
       'about_heba_app': 'About Heba App',
+
+      // All Restaurants Screen
+      'all_restaurants': 'All Restaurants',
+      'newest': 'Newest',
+      'lowest_delivery_fee': 'Lowest Delivery Fee',
+      'no_restaurants_found': 'No Restaurants Found',
+      'failed_to_load_restaurants': 'Failed to load restaurants',
       'invite_friends': 'Invite Friends',
 
       // About App
@@ -2100,6 +2107,13 @@ class AppTranslations extends Translations {
       'clear_app_cache': 'مسح ذاكرة التخزين المؤقت',
       'rate_the_app': 'قيم التطبيق',
       'about_heba_app': 'حول تطبيق هبة',
+
+      // All Restaurants Screen
+      'all_restaurants': 'جميع المطاعم',
+      'newest': 'الأحدث',
+      'lowest_delivery_fee': 'أقل رسوم توصيل',
+      'no_restaurants_found': 'لا توجد مطاعم',
+      'failed_to_load_restaurants': 'فشل في تحميل المطاعم',
       'invite_friends': 'دعوة الأصدقاء',
 
       // About App

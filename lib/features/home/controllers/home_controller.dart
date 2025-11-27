@@ -398,12 +398,17 @@ class HomeController extends GetxController {
   }
   
   void onSeeAllTap(String section) {
-    // TODO: Navigate to respective section screen
-    Get.snackbar(
-      'See All',
-      '$section - See all functionality coming soon',
-      snackPosition: SnackPosition.BOTTOM,
-    );
+    if (section == 'restaurants') {
+      // Navigate to All Restaurants screen
+      Get.toNamed('/all-restaurants');
+    } else {
+      // TODO: Navigate to other sections
+      Get.snackbar(
+        'See All',
+        '$section - See all functionality coming soon',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    }
   }
 
   void navigateToProductDetails({int? productId}) {

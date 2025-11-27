@@ -85,32 +85,6 @@ class EmptyOrdersWidget extends GetView<MyOrdersController> {
           ),
           
           const SizedBox(height: 16),
-          
-          // Test button to add sample data
-          Container(
-            width: 380,
-            // height: 50,
-            child: ElevatedButton(
-              onPressed: controller.addSampleData,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF592E2C),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                elevation: 0,
-              ),
-              child: const Text(
-                'Add Sample Orders (Test)',
-                style: TextStyle(
-                  fontFamily: 'Lato',
-                  fontWeight: FontWeight.w700,
-                  fontSize: 18,
-                  color: Colors.white,
-                  letterSpacing: -0.005,
-                ),
-              ),
-            ),
-          ),
         ],
       ),
     );

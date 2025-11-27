@@ -8,12 +8,15 @@ class OrdersList extends GetView<MyOrdersController> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      child: Obx(() => ListView.builder(
+    return Obx(() {
+      // Access observables to trigger reactivity
+      final orders = controller.filteredOrders;
+
+      return ListView.builder(
         padding: const EdgeInsets.symmetric(horizontal: 24),
-        itemCount: controller.filteredOrders.length,
+        itemCount: orders.length,
         itemBuilder: (context, index) {
-          final order = controller.filteredOrders[index];
+          final order = orders[index];
           return Padding(
             padding: const EdgeInsets.only(bottom: 16),
             child: OrderItemWidget(
@@ -22,7 +25,7 @@ class OrdersList extends GetView<MyOrdersController> {
             ),
           );
         },
-      )),
-    );
+      );
+    });
   }
 }

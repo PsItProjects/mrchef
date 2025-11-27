@@ -27,4 +27,10 @@ abstract class AppRoutes {
   static const CONVERSATIONS = '/conversations';
   static const CHAT = '/chat/:id';
   static const CHECKOUT = '/checkout';
+
+  // Restaurants routes
+  static const ALL_RESTAURANTS = '/all-restaurants';
+
+  // Orders routes
+  static const ORDER_DETAILS = '/order-details';
 }

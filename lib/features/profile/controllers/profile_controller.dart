@@ -7,7 +7,10 @@ import 'package:mrsheaf/features/profile/pages/my_orders_screen.dart';
 import 'package:mrsheaf/features/profile/pages/my_reviews_screen.dart';
 import 'package:mrsheaf/features/profile/pages/settings_screen.dart';
 import 'package:mrsheaf/features/profile/pages/shipping_addresses_screen.dart';
+import 'package:mrsheaf/features/profile/controllers/my_orders_controller.dart';
 import 'package:mrsheaf/features/profile/services/address_service.dart';
+import 'package:mrsheaf/features/profile/services/order_service.dart';
+import 'package:mrsheaf/core/network/api_client.dart';
 import '../../auth/services/auth_service.dart';
 
 class ProfileController extends GetxController {
@@ -24,26 +27,42 @@ class ProfileController extends GetxController {
   ).obs;
 
   // Profile stats
-  final RxInt orderCount = 10.obs;
+  final RxInt orderCount = 0.obs;
   final RxInt addressCount = 0.obs;
   final RxInt cardCount = 2.obs;
   final RxInt reviewCount = 5.obs;
 
   final AddressService _addressService = AddressService();
+  late final OrderService _orderService;
 
   @override
   void onInit() {
     super.onInit();
+    _orderService = OrderService(Get.find<ApiClient>());
     _loadUserProfile();
     _loadAddressCount();
+    _loadOrderCount();
   }
 
   Future<void> _loadAddressCount() async {
     try {
       final addresses = await _addressService.getAddresses();
       addressCount.value = addresses.length;
+      print('📍 PROFILE: Loaded ${addressCount.value} addresses');
     } catch (e) {
-      print('Error loading address count: $e');
+      print('❌ PROFILE: Error loading address count - $e');
+      // Keep default value if API fails
+    }
+  }
+
+  Future<void> _loadOrderCount() async {
+    try {
+      final response = await _orderService.getOrders(page: 1, perPage: 1);
+      final pagination = response['pagination'] as Map<String, dynamic>;
+      orderCount.value = pagination['total'] ?? 0;
+      print('📦 PROFILE: Loaded ${orderCount.value} orders');
+    } catch (e) {
+      print('❌ PROFILE: Error loading order count - $e');
       // Keep default value if API fails
     }
   }
@@ -75,8 +94,14 @@ class ProfileController extends GetxController {
     Get.to(() => const EditProfileScreen());
   }
 
-  void navigateToMyOrders() {
-    Get.to(() => const MyOrdersScreen());
+  void navigateToMyOrders() async {
+    // Ensure MyOrdersController is registered
+    if (!Get.isRegistered<MyOrdersController>()) {
+      Get.lazyPut<MyOrdersController>(() => MyOrdersController());
+    }
+    await Get.to(() => const MyOrdersScreen());
+    // Reload order count when returning from my orders screen
+    _loadOrderCount();
   }
 
   void navigateToShippingAddresses() async {
