@@ -95,18 +95,28 @@ class ChatService {
   }
 
   /// Send a message in a conversation
-  Future<MessageModel> sendMessage(int conversationId, String message) async {
+  Future<MessageModel> sendMessage(
+    int conversationId,
+    String message, {
+    int? repliedToMessageId,
+  }) async {
     try {
       if (kDebugMode) {
         print('💬 CHAT SERVICE: Sending message to conversation $conversationId...');
         print('💬 MESSAGE: $message');
+        if (repliedToMessageId != null) {
+          print('💬 REPLYING TO MESSAGE: $repliedToMessageId');
+        }
       }
+
+      final data = {
+        'message': message,
+        if (repliedToMessageId != null) 'replied_to_message_id': repliedToMessageId,
+      };
 
       final response = await _apiClient.post(
         '/customer/chat/conversations/$conversationId/messages',
-        data: {
-          'message': message,
-        },
+        data: data,
       );
 
       if (response.data['success'] == true) {
@@ -136,6 +146,53 @@ class ChatService {
         throw Exception('الرسالة مطلوبة');
       } else {
         final message = e.response?.data['message'] ?? 'فشل في إرسال الرسالة';
+        throw Exception(message);
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ CHAT SERVICE ERROR: $e');
+      }
+      rethrow;
+    }
+  }
+
+  /// Get or create conversation for an order
+  /// Returns a map with 'conversation' and 'orderMessageId'
+  Future<Map<String, dynamic>> getOrCreateOrderConversation(int orderId) async {
+    try {
+      if (kDebugMode) {
+        print('💬 CHAT SERVICE: Getting/creating conversation for order $orderId...');
+      }
+
+      final response = await _apiClient.get(
+        '/customer/chat/orders/$orderId/conversation',
+      );
+
+      if (response.data['success'] == true) {
+        if (kDebugMode) {
+          print('✅ CHAT SERVICE: Conversation retrieved/created successfully');
+          print('✅ ORDER MESSAGE ID: ${response.data['data']['order_message_id']}');
+        }
+
+        return {
+          'conversation': ConversationModel.fromJson(response.data['data']['conversation']),
+          'orderMessageId': response.data['data']['order_message_id'],
+        };
+      } else {
+        throw Exception(response.data['message'] ?? 'Failed to get conversation');
+      }
+    } on DioException catch (e) {
+      if (kDebugMode) {
+        print('❌ CHAT SERVICE ERROR: ${e.response?.statusCode} ${e.message}');
+        print('❌ RESPONSE DATA: ${e.response?.data}');
+      }
+
+      if (e.response?.statusCode == 401) {
+        throw Exception('يجب تسجيل الدخول أولاً');
+      } else if (e.response?.statusCode == 404) {
+        throw Exception('الطلب غير موجود');
+      } else {
+        final message = e.response?.data['message'] ?? 'فشل في الحصول على المحادثة';
         throw Exception(message);
       }
     } catch (e) {

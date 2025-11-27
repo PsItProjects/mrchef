@@ -2,14 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/features/chat/models/conversation_model.dart';
+import 'package:mrsheaf/features/chat/widgets/message_reply_preview.dart';
 import 'package:intl/intl.dart' as intl;
 
 class MessageBubble extends StatelessWidget {
   final MessageModel message;
+  final Function(int messageId)? onReplyTap;
 
   const MessageBubble({
     super.key,
     required this.message,
+    this.onReplyTap,
   });
 
   @override
@@ -96,6 +99,19 @@ class MessageBubble extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Reply preview (if this message is replying to another)
+                if (message.repliedToMessage != null) ...[
+                  MessageReplyPreview(
+                    repliedMessage: message.repliedToMessage!,
+                    onTap: () {
+                      if (onReplyTap != null && message.repliedToMessageId != null) {
+                        onReplyTap!(message.repliedToMessageId!);
+                      }
+                    },
+                  ),
+                  const SizedBox(height: 8),
+                ],
+
                 // Message text
                 Text(
                   message.message,

@@ -42,23 +42,57 @@ class ChatScreen extends GetView<ChatController> {
                   itemCount: controller.messages.length,
                   itemBuilder: (context, index) {
                     final message = controller.messages[index];
+                    final messageKey = controller.messageKeys[message.id];
+
+                    // Wrap message in Container with key for scrolling
+                    Widget messageWidget;
 
                     // Show product attachment card for any message with product_attachment type
                     if (message.messageType == 'product_attachment' &&
                         message.attachments != null) {
-                      return Column(
+                      messageWidget = Column(
                         children: [
                           ProductAttachmentCard(
                             attachments: message.attachments!,
                           ),
                           const SizedBox(height: 8),
-                          MessageBubble(message: message),
+                          Obx(() => AnimatedContainer(
+                                duration: const Duration(milliseconds: 300),
+                                decoration: BoxDecoration(
+                                  color: controller.highlightedMessageId.value == message.id
+                                      ? AppColors.primaryColor.withOpacity(0.2)
+                                      : Colors.transparent,
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: MessageBubble(
+                                  message: message,
+                                  onReplyTap: controller.scrollToMessage,
+                                ),
+                              )),
                         ],
                       );
+                    } else {
+                      // Regular message bubble with highlight animation
+                      messageWidget = Obx(() => AnimatedContainer(
+                            duration: const Duration(milliseconds: 300),
+                            decoration: BoxDecoration(
+                              color: controller.highlightedMessageId.value == message.id
+                                  ? AppColors.primaryColor.withOpacity(0.2)
+                                  : Colors.transparent,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: MessageBubble(
+                              message: message,
+                              onReplyTap: controller.scrollToMessage,
+                            ),
+                          ));
                     }
 
-                    // Regular message bubble
-                    return MessageBubble(message: message);
+                    // Wrap with key for scrolling
+                    return Container(
+                      key: messageKey,
+                      child: messageWidget,
+                    );
                   },
                 ),
               );

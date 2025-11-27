@@ -9,7 +9,10 @@ import 'package:mrsheaf/features/cart/controllers/cart_controller.dart';
 import 'package:mrsheaf/features/product_details/models/product_model.dart';
 import 'package:mrsheaf/features/categories/models/category_model.dart';
 import '../models/restaurant_model.dart';
+import '../models/banner_model.dart';
 import '../services/restaurant_service.dart';
+import '../services/banner_service.dart';
+import '../pages/webview_screen.dart';
 
 class HomeController extends GetxController {
   // Observable variables for home screen state
@@ -17,6 +20,11 @@ class HomeController extends GetxController {
   final RxInt currentBannerIndex = 0.obs;
   final ApiClient _apiClient = ApiClient.instance;
   final RestaurantService _restaurantService = RestaurantService();
+  final BannerService _bannerService = BannerService();
+
+  // Banners
+  final RxList<BannerModel> banners = <BannerModel>[].obs;
+  final RxBool isLoadingBanners = false.obs;
 
   // Loading states
   final RxBool isLoadingRestaurants = false.obs;
@@ -65,6 +73,8 @@ class HomeController extends GetxController {
     loadFeaturedRestaurants();
     // Load home screen data from new API
     loadHomeScreenData();
+    // Load banners
+    loadBanners();
   }
 
   /// Setup language change listener
@@ -563,7 +573,82 @@ class HomeController extends GetxController {
       loadRestaurants(),
       loadFeaturedRestaurants(),
       loadHomeScreenData(),
+      loadBanners(),
     ]);
+  }
+
+  /// Load banners from backend
+  Future<void> loadBanners() async {
+    try {
+      isLoadingBanners.value = true;
+
+      if (kDebugMode) {
+        print('🎨 HOME: Loading banners...');
+      }
+
+      final loadedBanners = await _bannerService.getBanners();
+      banners.value = loadedBanners;
+
+      if (kDebugMode) {
+        print('✅ HOME: Loaded ${banners.length} banners');
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ HOME: Failed to load banners: $e');
+      }
+    } finally {
+      isLoadingBanners.value = false;
+    }
+  }
+
+  /// Handle banner tap based on banner type
+  void handleBannerTap(BannerModel banner) {
+    if (kDebugMode) {
+      print('🎨 Banner tapped: ${banner.type}');
+    }
+
+    switch (banner.type) {
+      case 'image_only':
+        // No action for image only
+        break;
+
+      case 'image_text':
+        // No action for image text (just display)
+        break;
+
+      case 'external_link':
+        if (banner.externalUrl != null) {
+          // Open URL in WebView
+          Get.to(() => WebViewScreen(
+                url: banner.externalUrl!,
+                title: banner.getTitle(Get.locale?.languageCode ?? 'en'),
+              ));
+        }
+        break;
+
+      case 'store_link':
+        if (banner.restaurant != null) {
+          // Navigate to restaurant/store details
+          Get.toNamed(
+            '${AppRoutes.STORE_DETAILS}?id=${banner.restaurant!.id}',
+          );
+        }
+        break;
+
+      case 'product_link':
+        if (banner.product != null) {
+          // Navigate to product details
+          Get.toNamed(
+            '${AppRoutes.PRODUCT_DETAILS}?id=${banner.product!.id}',
+          );
+        }
+        break;
+
+      default:
+        if (kDebugMode) {
+          print('⚠️ Unknown banner type: ${banner.type}');
+        }
+    }
   }
 
 }

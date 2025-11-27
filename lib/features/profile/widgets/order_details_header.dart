@@ -13,26 +13,22 @@ class OrderDetailsHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
-      decoration: const BoxDecoration(
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
+      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+      decoration: BoxDecoration(
         color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Title
-          const Text(
-            'Order Details',
-            style: TextStyle(
-              fontFamily: 'Lato',
-              fontSize: 24,
-              fontWeight: FontWeight.w700,
-              color: AppColors.darkTextColor,
-            ),
-          ),
-
-          const SizedBox(height: 20),
-
           // Order number and date
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,

@@ -15,6 +15,13 @@ class OrderPricingSummary extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -28,103 +35,147 @@ class OrderPricingSummary extends StatelessWidget {
               color: AppColors.darkTextColor,
             ),
           ),
-          const SizedBox(height: 16),
-          
-          // Subtotal
-          _buildPriceRow(
-            label: 'Subtotal',
-            value: '${order.subtotal.toStringAsFixed(2)} SAR',
-          ),
-          
-          const SizedBox(height: 12),
-          
-          // Delivery Fee
-          _buildPriceRow(
-            label: 'Delivery Fee',
-            value: '${order.deliveryFee.toStringAsFixed(2)} SAR',
-          ),
-          
-          const SizedBox(height: 12),
-          
-          // Service Fee
-          if (order.serviceFee > 0) ...[
-            _buildPriceRow(
-              label: 'Service Fee',
-              value: order.formattedServiceFee,
-            ),
-            const SizedBox(height: 12),
-          ],
-          
-          // Tax
-          if (order.taxAmount > 0) ...[
-            _buildPriceRow(
-              label: 'Tax',
-              value: '${order.taxAmount.toStringAsFixed(2)} SAR',
-            ),
-            const SizedBox(height: 12),
-          ],
-          
-          // Discount
-          if (order.discountAmount > 0) ...[
-            _buildPriceRow(
-              label: 'Discount',
-              value: '- ${order.formattedDiscountAmount}',
-              valueColor: AppColors.successColor,
-            ),
-            const SizedBox(height: 12),
-          ],
-          
-          const Divider(height: 24, color: AppColors.backgroundColor),
-          
-          // Total
-          _buildPriceRow(
-            label: 'Total',
-            value: '${order.totalAmount.toStringAsFixed(2)} SAR',
-            labelStyle: const TextStyle(
-              fontFamily: 'Lato',
-              fontSize: 18,
-              fontWeight: FontWeight.w700,
-              color: AppColors.darkTextColor,
-            ),
-            valueStyle: const TextStyle(
-              fontFamily: 'Lato',
-              fontSize: 20,
-              fontWeight: FontWeight.w700,
-              color: AppColors.primaryColor,
-            ),
-          ),
-          
-          const SizedBox(height: 16),
-          
-          // Payment Method
+          const SizedBox(height: 20),
+
+          // Price breakdown container
           Container(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: AppColors.backgroundColor,
               borderRadius: BorderRadius.circular(12),
             ),
+            child: Column(
+              children: [
+                // Subtotal
+                _buildPriceRow(
+                  label: 'Subtotal',
+                  value: '${order.subtotal.toStringAsFixed(2)} SAR',
+                ),
+
+                const SizedBox(height: 12),
+
+                // Delivery Fee
+                _buildPriceRow(
+                  label: 'Delivery Fee',
+                  value: '${order.deliveryFee.toStringAsFixed(2)} SAR',
+                ),
+
+                // Service Fee
+                if (order.serviceFee > 0) ...[
+                  const SizedBox(height: 12),
+                  _buildPriceRow(
+                    label: 'Service Fee',
+                    value: order.formattedServiceFee,
+                  ),
+                ],
+
+                // Tax
+                if (order.taxAmount > 0) ...[
+                  const SizedBox(height: 12),
+                  _buildPriceRow(
+                    label: 'Tax',
+                    value: '${order.taxAmount.toStringAsFixed(2)} SAR',
+                  ),
+                ],
+
+                // Discount
+                if (order.discountAmount > 0) ...[
+                  const SizedBox(height: 12),
+                  _buildPriceRow(
+                    label: 'Discount',
+                    value: '- ${order.formattedDiscountAmount}',
+                    valueColor: AppColors.successColor,
+                  ),
+                ],
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 16),
+
+          // Total
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: AppColors.primaryColor.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: _buildPriceRow(
+              label: 'Total Amount',
+              value: '${order.totalAmount.toStringAsFixed(2)} SAR',
+              labelStyle: const TextStyle(
+                fontFamily: 'Lato',
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+                color: AppColors.darkTextColor,
+              ),
+              valueStyle: const TextStyle(
+                fontFamily: 'Lato',
+                fontSize: 20,
+                fontWeight: FontWeight.w700,
+                color: AppColors.primaryColor,
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 16),
+
+          // Payment Method
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: AppColors.backgroundColor,
+                width: 2,
+              ),
+            ),
             child: Row(
               children: [
-                Icon(
-                  order.paymentMethod == 'cash' ? Icons.money : Icons.credit_card,
-                  size: 20,
-                  color: AppColors.darkTextColor,
-                ),
-                const SizedBox(width: 12),
-                Text(
-                  order.paymentMethod == 'cash' ? 'Cash on Delivery' : 'Card Payment',
-                  style: const TextStyle(
-                    fontFamily: 'Lato',
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.darkTextColor,
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: AppColors.backgroundColor,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(
+                    order.paymentMethod == 'cash' ? Icons.money : Icons.credit_card,
+                    size: 24,
+                    color: AppColors.primaryColor,
                   ),
                 ),
-                const Spacer(),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Payment Method',
+                        style: TextStyle(
+                          fontFamily: 'Lato',
+                          fontSize: 12,
+                          fontWeight: FontWeight.w400,
+                          color: AppColors.lightGreyTextColor,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        order.paymentMethod == 'cash' ? 'Cash on Delivery' : 'Card Payment',
+                        style: const TextStyle(
+                          fontFamily: 'Lato',
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.darkTextColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
-                    color: order.paymentStatus == 'paid' 
+                    color: order.paymentStatus == 'paid'
                         ? AppColors.successColor.withOpacity(0.1)
                         : AppColors.warningColor.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(12),
@@ -134,8 +185,8 @@ class OrderPricingSummary extends StatelessWidget {
                     style: TextStyle(
                       fontFamily: 'Lato',
                       fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: order.paymentStatus == 'paid' 
+                      fontWeight: FontWeight.w700,
+                      color: order.paymentStatus == 'paid'
                           ? AppColors.successColor
                           : AppColors.warningColor,
                     ),

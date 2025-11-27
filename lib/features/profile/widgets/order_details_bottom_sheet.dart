@@ -8,7 +8,7 @@ import 'package:mrsheaf/features/profile/widgets/order_items_list.dart';
 import 'package:mrsheaf/features/profile/widgets/order_pricing_summary.dart';
 import 'package:mrsheaf/features/profile/widgets/order_actions_bar.dart';
 
-class OrderDetailsBottomSheet extends StatelessWidget {
+class OrderDetailsBottomSheet extends StatefulWidget {
   final int orderId;
 
   const OrderDetailsBottomSheet({
@@ -17,20 +17,34 @@ class OrderDetailsBottomSheet extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
-    // Initialize controller with unique tag
-    final controller = Get.put(
-      OrderDetailsController(),
-      tag: 'order_details_$orderId',
-    );
+  State<OrderDetailsBottomSheet> createState() => _OrderDetailsBottomSheetState();
+}
+
+class _OrderDetailsBottomSheetState extends State<OrderDetailsBottomSheet> {
+  late final OrderDetailsController controller;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Initialize and register controller in GetX (without tag)
+    controller = Get.put(OrderDetailsController());
 
     // Load order details
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      controller.loadOrderDetails(orderId);
-    });
+    controller.loadOrderDetails(widget.orderId);
+  }
 
+  @override
+  void dispose() {
+    // Clean up controller when bottom sheet is closed
+    Get.delete<OrderDetailsController>();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
-      height: MediaQuery.of(context).size.height * 0.9,
+      height: MediaQuery.of(context).size.height * 0.92,
       decoration: const BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.only(
@@ -40,14 +54,43 @@ class OrderDetailsBottomSheet extends StatelessWidget {
       ),
       child: Column(
         children: [
-          // Drag handle
+          // Header with close button
           Container(
-            margin: const EdgeInsets.only(top: 12, bottom: 8),
-            width: 40,
-            height: 4,
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
             decoration: BoxDecoration(
-              color: Colors.grey[300],
-              borderRadius: BorderRadius.circular(2),
+              color: Colors.white,
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(24),
+                topRight: Radius.circular(24),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 10,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'Order Details',
+                  style: TextStyle(
+                    fontFamily: 'Lato',
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF2D2D2D),
+                  ),
+                ),
+                IconButton(
+                  onPressed: () => Get.back(),
+                  icon: const Icon(Icons.close, size: 24),
+                  color: const Color(0xFF2D2D2D),
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                ),
+              ],
             ),
           ),
 
@@ -83,7 +126,7 @@ class OrderDetailsBottomSheet extends StatelessWidget {
                       ),
                       const SizedBox(height: 24),
                       ElevatedButton(
-                        onPressed: () => controller.loadOrderDetails(orderId),
+                        onPressed: () => controller.loadOrderDetails(widget.orderId),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFFFACD02),
                           foregroundColor: Colors.white,

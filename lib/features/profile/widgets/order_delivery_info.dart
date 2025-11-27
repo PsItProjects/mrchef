@@ -86,37 +86,67 @@ class OrderDeliveryInfo extends StatelessWidget {
           const SizedBox(height: 20),
           
           // Delivery Address
-          const Text(
-            'Delivery Address',
-            style: TextStyle(
-              fontFamily: 'Lato',
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
-              color: AppColors.darkTextColor,
-            ),
-          ),
-          const SizedBox(height: 8),
           Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Icon(
-                Icons.location_on,
-                size: 20,
-                color: AppColors.primaryColor,
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  order.deliveryAddressText,
-                  style: const TextStyle(
-                    fontFamily: 'Lato',
-                    fontSize: 14,
-                    fontWeight: FontWeight.w400,
-                    color: AppColors.darkTextColor,
-                  ),
+              const Text(
+                'Delivery Address',
+                style: TextStyle(
+                  fontFamily: 'Lato',
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.darkTextColor,
                 ),
               ),
+              if (order.deliveryAddressType.isNotEmpty)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: AppColors.primaryColor.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    order.deliveryAddressType,
+                    style: const TextStyle(
+                      fontFamily: 'Lato',
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.primaryColor,
+                    ),
+                  ),
+                ),
             ],
+          ),
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: AppColors.backgroundColor,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Icon(
+                  Icons.location_on,
+                  size: 20,
+                  color: AppColors.primaryColor,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    order.deliveryAddressText,
+                    style: const TextStyle(
+                      fontFamily: 'Lato',
+                      fontSize: 14,
+                      fontWeight: FontWeight.w400,
+                      color: AppColors.darkTextColor,
+                      height: 1.5,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
           
           // Notes (if any)

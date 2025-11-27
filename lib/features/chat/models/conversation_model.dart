@@ -111,6 +111,8 @@ class RestaurantInfo {
 class MessageModel {
   final int id;
   final int conversationId;
+  final int? repliedToMessageId;
+  final RepliedMessageModel? repliedToMessage;
   final String senderType;
   final int senderId;
   final String message;
@@ -123,6 +125,8 @@ class MessageModel {
   MessageModel({
     required this.id,
     required this.conversationId,
+    this.repliedToMessageId,
+    this.repliedToMessage,
     required this.senderType,
     required this.senderId,
     required this.message,
@@ -137,6 +141,10 @@ class MessageModel {
     return MessageModel(
       id: json['id'],
       conversationId: json['conversation_id'],
+      repliedToMessageId: json['replied_to_message_id'],
+      repliedToMessage: json['replied_to_message'] != null
+          ? RepliedMessageModel.fromJson(json['replied_to_message'])
+          : null,
       senderType: json['sender_type'],
       senderId: json['sender_id'],
       message: json['message'] ?? '',
@@ -152,5 +160,36 @@ class MessageModel {
 
   bool get isFromCustomer => senderType == 'customer';
   bool get isFromMerchant => senderType == 'merchant';
+}
+
+class RepliedMessageModel {
+  final int id;
+  final String message;
+  final String messageType;
+  final Map<String, dynamic>? attachments;
+  final String senderType;
+  final DateTime? createdAt;
+
+  RepliedMessageModel({
+    required this.id,
+    required this.message,
+    required this.messageType,
+    this.attachments,
+    required this.senderType,
+    this.createdAt,
+  });
+
+  factory RepliedMessageModel.fromJson(Map<String, dynamic> json) {
+    return RepliedMessageModel(
+      id: json['id'],
+      message: json['message'] ?? '',
+      messageType: json['message_type'] ?? 'text',
+      attachments: json['attachments'],
+      senderType: json['sender_type'],
+      createdAt: json['created_at'] != null
+          ? DateTime.tryParse(json['created_at'])
+          : null,
+    );
+  }
 }
 

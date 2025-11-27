@@ -5,22 +5,25 @@ import 'package:mrsheaf/features/profile/models/order_details_model.dart';
 import 'package:mrsheaf/features/profile/models/order_model.dart';
 import 'package:mrsheaf/features/profile/controllers/order_details_controller.dart';
 
-class OrderActionsBar extends GetView<OrderDetailsController> {
+class OrderActionsBar extends StatelessWidget {
   final OrderDetailsModel order;
 
   const OrderActionsBar({super.key, required this.order});
 
   @override
   Widget build(BuildContext context) {
+    // Get controller explicitly
+    final controller = Get.find<OrderDetailsController>();
+
     return Container(
       padding: const EdgeInsets.all(20),
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black12,
+            color: Colors.grey.withOpacity(0.1),
             blurRadius: 10,
-            offset: Offset(0, -2),
+            offset: const Offset(0, -2),
           ),
         ],
       ),
@@ -29,65 +32,59 @@ class OrderActionsBar extends GetView<OrderDetailsController> {
           children: [
             // Chat button
             Expanded(
-              child: OutlinedButton.icon(
-                onPressed: controller.openChat,
+              flex: order.status == OrderStatus.pending || order.status == OrderStatus.confirmed ? 1 : 1,
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  print('💬 Chat button pressed!');
+                  controller.openChat();
+                },
                 icon: const Icon(Icons.chat_bubble_outline, size: 20),
-                label: const Text('Chat'),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: AppColors.primaryColor,
-                  side: const BorderSide(color: AppColors.primaryColor, width: 2),
-                  padding: const EdgeInsets.symmetric(vertical: 14),
+                label: const Text(
+                  'Chat with Restaurant',
+                  style: TextStyle(
+                    fontFamily: 'Lato',
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primaryColor,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
+                  elevation: 0,
                 ),
               ),
             ),
-            
-            const SizedBox(width: 12),
-            
-            // Call button
-            Expanded(
-              child: OutlinedButton.icon(
-                onPressed: controller.callRestaurant,
-                icon: const Icon(Icons.phone, size: 20),
-                label: const Text('Call'),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: AppColors.primaryColor,
-                  side: const BorderSide(color: AppColors.primaryColor, width: 2),
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-              ),
-            ),
-            
-            const SizedBox(width: 12),
-            
+
             // Cancel button (only for pending/confirmed orders)
-            if (order.status == OrderStatus.pending || order.status == OrderStatus.confirmed)
+            if (order.status == OrderStatus.pending || order.status == OrderStatus.confirmed) ...[
+              const SizedBox(width: 12),
               Expanded(
-                child: ElevatedButton(
+                flex: 1,
+                child: OutlinedButton(
                   onPressed: () => _showCancelDialog(context),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.errorColor,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppColors.errorColor,
+                    side: const BorderSide(color: AppColors.errorColor, width: 2),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
                   child: const Text(
-                    'Cancel',
+                    'Cancel Order',
                     style: TextStyle(
                       fontFamily: 'Lato',
-                      fontSize: 16,
+                      fontSize: 15,
                       fontWeight: FontWeight.w600,
-                      color: Colors.white,
                     ),
                   ),
                 ),
               ),
+            ],
           ],
         ),
       ),
@@ -95,6 +92,8 @@ class OrderActionsBar extends GetView<OrderDetailsController> {
   }
 
   void _showCancelDialog(BuildContext context) {
+    final controller = Get.find<OrderDetailsController>();
+
     Get.dialog(
       AlertDialog(
         shape: RoundedRectangleBorder(

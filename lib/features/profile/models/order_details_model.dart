@@ -11,6 +11,7 @@ class OrderDetailsModel extends OrderModel {
   final String? restaurantLogo;
   final String? restaurantPhone;
   final String? restaurantAddress;
+  final int? conversationId;
 
   OrderDetailsModel({
     required super.id,
@@ -40,6 +41,7 @@ class OrderDetailsModel extends OrderModel {
     this.restaurantLogo,
     this.restaurantPhone,
     this.restaurantAddress,
+    this.conversationId,
   });
 
   factory OrderDetailsModel.fromJson(Map<String, dynamic> json) {
@@ -71,6 +73,7 @@ class OrderDetailsModel extends OrderModel {
       restaurantPhone: json['restaurant']?['phone'],
       restaurantAddress: json['restaurant']?['address'],
       itemsCount: json['items_count'] ?? itemsList.length,
+      conversationId: json['conversation_id'],
       estimatedDeliveryTime: json['estimated_delivery_time'] != null
           ? DateTime.tryParse(json['estimated_delivery_time'])
           : null,
@@ -95,7 +98,40 @@ class OrderDetailsModel extends OrderModel {
   
   String get deliveryAddressText {
     if (deliveryAddress == null) return 'No address provided';
-    return '${deliveryAddress!['address_line_1'] ?? ''}, ${deliveryAddress!['city'] ?? ''}';
+
+    // Build full address from all available fields
+    List<String> addressParts = [];
+
+    if (deliveryAddress!['full_address'] != null && deliveryAddress!['full_address'].toString().isNotEmpty) {
+      return deliveryAddress!['full_address'];
+    }
+
+    if (deliveryAddress!['address_line_1'] != null && deliveryAddress!['address_line_1'].toString().isNotEmpty) {
+      addressParts.add(deliveryAddress!['address_line_1']);
+    }
+
+    if (deliveryAddress!['address_line_2'] != null && deliveryAddress!['address_line_2'].toString().isNotEmpty) {
+      addressParts.add(deliveryAddress!['address_line_2']);
+    }
+
+    if (deliveryAddress!['city'] != null && deliveryAddress!['city'].toString().isNotEmpty) {
+      addressParts.add(deliveryAddress!['city']);
+    }
+
+    if (deliveryAddress!['state'] != null && deliveryAddress!['state'].toString().isNotEmpty) {
+      addressParts.add(deliveryAddress!['state']);
+    }
+
+    if (deliveryAddress!['country'] != null && deliveryAddress!['country'].toString().isNotEmpty) {
+      addressParts.add(deliveryAddress!['country']);
+    }
+
+    return addressParts.isNotEmpty ? addressParts.join(', ') : 'No address provided';
+  }
+
+  String get deliveryAddressType {
+    if (deliveryAddress == null) return '';
+    return deliveryAddress!['type']?.toString().toUpperCase() ?? '';
   }
 
   static OrderStatus _parseStatus(String? status) {

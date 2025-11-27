@@ -6,7 +6,7 @@ import 'package:mrsheaf/features/home/controllers/home_controller.dart';
 import 'package:mrsheaf/features/home/widgets/home_header.dart';
 import 'package:mrsheaf/features/home/widgets/search_bar_widget.dart';
 import 'package:mrsheaf/features/home/widgets/category_filter.dart';
-import 'package:mrsheaf/features/home/widgets/featured_banner.dart';
+import 'package:mrsheaf/features/home/widgets/banner_slider.dart';
 import 'package:mrsheaf/features/home/widgets/section_header.dart';
 import 'package:mrsheaf/features/home/widgets/kitchen_card.dart';
 import 'package:mrsheaf/features/home/widgets/product_card.dart';
@@ -38,10 +38,33 @@ class HomeScreen extends GetView<HomeController> {
               const CategoryFilter(),
               
               const SizedBox(height: 24),
-              
-              // Featured banner
-               FeaturedBanner(),
-              
+
+              // Banner slider
+              Obx(() {
+                if (controller.isLoadingBanners.value) {
+                  return const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 24.0),
+                    child: SizedBox(
+                      height: 220,
+                      child: Center(
+                        child: CircularProgressIndicator(
+                          color: AppColors.primaryColor,
+                        ),
+                      ),
+                    ),
+                  );
+                }
+
+                if (controller.banners.isEmpty) {
+                  return const SizedBox.shrink();
+                }
+
+                return BannerSlider(
+                  banners: controller.banners,
+                  onBannerTap: controller.handleBannerTap,
+                );
+              }),
+
               const SizedBox(height: 24),
               
               // Kitchens section
