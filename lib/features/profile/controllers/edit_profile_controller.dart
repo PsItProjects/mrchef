@@ -1,7 +1,13 @@
+import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:mrsheaf/features/profile/models/user_profile_model.dart';
 import 'package:mrsheaf/features/profile/controllers/profile_controller.dart';
+import 'package:mrsheaf/features/merchant/pages/image_crop_screen.dart';
+import 'package:mrsheaf/core/theme/app_theme.dart';
+import 'package:mrsheaf/core/localization/translation_helper.dart';
 import '../../auth/services/auth_service.dart';
 import '../../auth/models/auth_request.dart';
 
@@ -20,6 +26,15 @@ class EditProfileController extends GetxController {
 
   // Country code
   final RxString countryCode = '+966'.obs;
+
+  // Image picker
+  final _imagePicker = ImagePicker();
+
+  // Selected avatar
+  final Rx<File?> selectedAvatar = Rx<File?>(null);
+
+  // Current avatar URL from server
+  final RxString currentAvatarUrl = ''.obs;
 
   // Services
   final AuthService _authService = Get.find<AuthService>();
@@ -48,6 +63,11 @@ class EditProfileController extends GetxController {
       emailController.text = currentUser.email ?? '';
       phoneController.text = currentUser.phoneNumber;
       countryCode.value = currentUser.countryCode;
+
+      // Load current avatar URL (use avatarUrl not avatar)
+      currentAvatarUrl.value = currentUser.avatarUrl ?? '';
+
+      print('📸 EDIT PROFILE: Loaded avatar URL: ${currentUser.avatarUrl}');
     } else {
       // Fallback to ProfileController if AuthService user is null
       final profileController = Get.find<ProfileController>();
@@ -58,16 +78,132 @@ class EditProfileController extends GetxController {
       emailController.text = currentProfile.email;
       phoneController.text = currentProfile.phoneNumber;
       countryCode.value = currentProfile.countryCode ?? '+966';
+      currentAvatarUrl.value = currentProfile.avatar ?? '';
     }
   }
 
+  /// Show avatar picker bottom sheet
   void changePhoto() {
-    // TODO: Implement photo picker
-    Get.snackbar(
-      'Change Photo',
-      'Photo picker functionality coming soon',
-      snackPosition: SnackPosition.BOTTOM,
+    Get.bottomSheet(
+      Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading:
+                  const Icon(Icons.camera_alt, color: AppColors.primaryColor),
+              title: Text(TranslationHelper.tr('camera')),
+              onTap: () {
+                Get.back();
+                _pickAvatar(ImageSource.camera);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library,
+                  color: AppColors.primaryColor),
+              title: Text(TranslationHelper.tr('gallery')),
+              onTap: () {
+                Get.back();
+                _pickAvatar(ImageSource.gallery);
+              },
+            ),
+            if (currentAvatarUrl.value.isNotEmpty ||
+                selectedAvatar.value != null)
+              ListTile(
+                leading: const Icon(Icons.delete, color: Colors.red),
+                title: Text(TranslationHelper.tr('remove_photo')),
+                onTap: () {
+                  Get.back();
+                  _removeAvatar();
+                },
+              ),
+          ],
+        ),
+      ),
     );
+  }
+
+  /// Pick avatar image with cropping
+  Future<void> _pickAvatar(ImageSource source) async {
+    try {
+      final XFile? image = await _imagePicker.pickImage(
+        source: source,
+        imageQuality: 100,
+      );
+
+      if (image == null) return;
+
+      // Read image bytes
+      final Uint8List imageBytes = await image.readAsBytes();
+
+      // Navigate to crop screen
+      final Uint8List? croppedImage = await Get.to<Uint8List>(
+        () => ImageCropScreen(imageData: imageBytes),
+        transition: Transition.cupertino,
+      );
+
+      if (croppedImage != null) {
+        // Save cropped image to temp file
+        final tempDir = Directory.systemTemp;
+        final tempFile = File(
+          '${tempDir.path}/avatar_${DateTime.now().millisecondsSinceEpoch}.jpg',
+        );
+        await tempFile.writeAsBytes(croppedImage);
+
+        // Update selected avatar
+        selectedAvatar.value = tempFile;
+      }
+    } catch (e) {
+      Get.snackbar(
+        TranslationHelper.tr('error'),
+        TranslationHelper.tr('image_upload_failed'),
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    }
+  }
+
+  /// Remove avatar
+  Future<void> _removeAvatar() async {
+    try {
+      isLoading.value = true;
+
+      // Call API to delete avatar
+      final response = await _authService.deleteAvatar();
+
+      if (response.isSuccess) {
+        // Clear local state
+        selectedAvatar.value = null;
+        currentAvatarUrl.value = '';
+
+        Get.snackbar(
+          TranslationHelper.tr('success'),
+          TranslationHelper.tr('avatar_deleted_successfully'),
+          backgroundColor: AppColors.successColor,
+          colorText: Colors.white,
+        );
+      } else {
+        Get.snackbar(
+          TranslationHelper.tr('error'),
+          response.message,
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+      }
+    } catch (e) {
+      Get.snackbar(
+        TranslationHelper.tr('error'),
+        TranslationHelper.tr('avatar_delete_failed'),
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    } finally {
+      isLoading.value = false;
+    }
   }
 
   Future<void> saveProfile() async {
@@ -78,6 +214,28 @@ class EditProfileController extends GetxController {
     isLoading.value = true;
 
     try {
+      // Upload avatar if changed
+      if (selectedAvatar.value != null) {
+        final avatarResponse =
+            await _authService.updateAvatar(selectedAvatar.value!);
+        if (!avatarResponse.isSuccess) {
+          Get.snackbar(
+            TranslationHelper.tr('error'),
+            avatarResponse.message,
+            backgroundColor: Colors.red,
+            colorText: Colors.white,
+          );
+          return;
+        }
+
+        // Update currentAvatarUrl after successful upload
+        if (avatarResponse.data != null) {
+          currentAvatarUrl.value = avatarResponse.data!.avatarUrl ?? '';
+          selectedAvatar.value = null; // Clear selected avatar
+          print('✅ Avatar uploaded successfully: ${currentAvatarUrl.value}');
+        }
+      }
+
       // Create update request with only the fields that can be updated
       final request = CustomerProfileUpdateRequest(
         nameEn: fullNameController.text.trim(),
@@ -94,40 +252,34 @@ class EditProfileController extends GetxController {
 
       if (response.isSuccess) {
         Get.snackbar(
-          'Success',
-          'Profile updated successfully',
+          TranslationHelper.tr('success'),
+          TranslationHelper.tr('profile_updated_successfully'),
           snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.green.withValues(alpha: 0.3),
+          backgroundColor: AppColors.successColor,
+          colorText: Colors.white,
         );
 
-        // Update local ProfileController as well for UI consistency
+        // Refresh ProfileController from API to get latest data
         final profileController = Get.find<ProfileController>();
-        final currentProfile = profileController.userProfile.value;
-
-        final updatedProfile = currentProfile.copyWith(
-          fullName: fullNameController.text.trim(),
-          email: emailController.text.trim(),
-          phoneNumber: phoneController.text.trim(),
-          countryCode: countryCode.value,
-        );
-
-        profileController.updateProfile(updatedProfile);
+        await profileController.refreshProfile();
 
         Get.back();
       } else {
         Get.snackbar(
-          'Update Failed',
+          TranslationHelper.tr('error'),
           response.message,
           snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.red.withValues(alpha: 0.3),
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
         );
       }
     } catch (e) {
       Get.snackbar(
-        'Error',
-        'An unexpected error occurred',
+        TranslationHelper.tr('error'),
+        TranslationHelper.tr('profile_update_failed'),
         snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.withValues(alpha: 0.3),
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
       );
     } finally {
       isLoading.value = false;

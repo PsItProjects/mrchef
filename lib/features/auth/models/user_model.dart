@@ -6,6 +6,8 @@ class UserModel {
   final String phoneNumber;
   final String countryCode;
   final String? email;
+  final String? avatar;
+  final String? avatarUrl;
   final String status;
   final String userType; // 'customer' or 'merchant'
   final String? registrationStep;
@@ -21,6 +23,8 @@ class UserModel {
     required this.phoneNumber,
     required this.countryCode,
     this.email,
+    this.avatar,
+    this.avatarUrl,
     required this.status,
     required this.userType,
     this.registrationStep,
@@ -30,25 +34,32 @@ class UserModel {
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
+    print('🔍 USER MODEL: Parsing JSON...');
+    print('   - id: ${json['id']}');
+    print('   - name: ${json['name']}');
+    print('   - email: ${json['email']}');
+    print('   - avatar_url: ${json['avatar_url']}');
 
-    
     return UserModel(
       id: json['id'] ?? 0,
       nameEn: json['name_en'] ?? json['name']?['en'],
       nameAr: json['name_ar'] ?? json['name']?['ar'],
-      fullName: json['full_name'] ?? json['name']?['current'] ?? json['name']?['en'],
+      fullName:
+          json['full_name'] ?? json['name']?['current'] ?? json['name']?['en'],
       phoneNumber: json['phone_number'] ?? '',
       countryCode: json['country_code'] ?? '+966',
       email: json['email'],
+      avatar: json['avatar'],
+      avatarUrl: json['avatar_url'],
       status: json['status'] ?? 'pending',
       userType: json['user_type'] ?? 'customer',
       registrationStep: json['registration_step'],
       preferredLanguage: json['preferred_language'] ?? 'en',
-      createdAt: json['created_at'] != null 
-          ? DateTime.parse(json['created_at']) 
+      createdAt: json['created_at'] != null
+          ? DateTime.parse(json['created_at'])
           : null,
-      updatedAt: json['updated_at'] != null 
-          ? DateTime.parse(json['updated_at']) 
+      updatedAt: json['updated_at'] != null
+          ? DateTime.parse(json['updated_at'])
           : null,
     );
   }
@@ -62,6 +73,8 @@ class UserModel {
       'phone_number': phoneNumber,
       'country_code': countryCode,
       'email': email,
+      'avatar': avatar,
+      'avatar_url': avatarUrl,
       'status': status,
       'user_type': userType,
       'registration_step': registrationStep,
@@ -99,6 +112,8 @@ class UserModel {
     String? phoneNumber,
     String? countryCode,
     String? email,
+    String? avatar,
+    String? avatarUrl,
     String? status,
     String? userType,
     String? registrationStep,
@@ -114,6 +129,8 @@ class UserModel {
       phoneNumber: phoneNumber ?? this.phoneNumber,
       countryCode: countryCode ?? this.countryCode,
       email: email ?? this.email,
+      avatar: avatar ?? this.avatar,
+      avatarUrl: avatarUrl ?? this.avatarUrl,
       status: status ?? this.status,
       userType: userType ?? this.userType,
       registrationStep: registrationStep ?? this.registrationStep,

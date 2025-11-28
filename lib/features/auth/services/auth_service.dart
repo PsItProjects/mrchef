@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:get/get.dart' as getx;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -100,7 +101,8 @@ class AuthService extends getx.GetxService {
       isLoggedIn.value = false;
       userType.value = '';
 
-      print('🗑️ USER STATE CLEARED: isLoggedIn = ${isLoggedIn.value}, currentUser = ${currentUser.value}');
+      print(
+          '🗑️ USER STATE CLEARED: isLoggedIn = ${isLoggedIn.value}, currentUser = ${currentUser.value}');
     } catch (e) {
       print('❌ Error clearing user from storage: $e');
     }
@@ -124,7 +126,8 @@ class AuthService extends getx.GetxService {
         );
 
         // Store detected user type if available
-        if (response.data['data'] != null && response.data['data']['user_type'] != null) {
+        if (response.data['data'] != null &&
+            response.data['data']['user_type'] != null) {
           await _saveUserType(response.data['data']['user_type']);
         }
 
@@ -186,7 +189,8 @@ class AuthService extends getx.GetxService {
               apiResponse.data!.user, apiResponse.data!.token);
 
           // Save user type from response
-          if (response.data['data'] != null && response.data['data']['user_type'] != null) {
+          if (response.data['data'] != null &&
+              response.data['data']['user_type'] != null) {
             await _saveUserType(response.data['data']['user_type']);
           }
         }
@@ -373,8 +377,10 @@ class AuthService extends getx.GetxService {
         );
 
         // Print OTP code clearly for testing
-        if (response.data['data'] != null && response.data['data']['verification_code'] != null) {
-          print('🎯🎯🎯 RESENT OTP CODE: ${response.data['data']['verification_code']} 🎯🎯🎯');
+        if (response.data['data'] != null &&
+            response.data['data']['verification_code'] != null) {
+          print(
+              '🎯🎯🎯 RESENT OTP CODE: ${response.data['data']['verification_code']} 🎯🎯🎯');
           print('📱 Phone: ${request.phoneNumber}');
           print('👤 User Type: ${request.userType}');
           print('🎯🎯🎯 USE THIS CODE IN THE OTP SCREEN 🎯🎯🎯');
@@ -412,9 +418,8 @@ class AuthService extends getx.GetxService {
 
       // Determine the correct logout endpoint based on user type
       final userType = currentUser.value?.userType ?? 'customer';
-      final endpoint = userType == 'customer'
-          ? '/customer/logout'
-          : '/merchant/logout';
+      final endpoint =
+          userType == 'customer' ? '/customer/logout' : '/merchant/logout';
 
       print('🚪 LOGOUT REQUEST: $endpoint');
 
@@ -488,7 +493,8 @@ class AuthService extends getx.GetxService {
       print('🔄 PROFILE UPDATE REQUEST: /customer/profile');
       print('📤 Payload: ${request.toJson()}');
 
-      final response = await _apiClient.put('/customer/profile', data: request.toJson());
+      final response =
+          await _apiClient.put('/customer/profile', data: request.toJson());
 
       if (response.statusCode == 200) {
         final apiResponse = ApiResponse.fromJson(
@@ -499,8 +505,10 @@ class AuthService extends getx.GetxService {
         if (apiResponse.isSuccess && apiResponse.data != null) {
           // Update current user data
           currentUser.value = apiResponse.data;
-          await _saveUserToStorage(apiResponse.data!,
-              (await SharedPreferences.getInstance()).getString('auth_token') ?? '');
+          await _saveUserToStorage(
+              apiResponse.data!,
+              (await SharedPreferences.getInstance()).getString('auth_token') ??
+                  '');
         }
 
         return apiResponse;
@@ -540,7 +548,8 @@ class AuthService extends getx.GetxService {
       if (response.statusCode == 200) {
         final apiResponse = ApiResponse.fromJson(
           response.data,
-          (data) => UserModel.fromJson(data['data']),
+          (data) =>
+              UserModel.fromJson(data), // ✅ data is already the user object
         );
 
         if (apiResponse.isSuccess && apiResponse.data != null) {
@@ -561,6 +570,117 @@ class AuthService extends getx.GetxService {
         return ApiResponse<UserModel>(
           success: false,
           message: response.data['message'] ?? 'Failed to get profile',
+          statusCode: response.statusCode,
+        );
+      }
+    } on DioException catch (e) {
+      return ApiResponse<UserModel>(
+        success: false,
+        message: e.response?.data['message'] ?? 'Network error occurred',
+        errors: e.response?.data['errors'],
+        statusCode: e.response?.statusCode,
+      );
+    } catch (e) {
+      return ApiResponse<UserModel>(
+        success: false,
+        message: 'An unexpected error occurred: $e',
+      );
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  // Update customer avatar
+  Future<ApiResponse<UserModel>> updateAvatar(File avatarFile) async {
+    try {
+      isLoading.value = true;
+
+      print('🔄 AVATAR UPDATE REQUEST: /customer/profile/avatar');
+
+      // Create FormData for file upload
+      final formData = FormData.fromMap({
+        'avatar': await MultipartFile.fromFile(
+          avatarFile.path,
+          filename: 'avatar.jpg',
+        ),
+      });
+
+      final response = await _apiClient.post(
+        '/customer/profile/avatar',
+        data: formData,
+      );
+
+      if (response.statusCode == 200) {
+        final apiResponse = ApiResponse.fromJson(
+          response.data,
+          (data) => UserModel.fromJson(data['customer']),
+        );
+
+        if (apiResponse.isSuccess && apiResponse.data != null) {
+          // Update current user data
+          currentUser.value = apiResponse.data;
+          await _saveUserToStorage(
+            apiResponse.data!,
+            (await SharedPreferences.getInstance()).getString('auth_token') ??
+                '',
+          );
+        }
+
+        return apiResponse;
+      } else {
+        return ApiResponse<UserModel>(
+          success: false,
+          message: response.data['message'] ?? 'Failed to update avatar',
+          statusCode: response.statusCode,
+        );
+      }
+    } on DioException catch (e) {
+      return ApiResponse<UserModel>(
+        success: false,
+        message: e.response?.data['message'] ?? 'Network error occurred',
+        errors: e.response?.data['errors'],
+        statusCode: e.response?.statusCode,
+      );
+    } catch (e) {
+      return ApiResponse<UserModel>(
+        success: false,
+        message: 'An unexpected error occurred: $e',
+      );
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  // Delete customer avatar
+  Future<ApiResponse<UserModel>> deleteAvatar() async {
+    try {
+      isLoading.value = true;
+
+      print('🗑️ AVATAR DELETE REQUEST: /customer/profile/avatar');
+
+      final response = await _apiClient.delete('/customer/profile/avatar');
+
+      if (response.statusCode == 200) {
+        final apiResponse = ApiResponse.fromJson(
+          response.data,
+          (data) => UserModel.fromJson(data['customer']),
+        );
+
+        if (apiResponse.isSuccess && apiResponse.data != null) {
+          // Update current user data
+          currentUser.value = apiResponse.data;
+          await _saveUserToStorage(
+            apiResponse.data!,
+            (await SharedPreferences.getInstance()).getString('auth_token') ??
+                '',
+          );
+        }
+
+        return apiResponse;
+      } else {
+        return ApiResponse<UserModel>(
+          success: false,
+          message: response.data['message'] ?? 'Failed to delete avatar',
           statusCode: response.statusCode,
         );
       }

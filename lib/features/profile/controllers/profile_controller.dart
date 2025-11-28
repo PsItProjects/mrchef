@@ -69,6 +69,7 @@ class ProfileController extends GetxController {
 
   Future<void> _loadUserProfile() async {
     try {
+      print('🔄 PROFILE: Loading user profile from API...');
       final authService = Get.find<AuthService>();
       final response = await authService.getCustomerProfile();
 
@@ -80,18 +81,33 @@ class ProfileController extends GetxController {
           email: user.email ?? '',
           phoneNumber: user.phoneNumber,
           countryCode: user.countryCode,
+          avatar: user.avatarUrl, // ✅ تحميل رابط الصورة
         );
+
+        print('✅ PROFILE: Loaded user profile');
+        print('   - Name: ${user.displayName}');
+        print('   - Email: ${user.email}');
+        print('   - Avatar: ${user.avatarUrl}');
+      } else {
+        print('❌ PROFILE: Failed to load - ${response.message}');
       }
     } catch (e) {
-      print('Error loading user profile: $e');
+      print('❌ PROFILE: Error loading user profile - $e');
       // Keep using sample data if API fails
     }
   }
 
+  /// Refresh profile data (call this when returning from edit profile)
+  Future<void> refreshProfile() async {
+    await _loadUserProfile();
+  }
+
   // Navigation methods
-  void navigateToEditProfile() {
+  void navigateToEditProfile() async {
     // Get.toNamed('/profile/edit');
-    Get.to(() => const EditProfileScreen());
+    await Get.to(() => const EditProfileScreen());
+    // Refresh profile when returning from edit screen
+    await refreshProfile();
   }
 
   void navigateToMyOrders() async {
