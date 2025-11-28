@@ -1,23 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
+import 'package:mrsheaf/core/localization/translation_helper.dart';
+import 'package:mrsheaf/features/merchant/controllers/merchant_orders_controller.dart';
+import 'package:mrsheaf/features/merchant/widgets/price_confirmation_modal.dart';
 
-class MerchantOrdersScreen extends StatelessWidget {
-  const MerchantOrdersScreen({Key? key}) : super(key: key);
+class MerchantOrdersScreen extends GetView<MerchantOrdersController> {
+  const MerchantOrdersScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF2F2F2),
+      backgroundColor: const Color(0xFFF5F5F5),
       body: SafeArea(
         child: Column(
           children: [
             // Header
             _buildHeader(),
-            
+
             // Filter Tabs
             _buildFilterTabs(),
-            
+
             // Orders List
             Expanded(
               child: _buildOrdersList(),
@@ -31,33 +35,48 @@ class MerchantOrdersScreen extends StatelessWidget {
   Widget _buildHeader() {
     return Container(
       padding: const EdgeInsets.all(20),
-      color: Colors.white,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withAlpha(13),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
       child: Row(
         children: [
           Text(
-            'الطلبات',
-            style: TextStyle(
+            'orders'.tr,
+            style: const TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
               color: AppColors.textDarkColor,
             ),
           ),
           const Spacer(),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: AppColors.primaryColor.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Text(
-              '5 طلبات جديدة',
-              style: TextStyle(
-                fontSize: 12,
-                color: AppColors.primaryColor,
-                fontWeight: FontWeight.w600,
+          Obx(() {
+            final count = controller.pendingOrdersCount.value;
+            if (count == 0) return const SizedBox.shrink();
+            return Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: AppColors.primaryColor.withAlpha(26),
+                borderRadius: BorderRadius.circular(20),
               ),
-            ),
-          ),
+              child: Text(
+                TranslationHelper.isArabic
+                    ? '$count طلبات جديدة'
+                    : '$count new orders',
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: AppColors.primaryColor,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            );
+          }),
         ],
       ),
     );
@@ -65,140 +84,208 @@ class MerchantOrdersScreen extends StatelessWidget {
 
   Widget _buildFilterTabs() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+      padding: const EdgeInsets.symmetric(vertical: 12),
       color: Colors.white,
-      child: Row(
-        children: [
-          _buildFilterTab('الكل', true),
-          const SizedBox(width: 15),
-          _buildFilterTab('جديد', false),
-          const SizedBox(width: 15),
-          _buildFilterTab('قيد التحضير', false),
-          const SizedBox(width: 15),
-          _buildFilterTab('مكتمل', false),
-        ],
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Obx(() => Row(
+              children: List.generate(
+                controller.filterLabels.length,
+                (index) => Padding(
+                  padding: EdgeInsets.only(
+                      right: TranslationHelper.isRTL ? 0 : 10,
+                      left: TranslationHelper.isRTL ? 10 : 0),
+                  child: _buildFilterTab(
+                    controller.getFilterLabel(index),
+                    controller.selectedFilterIndex.value == index,
+                    () => controller.changeFilter(index),
+                  ),
+                ),
+              ),
+            )),
       ),
     );
   }
 
-  Widget _buildFilterTab(String title, bool isSelected) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      decoration: BoxDecoration(
-        color: isSelected ? AppColors.primaryColor : Colors.transparent,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: isSelected ? AppColors.primaryColor : Colors.grey.shade300,
+  Widget _buildFilterTab(String title, bool isSelected, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.primaryColor : Colors.transparent,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isSelected ? AppColors.primaryColor : Colors.grey.shade300,
+          ),
         ),
-      ),
-      child: Text(
-        title,
-        style: TextStyle(
-          fontSize: 14,
-          color: isSelected ? AppColors.secondaryColor : Colors.grey[600],
-          fontWeight: FontWeight.w600,
+        child: Text(
+          title,
+          style: TextStyle(
+            fontSize: 14,
+            color: isSelected ? AppColors.secondaryColor : Colors.grey[600],
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ),
     );
   }
 
   Widget _buildOrdersList() {
-    return ListView.builder(
-      padding: const EdgeInsets.all(20),
-      itemCount: 8,
-      itemBuilder: (context, index) {
-        return _buildOrderCard(index);
-      },
-    );
+    return Obx(() {
+      if (controller.isLoading.value) {
+        return const Center(
+          child: CircularProgressIndicator(color: AppColors.primaryColor),
+        );
+      }
+
+      if (controller.errorMessage.value.isNotEmpty) {
+        return Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.error_outline, size: 64, color: Colors.grey[400]),
+              const SizedBox(height: 16),
+              Text(
+                controller.errorMessage.value,
+                style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: controller.refreshOrders,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primaryColor,
+                ),
+                child: Text('retry'.tr),
+              ),
+            ],
+          ),
+        );
+      }
+
+      if (controller.orders.isEmpty) {
+        return Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.receipt_long_outlined,
+                  size: 80, color: Colors.grey[400]),
+              const SizedBox(height: 16),
+              Text(
+                'no_orders'.tr,
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.grey[600],
+                ),
+              ),
+            ],
+          ),
+        );
+      }
+
+      return RefreshIndicator(
+        onRefresh: controller.refreshOrders,
+        color: AppColors.primaryColor,
+        child: NotificationListener<ScrollNotification>(
+          onNotification: (scrollInfo) {
+            if (scrollInfo.metrics.pixels ==
+                    scrollInfo.metrics.maxScrollExtent &&
+                !controller.isLoadingMore.value) {
+              controller.loadMoreOrders();
+            }
+            return false;
+          },
+          child: ListView.builder(
+            padding: const EdgeInsets.all(16),
+            itemCount: controller.orders.length +
+                (controller.isLoadingMore.value ? 1 : 0),
+            itemBuilder: (context, index) {
+              if (index == controller.orders.length) {
+                return const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(16),
+                    child: CircularProgressIndicator(
+                        color: AppColors.primaryColor),
+                  ),
+                );
+              }
+              return _buildOrderCard(controller.orders[index]);
+            },
+          ),
+        ),
+      );
+    });
   }
 
-  Widget _buildOrderCard(int index) {
-    final orders = [
-      {
-        'id': '#1234',
-        'customer': 'أحمد محمد',
-        'items': '3 عناصر',
-        'amount': '150 ر.س',
-        'time': '10:30 ص',
-        'status': 'جديد',
-        'statusColor': Colors.orange,
-      },
-      {
-        'id': '#1233',
-        'customer': 'فاطمة علي',
-        'items': '2 عناصر',
-        'amount': '89 ر.س',
-        'time': '10:15 ص',
-        'status': 'قيد التحضير',
-        'statusColor': Colors.blue,
-      },
-      {
-        'id': '#1232',
-        'customer': 'محمد أحمد',
-        'items': '5 عناصر',
-        'amount': '200 ر.س',
-        'time': '09:45 ص',
-        'status': 'مكتمل',
-        'statusColor': Colors.green,
-      },
-      {
-        'id': '#1231',
-        'customer': 'سارة خالد',
-        'items': '1 عنصر',
-        'amount': '45 ر.س',
-        'time': '09:30 ص',
-        'status': 'جديد',
-        'statusColor': Colors.orange,
-      },
-      {
-        'id': '#1230',
-        'customer': 'عبدالله سعد',
-        'items': '4 عناصر',
-        'amount': '180 ر.س',
-        'time': '09:15 ص',
-        'status': 'قيد التحضير',
-        'statusColor': Colors.blue,
-      },
-      {
-        'id': '#1229',
-        'customer': 'نورا أحمد',
-        'items': '2 عناصر',
-        'amount': '95 ر.س',
-        'time': '09:00 ص',
-        'status': 'مكتمل',
-        'statusColor': Colors.green,
-      },
-      {
-        'id': '#1228',
-        'customer': 'خالد محمد',
-        'items': '3 عناصر',
-        'amount': '120 ر.س',
-        'time': '08:45 ص',
-        'status': 'جديد',
-        'statusColor': Colors.orange,
-      },
-      {
-        'id': '#1227',
-        'customer': 'ريم سالم',
-        'items': '6 عناصر',
-        'amount': '250 ر.س',
-        'time': '08:30 ص',
-        'status': 'مكتمل',
-        'statusColor': Colors.green,
-      },
-    ];
+  Widget _buildOrderCard(Map<String, dynamic> order) {
+    final orderId = order['id'];
+    final status = order['status']?.toString() ?? 'pending';
+    final statusColor = controller.getStatusColor(status);
+    final statusText = controller.getStatusText(status);
 
-    final order = orders[index % orders.length];
+    // Parse order number
+    String orderNumber = '#$orderId';
+    final orderNum = order['order_number'];
+    if (orderNum is String) {
+      orderNumber = orderNum;
+    } else if (orderNum is Map) {
+      orderNumber = orderNum['current']?.toString() ??
+          orderNum['en']?.toString() ??
+          '#$orderId';
+    }
+
+    // Parse customer name
+    String customerName = 'customer_name'.tr;
+    final customer = order['customer'];
+    if (customer is Map) {
+      final nameData = customer['name'];
+      if (nameData is String) {
+        customerName = nameData;
+      } else if (nameData is Map) {
+        customerName = nameData['current']?.toString() ??
+            (TranslationHelper.isArabic
+                ? nameData['ar']?.toString()
+                : nameData['en']?.toString()) ??
+            'customer_name'.tr;
+      } else {
+        customerName = customer['full_name']?.toString() ?? 'customer_name'.tr;
+      }
+    }
+
+    // Parse items count
+    final items = order['items'];
+    int itemsCount = 0;
+    if (items is List) {
+      itemsCount = items.length;
+    } else if (order['items_count'] != null) {
+      itemsCount = int.tryParse(order['items_count'].toString()) ?? 0;
+    }
+
+    // Parse total amount
+    double totalAmount = 0;
+    final total = order['total_amount'] ?? order['agreed_price'];
+    if (total != null) {
+      totalAmount = double.tryParse(total.toString()) ?? 0;
+    }
+
+    // Parse created_at
+    DateTime? createdAt;
+    if (order['created_at'] != null) {
+      createdAt = DateTime.tryParse(order['created_at'].toString());
+    }
 
     return Container(
       margin: const EdgeInsets.only(bottom: 15),
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(15),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
+            color: Colors.grey.withAlpha(26),
             spreadRadius: 1,
             blurRadius: 10,
             offset: const Offset(0, 2),
@@ -207,6 +294,7 @@ class MerchantOrdersScreen extends StatelessWidget {
       ),
       child: Column(
         children: [
+          // Order header
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -215,10 +303,10 @@ class MerchantOrdersScreen extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: AppColors.primaryColor.withOpacity(0.1),
+                      color: AppColors.primaryColor.withAlpha(26),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: Icon(
+                    child: const Icon(
                       Icons.receipt,
                       color: AppColors.primaryColor,
                       size: 20,
@@ -229,14 +317,14 @@ class MerchantOrdersScreen extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'طلب ${order['id']}',
+                        '${TranslationHelper.isArabic ? 'طلب' : 'Order'} $orderNumber',
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                       Text(
-                        order['customer'] as String,
+                        customerName,
                         style: TextStyle(
                           fontSize: 14,
                           color: Colors.grey[600],
@@ -247,16 +335,17 @@ class MerchantOrdersScreen extends StatelessWidget {
                 ],
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: (order['statusColor'] as Color).withOpacity(0.1),
+                  color: statusColor.withAlpha(26),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
-                  order['status'] as String,
+                  statusText,
                   style: TextStyle(
                     fontSize: 12,
-                    color: order['statusColor'] as Color,
+                    color: statusColor,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -264,43 +353,35 @@ class MerchantOrdersScreen extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 15),
+
+          // Order details row
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Row(
                 children: [
-                  Icon(
-                    Icons.shopping_bag,
-                    size: 16,
-                    color: Colors.grey[600],
-                  ),
+                  Icon(Icons.shopping_bag, size: 16, color: Colors.grey[600]),
                   const SizedBox(width: 5),
                   Text(
-                    order['items'] as String,
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey[600],
-                    ),
+                    TranslationHelper.isArabic
+                        ? '$itemsCount عناصر'
+                        : '$itemsCount items',
+                    style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                   ),
                   const SizedBox(width: 20),
-                  Icon(
-                    Icons.access_time,
-                    size: 16,
-                    color: Colors.grey[600],
-                  ),
+                  Icon(Icons.access_time, size: 16, color: Colors.grey[600]),
                   const SizedBox(width: 5),
                   Text(
-                    order['time'] as String,
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey[600],
-                    ),
+                    createdAt != null
+                        ? DateFormat('HH:mm').format(createdAt)
+                        : '--:--',
+                    style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                   ),
                 ],
               ),
               Text(
-                order['amount'] as String,
-                style: TextStyle(
+                '${totalAmount.toStringAsFixed(2)} ${TranslationHelper.isArabic ? 'ر.س' : 'SAR'}',
+                style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
                   color: AppColors.primaryColor,
@@ -309,26 +390,22 @@ class MerchantOrdersScreen extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 15),
+
+          // Action buttons
           Row(
             children: [
               Expanded(
                 child: OutlinedButton(
-                  onPressed: () {
-                    Get.snackbar(
-                      'تفاصيل الطلب',
-                      'عرض تفاصيل الطلب ${order['id']}',
-                      snackPosition: SnackPosition.BOTTOM,
-                    );
-                  },
+                  onPressed: () => controller.openOrderDetails(orderId),
                   style: OutlinedButton.styleFrom(
-                    side: BorderSide(color: AppColors.primaryColor),
+                    side: const BorderSide(color: AppColors.primaryColor),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
                   child: Text(
-                    'عرض التفاصيل',
-                    style: TextStyle(
+                    'view_details'.tr,
+                    style: const TextStyle(
                       color: AppColors.primaryColor,
                       fontSize: 14,
                     ),
@@ -338,13 +415,7 @@ class MerchantOrdersScreen extends StatelessWidget {
               const SizedBox(width: 10),
               Expanded(
                 child: ElevatedButton(
-                  onPressed: () {
-                    Get.snackbar(
-                      'تحديث الحالة',
-                      'تم تحديث حالة الطلب ${order['id']}',
-                      snackPosition: SnackPosition.BOTTOM,
-                    );
-                  },
+                  onPressed: () => _showStatusUpdateModal(order),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primaryColor,
                     shape: RoundedRectangleBorder(
@@ -352,8 +423,8 @@ class MerchantOrdersScreen extends StatelessWidget {
                     ),
                   ),
                   child: Text(
-                    'تحديث الحالة',
-                    style: TextStyle(
+                    'update_status'.tr,
+                    style: const TextStyle(
                       color: AppColors.secondaryColor,
                       fontSize: 14,
                     ),
@@ -365,5 +436,135 @@ class MerchantOrdersScreen extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  void _showStatusUpdateModal(Map<String, dynamic> order) {
+    final orderId = order['id'];
+    final currentStatus = order['status']?.toString() ?? 'pending';
+    final totalAmount =
+        double.tryParse(order['total_amount']?.toString() ?? '0') ?? 0;
+
+    // If order is pending, show price confirmation modal when approving
+    if (currentStatus == 'pending') {
+      PriceConfirmationModal.show(
+        context: Get.context!,
+        orderNumber: _getOrderNumber(order),
+        defaultPrice: totalAmount,
+        onConfirm: (agreedPrice) async {
+          final success = await controller.updateOrderStatus(
+            orderId,
+            'confirmed',
+            agreedPrice: agreedPrice,
+          );
+          if (success) {
+            Get.back();
+          }
+        },
+      );
+    } else {
+      // Show regular status update dialog
+      _showStatusSelectionDialog(order);
+    }
+  }
+
+  String _getOrderNumber(Map<String, dynamic> order) {
+    final orderNum = order['order_number'];
+    if (orderNum is String) return orderNum;
+    if (orderNum is Map) {
+      return orderNum['current']?.toString() ??
+          orderNum['en']?.toString() ??
+          '#${order['id']}';
+    }
+    return '#${order['id']}';
+  }
+
+  void _showStatusSelectionDialog(Map<String, dynamic> order) {
+    final orderId = order['id'];
+    final currentStatus = order['status']?.toString() ?? 'pending';
+
+    // Get next possible statuses
+    final nextStatuses = _getNextStatuses(currentStatus);
+
+    Get.bottomSheet(
+      Container(
+        padding: const EdgeInsets.all(20),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 20),
+            Text(
+              'update_status'.tr,
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 20),
+            ...nextStatuses.map((status) => ListTile(
+                  leading: Icon(
+                    _getStatusIcon(status),
+                    color: controller.getStatusColor(status),
+                  ),
+                  title: Text(controller.getStatusText(status)),
+                  onTap: () async {
+                    Get.back();
+                    await controller.updateOrderStatus(orderId, status);
+                  },
+                )),
+            const SizedBox(height: 10),
+          ],
+        ),
+      ),
+    );
+  }
+
+  List<String> _getNextStatuses(String currentStatus) {
+    switch (currentStatus) {
+      case 'pending':
+        return ['confirmed', 'rejected'];
+      case 'confirmed':
+        return ['preparing', 'cancelled'];
+      case 'preparing':
+        return ['ready', 'cancelled'];
+      case 'ready':
+        return ['out_for_delivery', 'delivered'];
+      case 'out_for_delivery':
+        return ['delivered'];
+      default:
+        return [];
+    }
+  }
+
+  IconData _getStatusIcon(String status) {
+    switch (status) {
+      case 'confirmed':
+        return Icons.check_circle_outline;
+      case 'preparing':
+        return Icons.restaurant;
+      case 'ready':
+        return Icons.done_all;
+      case 'out_for_delivery':
+        return Icons.delivery_dining;
+      case 'delivered':
+        return Icons.check_circle;
+      case 'cancelled':
+        return Icons.cancel_outlined;
+      case 'rejected':
+        return Icons.block;
+      default:
+        return Icons.help_outline;
+    }
   }
 }

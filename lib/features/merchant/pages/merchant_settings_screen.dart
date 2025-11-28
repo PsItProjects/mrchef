@@ -52,7 +52,8 @@ class _MerchantSettingsScreenState extends State<MerchantSettingsScreen> {
       backgroundColor: AppColors.surfaceColor,
       body: SafeArea(
         child: _isLoading
-            ? Center(child: CircularProgressIndicator(color: AppColors.primaryColor))
+            ? Center(
+                child: CircularProgressIndicator(color: AppColors.primaryColor))
             : SingleChildScrollView(
                 child: Column(
                   children: [
@@ -109,10 +110,28 @@ class _MerchantSettingsScreenState extends State<MerchantSettingsScreen> {
 
   Widget _buildProfileCard() {
     final merchant = _profileData?['merchant'];
-    final merchantName = merchant?['name']?['current'] ?? 'merchant'.tr;
+
+    // Get merchant name based on current language
+    final nameData = merchant?['name'];
+    String merchantName;
+    if (nameData is Map) {
+      merchantName = _languageService.isArabic
+          ? (nameData['ar'] ??
+              nameData['en'] ??
+              nameData['current'] ??
+              'merchant'.tr)
+          : (nameData['en'] ??
+              nameData['ar'] ??
+              nameData['current'] ??
+              'merchant'.tr);
+    } else {
+      merchantName = nameData?.toString() ?? 'merchant'.tr;
+    }
+
     final email = merchant?['email'] ?? 'merchant@example.com';
     final avatarUrl = merchant?['avatar'];
-    final firstLetter = merchantName.isNotEmpty ? merchantName[0].toUpperCase() : 'M';
+    final firstLetter =
+        merchantName.isNotEmpty ? merchantName[0].toUpperCase() : 'M';
 
     print('🖼️ Settings: Building profile card');
     print('   avatarUrl: $avatarUrl');
@@ -137,7 +156,8 @@ class _MerchantSettingsScreenState extends State<MerchantSettingsScreen> {
       child: Row(
         children: [
           CircleAvatar(
-            key: ValueKey(avatarUrl ?? 'no_avatar'), // Force rebuild when avatar changes
+            key: ValueKey(
+                avatarUrl ?? 'no_avatar'), // Force rebuild when avatar changes
             radius: 30,
             backgroundColor: AppColors.primaryColor,
             backgroundImage: avatarUrl != null && avatarUrl.isNotEmpty
@@ -161,7 +181,8 @@ class _MerchantSettingsScreenState extends State<MerchantSettingsScreen> {
               children: [
                 Text(
                   merchantName,
-                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                      fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 5),
                 Text(
@@ -173,7 +194,8 @@ class _MerchantSettingsScreenState extends State<MerchantSettingsScreen> {
           ),
           GestureDetector(
             onTap: () async {
-              final result = await Get.to(() => const EditPersonalProfileScreen());
+              final result =
+                  await Get.to(() => const EditPersonalProfileScreen());
               if (result == true) await _loadProfile();
             },
             child: Icon(Icons.edit, color: AppColors.primaryColor),
@@ -227,7 +249,8 @@ class _MerchantSettingsScreenState extends State<MerchantSettingsScreen> {
           title: 'personal_profile'.tr,
           subtitle: 'edit_personal_account'.tr,
           onTap: () async {
-            final result = await Get.to(() => const EditPersonalProfileScreen());
+            final result =
+                await Get.to(() => const EditPersonalProfileScreen());
             if (result == true) await _loadProfile();
           },
         ),
@@ -330,9 +353,12 @@ class _MerchantSettingsScreenState extends State<MerchantSettingsScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                  Text(title,
+                      style: const TextStyle(
+                          fontSize: 16, fontWeight: FontWeight.w600)),
                   const SizedBox(height: 4),
-                  Text(subtitle, style: TextStyle(fontSize: 13, color: Colors.grey[600])),
+                  Text(subtitle,
+                      style: TextStyle(fontSize: 13, color: Colors.grey[600])),
                 ],
               ),
             ),
@@ -360,7 +386,8 @@ class _MerchantSettingsScreenState extends State<MerchantSettingsScreen> {
                   color: AppColors.primaryColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Icon(Icons.language, color: AppColors.primaryColor, size: 24),
+                child: const Icon(Icons.language,
+                    color: AppColors.primaryColor, size: 24),
               ),
               const SizedBox(width: 16),
               Expanded(
@@ -369,10 +396,13 @@ class _MerchantSettingsScreenState extends State<MerchantSettingsScreen> {
                   children: [
                     Text(
                       'app_language'.tr,
-                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                      style: const TextStyle(
+                          fontSize: 16, fontWeight: FontWeight.w600),
                     ),
                     const SizedBox(height: 4),
-                    Text(langName, style: TextStyle(fontSize: 13, color: Colors.grey[600])),
+                    Text(langName,
+                        style:
+                            TextStyle(fontSize: 13, color: Colors.grey[600])),
                   ],
                 ),
               ),
@@ -412,7 +442,8 @@ class _MerchantSettingsScreenState extends State<MerchantSettingsScreen> {
 
     // Show loading indicator
     Get.dialog(
-      const Center(child: CircularProgressIndicator(color: AppColors.primaryColor)),
+      const Center(
+          child: CircularProgressIndicator(color: AppColors.primaryColor)),
       barrierDismissible: false,
     );
 
@@ -479,7 +510,8 @@ class _MerchantSettingsScreenState extends State<MerchantSettingsScreen> {
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.red,
           padding: const EdgeInsets.symmetric(vertical: 16),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -488,7 +520,10 @@ class _MerchantSettingsScreenState extends State<MerchantSettingsScreen> {
             const SizedBox(width: 8),
             Text(
               'logout'.tr,
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+              style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white),
             ),
           ],
         ),

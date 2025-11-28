@@ -27,10 +27,16 @@ class ConversationModel {
 
   factory ConversationModel.fromJson(Map<String, dynamic> json) {
     return ConversationModel(
-      id: json['id'],
-      customer: CustomerInfo.fromJson(json['customer']),
-      merchant: MerchantInfo.fromJson(json['merchant']),
-      restaurant: RestaurantInfo.fromJson(json['restaurant']),
+      id: json['id'] ?? 0,
+      customer: json['customer'] != null
+          ? CustomerInfo.fromJson(json['customer'])
+          : CustomerInfo(id: 0, name: 'عميل'),
+      merchant: json['merchant'] != null
+          ? MerchantInfo.fromJson(json['merchant'])
+          : MerchantInfo(id: 0, name: 'مطعم'),
+      restaurant: json['restaurant'] != null
+          ? RestaurantInfo.fromJson(json['restaurant'])
+          : RestaurantInfo(id: 0, businessName: 'مطعم'),
       orderId: json['order_id'],
       conversationType: json['conversation_type'] ?? 'order_chat',
       productDetails: json['product_details'],
@@ -58,9 +64,21 @@ class CustomerInfo {
   });
 
   factory CustomerInfo.fromJson(Map<String, dynamic> json) {
+    // Handle name which could be String or Map
+    String name = 'عميل';
+    final nameData = json['name'];
+    if (nameData is String) {
+      name = nameData;
+    } else if (nameData is Map) {
+      name = nameData['current']?.toString() ??
+          nameData['ar']?.toString() ??
+          nameData['en']?.toString() ??
+          'عميل';
+    }
+
     return CustomerInfo(
-      id: json['id'],
-      name: json['name'] ?? 'عميل',
+      id: json['id'] ?? 0,
+      name: name,
       avatar: json['avatar'],
     );
   }
@@ -78,9 +96,21 @@ class MerchantInfo {
   });
 
   factory MerchantInfo.fromJson(Map<String, dynamic> json) {
+    // Handle name which could be String or Map
+    String name = 'مطعم';
+    final nameData = json['name'];
+    if (nameData is String) {
+      name = nameData;
+    } else if (nameData is Map) {
+      name = nameData['current']?.toString() ??
+          nameData['ar']?.toString() ??
+          nameData['en']?.toString() ??
+          'مطعم';
+    }
+
     return MerchantInfo(
-      id: json['id'],
-      name: json['name'] ?? 'مطعم',
+      id: json['id'] ?? 0,
+      name: name,
       avatar: json['avatar'],
     );
   }
@@ -99,10 +129,12 @@ class RestaurantInfo {
 
   factory RestaurantInfo.fromJson(Map<String, dynamic> json) {
     return RestaurantInfo(
-      id: json['id'],
+      id: json['id'] ?? 0,
       businessName: json['business_name'] is String
           ? json['business_name']
-          : json['business_name']?['ar'] ?? json['business_name']?['en'] ?? 'مطعم',
+          : json['business_name']?['ar'] ??
+              json['business_name']?['en'] ??
+              'مطعم',
       logo: json['logo'],
     );
   }
@@ -139,14 +171,14 @@ class MessageModel {
 
   factory MessageModel.fromJson(Map<String, dynamic> json) {
     return MessageModel(
-      id: json['id'],
-      conversationId: json['conversation_id'],
+      id: json['id'] ?? 0,
+      conversationId: json['conversation_id'] ?? 0,
       repliedToMessageId: json['replied_to_message_id'],
       repliedToMessage: json['replied_to_message'] != null
           ? RepliedMessageModel.fromJson(json['replied_to_message'])
           : null,
-      senderType: json['sender_type'],
-      senderId: json['sender_id'],
+      senderType: json['sender_type'] ?? 'customer',
+      senderId: json['sender_id'] ?? 0,
       message: json['message'] ?? '',
       messageType: json['message_type'] ?? 'text',
       attachments: json['attachments'],
@@ -181,15 +213,14 @@ class RepliedMessageModel {
 
   factory RepliedMessageModel.fromJson(Map<String, dynamic> json) {
     return RepliedMessageModel(
-      id: json['id'],
+      id: json['id'] ?? 0,
       message: json['message'] ?? '',
       messageType: json['message_type'] ?? 'text',
       attachments: json['attachments'],
-      senderType: json['sender_type'],
+      senderType: json['sender_type'] ?? 'customer',
       createdAt: json['created_at'] != null
           ? DateTime.tryParse(json['created_at'])
           : null,
     );
   }
 }
-

@@ -16,6 +16,8 @@ abstract class AppRoutes {
   static const MERCHANT_PRODUCTS_ADD = '/merchant/products/add';
   static const MERCHANT_PRODUCTS_DETAILS = '/merchant/products/details';
   static const MERCHANT_PRODUCTS_EDIT = '/merchant/products/edit';
+  static const MERCHANT_ORDER_DETAILS = '/merchant/order-details';
+  static const MERCHANT_CHAT = '/merchant/chat/:id';
 
   // Vendor onboarding routes
   static const VENDOR_STEP1 = '/vendor-step1';

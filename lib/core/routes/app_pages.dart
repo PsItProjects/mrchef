@@ -27,7 +27,8 @@ import 'package:mrsheaf/features/favorites/bindings/favorites_binding.dart';
 import 'package:mrsheaf/features/merchant/pages/merchant_dashboard_screen.dart';
 import 'package:mrsheaf/features/merchant/pages/merchant_products_screen.dart';
 import 'package:mrsheaf/features/merchant/pages/add_product_screen.dart';
-import 'package:mrsheaf/features/merchant/pages/product_details_screen.dart' as merchant_product_details;
+import 'package:mrsheaf/features/merchant/pages/product_details_screen.dart'
+    as merchant_product_details;
 import 'package:mrsheaf/features/merchant/pages/edit_product_screen.dart';
 import 'package:mrsheaf/features/merchant/bindings/merchant_main_binding.dart';
 import 'package:mrsheaf/features/merchant/bindings/merchant_products_binding.dart';
@@ -45,6 +46,9 @@ import 'package:mrsheaf/features/search/pages/search_screen.dart';
 import 'package:mrsheaf/features/search/bindings/search_binding.dart';
 import 'package:mrsheaf/features/restaurants/pages/all_restaurants_screen.dart';
 import 'package:mrsheaf/features/restaurants/bindings/all_restaurants_binding.dart';
+import 'package:mrsheaf/features/merchant/pages/merchant_order_details_screen.dart';
+import 'package:mrsheaf/features/merchant/pages/merchant_chat_screen.dart';
+import 'package:mrsheaf/features/merchant/controllers/merchant_chat_controller.dart';
 
 class AppPages {
   static const INITIAL = AppRoutes.SPLASH;
@@ -171,6 +175,21 @@ class AppPages {
       name: '${AppRoutes.MERCHANT_PRODUCTS_EDIT}/:id',
       page: () => const EditProductScreen(),
       binding: EditProductBinding(),
+      middlewares: [AuthMiddleware()],
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.MERCHANT_ORDER_DETAILS,
+      page: () => MerchantOrderDetailsScreen(),
+      middlewares: [AuthMiddleware()],
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.MERCHANT_CHAT,
+      page: () => const MerchantChatScreen(),
+      binding: BindingsBuilder(() {
+        Get.lazyPut<MerchantChatController>(() => MerchantChatController());
+      }),
       middlewares: [AuthMiddleware()],
       transition: Transition.rightToLeft,
     ),

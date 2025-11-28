@@ -21,6 +21,7 @@ class MerchantDashboardController extends GetxController {
   var profileCompletion = 0.obs;
   var totalProducts = 0.obs;
   var activeProducts = 0.obs;
+  var restaurantData = Rxn<Map<String, dynamic>>();
 
   @override
   void onInit() {
@@ -33,7 +34,8 @@ class MerchantDashboardController extends GetxController {
     try {
       final user = _authService.currentUser.value;
       if (user != null) {
-        merchantName.value = user.fullName ?? user.nameAr ?? user.nameEn ?? 'التاجر';
+        merchantName.value =
+            user.fullName ?? user.nameAr ?? user.nameEn ?? 'التاجر';
         merchantEmail.value = user.email ?? '';
       }
     } catch (e) {
@@ -63,15 +65,17 @@ class MerchantDashboardController extends GetxController {
         // Update recent orders
         if (data['recent_orders'] != null) {
           recentOrders.value = List<Map<String, dynamic>>.from(
-            data['recent_orders'].map((order) => Map<String, dynamic>.from(order))
-          );
+              data['recent_orders']
+                  .map((order) => Map<String, dynamic>.from(order)));
         }
 
         // Update restaurant info
         if (data['restaurant_info'] != null) {
-          profileCompletion.value = data['restaurant_info']['profile_completion'] ?? 0;
+          profileCompletion.value =
+              data['restaurant_info']['profile_completion'] ?? 0;
           totalProducts.value = data['restaurant_info']['total_products'] ?? 0;
-          activeProducts.value = data['restaurant_info']['active_products'] ?? 0;
+          activeProducts.value =
+              data['restaurant_info']['active_products'] ?? 0;
         }
 
         print('✅ Dashboard data loaded successfully');
@@ -79,6 +83,9 @@ class MerchantDashboardController extends GetxController {
         print('   Today Revenue: ${todayRevenue.value}');
         print('   Recent Orders: ${recentOrders.length}');
       }
+
+      // Load restaurant data separately
+      await _loadRestaurantData();
     } on dio.DioException catch (e) {
       print('❌ Error loading dashboard data: ${e.message}');
       // Use fallback data
@@ -92,7 +99,30 @@ class MerchantDashboardController extends GetxController {
       isLoading.value = false;
     }
   }
-  
+
+  /// Load restaurant data from merchant profile
+  Future<void> _loadRestaurantData() async {
+    try {
+      print('🏪 Loading restaurant data...');
+      final response = await _apiClient.get('/merchant/profile');
+
+      if (response.statusCode == 200) {
+        final data = response.data['data'];
+        final merchant = data['merchant'];
+
+        // Get restaurant data from merchant
+        if (merchant != null && merchant['restaurant'] != null) {
+          restaurantData.value = merchant['restaurant'];
+          print('✅ Restaurant data loaded');
+          print('   Business Name: ${restaurantData.value?['business_name']}');
+          print('   Logo: ${restaurantData.value?['logo']}');
+        }
+      }
+    } catch (e) {
+      print('❌ Error loading restaurant data: $e');
+    }
+  }
+
   Future<void> logout() async {
     try {
       isLoading.value = true;
@@ -113,7 +143,7 @@ class MerchantDashboardController extends GetxController {
       isLoading.value = false;
     }
   }
-  
+
   void navigateToProducts() {
     Get.snackbar(
       'قريباً',
@@ -121,7 +151,7 @@ class MerchantDashboardController extends GetxController {
       snackPosition: SnackPosition.BOTTOM,
     );
   }
-  
+
   void navigateToOrders() {
     Get.snackbar(
       'قريباً',
@@ -129,7 +159,7 @@ class MerchantDashboardController extends GetxController {
       snackPosition: SnackPosition.BOTTOM,
     );
   }
-  
+
   void navigateToReports() {
     Get.snackbar(
       'قريباً',
@@ -137,7 +167,7 @@ class MerchantDashboardController extends GetxController {
       snackPosition: SnackPosition.BOTTOM,
     );
   }
-  
+
   void navigateToSettings() {
     Get.snackbar(
       'قريباً',
