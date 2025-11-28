@@ -9,6 +9,7 @@ import 'package:mrsheaf/features/product_details/models/product_model.dart';
 import 'package:mrsheaf/core/network/api_client.dart';
 import 'package:mrsheaf/core/constants/api_constants.dart';
 import 'package:mrsheaf/features/favorites/utils/favorites_helper.dart';
+import 'package:mrsheaf/features/chat/services/chat_service.dart';
 
 class StoreDetailsController extends GetxController {
   final KitchenService _kitchenService = KitchenService();
@@ -140,7 +141,29 @@ class StoreDetailsController extends GetxController {
     reviewsCount.value = restaurantData.reviewsCount;
     totalProducts.value = restaurantData.totalProducts;
 
+    // Set logo and cover image from restaurant data
+    if (restaurantData.logo != null && restaurantData.logo!.isNotEmpty) {
+      storeProfileImage.value = _getImageUrl(restaurantData.logo!);
+      if (kDebugMode) {
+        print('🖼️ Set store logo: ${storeProfileImage.value}');
+      }
+    }
+    if (restaurantData.coverImage != null && restaurantData.coverImage!.isNotEmpty) {
+      storeImage.value = _getImageUrl(restaurantData.coverImage!);
+      if (kDebugMode) {
+        print('🖼️ Set store cover: ${storeImage.value}');
+      }
+    }
+
     // Products will be loaded separately
+  }
+
+  /// Helper to get full image URL from path
+  String _getImageUrl(String imagePath) {
+    if (imagePath.startsWith('http')) {
+      return imagePath;
+    }
+    return 'https://mr-shife-backend-main-ygodva.laravel.cloud/storage/$imagePath';
   }
 
   void _setRawRestaurantData(Map<String, dynamic> rawData) {
@@ -211,15 +234,21 @@ class StoreDetailsController extends GetxController {
     storeLocation.value = address;
 
     // Set images
-    if (rawData['cover_image'] != null) {
+    if (rawData['cover_image'] != null && rawData['cover_image'].toString() != 'null') {
       String coverImage = rawData['cover_image'].toString();
-      if (!coverImage.startsWith('http') && coverImage != 'null') {
+      if (!coverImage.startsWith('http')) {
         coverImage = 'https://mr-shife-backend-main-ygodva.laravel.cloud/storage/$coverImage';
       }
       storeImage.value = coverImage;
+      if (kDebugMode) {
+        print('🖼️ RAW: Set store cover: $coverImage');
+      }
     }
-    if (rawData['logo'] != null) {
+    if (rawData['logo'] != null && rawData['logo'].toString() != 'null') {
       storeProfileImage.value = _getLogoUrl(rawData['logo'].toString());
+      if (kDebugMode) {
+        print('🖼️ RAW: Set store logo: ${storeProfileImage.value}');
+      }
     }
 
     // Update contact info
@@ -806,9 +835,58 @@ class StoreDetailsController extends GetxController {
     print('Opening location: ${location['address']}');
   }
   
-  void sendMessage() {
-    // TODO: Implement messaging functionality
-    print('Sending message to store');
+  /// Navigate to chat with the restaurant
+  Future<void> sendMessage() async {
+    try {
+      // Get restaurant ID
+      final restaurantId = int.tryParse(storeId.value);
+      if (restaurantId == null || restaurantId == 0) {
+        Get.snackbar(
+          'خطأ',
+          'لا يمكن فتح المحادثة',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+        return;
+      }
+
+      // Show loading
+      Get.dialog(
+        const Center(child: CircularProgressIndicator()),
+        barrierDismissible: false,
+      );
+
+      // Get or create conversation with the restaurant
+      final chatService = ChatService();
+      final conversation = await chatService.getOrCreateRestaurantConversation(restaurantId);
+
+      // Close loading dialog
+      Get.back();
+
+      // Navigate to chat screen
+      Get.toNamed(
+        '/chat/${conversation.id}',
+        arguments: conversation,
+      );
+    } catch (e) {
+      // Close loading dialog if open
+      if (Get.isDialogOpen ?? false) {
+        Get.back();
+      }
+
+      if (kDebugMode) {
+        print('Error opening chat: $e');
+      }
+
+      Get.snackbar(
+        'خطأ',
+        e.toString().replaceAll('Exception: ', ''),
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    }
   }
 
   /// Add product to cart with minimum required options (handled by backend)

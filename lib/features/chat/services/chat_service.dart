@@ -202,5 +202,48 @@ class ChatService {
       rethrow;
     }
   }
+
+  /// Get or create conversation for a restaurant directly
+  /// This allows customers to chat with a restaurant without placing an order first
+  Future<ConversationModel> getOrCreateRestaurantConversation(int restaurantId) async {
+    try {
+      if (kDebugMode) {
+        print('💬 CHAT SERVICE: Getting/creating conversation for restaurant $restaurantId...');
+      }
+
+      final response = await _apiClient.get(
+        '/customer/chat/restaurants/$restaurantId/conversation',
+      );
+
+      if (response.data['success'] == true) {
+        if (kDebugMode) {
+          print('✅ CHAT SERVICE: Restaurant conversation retrieved/created successfully');
+        }
+
+        return ConversationModel.fromJson(response.data['data']['conversation']);
+      } else {
+        throw Exception(response.data['message'] ?? 'Failed to get conversation');
+      }
+    } on DioException catch (e) {
+      if (kDebugMode) {
+        print('❌ CHAT SERVICE ERROR: ${e.response?.statusCode} ${e.message}');
+        print('❌ RESPONSE DATA: ${e.response?.data}');
+      }
+
+      if (e.response?.statusCode == 401) {
+        throw Exception('يجب تسجيل الدخول أولاً');
+      } else if (e.response?.statusCode == 404) {
+        throw Exception('المتجر غير موجود');
+      } else {
+        final message = e.response?.data['message'] ?? 'فشل في الحصول على المحادثة';
+        throw Exception(message);
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ CHAT SERVICE ERROR: $e');
+      }
+      rethrow;
+    }
+  }
 }
 

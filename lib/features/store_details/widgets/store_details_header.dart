@@ -3,7 +3,6 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/features/store_details/controllers/store_details_controller.dart';
-import 'package:mrsheaf/core/constants/api_constants.dart';
 
 class StoreDetailsHeader extends GetView<StoreDetailsController> {
   const StoreDetailsHeader({super.key});
@@ -25,7 +24,7 @@ class StoreDetailsHeader extends GetView<StoreDetailsController> {
               ),
               image: controller.storeImage.value.isNotEmpty
                   ? DecorationImage(
-                      image: NetworkImage('${ApiConstants.baseUrl}/storage/${controller.storeImage.value}'),
+                      image: NetworkImage(controller.storeImage.value),
                       fit: BoxFit.cover,
                       colorFilter: ColorFilter.mode(
                         Colors.black.withOpacity(0.2),
@@ -191,16 +190,14 @@ class StoreDetailsHeader extends GetView<StoreDetailsController> {
               child: Container(
                 width: 150,
                 height: 150,
-
                 margin: const EdgeInsets.all(3),
                 decoration: BoxDecoration(
-                  color: Colors.white,
                   shape: BoxShape.circle,
                 ),
                 child: ClipOval(
                   child: controller.storeProfileImage.value.isNotEmpty
                       ? Image.network(
-                          '${ApiConstants.baseUrl}/storage/${controller.storeProfileImage.value}',
+                          controller.storeProfileImage.value,
                           width: 150,
                           height: 150,
                           fit: BoxFit.cover,
