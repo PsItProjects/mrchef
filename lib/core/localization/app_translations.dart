@@ -1139,6 +1139,11 @@ class AppTranslations extends Translations {
           'currency_label': 'Currency',
           'language_label': 'Language',
           'conversations': 'Conversations',
+          'no_conversations': 'No conversations yet',
+          'no_conversations_description':
+              'Your conversations with customers will appear here',
+          'new_messages': 'new messages',
+          'error_loading_conversations': 'Failed to load conversations',
           'notification_label': 'Notification',
           'security': 'Security',
 
@@ -2319,6 +2324,10 @@ class AppTranslations extends Translations {
           'currency_label': 'العملة',
           'language_label': 'اللغة',
           'conversations': 'المحادثات',
+          'no_conversations': 'لا توجد محادثات',
+          'no_conversations_description': 'ستظهر محادثاتك مع العملاء هنا',
+          'new_messages': 'رسائل جديدة',
+          'error_loading_conversations': 'فشل في تحميل المحادثات',
           'notification_label': 'الإشعارات',
           'security': 'الأمان',
 

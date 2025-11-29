@@ -44,7 +44,11 @@ class ConversationModel {
       lastMessage: json['last_message'] != null
           ? MessageModel.fromJson(json['last_message'])
           : null,
-      unreadCount: json['unread_count'] ?? 0,
+      // Support both customer_unread_count and merchant_unread_count
+      unreadCount: json['merchant_unread_count'] ??
+          json['customer_unread_count'] ??
+          json['unread_count'] ??
+          0,
       lastMessageAt: json['last_message_at'] != null
           ? DateTime.tryParse(json['last_message_at'])
           : null,

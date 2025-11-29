@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/core/localization/translation_helper.dart';
 import 'package:mrsheaf/features/merchant/controllers/merchant_chat_controller.dart';
@@ -142,19 +143,12 @@ class MerchantChatScreen extends GetView<MerchantChatController> {
         final customerName = controller.customerName ??
             conv?.customer.name ??
             TranslationHelper.tr('customer');
+        final customerAvatar =
+            controller.customerAvatar ?? conv?.customer.avatar;
 
         return Row(
           children: [
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: AppColors.primaryColor.withAlpha(26),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child:
-                  Icon(Icons.person, size: 20, color: AppColors.primaryColor),
-            ),
+            _buildCustomerAvatar(customerName, customerAvatar),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
@@ -181,6 +175,73 @@ class MerchantChatScreen extends GetView<MerchantChatController> {
           ],
         );
       }),
+    );
+  }
+
+  Widget _buildCustomerAvatar(String name, String? avatarUrl) {
+    if (avatarUrl != null && avatarUrl.isNotEmpty) {
+      return Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+          border:
+              Border.all(color: AppColors.primaryColor.withAlpha(51), width: 2),
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(18),
+          child: CachedNetworkImage(
+            imageUrl: avatarUrl,
+            fit: BoxFit.cover,
+            placeholder: (context, url) => Container(
+              color: AppColors.primaryColor.withAlpha(26),
+              child: const Center(
+                child: SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: AppColors.primaryColor,
+                  ),
+                ),
+              ),
+            ),
+            errorWidget: (context, url, error) => Container(
+              color: AppColors.primaryColor.withAlpha(26),
+              child: Center(
+                child: Text(
+                  name.isNotEmpty ? name[0].toUpperCase() : '?',
+                  style: const TextStyle(
+                    color: AppColors.primaryColor,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    // Fallback to first letter
+    return Container(
+      width: 40,
+      height: 40,
+      decoration: BoxDecoration(
+        color: AppColors.primaryColor.withAlpha(26),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Center(
+        child: Text(
+          name.isNotEmpty ? name[0].toUpperCase() : '?',
+          style: const TextStyle(
+            color: AppColors.primaryColor,
+            fontWeight: FontWeight.bold,
+            fontSize: 16,
+          ),
+        ),
+      ),
     );
   }
 

@@ -35,9 +35,10 @@ class MerchantChatController extends GetxController {
 
   late int conversationId;
 
-  // Customer info from order
+  // Customer info from order or arguments
   String? customerName;
   String? customerPhone;
+  String? customerAvatar;
 
   @override
   void onInit() {
@@ -50,12 +51,25 @@ class MerchantChatController extends GetxController {
     if (Get.arguments != null && Get.arguments is Map<String, dynamic>) {
       final args = Get.arguments as Map<String, dynamic>;
 
+      // Get customer info from arguments (passed from conversations list)
+      if (args.containsKey('customer_name')) {
+        customerName = args['customer_name']?.toString();
+      }
+      if (args.containsKey('customer_avatar')) {
+        customerAvatar = args['customer_avatar']?.toString();
+      }
+
       if (args.containsKey('conversation')) {
         final convData = args['conversation'];
         if (convData is ConversationModel) {
           conversation.value = convData;
+          // Get customer info from conversation if not already set
+          customerName ??= convData.customer.name;
+          customerAvatar ??= convData.customer.avatar;
         } else if (convData is Map<String, dynamic>) {
           conversation.value = ConversationModel.fromJson(convData);
+          customerName ??= conversation.value?.customer.name;
+          customerAvatar ??= conversation.value?.customer.avatar;
         }
       }
 
@@ -70,18 +84,20 @@ class MerchantChatController extends GetxController {
               // Handle name - could be String or Map
               final nameData = customerData['name'];
               if (nameData is String) {
-                customerName = nameData;
+                customerName ??= nameData;
               } else if (nameData is Map) {
-                customerName = nameData['current']?.toString() ??
+                customerName ??= nameData['current']?.toString() ??
                     nameData['en']?.toString();
               } else {
-                customerName = customerData['full_name']?.toString() ??
+                customerName ??= customerData['full_name']?.toString() ??
                     '${customerData['first_name'] ?? ''} ${customerData['last_name'] ?? ''}'
                         .trim();
               }
               // Handle phone - could be 'phone' or 'phone_number'
               customerPhone = customerData['phone']?.toString() ??
                   customerData['phone_number']?.toString();
+              // Handle avatar
+              customerAvatar ??= customerData['avatar']?.toString();
             }
           }
         }
