@@ -7,6 +7,7 @@ import 'package:mrsheaf/features/merchant/services/merchant_settings_service.dar
 import 'package:mrsheaf/features/merchant/controllers/merchant_dashboard_controller.dart';
 import 'package:mrsheaf/features/merchant/controllers/merchant_main_controller.dart';
 import 'package:mrsheaf/core/localization/translation_helper.dart';
+import 'package:mrsheaf/features/merchant/widgets/home_statistics_filter_modal.dart';
 import 'package:intl/intl.dart';
 
 class MerchantHomeScreen extends StatefulWidget {
@@ -289,12 +290,8 @@ class _MerchantHomeScreenState extends State<MerchantHomeScreen> {
   Widget _buildNotificationBell() {
     return GestureDetector(
       onTap: () {
-        // Navigate to notifications
-        Get.snackbar(
-          'notifications'.tr,
-          'coming_soon'.tr,
-          snackPosition: SnackPosition.BOTTOM,
-        );
+        // Navigate to notifications screen
+        Get.toNamed('/merchant/notifications');
       },
       child: Container(
         padding: const EdgeInsets.all(10),
@@ -317,31 +314,36 @@ class _MerchantHomeScreenState extends State<MerchantHomeScreen> {
               color: AppColors.primaryColor,
               size: 24,
             ),
-            // Badge for unread notifications
-            Positioned(
-              right: -4,
-              top: -4,
-              child: Container(
-                padding: const EdgeInsets.all(4),
-                decoration: const BoxDecoration(
-                  color: Colors.red,
-                  shape: BoxShape.circle,
-                ),
-                constraints: const BoxConstraints(
-                  minWidth: 16,
-                  minHeight: 16,
-                ),
-                child: const Text(
-                  '3',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 9,
-                    fontWeight: FontWeight.bold,
+            // Badge for unread notifications - will be updated from controller
+            Obx(() {
+              final unreadCount =
+                  dashboardController.unreadNotificationsCount.value;
+              if (unreadCount <= 0) return const SizedBox.shrink();
+              return Positioned(
+                right: -4,
+                top: -4,
+                child: Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: const BoxDecoration(
+                    color: Colors.red,
+                    shape: BoxShape.circle,
                   ),
-                  textAlign: TextAlign.center,
+                  constraints: const BoxConstraints(
+                    minWidth: 16,
+                    minHeight: 16,
+                  ),
+                  child: Text(
+                    unreadCount > 99 ? '99+' : unreadCount.toString(),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 9,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
                 ),
-              ),
-            ),
+              );
+            }),
           ],
         ),
       ),
@@ -351,9 +353,12 @@ class _MerchantHomeScreenState extends State<MerchantHomeScreen> {
   Widget _buildStatsCards() {
     return Obx(() {
       // Show loading state
-      if (dashboardController.isLoading.value) {
+      if (dashboardController.isLoading.value ||
+          dashboardController.isStatsLoading.value) {
         return Column(
           children: [
+            _buildStatsHeader(isLoading: true),
+            const SizedBox(height: 12),
             Row(
               children: [
                 Expanded(child: _buildStatCardSkeleton()),
@@ -376,24 +381,17 @@ class _MerchantHomeScreenState extends State<MerchantHomeScreen> {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Today's Stats Header
-          Text(
-            'today_stats'.tr,
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: Colors.grey[700],
-              fontFamily: 'Lato',
-            ),
-          ),
+          // Stats Header with Filter Button
+          _buildStatsHeader(isLoading: false),
           const SizedBox(height: 12),
-          // Today Stats Row
+
+          // Main Stats Row (Total Orders & Revenue)
           Row(
             children: [
               Expanded(
                 child: _buildStatCard(
-                  title: 'orders_today'.tr,
-                  value: '${dashboardController.todayOrders.value}',
+                  title: 'total_orders'.tr,
+                  value: '${dashboardController.totalOrders.value}',
                   icon: Icons.shopping_cart_rounded,
                   color: const Color(0xFF2196F3),
                   backgroundColor: const Color(0xFFE3F2FD),
@@ -402,9 +400,9 @@ class _MerchantHomeScreenState extends State<MerchantHomeScreen> {
               const SizedBox(width: 12),
               Expanded(
                 child: _buildStatCard(
-                  title: 'sales_today'.tr,
+                  title: 'total_revenue'.tr,
                   value: TranslationHelper.formatCurrency(
-                      dashboardController.todayRevenue.value),
+                      dashboardController.totalRevenue.value),
                   icon: Icons.monetization_on_rounded,
                   color: const Color(0xFF4CAF50),
                   backgroundColor: const Color(0xFFE8F5E9),
@@ -412,37 +410,26 @@ class _MerchantHomeScreenState extends State<MerchantHomeScreen> {
               ),
             ],
           ),
-          const SizedBox(height: 20),
-          // Week's Stats Header
-          Text(
-            'this_week'.tr,
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: Colors.grey[700],
-              fontFamily: 'Lato',
-            ),
-          ),
           const SizedBox(height: 12),
-          // Week Stats Row
+
+          // Order Status Row (Completed & Pending)
           Row(
             children: [
               Expanded(
                 child: _buildStatCard(
-                  title: 'weekly_orders'.tr,
-                  value: '${dashboardController.weekOrders.value}',
-                  icon: Icons.calendar_today_rounded,
-                  color: const Color(0xFF9C27B0),
-                  backgroundColor: const Color(0xFFF3E5F5),
+                  title: 'completed'.tr,
+                  value: '${dashboardController.completedOrders.value}',
+                  icon: Icons.check_circle_rounded,
+                  color: const Color(0xFF4CAF50),
+                  backgroundColor: const Color(0xFFE8F5E9),
                 ),
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: _buildStatCard(
-                  title: 'weekly_sales'.tr,
-                  value: TranslationHelper.formatCurrency(
-                      dashboardController.weekRevenue.value),
-                  icon: Icons.trending_up_rounded,
+                  title: 'pending'.tr,
+                  value: '${dashboardController.pendingOrders.value}',
+                  icon: Icons.pending_rounded,
                   color: const Color(0xFFFF9800),
                   backgroundColor: const Color(0xFFFFF3E0),
                 ),
@@ -452,6 +439,81 @@ class _MerchantHomeScreenState extends State<MerchantHomeScreen> {
         ],
       );
     });
+  }
+
+  /// Build stats header with filter button
+  Widget _buildStatsHeader({required bool isLoading}) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'statistics'.tr,
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.grey[800],
+                fontFamily: 'Lato',
+              ),
+            ),
+            const SizedBox(height: 4),
+            Obx(() => Text(
+                  dashboardController.getFilterLabel(),
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: AppColors.primaryColor,
+                    fontWeight: FontWeight.w500,
+                  ),
+                )),
+          ],
+        ),
+        // Filter Button
+        Material(
+          color: AppColors.primaryColor.withAlpha(26),
+          borderRadius: BorderRadius.circular(12),
+          child: InkWell(
+            onTap: isLoading ? null : _showFilterModal,
+            borderRadius: BorderRadius.circular(12),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.filter_list_rounded,
+                    color: AppColors.primaryColor,
+                    size: 20,
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    'filter'.tr,
+                    style: TextStyle(
+                      color: AppColors.primaryColor,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// Show filter modal
+  void _showFilterModal() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => HomeStatisticsFilterModal(
+        controller: dashboardController,
+      ),
+    );
   }
 
   Widget _buildStatCardSkeleton() {

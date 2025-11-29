@@ -49,6 +49,9 @@ import 'package:mrsheaf/features/restaurants/bindings/all_restaurants_binding.da
 import 'package:mrsheaf/features/merchant/pages/merchant_order_details_screen.dart';
 import 'package:mrsheaf/features/merchant/pages/merchant_chat_screen.dart';
 import 'package:mrsheaf/features/merchant/controllers/merchant_chat_controller.dart';
+import 'package:mrsheaf/features/merchant/pages/merchant_statistics_screen.dart';
+import 'package:mrsheaf/features/merchant/pages/merchant_notifications_screen.dart';
+import 'package:mrsheaf/features/notifications/pages/notifications_screen.dart';
 
 class AppPages {
   static const INITIAL = AppRoutes.SPLASH;
@@ -194,6 +197,12 @@ class AppPages {
       transition: Transition.rightToLeft,
     ),
     GetPage(
+      name: AppRoutes.MERCHANT_STATISTICS,
+      page: () => const MerchantStatisticsScreen(),
+      middlewares: [AuthMiddleware()],
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
       name: AppRoutes.CONVERSATIONS,
       page: () => const ConversationsScreen(),
       binding: ConversationsBinding(),
@@ -224,6 +233,20 @@ class AppPages {
       name: AppRoutes.ALL_RESTAURANTS,
       page: () => const AllRestaurantsScreen(),
       binding: AllRestaurantsBinding(),
+      transition: Transition.rightToLeft,
+    ),
+    // Merchant Notifications
+    GetPage(
+      name: AppRoutes.MERCHANT_NOTIFICATIONS,
+      page: () => const MerchantNotificationsScreen(),
+      middlewares: [AuthMiddleware()],
+      transition: Transition.rightToLeft,
+    ),
+    // Customer Notifications
+    GetPage(
+      name: AppRoutes.NOTIFICATIONS,
+      page: () => const NotificationsScreen(),
+      middlewares: [AuthMiddleware()],
       transition: Transition.rightToLeft,
     ),
   ];

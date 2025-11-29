@@ -38,26 +38,34 @@ class HomeController extends GetxController {
   // Restaurants data
   final RxList<RestaurantModel> restaurants = <RestaurantModel>[].obs;
   final RxList<RestaurantModel> featuredRestaurants = <RestaurantModel>[].obs;
-  final RxList<Map<String, dynamic>> restaurantsRawData = <Map<String, dynamic>>[].obs;
+  final RxList<Map<String, dynamic>> restaurantsRawData =
+      <Map<String, dynamic>>[].obs;
 
   // Home screen data from API
-  final RxList<Map<String, dynamic>> homeRestaurants = <Map<String, dynamic>>[].obs;
-  final RxList<Map<String, dynamic>> homeProducts = <Map<String, dynamic>>[].obs;
+  final RxList<Map<String, dynamic>> homeRestaurants =
+      <Map<String, dynamic>>[].obs;
+  final RxList<Map<String, dynamic>> homeProducts =
+      <Map<String, dynamic>>[].obs;
   final RxBool isLoadingHomeData = false.obs;
-  
+
   // Kitchen data from backend
   final RxList<Map<String, dynamic>> kitchens = <Map<String, dynamic>>[].obs;
-  
+
   // Best seller products from backend
-  final RxList<Map<String, dynamic>> bestSellerProducts = <Map<String, dynamic>>[].obs;
-  
+  final RxList<Map<String, dynamic>> bestSellerProducts =
+      <Map<String, dynamic>>[].obs;
+
   // Back again products from backend
-  final RxList<Map<String, dynamic>> backAgainProducts = <Map<String, dynamic>>[].obs;
+  final RxList<Map<String, dynamic>> backAgainProducts =
+      <Map<String, dynamic>>[].obs;
 
   // Filtered data based on selected category
-  final RxList<Map<String, dynamic>> filteredRestaurants = <Map<String, dynamic>>[].obs;
-  final RxList<Map<String, dynamic>> filteredProducts = <Map<String, dynamic>>[].obs;
-  final RxList<Map<String, dynamic>> filteredProductsByRating = <Map<String, dynamic>>[].obs;
+  final RxList<Map<String, dynamic>> filteredRestaurants =
+      <Map<String, dynamic>>[].obs;
+  final RxList<Map<String, dynamic>> filteredProducts =
+      <Map<String, dynamic>>[].obs;
+  final RxList<Map<String, dynamic>> filteredProductsByRating =
+      <Map<String, dynamic>>[].obs;
 
   // Loading states
   final RxBool isLoadingProducts = false.obs;
@@ -158,7 +166,8 @@ class HomeController extends GetxController {
         // Convert backend data to our format
         for (var productData in productsData) {
           final product = _convertBackendProduct(productData);
-          print('🏠 HOME: Converted product: ${product['name']} - ${product['price']} ر.س');
+          print(
+              '🏠 HOME: Converted product: ${product['name']} - ${product['price']} ر.س');
 
           // Add to both lists for now (you can implement logic to separate them)
           if (bestSellerProducts.length < 4) {
@@ -168,7 +177,8 @@ class HomeController extends GetxController {
           }
         }
 
-        print('🏠 HOME: Best sellers: ${bestSellerProducts.length}, Back again: ${backAgainProducts.length}');
+        print(
+            '🏠 HOME: Best sellers: ${bestSellerProducts.length}, Back again: ${backAgainProducts.length}');
 
         // Apply current filter after loading products
         _applyCurrentFilter();
@@ -189,7 +199,8 @@ class HomeController extends GetxController {
   }
 
   /// Convert backend product data to our format
-  Map<String, dynamic> _convertBackendProduct(Map<String, dynamic> backendData) {
+  Map<String, dynamic> _convertBackendProduct(
+      Map<String, dynamic> backendData) {
     // Use LanguageService to get localized text
     final languageService = LanguageService.instance;
 
@@ -199,7 +210,9 @@ class HomeController extends GetxController {
 
     // Handle image URL properly
     String getImageUrl(dynamic imageField) {
-      if (imageField != null && imageField.toString().isNotEmpty && imageField != 'null') {
+      if (imageField != null &&
+          imageField.toString().isNotEmpty &&
+          imageField != 'null') {
         String imageUrl = imageField.toString();
         // If it's already a full URL, return it
         if (imageUrl.startsWith('http')) {
@@ -219,11 +232,15 @@ class HomeController extends GetxController {
       'name': getName(backendData['name']),
       'description': backendData['description'] ?? '',
       'price': double.tryParse(backendData['price']?.toString() ?? '0') ?? 0.0,
-      'originalPrice': double.tryParse(backendData['originalPrice']?.toString() ?? '0'),
+      'originalPrice':
+          double.tryParse(backendData['originalPrice']?.toString() ?? '0'),
       'primary_image': getImageUrl(backendData['primary_image']),
-      'images': backendData['images'] ?? [getImageUrl(backendData['primary_image'])],
+      'images':
+          backendData['images'] ?? [getImageUrl(backendData['primary_image'])],
       'rating': backendData['rating'] is Map
-          ? double.tryParse(backendData['rating']['average']?.toString() ?? '4.5') ?? 4.5
+          ? double.tryParse(
+                  backendData['rating']['average']?.toString() ?? '4.5') ??
+              4.5
           : double.tryParse(backendData['rating']?.toString() ?? '4.5') ?? 4.5,
       'reviewCount': backendData['reviewCount'] ?? 0,
       'productCode': backendData['productCode'] ?? 'PRD-${backendData['id']}',
@@ -269,7 +286,8 @@ class HomeController extends GetxController {
     filteredProducts.clear();
     filteredProductsByRating.clear();
 
-    print('🏠 HOME: Popular data - ${filteredRestaurants.length} restaurants, using original product lists');
+    print(
+        '🏠 HOME: Popular data - ${filteredRestaurants.length} restaurants, using original product lists');
   }
 
   /// Filter restaurants and products by category
@@ -280,9 +298,11 @@ class HomeController extends GetxController {
     filteredRestaurants.clear();
     for (var restaurant in restaurantsRawData) {
       final restaurantCategories = restaurant['categories'] as List<dynamic>?;
-      print('🏪 RESTAURANT: ${restaurant['name']} - Categories: $restaurantCategories');
+      print(
+          '🏪 RESTAURANT: ${restaurant['name']} - Categories: $restaurantCategories');
       if (restaurantCategories != null) {
-        final hasCategory = restaurantCategories.any((cat) => cat['id'] == categoryId);
+        final hasCategory =
+            restaurantCategories.any((cat) => cat['id'] == categoryId);
         if (hasCategory) {
           filteredRestaurants.add(restaurant);
           print('✅ RESTAURANT MATCHED: ${restaurant['name']}');
@@ -317,33 +337,39 @@ class HomeController extends GetxController {
     bestRatedProducts.sort((a, b) {
       final ratingA = double.tryParse(a['rating']?.toString() ?? '0') ?? 0.0;
       final ratingB = double.tryParse(b['rating']?.toString() ?? '0') ?? 0.0;
-      return ratingB.compareTo(ratingA); // Descending order (highest rating first)
+      return ratingB
+          .compareTo(ratingA); // Descending order (highest rating first)
     });
     filteredProductsByRating.addAll(bestRatedProducts);
 
-    print('🏠 HOME: Filtered data - ${filteredRestaurants.length} restaurants, ${filteredProducts.length} products');
+    print(
+        '🏠 HOME: Filtered data - ${filteredRestaurants.length} restaurants, ${filteredProducts.length} products');
   }
-  
+
   void updateBannerIndex(int index) {
     currentBannerIndex.value = index;
   }
-  
+
   void toggleFavorite(int productId, String section) {
     if (section == 'bestSeller') {
-      final index = bestSellerProducts.indexWhere((product) => product['id'] == productId);
+      final index = bestSellerProducts
+          .indexWhere((product) => product['id'] == productId);
       if (index != -1) {
-        bestSellerProducts[index]['isFavorite'] = !bestSellerProducts[index]['isFavorite'];
+        bestSellerProducts[index]['isFavorite'] =
+            !bestSellerProducts[index]['isFavorite'];
         bestSellerProducts.refresh();
       }
     } else if (section == 'backAgain') {
-      final index = backAgainProducts.indexWhere((product) => product['id'] == productId);
+      final index =
+          backAgainProducts.indexWhere((product) => product['id'] == productId);
       if (index != -1) {
-        backAgainProducts[index]['isFavorite'] = !backAgainProducts[index]['isFavorite'];
+        backAgainProducts[index]['isFavorite'] =
+            !backAgainProducts[index]['isFavorite'];
         backAgainProducts.refresh();
       }
     }
   }
-  
+
   /// Add product to cart with minimum required options (handled by backend)
   Future<void> addToCart(int productId) async {
     try {
@@ -373,7 +399,6 @@ class HomeController extends GetxController {
         quantity: 1,
         additionalOptions: [], // Empty - backend will choose minimum required
       );
-
     } catch (e) {
       Get.snackbar(
         'خطأ',
@@ -389,24 +414,20 @@ class HomeController extends GetxController {
       }
     }
   }
-  
+
   void onSearchTap() {
     Get.toNamed(AppRoutes.SEARCH);
   }
-  
+
   void onNotificationTap() {
-    // TODO: Navigate to notifications screen
-    Get.snackbar(
-      'Notifications',
-      'Notifications screen coming soon',
-      snackPosition: SnackPosition.BOTTOM,
-    );
+    // Navigate to notifications screen
+    Get.toNamed('/notifications');
   }
-  
+
   void onChatTap() {
     Get.toNamed('/conversations');
   }
-  
+
   void onSeeAllTap(String section) {
     if (section == 'restaurants') {
       // Navigate to All Restaurants screen
@@ -534,19 +555,23 @@ class HomeController extends GetxController {
         // Update home restaurants (featured + nearby)
         homeRestaurants.clear();
         if (data['featured_restaurants'] != null) {
-          homeRestaurants.addAll(List<Map<String, dynamic>>.from(data['featured_restaurants']));
+          homeRestaurants.addAll(
+              List<Map<String, dynamic>>.from(data['featured_restaurants']));
         }
         if (data['nearby_restaurants'] != null) {
-          homeRestaurants.addAll(List<Map<String, dynamic>>.from(data['nearby_restaurants']));
+          homeRestaurants.addAll(
+              List<Map<String, dynamic>>.from(data['nearby_restaurants']));
         }
 
         // Update home products (popular + trending)
         homeProducts.clear();
         if (data['popular_products'] != null) {
-          homeProducts.addAll(List<Map<String, dynamic>>.from(data['popular_products']));
+          homeProducts.addAll(
+              List<Map<String, dynamic>>.from(data['popular_products']));
         }
         if (data['trending_products'] != null) {
-          homeProducts.addAll(List<Map<String, dynamic>>.from(data['trending_products']));
+          homeProducts.addAll(
+              List<Map<String, dynamic>>.from(data['trending_products']));
         }
 
         // Apply current filter after loading home data
@@ -650,5 +675,4 @@ class HomeController extends GetxController {
         }
     }
   }
-
 }
