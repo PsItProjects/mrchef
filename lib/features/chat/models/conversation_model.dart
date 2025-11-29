@@ -194,6 +194,42 @@ class MessageModel {
     );
   }
 
+  /// Create from Firestore document
+  factory MessageModel.fromFirestore(Map<String, dynamic> data, String docId) {
+    return MessageModel(
+      id: int.tryParse(docId) ?? 0,
+      conversationId: data['conversation_id'] ?? 0,
+      repliedToMessageId: data['replied_to_message_id'],
+      repliedToMessage: null,
+      senderType: data['sender_type'] ?? 'customer',
+      senderId: data['sender_id'] ?? 0,
+      message: data['message'] ?? '',
+      messageType: data['message_type'] ?? 'text',
+      attachments: data['attachments'],
+      isReadByCustomer: data['is_read_by_customer'] ?? false,
+      isReadByMerchant: data['is_read_by_merchant'] ?? false,
+      createdAt: data['created_at'] != null
+          ? (data['created_at'] as dynamic).toDate()
+          : null,
+    );
+  }
+
+  /// Convert to Firestore document
+  Map<String, dynamic> toFirestore() {
+    return {
+      'conversation_id': conversationId,
+      'replied_to_message_id': repliedToMessageId,
+      'sender_type': senderType,
+      'sender_id': senderId,
+      'message': message,
+      'message_type': messageType,
+      'attachments': attachments,
+      'is_read_by_customer': isReadByCustomer,
+      'is_read_by_merchant': isReadByMerchant,
+      'created_at': createdAt,
+    };
+  }
+
   bool get isFromCustomer => senderType == 'customer';
   bool get isFromMerchant => senderType == 'merchant';
 }

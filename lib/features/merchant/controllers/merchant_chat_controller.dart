@@ -1,7 +1,10 @@
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mrsheaf/core/network/api_client.dart';
+import 'package:mrsheaf/core/services/fcm_service.dart';
+import 'package:mrsheaf/core/services/realtime_chat_service.dart';
 import 'package:mrsheaf/features/chat/models/conversation_model.dart';
 import 'package:mrsheaf/features/merchant/services/merchant_chat_service.dart';
 
@@ -15,6 +18,7 @@ class MerchantChatController extends GetxController {
   final RxBool isLoading = false.obs;
   final RxBool isSending = false.obs;
   final RxInt highlightedMessageId = 0.obs;
+  final RxBool isOtherTyping = false.obs;
 
   // Track updating status per order (orderId -> isUpdating)
   final RxMap<int, bool> updatingOrders = <int, bool>{}.obs;
@@ -32,6 +36,10 @@ class MerchantChatController extends GetxController {
 
   // GlobalKeys for each message to enable scrolling to specific messages
   final Map<int, GlobalKey> messageKeys = {};
+
+  // Real-time subscriptions
+  StreamSubscription? _messagesSubscription;
+  StreamSubscription? _typingSubscription;
 
   late int conversationId;
 
@@ -105,6 +113,84 @@ class MerchantChatController extends GetxController {
     }
 
     loadMessages();
+
+    // Notify backend that user entered this chat
+    _enterChat();
+
+    // Setup real-time listeners
+    _setupRealtimeListeners();
+  }
+
+  @override
+  void onClose() {
+    // Cancel subscriptions
+    _messagesSubscription?.cancel();
+    _typingSubscription?.cancel();
+
+    // Notify backend that user left this chat
+    _leaveChat();
+
+    // Clean up realtime service
+    if (Get.isRegistered<RealtimeChatService>()) {
+      RealtimeChatService.instance.disposeConversation(conversationId);
+    }
+
+    messageController.dispose();
+    scrollController.dispose();
+    super.onClose();
+  }
+
+  /// Setup real-time listeners for messages and typing
+  void _setupRealtimeListeners() {
+    if (!Get.isRegistered<RealtimeChatService>()) return;
+
+    final realtimeService = RealtimeChatService.instance;
+
+    // Listen to new messages
+    _messagesSubscription =
+        realtimeService.listenToMessages(conversationId).listen((newMessages) {
+      // Only add new messages that we don't have
+      for (var msg in newMessages) {
+        if (!messages.any((m) => m.id == msg.id)) {
+          messages.add(msg);
+          messageKeys[msg.id] = GlobalKey();
+          _scrollToBottom();
+        }
+      }
+    });
+
+    // Listen to typing indicator
+    _typingSubscription = realtimeService
+        .listenToTyping(conversationId, 'customer')
+        .listen((isTyping) {
+      isOtherTyping.value = isTyping;
+    });
+  }
+
+  /// Notify backend that user entered this chat (to prevent push notifications)
+  Future<void> _enterChat() async {
+    try {
+      if (Get.isRegistered<FCMService>()) {
+        await FCMService.instance.enterChat(conversationId);
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error entering chat: $e');
+      }
+    }
+  }
+
+  /// Notify backend that user left this chat
+  Future<void> _leaveChat() async {
+    try {
+      if (Get.isRegistered<FCMService>()) {
+        await FCMService.instance.leaveChat();
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error leaving chat: $e');
+      }
+    }
   }
 
   /// Check if specific order is pending and can be approved
@@ -241,13 +327,6 @@ class MerchantChatController extends GetxController {
         agreedPrice: agreedPrice);
   }
 
-  @override
-  void onClose() {
-    messageController.dispose();
-    scrollController.dispose();
-    super.onClose();
-  }
-
   /// Load messages for this conversation
   Future<void> loadMessages() async {
     try {
@@ -313,6 +392,13 @@ class MerchantChatController extends GetxController {
           await _chatService.sendMessage(conversationId, messageText);
       messages.add(newMessage);
       messageKeys[newMessage.id] = GlobalKey();
+
+      // Sync to Firestore for real-time
+      if (Get.isRegistered<RealtimeChatService>()) {
+        RealtimeChatService.instance
+            .syncMessageToFirestore(conversationId, newMessage);
+      }
+
       _scrollToBottom();
     } catch (e) {
       String errorMessage = e.toString();
@@ -361,4 +447,12 @@ class MerchantChatController extends GetxController {
   }
 
   Future<void> refreshMessages() async => await loadMessages();
+
+  /// Notify that user is typing
+  void setTyping(bool isTyping) {
+    if (Get.isRegistered<RealtimeChatService>()) {
+      RealtimeChatService.instance
+          .setTyping(conversationId, 'merchant', isTyping);
+    }
+  }
 }

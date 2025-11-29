@@ -35,6 +35,8 @@ dependencies:
   flutter_dotenv: ^5.2.1
   firebase_core:
   cloud_firestore:
+  firebase_messaging:
+  flutter_local_notifications: ^18.0.1
   webview_flutter: ^4.4.2
 
 dev_dependencies:

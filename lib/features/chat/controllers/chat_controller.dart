@@ -1,6 +1,9 @@
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/services/fcm_service.dart';
+import 'package:mrsheaf/core/services/realtime_chat_service.dart';
 import 'package:mrsheaf/features/chat/models/conversation_model.dart';
 import 'package:mrsheaf/features/chat/services/chat_service.dart';
 
@@ -13,6 +16,7 @@ class ChatController extends GetxController {
   final RxBool isLoading = false.obs;
   final RxBool isSending = false.obs;
   final RxInt highlightedMessageId = 0.obs;
+  final RxBool isOtherTyping = false.obs;
 
   // Text controller for message input
   final TextEditingController messageController = TextEditingController();
@@ -20,6 +24,10 @@ class ChatController extends GetxController {
 
   // GlobalKeys for each message to enable scrolling to specific messages
   final Map<int, GlobalKey> messageKeys = {};
+
+  // Real-time subscriptions
+  StreamSubscription? _messagesSubscription;
+  StreamSubscription? _typingSubscription;
 
   late int conversationId;
   int? repliedToMessageId; // For storing the message ID to reply to
@@ -54,13 +62,84 @@ class ChatController extends GetxController {
     }
 
     loadMessages();
+
+    // Notify backend that user entered this chat
+    _enterChat();
+
+    // Setup real-time listeners
+    _setupRealtimeListeners();
   }
 
   @override
   void onClose() {
+    // Cancel subscriptions
+    _messagesSubscription?.cancel();
+    _typingSubscription?.cancel();
+
+    // Notify backend that user left this chat
+    _leaveChat();
+
+    // Clean up realtime service
+    if (Get.isRegistered<RealtimeChatService>()) {
+      RealtimeChatService.instance.disposeConversation(conversationId);
+    }
+
     messageController.dispose();
     scrollController.dispose();
     super.onClose();
+  }
+
+  /// Setup real-time listeners for messages and typing
+  void _setupRealtimeListeners() {
+    if (!Get.isRegistered<RealtimeChatService>()) return;
+
+    final realtimeService = RealtimeChatService.instance;
+
+    // Listen to new messages
+    _messagesSubscription =
+        realtimeService.listenToMessages(conversationId).listen((newMessages) {
+      // Only add new messages that we don't have
+      for (var msg in newMessages) {
+        if (!messages.any((m) => m.id == msg.id)) {
+          messages.add(msg);
+          messageKeys[msg.id] = GlobalKey();
+          _scrollToBottom();
+        }
+      }
+    });
+
+    // Listen to typing indicator
+    _typingSubscription = realtimeService
+        .listenToTyping(conversationId, 'merchant')
+        .listen((isTyping) {
+      isOtherTyping.value = isTyping;
+    });
+  }
+
+  /// Notify backend that user entered this chat (to prevent push notifications)
+  Future<void> _enterChat() async {
+    try {
+      if (Get.isRegistered<FCMService>()) {
+        await FCMService.instance.enterChat(conversationId);
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error entering chat: $e');
+      }
+    }
+  }
+
+  /// Notify backend that user left this chat
+  Future<void> _leaveChat() async {
+    try {
+      if (Get.isRegistered<FCMService>()) {
+        await FCMService.instance.leaveChat();
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error leaving chat: $e');
+      }
+    }
   }
 
   /// Load messages for this conversation
@@ -127,6 +206,12 @@ class ChatController extends GetxController {
       // Create GlobalKey for new message
       messageKeys[newMessage.id] = GlobalKey();
 
+      // Sync to Firestore for real-time
+      if (Get.isRegistered<RealtimeChatService>()) {
+        RealtimeChatService.instance
+            .syncMessageToFirestore(conversationId, newMessage);
+      }
+
       // Clear replied message reference
       repliedToMessageId = null;
 
@@ -171,7 +256,8 @@ class ChatController extends GetxController {
   void scrollToMessage(int messageId) {
     final key = messageKeys[messageId];
     if (key == null || key.currentContext == null) {
-      print('⚠️ Message key not found or context is null for message #$messageId');
+      print(
+          '⚠️ Message key not found or context is null for message #$messageId');
       return;
     }
 
@@ -196,5 +282,12 @@ class ChatController extends GetxController {
   Future<void> refreshMessages() async {
     await loadMessages();
   }
-}
 
+  /// Notify that user is typing
+  void setTyping(bool isTyping) {
+    if (Get.isRegistered<RealtimeChatService>()) {
+      RealtimeChatService.instance
+          .setTyping(conversationId, 'customer', isTyping);
+    }
+  }
+}

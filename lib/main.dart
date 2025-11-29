@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -12,6 +13,8 @@ import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/core/services/app_service.dart';
 import 'package:mrsheaf/core/services/language_service.dart';
 import 'package:mrsheaf/core/services/theme_service.dart';
+import 'package:mrsheaf/core/services/fcm_service.dart';
+import 'package:mrsheaf/core/services/realtime_chat_service.dart';
 import 'package:mrsheaf/core/network/api_client.dart';
 import 'package:mrsheaf/features/favorites/controllers/favorites_controller.dart';
 
@@ -22,6 +25,10 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
+  // Set up background message handler
+  FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+
   // Load environment variables
   await dotenv.load(fileName: ".env");
 
@@ -41,7 +48,8 @@ void main() async {
 
   // Initialize services
   await Get.putAsync(() => ThemeService().onInit().then((_) => ThemeService()));
-  await Get.putAsync(() => LanguageService().onInit().then((_) => LanguageService()));
+  await Get.putAsync(
+      () => LanguageService().onInit().then((_) => LanguageService()));
   await Get.putAsync(() => AppService().onInit().then((_) => AppService()));
 
   // Initialize ApiClient
@@ -49,6 +57,12 @@ void main() async {
 
   // Initialize FavoritesController early
   Get.put(FavoritesController(), permanent: true);
+
+  // Initialize FCM Service
+  await Get.putAsync(() => FCMService().init());
+
+  // Initialize Realtime Chat Service
+  await Get.putAsync(() => RealtimeChatService().init());
 
   runApp(const MyApp());
 }
@@ -62,16 +76,16 @@ class MyApp extends StatelessWidget {
 
     return Obx(() {
       final isArabic = languageService.currentLanguage == 'ar';
-      final locale = isArabic
-          ? const Locale('ar', 'SA')
-          : const Locale('en', 'US');
+      final locale =
+          isArabic ? const Locale('ar', 'SA') : const Locale('en', 'US');
 
       return Directionality(
         textDirection: isArabic ? TextDirection.rtl : TextDirection.ltr,
         child: Listener(
           onPointerUp: (_) {
             FocusScopeNode currentFocus = FocusScope.of(context);
-            if (!currentFocus.hasPrimaryFocus && currentFocus.focusedChild != null) {
+            if (!currentFocus.hasPrimaryFocus &&
+                currentFocus.focusedChild != null) {
               currentFocus.focusedChild?.unfocus();
             }
           },
@@ -89,8 +103,6 @@ class MyApp extends StatelessWidget {
           ),
         ),
       );
-
-
     });
   }
 }

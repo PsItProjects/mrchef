@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/models/api_response.dart';
 import '../../../core/services/language_service.dart';
+import '../../../core/services/fcm_service.dart';
 import '../models/user_model.dart';
 import '../models/auth_request.dart';
 import '../models/auth_response.dart';
@@ -192,6 +193,15 @@ class AuthService extends getx.GetxService {
           if (response.data['data'] != null &&
               response.data['data']['user_type'] != null) {
             await _saveUserType(response.data['data']['user_type']);
+          }
+
+          // Associate FCM token with authenticated user
+          try {
+            if (getx.Get.isRegistered<FCMService>()) {
+              await FCMService.instance.associateWithUser();
+            }
+          } catch (e) {
+            print('Error associating FCM token: $e');
           }
         }
 
@@ -415,6 +425,15 @@ class AuthService extends getx.GetxService {
   Future<ApiResponse<void>> logout() async {
     try {
       isLoading.value = true;
+
+      // Deactivate FCM token before logout
+      try {
+        if (getx.Get.isRegistered<FCMService>()) {
+          await FCMService.instance.deactivate();
+        }
+      } catch (e) {
+        print('Error deactivating FCM token: $e');
+      }
 
       // Determine the correct logout endpoint based on user type
       final userType = currentUser.value?.userType ?? 'customer';
