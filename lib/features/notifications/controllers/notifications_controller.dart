@@ -2,13 +2,16 @@ import 'package:get/get.dart';
 import 'package:mrsheaf/features/notifications/services/notifications_service.dart';
 
 class NotificationsController extends GetxController {
+  static const String tag = 'notifications';
+
   final NotificationsService _notificationsService =
       Get.find<NotificationsService>();
 
   // State
   final RxBool isLoading = false.obs;
   final RxBool isLoadingMore = false.obs;
-  final RxList<Map<String, dynamic>> notifications = <Map<String, dynamic>>[].obs;
+  final RxList<Map<String, dynamic>> notifications =
+      <Map<String, dynamic>>[].obs;
   final RxInt unreadCount = 0.obs;
 
   // Pagination
@@ -20,6 +23,11 @@ class NotificationsController extends GetxController {
   void onInit() {
     super.onInit();
     loadNotifications();
+  }
+
+  /// Refresh notifications (called from FCM when new notification arrives)
+  void refreshNotifications() {
+    loadNotifications(refresh: true);
   }
 
   /// Load notifications from API
@@ -43,7 +51,7 @@ class NotificationsController extends GetxController {
 
       if (data != null) {
         final List<dynamic> notificationsList = data['notifications'] ?? [];
-        
+
         // Format notifications
         final formatted = notificationsList.map((n) {
           final notifData = n['data'] ?? n;
@@ -60,7 +68,7 @@ class NotificationsController extends GetxController {
             'time_ago': _getTimeAgo(n['created_at']),
           };
         }).toList();
-        
+
         notifications.addAll(formatted.cast<Map<String, dynamic>>());
 
         // Update pagination info
@@ -99,8 +107,8 @@ class NotificationsController extends GetxController {
     await loadNotifications();
   }
 
-  /// Refresh notifications
-  Future<void> refresh() async {
+  /// Refresh notifications (pull to refresh)
+  Future<void> onRefresh() async {
     await loadNotifications(refresh: true);
   }
 
@@ -169,4 +177,3 @@ class NotificationsController extends GetxController {
     }
   }
 }
-

@@ -22,13 +22,18 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     if (!Get.isRegistered<NotificationsService>()) {
       Get.put(NotificationsService());
     }
-    controller = Get.put(NotificationsController());
+    // Register with tag for FCM to find and refresh
+    controller = Get.put(
+      NotificationsController(),
+      tag: NotificationsController.tag,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TranslationHelper.isRTL ? TextDirection.rtl : TextDirection.ltr,
+      textDirection:
+          TranslationHelper.isRTL ? TextDirection.rtl : TextDirection.ltr,
       child: Scaffold(
         backgroundColor: Colors.grey[100],
         appBar: _buildAppBar(),
@@ -81,7 +86,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       }
 
       return RefreshIndicator(
-        onRefresh: controller.refresh,
+        onRefresh: controller.onRefresh,
         color: AppColors.primaryColor,
         child: NotificationListener<ScrollNotification>(
           onNotification: (notification) {
@@ -152,10 +157,12 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       decoration: BoxDecoration(
         color: isRead ? Colors.white : AppColors.primaryColor.withAlpha(15),
         borderRadius: BorderRadius.circular(12),
-        border: isRead ? null : Border.all(
-          color: AppColors.primaryColor.withAlpha(50),
-          width: 1,
-        ),
+        border: isRead
+            ? null
+            : Border.all(
+                color: AppColors.primaryColor.withAlpha(50),
+                width: 1,
+              ),
       ),
       child: Material(
         color: Colors.transparent,
@@ -192,7 +199,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                               notification['title'] ?? '',
                               style: TextStyle(
                                 fontSize: 16,
-                                fontWeight: isRead ? FontWeight.w500 : FontWeight.bold,
+                                fontWeight:
+                                    isRead ? FontWeight.w500 : FontWeight.bold,
                                 color: Colors.grey[800],
                               ),
                             ),
@@ -244,4 +252,3 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     }
   }
 }
-

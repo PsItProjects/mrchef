@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:ui';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:mrsheaf/core/services/fcm_service.dart';
 
 class LanguageService extends GetxService {
   static LanguageService get instance => Get.find<LanguageService>();
@@ -55,8 +56,23 @@ class LanguageService extends GetxService {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('user_language', languageCode);
       _currentLanguage.value = languageCode;
+
+      // Update device language on server for push notifications
+      _updateDeviceLanguage(languageCode);
     } catch (e) {
       print('Error saving language: $e');
+    }
+  }
+
+  /// Update device language on server for push notifications
+  void _updateDeviceLanguage(String languageCode) {
+    try {
+      if (Get.isRegistered<FCMService>()) {
+        final fcmService = Get.find<FCMService>();
+        fcmService.updateLanguage(languageCode);
+      }
+    } catch (e) {
+      print('Error updating device language: $e');
     }
   }
 

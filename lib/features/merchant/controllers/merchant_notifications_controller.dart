@@ -2,13 +2,16 @@ import 'package:get/get.dart';
 import 'package:mrsheaf/features/merchant/services/merchant_notifications_service.dart';
 
 class MerchantNotificationsController extends GetxController {
+  static const String tag = 'merchant_notifications';
+
   final MerchantNotificationsService _notificationsService =
       Get.find<MerchantNotificationsService>();
 
   // State
   final RxBool isLoading = false.obs;
   final RxBool isLoadingMore = false.obs;
-  final RxList<Map<String, dynamic>> notifications = <Map<String, dynamic>>[].obs;
+  final RxList<Map<String, dynamic>> notifications =
+      <Map<String, dynamic>>[].obs;
   final RxInt unreadCount = 0.obs;
 
   // Pagination
@@ -20,6 +23,11 @@ class MerchantNotificationsController extends GetxController {
   void onInit() {
     super.onInit();
     loadNotifications();
+  }
+
+  /// Refresh notifications (called from FCM when new notification arrives)
+  void refreshNotifications() {
+    loadNotifications(refresh: true);
   }
 
   /// Load notifications from API
@@ -69,8 +77,8 @@ class MerchantNotificationsController extends GetxController {
     await loadNotifications();
   }
 
-  /// Refresh notifications
-  Future<void> refresh() async {
+  /// Refresh notifications (pull to refresh)
+  Future<void> onRefresh() async {
     await loadNotifications(refresh: true);
   }
 
@@ -146,4 +154,3 @@ class MerchantNotificationsController extends GetxController {
     }
   }
 }
-

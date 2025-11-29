@@ -3,6 +3,9 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get/get.dart';
 import 'package:mrsheaf/core/network/api_client.dart';
+import 'package:mrsheaf/core/services/language_service.dart';
+import 'package:mrsheaf/features/merchant/controllers/merchant_notifications_controller.dart';
+import 'package:mrsheaf/features/notifications/controllers/notifications_controller.dart';
 
 /// Background message handler - must be top-level function
 @pragma('vm:entry-point')
@@ -103,14 +106,33 @@ class FCMService extends GetxService {
 
     try {
       final apiClient = Get.find<ApiClient>();
+      final language = Get.find<LanguageService>().currentLanguage;
+
       await apiClient.post('/device/register-token', data: {
         'device_token': _deviceToken,
         'device_type': Platform.isAndroid ? 'android' : 'ios',
         'device_name': Platform.localHostname,
+        'language': language,
       });
-      print('✅ Device token registered with backend');
+      print('✅ Device token registered with backend (lang: $language)');
     } catch (e) {
       print('❌ Error registering token: $e');
+    }
+  }
+
+  /// Update device language when user changes language
+  Future<void> updateLanguage(String language) async {
+    if (_deviceToken == null) return;
+
+    try {
+      final apiClient = Get.find<ApiClient>();
+      await apiClient.post('/device/update-language', data: {
+        'device_token': _deviceToken,
+        'language': language,
+      });
+      print('✅ Device language updated to: $language');
+    } catch (e) {
+      print('❌ Error updating language: $e');
     }
   }
 
@@ -147,6 +169,47 @@ class FCMService extends GetxService {
 
     // Show local notification
     _showLocalNotification(message);
+
+    // Trigger notifications screen refresh for system notifications
+    if (type == 'system' ||
+        type == 'promotion' ||
+        type == 'new_order' ||
+        type == 'order_status_changed') {
+      _triggerNotificationsRefresh();
+    }
+  }
+
+  /// Trigger notifications screen refresh
+  void _triggerNotificationsRefresh() {
+    // Notify any listening controllers to refresh using GetX
+    _refreshMerchantNotifications();
+    _refreshCustomerNotifications();
+  }
+
+  void _refreshMerchantNotifications() {
+    try {
+      if (Get.isRegistered<MerchantNotificationsController>(
+          tag: MerchantNotificationsController.tag)) {
+        final controller = Get.find<MerchantNotificationsController>(
+            tag: MerchantNotificationsController.tag);
+        controller.refreshNotifications();
+      }
+    } catch (_) {
+      // Controller not registered, ignore
+    }
+  }
+
+  void _refreshCustomerNotifications() {
+    try {
+      if (Get.isRegistered<NotificationsController>(
+          tag: NotificationsController.tag)) {
+        final controller =
+            Get.find<NotificationsController>(tag: NotificationsController.tag);
+        controller.refreshNotifications();
+      }
+    } catch (_) {
+      // Controller not registered, ignore
+    }
   }
 
   /// Show local notification
