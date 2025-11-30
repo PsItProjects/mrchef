@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:mrsheaf/core/localization/translation_helper.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/core/widgets/language_switcher.dart';
 import 'package:mrsheaf/features/auth/controllers/new_signup_controller.dart';
@@ -26,7 +25,8 @@ class NewSignupScreen extends StatelessWidget {
             children: [
               // Header with back button and language selector
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -44,7 +44,6 @@ class NewSignupScreen extends StatelessWidget {
                       ),
                     ),
 
-
                     Container(
                       margin: EdgeInsets.symmetric(horizontal: 10),
                       child: Row(
@@ -53,32 +52,28 @@ class NewSignupScreen extends StatelessWidget {
                             isCompact: true,
                             showLabel: false,
                           ),
-
                         ],
                       ),
                     ),
                     // Language selector
-
                   ],
                 ),
               ),
 
-              // Gray circle (background decoration)
+              // App Logo
               SizedBox(height: 20),
-              Container(
+              Image.asset(
+                'assets/mr_sheaf_logo.png',
                 width: 120,
                 height: 120,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Color(0xFFD2D2D2),
-                ),
+                fit: BoxFit.contain,
               ),
 
               SizedBox(height: 30),
 
               // Title
               Text(
-                TranslationHelper.tr('get_started'),
+                'get_started'.tr,
                 style: TextStyle(
                   fontFamily: 'Lato',
                   fontWeight: FontWeight.w700,
@@ -116,7 +111,7 @@ class NewSignupScreen extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          TranslationHelper.tr('already_have_account'),
+                          'already_have_account'.tr,
                           style: TextStyle(
                             fontFamily: 'Lato',
                             fontWeight: FontWeight.w400,
@@ -127,7 +122,7 @@ class NewSignupScreen extends StatelessWidget {
                         GestureDetector(
                           onTap: () => Get.toNamed(AppRoutes.LOGIN),
                           child: Text(
-                            TranslationHelper.tr('login'),
+                            'login'.tr,
                             style: TextStyle(
                               fontFamily: 'Lato',
                               fontWeight: FontWeight.w700,
@@ -150,15 +145,30 @@ class NewSignupScreen extends StatelessWidget {
   }
 
   Widget _buildUserVendorToggle(NewSignupController controller) {
-    return Obx(() => Container(
+    return Obx(() {
+      // Simple approach: Keep entries order consistent
+      // index 0 = Customer, index 1 = Vendor
+      // The widget handles RTL layout internally
+      final entries = [
+        SegmentedButtonSlideEntry(label: 'customer'.tr),
+        SegmentedButtonSlideEntry(label: 'vendor'.tr),
+      ];
+
+      // selectedEntry: 0 = Customer, 1 = Vendor
+      final selectedEntry = controller.isVendor.value ? 1 : 0;
+
+      return Directionality(
+        // Force LTR for this widget to ensure consistent behavior
+        textDirection: TextDirection.ltr,
+        child: Container(
           height: 42,
           child: SegmentedButtonSlide(
-            entries: [
-              SegmentedButtonSlideEntry(label: TranslationHelper.tr('customer')),
-              SegmentedButtonSlideEntry(label: TranslationHelper.tr('vendor')),
-            ],
-            selectedEntry: controller.isVendor.value ? 0 : 1,
-            onChange: (index) => controller.toggleUserType(index == 1),
+            entries: entries,
+            selectedEntry: selectedEntry,
+            onChange: (index) {
+              // index 0 = Customer, index 1 = Vendor
+              controller.toggleUserType(index == 1);
+            },
             colors: SegmentedButtonSlideColors(
               barColor: Color(0xFFE3E3E3),
               backgroundSelectedColor: Color(0xFFFACD02),
@@ -166,25 +176,10 @@ class NewSignupScreen extends StatelessWidget {
               foregroundUnselectedColor: Color(0xFF5E5E5E),
               hoverColor: Color(0xFFFACD02),
             ),
-            // slideCurve: Curves.easeInOut,
-            // animationDuration: Duration(milliseconds: 200),
-            // height: 42,
-            // padding: EdgeInsets.all(2),
-            // borderRadius: BorderRadius.circular(10),
-            // selectedTextStyle: TextStyle(
-            //   fontFamily: 'Lato',
-            //   fontWeight: FontWeight.w700,
-            //   fontSize: 16,
-            //   color: Color(0xFF592E2C),
-            // ),
-            // unselectedTextStyle: TextStyle(
-            //   fontFamily: 'Lato',
-            //   fontWeight: FontWeight.w600,
-            //   fontSize: 16,
-            //   color: Color(0xFF5E5E5E),
-            // ),
           ),
-        ));
+        ),
+      );
+    });
   }
 
   Widget _buildFormFields(NewSignupController controller) {
@@ -240,7 +235,8 @@ class NewSignupScreen extends StatelessWidget {
   }
 
   Widget _buildInputField(
-      String label, String placeholder, TextEditingController textController, {String? errorMessage}) {
+      String label, String placeholder, TextEditingController textController,
+      {String? errorMessage}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -258,11 +254,10 @@ class NewSignupScreen extends StatelessWidget {
           height: 50,
           decoration: BoxDecoration(
             border: Border.all(
-              color: errorMessage != null && errorMessage.isNotEmpty
-                  ? Colors.red
-                  : Color(0xFFD2D2D2),
-              width: 1
-            ),
+                color: errorMessage != null && errorMessage.isNotEmpty
+                    ? Colors.red
+                    : Color(0xFFD2D2D2),
+                width: 1),
             borderRadius: BorderRadius.circular(10),
           ),
           child: TextField(
@@ -298,8 +293,8 @@ class NewSignupScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildInputFieldWithError(
-      String label, String placeholder, TextEditingController textController, RxString errorObservable) {
+  Widget _buildInputFieldWithError(String label, String placeholder,
+      TextEditingController textController, RxString errorObservable) {
     return GetBuilder<NewSignupController>(
       builder: (controller) => _buildInputField(
         label,
@@ -312,110 +307,109 @@ class NewSignupScreen extends StatelessWidget {
 
   Widget _buildPhoneField(NewSignupController controller) {
     return Obx(() => Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'phone_number'.tr,
-          style: TextStyle(
-            fontFamily: 'Lato',
-            fontWeight: FontWeight.w600,
-            fontSize: 16,
-            color: Color(0xFF262626),
-          ),
-        ),
-        SizedBox(height: 8),
-        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Country code container
-            Container(
-              height: 50,
-              padding: EdgeInsets.symmetric(horizontal: 8),
-              decoration: BoxDecoration(
-                border: Border.all(color: Color(0xFF262626), width: 1),
-                borderRadius: BorderRadius.circular(10),
+            Text(
+              'phone_number'.tr,
+              style: TextStyle(
+                fontFamily: 'Lato',
+                fontWeight: FontWeight.w600,
+                fontSize: 16,
+                color: Color(0xFF262626),
               ),
-              child: Row(
-                children: [
-                  Container(
-                    width: 24,
-                    height: 24,
-                    decoration: BoxDecoration(
-                      color: Color(0xFF006C35),
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                    child: Center(
-                      child: Text(
-                        'SA',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 8,
-                          fontWeight: FontWeight.bold,
+            ),
+            SizedBox(height: 8),
+            Row(
+              children: [
+                // Country code container
+                Container(
+                  height: 50,
+                  padding: EdgeInsets.symmetric(horizontal: 8),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Color(0xFF262626), width: 1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 24,
+                        height: 24,
+                        decoration: BoxDecoration(
+                          color: Color(0xFF006C35),
+                          borderRadius: BorderRadius.circular(2),
                         ),
+                        child: Center(
+                          child: Text(
+                            'SA',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 8,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                      SizedBox(width: 8),
+                      Text(
+                        '+966',
+                        style: TextStyle(
+                          fontFamily: 'Lato',
+                          fontWeight: FontWeight.w400,
+                          fontSize: 14,
+                          color: Color(0xFF1C1C1C),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(width: 10),
+                // Phone number input
+                Expanded(
+                  child: Container(
+                    height: 50,
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                          color: controller.phoneNumberError.value.isNotEmpty
+                              ? Colors.red
+                              : Color(0xFFE3E3E3),
+                          width: 1),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: TextField(
+                      controller: controller.phoneController,
+                      keyboardType: TextInputType.number,
+                      decoration: InputDecoration(
+                        hintText: '50 123 4567',
+                        hintStyle: TextStyle(
+                          fontFamily: 'Lato',
+                          fontWeight: FontWeight.w400,
+                          fontSize: 14,
+                          color: Color(0xFFB7B7B7),
+                        ),
+                        border: InputBorder.none,
+                        contentPadding:
+                            EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                       ),
                     ),
                   ),
-                  SizedBox(width: 8),
-                  Text(
-                    '+966',
-                    style: TextStyle(
-                      fontFamily: 'Lato',
-                      fontWeight: FontWeight.w400,
-                      fontSize: 14,
-                      color: Color(0xFF1C1C1C),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            SizedBox(width: 10),
-            // Phone number input
-            Expanded(
-              child: Container(
-                height: 50,
-                decoration: BoxDecoration(
-                  border: Border.all(
-                    color: controller.phoneNumberError.value.isNotEmpty
-                        ? Colors.red
-                        : Color(0xFFE3E3E3),
-                    width: 1
-                  ),
-                  borderRadius: BorderRadius.circular(10),
                 ),
-                child: TextField(
-                  controller: controller.phoneController,
-                  keyboardType: TextInputType.number,
-                  decoration: InputDecoration(
-                    hintText: '50 123 4567',
-                    hintStyle: TextStyle(
-                      fontFamily: 'Lato',
-                      fontWeight: FontWeight.w400,
-                      fontSize: 14,
-                      color: Color(0xFFB7B7B7),
-                    ),
-                    border: InputBorder.none,
-                    contentPadding:
-                        EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              ],
+            ),
+            // Error message
+            if (controller.phoneNumberError.value.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Text(
+                  controller.phoneNumberError.value,
+                  style: TextStyle(
+                    color: Colors.red,
+                    fontSize: 12,
+                    fontFamily: 'Lato',
                   ),
                 ),
               ),
-            ),
           ],
-        ),
-        // Error message
-        if (controller.phoneNumberError.value.isNotEmpty)
-          Padding(
-            padding: const EdgeInsets.only(top: 8),
-            child: Text(
-              controller.phoneNumberError.value,
-              style: TextStyle(
-                color: Colors.red,
-                fontSize: 12,
-                fontFamily: 'Lato',
-              ),
-            ),
-          ),
-      ],
-    ));
+        ));
   }
 
   Widget _buildTermsCheckbox(NewSignupController controller) {
@@ -464,13 +458,15 @@ class NewSignupScreen extends StatelessWidget {
           // width: 380,
           // height: 50,
           child: ElevatedButton(
-            onPressed: (controller.agreeToTerms.value && !controller.isLoading.value)
-                ? controller.signup
-                : null,
+            onPressed:
+                (controller.agreeToTerms.value && !controller.isLoading.value)
+                    ? controller.signup
+                    : null,
             style: ElevatedButton.styleFrom(
-              backgroundColor: (controller.agreeToTerms.value && !controller.isLoading.value)
-                  ? AppColors.primaryColor
-                  : AppColors.disabledColor,
+              backgroundColor:
+                  (controller.agreeToTerms.value && !controller.isLoading.value)
+                      ? AppColors.primaryColor
+                      : AppColors.disabledColor,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),
               ),
@@ -486,9 +482,10 @@ class NewSignupScreen extends StatelessWidget {
                     ),
                   )
                 : Text(
-                    controller.isVendor.value ? TranslationHelper.tr('continue') : TranslationHelper.tr('sign_up'),
+                    controller.isVendor.value ? 'continue'.tr : 'sign_up'.tr,
                     style: AppTheme.buttonTextStyle.copyWith(
-                      color: (controller.agreeToTerms.value && !controller.isLoading.value)
+                      color: (controller.agreeToTerms.value &&
+                              !controller.isLoading.value)
                           ? AppColors.searchIconColor
                           : AppColors.textLightColor,
                     ),

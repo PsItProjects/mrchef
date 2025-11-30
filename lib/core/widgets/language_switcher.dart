@@ -55,8 +55,9 @@ class LanguageSwitcher extends StatelessWidget {
               color: iconColor ?? AppColors.textDarkColor,
             ),
             const SizedBox(width: 4),
+            // Show the OPPOSITE language (the one it will switch TO)
             Text(
-              isArabic ? 'ع' : 'EN',
+              isArabic ? 'EN' : 'ع',
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
@@ -214,7 +215,9 @@ class LanguageSwitcher extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
-                      color: isSelected ? AppColors.primaryColor : AppColors.textDarkColor,
+                      color: isSelected
+                          ? AppColors.primaryColor
+                          : AppColors.textDarkColor,
                     ),
                   ),
                   if (name != englishName)
@@ -259,7 +262,7 @@ extension LanguageSwitcherExtension on Widget {
     bool isCompact = false,
   }) {
     if (!showInAppBar) return this;
-    
+
     return Scaffold(
       appBar: AppBar(
         actions: [

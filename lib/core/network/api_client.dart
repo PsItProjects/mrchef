@@ -7,7 +7,6 @@ import '../services/language_service.dart';
 import '../localization/translation_helper.dart';
 
 class ApiClient {
-
   late Dio _dio;
   static ApiClient? _instance;
   bool _isHandlingUnauthorized = false; // Flag to prevent multiple redirects
@@ -21,15 +20,18 @@ class ApiClient {
     _instance ??= ApiClient._internal();
     return _instance!;
   }
-  
+
   void _setupInterceptors() {
     _dio.options.baseUrl = ApiConstants.baseUrl;
-    _dio.options.connectTimeout = const Duration(seconds: 60); // Increased for file uploads
-    _dio.options.receiveTimeout = const Duration(seconds: 300); // 5 minutes for large files
-    _dio.options.sendTimeout = const Duration(seconds: 300); // 5 minutes for file uploads
+    _dio.options.connectTimeout =
+        const Duration(seconds: 60); // Increased for file uploads
+    _dio.options.receiveTimeout =
+        const Duration(seconds: 300); // 5 minutes for large files
+    _dio.options.sendTimeout =
+        const Duration(seconds: 300); // 5 minutes for file uploads
 
     print('🔧 ApiClient initialized with: ${ApiConstants.currentServerInfo}');
-    
+
     // Request interceptor
     _dio.interceptors.add(
       InterceptorsWrapper(
@@ -40,7 +42,7 @@ class ApiClient {
           if (token != null) {
             options.headers['Authorization'] = 'Bearer $token';
           }
-          
+
           // Add language header from LanguageService
           try {
             final languageService = LanguageService.instance;
@@ -53,39 +55,55 @@ class ApiClient {
             options.headers['X-Language'] = language;
             options.headers['Accept-Language'] = language;
           }
-          
+
           // Add content type
           options.headers['Content-Type'] = 'application/json';
           options.headers['Accept'] = 'application/json';
-          
+
           print('🚀 REQUEST: ${options.method} ${options.uri}');
           print('📤 Headers: ${options.headers}');
           if (options.data != null) {
             print('📤 Data: ${options.data}');
           }
-          
+
           handler.next(options);
         },
         onResponse: (response, handler) {
-          print('✅ RESPONSE: ${response.statusCode} ${response.requestOptions.uri}');
+          print(
+              '✅ RESPONSE: ${response.statusCode} ${response.requestOptions.uri}');
           print('📥 Data: ${response.data}');
           handler.next(response);
         },
-        onError: (error, handler) {
-          print('❌ ERROR: ${error.response?.statusCode} ${error.requestOptions.uri}');
+        onError: (error, handler) async {
+          print(
+              '❌ ERROR: ${error.response?.statusCode} ${error.requestOptions.uri}');
           print('❌ Message: ${error.message}');
           print('❌ Data: ${error.response?.data}');
 
           // Handle token expiration (401 Unauthorized)
           if (error.response?.statusCode == 401) {
-            // Only handle if it's a token expiration, not a login failure
             final uri = error.requestOptions.uri.toString();
-            final isLoginRequest = uri.contains('/login') ||
-                                   uri.contains('/verify-login-otp') ||
-                                   uri.contains('/verify-otp');
 
-            if (!isLoginRequest) {
-              _handleUnauthorized();
+            // Skip 401 handling for auth-related and device endpoints (guest allowed)
+            final isExcludedRequest = uri.contains('/login') ||
+                uri.contains('/verify-login-otp') ||
+                uri.contains('/verify-otp') ||
+                uri.contains('/send-login-otp') ||
+                uri.contains('/send-otp') ||
+                uri.contains('/register') ||
+                uri.contains('/device/'); // Device endpoints (guest allowed)
+
+            if (!isExcludedRequest) {
+              // Only show session expired if user was actually logged in
+              final prefs = await SharedPreferences.getInstance();
+              final token = prefs.getString('auth_token');
+
+              if (token != null && token.isNotEmpty) {
+                _handleUnauthorized();
+              } else {
+                print(
+                    '⚠️ 401 received but user not logged in, skipping session expired message');
+              }
             }
           }
 
@@ -94,7 +112,7 @@ class ApiClient {
       ),
     );
   }
-  
+
   void _handleUnauthorized() async {
     // Prevent multiple simultaneous redirects
     if (_isHandlingUnauthorized) {
@@ -135,7 +153,8 @@ class ApiClient {
               TranslationHelper.tr('session_expired'),
               TranslationHelper.tr('please_login_again'),
               snackPosition: getx.SnackPosition.BOTTOM,
-              backgroundColor: getx.Get.theme.colorScheme.error.withOpacity(0.1),
+              backgroundColor:
+                  getx.Get.theme.colorScheme.error.withOpacity(0.1),
               colorText: getx.Get.theme.colorScheme.error,
               duration: const Duration(seconds: 3),
             );
@@ -191,12 +210,14 @@ class ApiClient {
       final prefs = await SharedPreferences.getInstance();
 
       // Clear all cached API responses
-      final keys = prefs.getKeys().where((key) =>
-        key.startsWith('cache_') ||
-        key.startsWith('products_') ||
-        key.startsWith('categories_') ||
-        key.startsWith('kitchens_')
-      ).toList();
+      final keys = prefs
+          .getKeys()
+          .where((key) =>
+              key.startsWith('cache_') ||
+              key.startsWith('products_') ||
+              key.startsWith('categories_') ||
+              key.startsWith('kitchens_'))
+          .toList();
 
       for (String key in keys) {
         await prefs.remove(key);
@@ -207,7 +228,7 @@ class ApiClient {
       print('❌ ApiClient: Error clearing cache: $e');
     }
   }
-  
+
   // GET request
   Future<Response> get(
     String path, {
@@ -225,7 +246,7 @@ class ApiClient {
       rethrow;
     }
   }
-  
+
   // POST request
   Future<Response> post(
     String path, {
@@ -245,7 +266,7 @@ class ApiClient {
       rethrow;
     }
   }
-  
+
   // PUT request
   Future<Response> put(
     String path, {

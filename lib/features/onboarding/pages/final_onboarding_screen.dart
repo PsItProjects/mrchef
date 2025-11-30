@@ -121,9 +121,11 @@ class FinalOnboardingScreen extends StatelessWidget {
                 onTap: () {
                   // Toggle language
                   final languageService = Get.find<LanguageService>();
-                  final newLanguage = languageService.currentLanguage == 'ar' ? 'en' : 'ar';
+                  final newLanguage =
+                      languageService.currentLanguage == 'ar' ? 'en' : 'ar';
                   languageService.setLanguage(newLanguage);
-                  Get.updateLocale(Locale(newLanguage, newLanguage == 'ar' ? 'SA' : 'US'));
+                  Get.updateLocale(
+                      Locale(newLanguage, newLanguage == 'ar' ? 'SA' : 'US'));
                 },
                 child: Container(
                   padding: const EdgeInsets.all(4),
@@ -143,7 +145,8 @@ class FinalOnboardingScreen extends StatelessWidget {
                       SizedBox(width: 4),
                       Obx(() {
                         final languageService = Get.find<LanguageService>();
-                        final isArabic = languageService.currentLanguageRx.value == 'ar';
+                        final isArabic =
+                            languageService.currentLanguageRx.value == 'ar';
                         return Text(
                           isArabic ? 'arabic'.tr : 'english'.tr,
                           style: TextStyle(
@@ -242,26 +245,6 @@ class FinalOnboardingScreen extends StatelessWidget {
                     ),
                     SizedBox(height: 40), // Bottom padding
                   ],
-                ),
-              ),
-            ),
-
-            // Navigation bar (bottom)
-            Positioned(
-              bottom: 0,
-              left: 0,
-              right: 0,
-              child: Container(
-                height: 28,
-                child: Center(
-                  child: Container(
-                    width: 72,
-                    height: 2,
-                    decoration: BoxDecoration(
-                      color: Color(0xFF262626),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
                 ),
               ),
             ),

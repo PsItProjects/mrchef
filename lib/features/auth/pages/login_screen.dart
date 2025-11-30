@@ -37,18 +37,44 @@ class _LoginScreenState extends State<LoginScreen> {
                       isCompact: true,
                       showLabel: false,
                     ),
-
                   ],
                 ),
               ),
               Spacer(),
-              // Yellow circle (background decoration)
+              // App Logo
               Container(
                 width: 120,
                 height: 120,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Color(0xFFD2D2D2), // Gray circle as per Figma
+                ),
+                child: ClipOval(
+                  child: Image.asset(
+                    'assets/mr_sheaf_logo.png',
+                    width: 120,
+                    height: 120,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      // Fallback to splash logo if main logo not found
+                      return Image.asset(
+                        'assets/splash_logo.png',
+                        width: 120,
+                        height: 120,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          // Final fallback to gray circle
+                          return Container(
+                            width: 120,
+                            height: 120,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Color(0xFFD2D2D2),
+                            ),
+                          );
+                        },
+                      );
+                    },
+                  ),
                 ),
               ),
 
@@ -88,101 +114,108 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         SizedBox(height: 8),
 
-                        // Phone input row
-                        Row(
-                          children: [
-                            // Country code container
-                            Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                border: Border.all(
-                                    color: Color(0xFF262626), width: 1),
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  // Saudi flag icon
-                                  Container(
-                                    width: 24,
-                                    height: 24,
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(4),
-                                    ),
-                                    child: ClipRRect(
-                                      borderRadius: BorderRadius.circular(4),
-                                      child: Container(
-                                        color: Color(
-                                            0xFF006C35), // Saudi flag green
-                                        child: Center(
-                                          child: Text(
-                                            '🇸🇦',
-                                            style: TextStyle(fontSize: 16),
+                        // Phone input row - force LTR direction
+                        Directionality(
+                          textDirection: TextDirection.ltr,
+                          child: Row(
+                            children: [
+                              // Country code container
+                              Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  border: Border.all(
+                                      color: Color(0xFF262626), width: 1),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    // Saudi flag icon
+                                    Container(
+                                      width: 24,
+                                      height: 24,
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(4),
+                                      ),
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(4),
+                                        child: Container(
+                                          color: Color(
+                                              0xFF006C35), // Saudi flag green
+                                          child: Center(
+                                            child: Text(
+                                              '🇸🇦',
+                                              style: TextStyle(fontSize: 16),
+                                            ),
                                           ),
                                         ),
                                       ),
                                     ),
+                                    SizedBox(width: 8),
+                                    Text(
+                                      '+966',
+                                      style: TextStyle(
+                                        fontFamily: 'Lato',
+                                        fontWeight: FontWeight.w400,
+                                        fontSize: 14,
+                                        color: Color(0xFF1C1C1C),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              SizedBox(width: 10),
+
+                              // Phone number input
+                              Expanded(
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    border: Border.all(
+                                        color: Color(0xFFE3E3E3), width: 1),
+                                    borderRadius: BorderRadius.circular(10),
                                   ),
-                                  SizedBox(width: 8),
-                                  Text(
-                                    '+966',
+                                  child: TextField(
+                                    controller: controller.phoneController,
+                                    keyboardType: TextInputType.phone,
+                                    textDirection: TextDirection.ltr,
+                                    textAlign: TextAlign.left,
                                     style: TextStyle(
                                       fontFamily: 'Lato',
                                       fontWeight: FontWeight.w400,
                                       fontSize: 14,
                                       color: Color(0xFF1C1C1C),
                                     ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            SizedBox(width: 10),
-
-                            // Phone number input
-                            Expanded(
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  border: Border.all(
-                                      color: Color(0xFFE3E3E3), width: 1),
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                child: TextField(
-                                  controller: controller.phoneController,
-                                  keyboardType: TextInputType.phone,
-                                  style: TextStyle(
-                                    fontFamily: 'Lato',
-                                    fontWeight: FontWeight.w400,
-                                    fontSize: 14,
-                                    color: Color(0xFF1C1C1C),
-                                  ),
-                                  decoration: InputDecoration(
-                                    hintText: TranslationHelper.tr('enter_phone'),
-                                    hintStyle: TextStyle(
-                                      fontFamily: 'Lato',
-                                      fontWeight: FontWeight.w400,
-                                      fontSize: 14,
-                                      color: Color(0xFFB7B7B7),
+                                    decoration: InputDecoration(
+                                      hintText:
+                                          TranslationHelper.tr('enter_phone'),
+                                      hintStyle: TextStyle(
+                                        fontFamily: 'Lato',
+                                        fontWeight: FontWeight.w400,
+                                        fontSize: 14,
+                                        color: Color(0xFFB7B7B7),
+                                      ),
+                                      hintTextDirection: TextDirection.ltr,
+                                      border: InputBorder.none,
+                                      contentPadding: EdgeInsets.all(16),
                                     ),
-                                    border: InputBorder.none,
-                                    contentPadding: EdgeInsets.all(16),
+                                    onChanged: (value) {
+                                      // Auto-format phone number with spaces
+                                      String formatted =
+                                          _formatPhoneNumber(value);
+                                      if (formatted != value) {
+                                        controller.phoneController.value =
+                                            TextEditingValue(
+                                          text: formatted,
+                                          selection: TextSelection.collapsed(
+                                              offset: formatted.length),
+                                        );
+                                      }
+                                    },
                                   ),
-                                  onChanged: (value) {
-                                    // Auto-format phone number with spaces
-                                    String formatted =
-                                        _formatPhoneNumber(value);
-                                    if (formatted != value) {
-                                      controller.phoneController.value =
-                                          TextEditingValue(
-                                        text: formatted,
-                                        selection: TextSelection.collapsed(
-                                            offset: formatted.length),
-                                      );
-                                    }
-                                  },
                                 ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ],
                     ),
@@ -199,7 +232,8 @@ class _LoginScreenState extends State<LoginScreen> {
                           child: Container(
                             height: 60,
                             child: ElevatedButton(
-                              onPressed: (controller.isPhoneNumberValid.value && !controller.isLoading.value)
+                              onPressed: (controller.isPhoneNumberValid.value &&
+                                      !controller.isLoading.value)
                                   ? () {
                                       // Send login OTP using controller
                                       final controller =
@@ -208,9 +242,11 @@ class _LoginScreenState extends State<LoginScreen> {
                                     }
                                   : null, // Disable button if phone number is invalid or loading
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: (controller.isPhoneNumberValid.value && !controller.isLoading.value)
-                                    ? AppColors.primaryColor
-                                    : AppColors.disabledColor,
+                                backgroundColor:
+                                    (controller.isPhoneNumberValid.value &&
+                                            !controller.isLoading.value)
+                                        ? AppColors.primaryColor
+                                        : AppColors.disabledColor,
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(10),
                                 ),
@@ -222,15 +258,18 @@ class _LoginScreenState extends State<LoginScreen> {
                                       height: 20,
                                       child: CircularProgressIndicator(
                                         strokeWidth: 2,
-                                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                        valueColor:
+                                            AlwaysStoppedAnimation<Color>(
+                                                Colors.white),
                                       ),
                                     )
                                   : Text(
                                       TranslationHelper.tr('login'),
                                       style: AppTheme.buttonTextStyle.copyWith(
-                                        color: controller.isPhoneNumberValid.value
-                                            ? AppColors.searchIconColor
-                                            : AppColors.textLightColor,
+                                        color:
+                                            controller.isPhoneNumberValid.value
+                                                ? AppColors.searchIconColor
+                                                : AppColors.textLightColor,
                                       ),
                                     ),
                             ),
@@ -291,8 +330,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ],
               ),
-
-
             ],
           ),
         ),

@@ -6,25 +6,42 @@ import '../models/auth_request.dart';
 
 class LoginController extends GetxController {
   final formKey = GlobalKey<FormState>();
-  final phoneController = TextEditingController();
-  final countryCodeController = TextEditingController(text: '+966');
+  late TextEditingController phoneController;
+  late TextEditingController countryCodeController;
 
   final RxBool isLoading = false.obs;
   final RxBool isPhoneNumberValid = false.obs;
-  bool _isDisposed = false;
+  bool _isInitialized = false;
 
   final AuthService _authService = Get.find<AuthService>();
 
   @override
   void onInit() {
     super.onInit();
-    phoneController.addListener(_validatePhoneNumber);
+    _initControllers();
+  }
+
+  void _initControllers() {
+    if (!_isInitialized) {
+      phoneController = TextEditingController();
+      countryCodeController = TextEditingController(text: '+966');
+      phoneController.addListener(_validatePhoneNumber);
+      _isInitialized = true;
+    }
   }
 
   void _validatePhoneNumber() {
-    if (!_isDisposed) {
+    if (_isInitialized) {
       String phoneNumber = phoneController.text.replaceAll(' ', '');
       isPhoneNumberValid.value = phoneNumber.length >= 9;
+    }
+  }
+
+  /// Reset phone input for new login attempt
+  void resetPhoneInput() {
+    if (_isInitialized) {
+      phoneController.clear();
+      isPhoneNumberValid.value = false;
     }
   }
 
@@ -106,10 +123,12 @@ class LoginController extends GetxController {
 
   @override
   void onClose() {
-    _isDisposed = true;
-    phoneController.removeListener(_validatePhoneNumber);
-    phoneController.dispose();
-    countryCodeController.dispose();
+    if (_isInitialized) {
+      phoneController.removeListener(_validatePhoneNumber);
+      phoneController.dispose();
+      countryCodeController.dispose();
+      _isInitialized = false;
+    }
     super.onClose();
   }
 }

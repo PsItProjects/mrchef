@@ -9,8 +9,15 @@ class AuthBinding extends Bindings {
   @override
   void dependencies() {
     Get.put<AuthService>(AuthService(), permanent: true);
-    Get.put<LoginController>(LoginController());
-    Get.put<SignupController>(SignupController());
-    Get.put<NewSignupController>(NewSignupController());
+    // Make controllers permanent to prevent disposal on language change
+    if (!Get.isRegistered<LoginController>()) {
+      Get.put<LoginController>(LoginController(), permanent: true);
+    }
+    if (!Get.isRegistered<SignupController>()) {
+      Get.put<SignupController>(SignupController(), permanent: true);
+    }
+    if (!Get.isRegistered<NewSignupController>()) {
+      Get.put<NewSignupController>(NewSignupController(), permanent: true);
+    }
   }
 }
