@@ -47,10 +47,17 @@ void main() async {
   ]);
 
   // Initialize services
-  await Get.putAsync(() => ThemeService().onInit().then((_) => ThemeService()));
-  await Get.putAsync(
-      () => LanguageService().onInit().then((_) => LanguageService()));
-  await Get.putAsync(() => AppService().onInit().then((_) => AppService()));
+  final themeService = ThemeService();
+  await themeService.onInit();
+  Get.put(themeService, permanent: true);
+
+  final languageService = LanguageService();
+  await languageService.onInit();
+  Get.put(languageService, permanent: true);
+
+  final appService = AppService();
+  await appService.onInit();
+  Get.put(appService, permanent: true);
 
   // Initialize ApiClient
   Get.put(ApiClient.instance, permanent: true);

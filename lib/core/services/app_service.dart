@@ -6,26 +6,40 @@ import '../../features/profile/services/profile_service.dart';
 class AppService extends GetxService {
   final RxBool isInitialized = false.obs;
   final RxString initialRoute = '/splash'.obs;
+  bool _hasInitialized = false; // Prevent double initialization
 
   @override
   Future<void> onInit() async {
     super.onInit();
+    if (_hasInitialized) {
+      print('⚠️ AppService.onInit() already called, skipping...');
+      return;
+    }
+    _hasInitialized = true;
+    print('🚀 AppService.onInit() starting...');
     await _initializeApp();
+    print('🚀 AppService.onInit() completed, isInitialized: ${isInitialized.value}');
   }
 
   Future<void> _initializeApp() async {
     try {
+      print('📱 _initializeApp() starting...');
+      
       // Initialize shared preferences
       await SharedPreferences.getInstance();
+      print('📱 SharedPreferences initialized');
       
       // Initialize auth service
       final authService = Get.put<AuthService>(AuthService(), permanent: true);
+      print('📱 AuthService registered');
 
       // Initialize profile service
       Get.put<ProfileService>(ProfileService(), permanent: true);
+      print('📱 ProfileService registered');
       
       // Wait for auth service to load user data
       await Future.delayed(const Duration(milliseconds: 500));
+      print('📱 Auth service delay completed');
       
       // Determine initial route based on authentication status
       print("isuserMarchent oo");
@@ -61,11 +75,14 @@ class AppService extends GetxService {
         }
       }
       
+      print('📱 Setting initialRoute to: ${initialRoute.value}');
       isInitialized.value = true;
+      print('✅ App initialization complete! isInitialized: ${isInitialized.value}');
     } catch (e) {
-      print('Error initializing app: $e');
+      print('❌ Error initializing app: $e');
       initialRoute.value = '/onboarding';
       isInitialized.value = true;
+      print('⚠️ App initialization failed but set isInitialized to true');
     }
   }
 
