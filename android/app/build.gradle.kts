@@ -18,7 +18,7 @@ if (keystorePropertiesFile.exists()) {
 }
 
 android {
-    namespace = "com.example.mrsheaf"
+    namespace = "com.mrsheaf.app"
     compileSdk = 35  // Updated to 35 (required by plugins)
     ndkVersion = "27.0.12077973"
 
@@ -43,7 +43,7 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.example.mrsheaf"
+        applicationId = "com.mrsheaf.app"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = 23  // Required by cloud_firestore plugin
