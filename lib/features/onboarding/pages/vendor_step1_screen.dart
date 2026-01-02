@@ -64,13 +64,28 @@ class VendorStep1Screen extends GetView<VendorStep1Controller> {
                 ],
               ),
 
-              // Gray circle (background decoration)
+              // App logo circle
               Container(
                 width: 120,
                 height: 120,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: Color(0xFFD2D2D2),
+                ),
+                child: ClipOval(
+                  child: Image.asset(
+                    'assets/mr_sheaf_logo.png',
+                    width: 120,
+                    height: 120,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Icon(
+                        Icons.restaurant,
+                        size: 60,
+                        color: Colors.white,
+                      );
+                    },
+                  ),
                 ),
               ),
 

@@ -648,6 +648,7 @@ class AppTranslations extends Translations {
           'required_documents_warning': '⚠️ Required Documents',
           'required_documents_message':
               'All three documents must be uploaded to complete registration',
+          'submit_business_info': 'Submit Business Information',
           'file_selected': 'File selected',
           'tap_to_upload': 'Tap to upload',
           'remove_file': 'Remove file',
@@ -1166,6 +1167,7 @@ class AppTranslations extends Translations {
 
           // Settings Menu
           'dark_mode': 'Dark Mode',
+          'biometric_login': 'Fingerprint Login',
           'currency_label': 'Currency',
           'language_label': 'Language',
           'conversations': 'Conversations',
@@ -1877,6 +1879,7 @@ class AppTranslations extends Translations {
           'required_documents_warning': '⚠️ المستندات المطلوبة إلزامية',
           'required_documents_message':
               'يجب رفع جميع المستندات الثلاثة لإكمال التسجيل',
+          'submit_business_info': 'إرسال معلومات النشاط التجاري',
           'file_selected': 'تم اختيار الملف',
           'tap_to_upload': 'اضغط للرفع',
           'remove_file': 'إزالة الملف',
@@ -2381,6 +2384,7 @@ class AppTranslations extends Translations {
 
           // Settings Menu
           'dark_mode': 'الوضع الداكن',
+          'biometric_login': 'تسجيل الدخول بالبصمة',
           'currency_label': 'العملة',
           'language_label': 'اللغة',
           'conversations': 'المحادثات',

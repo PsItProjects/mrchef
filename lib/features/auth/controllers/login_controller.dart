@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mrsheaf/core/routes/app_routes.dart';
+import '../../../core/services/biometric_service.dart';
 import '../services/auth_service.dart';
 import '../models/auth_request.dart';
 
@@ -11,9 +12,16 @@ class LoginController extends GetxController {
 
   final RxBool isLoading = false.obs;
   final RxBool isPhoneNumberValid = false.obs;
+  final RxBool isBiometricLoading = false.obs;
   bool _isInitialized = false;
 
   final AuthService _authService = Get.find<AuthService>();
+  BiometricService? _biometricService;
+  
+  BiometricService get biometricService {
+    _biometricService ??= Get.find<BiometricService>();
+    return _biometricService!;
+  }
 
   @override
   void onInit() {
@@ -119,6 +127,107 @@ class LoginController extends GetxController {
       'Processing Google login...',
       snackPosition: SnackPosition.BOTTOM,
     );
+  }
+
+  /// تسجيل الدخول بالبصمة
+  Future<void> loginWithBiometric() async {
+    if (isBiometricLoading.value) return;
+    
+    isBiometricLoading.value = true;
+
+    try {
+      // التحقق من البصمة أولاً
+      final isAuthenticated = await biometricService.authenticate();
+      
+      if (!isAuthenticated) {
+        Get.snackbar(
+          'فشل التحقق',
+          'لم يتم التعرف على البصمة',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red.withValues(alpha: 0.3),
+        );
+        return;
+      }
+
+      print('🔐 Starting biometric login...');
+      
+      // محاولة تسجيل الدخول بالتوكن المحفوظ
+      final result = await biometricService.loginWithBiometric();
+      
+      print('🔐 Biometric result: ${result != null}');
+      
+      if (result != null && result.token.isNotEmpty) {
+        print('🔐 Token received: ${result.token.substring(0, 10)}...');
+        print('🔐 User type: ${result.userType}');
+        
+        // حفظ التوكن ونوع المستخدم في AuthService
+        await _authService.saveTokenWithUserType(result.token, result.userType);
+        print('🔐 Token saved to AuthService');
+        
+        // محاولة تحميل بيانات المستخدم من السيرفر
+        print('🔐 Loading user from token...');
+        final userLoaded = await _authService.loadUserFromToken();
+        print('🔐 User loaded: $userLoaded');
+        
+        if (userLoaded) {
+          print('✅ Biometric login successful!');
+          Get.snackbar(
+            'تم تسجيل الدخول',
+            'مرحباً بعودتك!',
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: Colors.green.withValues(alpha: 0.3),
+          );
+
+          // التوجيه حسب نوع المستخدم
+          if (result.userType == 'merchant') {
+            print('🔐 Navigating to merchant home...');
+            Get.offAllNamed(AppRoutes.MERCHANT_HOME);
+          } else {
+            print('🔐 Navigating to customer home...');
+            Get.offAllNamed(AppRoutes.HOME);
+          }
+        } else {
+          // التوكن غير صالح أو منتهي الصلاحية - لا نعطل البصمة
+          // سيتم تحديث التوكن تلقائياً عند تسجيل دخول ناجح بـ OTP
+          print('⚠️ Token expired - please login again');
+          Get.snackbar(
+            'انتهت الجلسة',
+            'يرجى تسجيل الدخول بكلمة المرور لمرة واحدة',
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: Colors.orange.withValues(alpha: 0.3),
+          );
+        }
+      } else {
+        // فشل المصادقة البيومترية أو لا توجد بيانات محفوظة
+        print('❌ Biometric authentication failed or no saved data');
+        Get.snackbar(
+          'فشلت المصادقة',
+          'يرجى تسجيل الدخول يدوياً',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red.withValues(alpha: 0.3),
+        );
+      }
+    } catch (e) {
+      print('❌ Biometric login error: $e');
+      Get.snackbar(
+        'خطأ',
+        'حدث خطأ أثناء تسجيل الدخول بالبصمة',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red.withValues(alpha: 0.3),
+      );
+    } finally {
+      isBiometricLoading.value = false;
+    }
+  }
+
+  /// التحقق من توفر البصمة وتفعيلها
+  bool get canShowBiometric {
+    try {
+      return biometricService.isBiometricAvailable.value && 
+             biometricService.isBiometricEnabled.value;
+    } catch (e) {
+      return false;
+    }
   }
 
   @override

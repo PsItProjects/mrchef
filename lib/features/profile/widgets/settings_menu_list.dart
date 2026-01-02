@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/services/biometric_service.dart';
+import 'package:mrsheaf/features/auth/services/auth_service.dart';
 import 'package:mrsheaf/features/profile/controllers/settings_controller.dart';
 import 'package:mrsheaf/features/profile/widgets/settings_menu_item.dart';
 
@@ -20,6 +22,9 @@ class SettingsMenuList extends GetView<SettingsController> {
             onToggleChanged: controller.toggleDarkMode,
             showDivider: true,
           )),
+
+          // Biometric Login - يظهر فقط إذا كان الجهاز يدعم البصمة
+          _buildBiometricToggle(),
           
           // Currency
           Obx(() => SettingsMenuItem(
@@ -96,5 +101,92 @@ class SettingsMenuList extends GetView<SettingsController> {
         ],
       ),
     );
+  }
+
+  /// بناء خيار تفعيل البصمة - يظهر فقط إذا كان الجهاز يدعمها
+  Widget _buildBiometricToggle() {
+    try {
+      final biometricService = Get.find<BiometricService>();
+      
+      return Obx(() {
+        // لا تظهر الخيار إذا الجهاز لا يدعم البصمة
+        if (!biometricService.isBiometricAvailable.value) {
+          return const SizedBox.shrink();
+        }
+
+        return SettingsMenuItem(
+          title: 'biometric_login'.tr,
+          hasToggle: true,
+          toggleValue: biometricService.isBiometricEnabled.value,
+          onToggleChanged: (value) => _handleBiometricToggle(value, biometricService),
+          showDivider: true,
+          isLoading: biometricService.isLoading.value,
+        );
+      });
+    } catch (e) {
+      return const SizedBox.shrink();
+    }
+  }
+
+  /// معالجة تغيير حالة البصمة
+  Future<void> _handleBiometricToggle(bool value, BiometricService biometricService) async {
+    if (value) {
+      // تفعيل البصمة - نحتاج التوكن الحالي من AuthService
+      try {
+        final authService = Get.find<AuthService>();
+        final token = await authService.getToken();
+        final user = authService.currentUser.value;
+        final userType = authService.userType.value;
+        
+        if (token == null || user == null || userType.isEmpty) {
+          Get.snackbar(
+            'فشل التفعيل',
+            'لا يمكن تفعيل البصمة. تأكد من تسجيل الدخول أولاً',
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: Colors.red.withValues(alpha: 0.3),
+          );
+          return;
+        }
+        
+        final success = await biometricService.enableBiometricLogin(
+          token: token,
+          userType: userType,
+          userId: user.id.toString(),
+          phoneNumber: user.phoneNumber ?? '',
+        );
+        
+        if (success) {
+          Get.snackbar(
+            'تم التفعيل',
+            'تم تفعيل تسجيل الدخول بالبصمة',
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: Colors.green.withValues(alpha: 0.3),
+          );
+        } else {
+          Get.snackbar(
+            'فشل التفعيل',
+            'لا يمكن تفعيل البصمة',
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: Colors.red.withValues(alpha: 0.3),
+          );
+        }
+      } catch (e) {
+        Get.snackbar(
+          'فشل التفعيل',
+          'لا يمكن تفعيل البصمة. تأكد من تسجيل الدخول أولاً',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red.withValues(alpha: 0.3),
+        );
+      }
+    } else {
+      // إلغاء تفعيل البصمة
+      await biometricService.disableBiometricLogin();
+      Get.snackbar(
+        'تم الإلغاء',
+        'تم إلغاء تسجيل الدخول بالبصمة',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.orange.withValues(alpha: 0.3),
+      );
+    }
   }
 }

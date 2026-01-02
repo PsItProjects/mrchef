@@ -7,6 +7,7 @@ import '../../../core/network/api_client.dart';
 import '../../../core/models/api_response.dart';
 import '../../../core/services/language_service.dart';
 import '../../../core/services/fcm_service.dart';
+import '../../../core/services/biometric_service.dart';
 import '../models/user_model.dart';
 import '../models/auth_request.dart';
 import '../models/auth_response.dart';
@@ -81,6 +82,34 @@ class AuthService extends getx.GetxService {
     }
   }
 
+  // تحديث التوكن في البصمة إذا كانت مفعلة (تجديد التوكن بعد login ناجح)
+  Future<void> _updateBiometricTokenIfEnabled(
+    String newToken,
+    String userType,
+    UserModel user,
+  ) async {
+    try {
+      if (getx.Get.isRegistered<BiometricService>()) {
+        final biometricService = getx.Get.find<BiometricService>();
+        
+        // إذا كانت البصمة مفعلة، تحديث التوكن والبيانات بدون طلب مصادقة إضافية
+        if (biometricService.isBiometricEnabled.value) {
+          await biometricService.updateCredentialsWithoutAuth(
+            token: newToken,
+            userType: userType,
+            userId: user.id.toString(),
+            phoneNumber: user.phoneNumber ?? '',
+          );
+          
+          print('✅ Biometric credentials updated with new token after login');
+        }
+      }
+    } catch (e) {
+      print('⚠️ Error updating biometric token: $e');
+      // لا نريد أن يفشل تسجيل الدخول بسبب مشكلة في البصمة
+    }
+  }
+
   // Clear user data from local storage
   Future<void> _clearUserFromStorage() async {
     try {
@@ -108,6 +137,99 @@ class AuthService extends getx.GetxService {
       print('❌ Error clearing user from storage: $e');
     }
   }
+
+  /// الحصول على التوكن الحالي
+  Future<String?> getToken() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      return prefs.getString('auth_token');
+    } catch (e) {
+      print('Error getting token: $e');
+      return null;
+    }
+  }
+
+  /// حفظ التوكن (للاستخدام مع البصمة)
+  Future<void> saveToken(String token) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('auth_token', token);
+      isLoggedIn.value = true;
+    } catch (e) {
+      print('Error saving token: $e');
+    }
+  }
+
+  /// حفظ التوكن ونوع المستخدم (للاستخدام مع البصمة)
+  Future<void> saveTokenWithUserType(String token, String type) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('auth_token', token);
+      await prefs.setString('user_type', type);
+      isLoggedIn.value = true;
+      userType.value = type;
+      print('✅ Token and user type saved: $type');
+    } catch (e) {
+      print('Error saving token with user type: $e');
+    }
+  }
+
+  /// تحميل بيانات المستخدم من السيرفر باستخدام التوكن
+  Future<bool> loadUserFromToken() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token');
+      final savedUserType = prefs.getString('user_type');
+      
+      print('🔄 Loading user from token...');
+      print('   Token exists: ${token != null}');
+      print('   User type: $savedUserType');
+      
+      if (token == null) {
+        print('❌ No token found');
+        return false;
+      }
+      
+      // جلب بيانات المستخدم من السيرفر
+      final endpoint = savedUserType == 'merchant' 
+          ? '/merchant/profile' 
+          : '/customer/profile';
+      
+      print('📡 Fetching profile from: $endpoint');
+          
+      final response = await _apiClient.get(endpoint);
+      
+      print('📥 Response status: ${response.statusCode}');
+      print('📥 Response data: ${response.data}');
+      
+      if (response.statusCode == 200 && response.data['data'] != null) {
+        final userData = response.data['data'];
+        
+        // تحميل نوع المستخدم
+        if (savedUserType != null) {
+          userType.value = savedUserType;
+        }
+        
+        currentUser.value = UserModel.fromJson(userData);
+        isLoggedIn.value = true;
+        print('✅ User loaded from token successfully');
+        return true;
+      }
+      
+      print('❌ Failed to load user: Invalid response');
+      return false;
+    } catch (e) {
+      print('❌ Error loading user from token: $e');
+      if (e is DioException) {
+        print('   Status code: ${e.response?.statusCode}');
+        print('   Response: ${e.response?.data}');
+      }
+      return false;
+    }
+  }
+
+  /// الحصول على معرف المستخدم الحالي
+  int? get currentUserId => currentUser.value?.id;
 
   // Send login OTP
   Future<ApiResponse<SendOTPResponse>> sendLoginOTP(
@@ -194,6 +316,13 @@ class AuthService extends getx.GetxService {
               response.data['data']['user_type'] != null) {
             await _saveUserType(response.data['data']['user_type']);
           }
+
+          // تحديث التوكن في البصمة إذا كانت مفعلة
+          await _updateBiometricTokenIfEnabled(
+            apiResponse.data!.token,
+            response.data['data']['user_type'] ?? 'customer',
+            apiResponse.data!.user,
+          );
 
           // Associate FCM token with authenticated user
           try {
@@ -433,6 +562,17 @@ class AuthService extends getx.GetxService {
         }
       } catch (e) {
         print('Error deactivating FCM token: $e');
+      }
+
+      // تعطيل البصمة عند تسجيل الخروج (لأن التوكن سيُلغى من السيرفر)
+      try {
+        if (getx.Get.isRegistered<BiometricService>()) {
+          final biometricService = getx.Get.find<BiometricService>();
+          await biometricService.disableBiometricLogin();
+          print('🔐 Biometric disabled on logout');
+        }
+      } catch (e) {
+        print('Error disabling biometric: $e');
       }
 
       // Determine the correct logout endpoint based on user type

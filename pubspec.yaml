@@ -38,11 +38,36 @@ dependencies:
   firebase_messaging:
   flutter_local_notifications: ^18.0.1
   webview_flutter: ^4.4.2
+  local_auth: ^2.3.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^3.0.1
+  flutter_launcher_icons: ^0.14.3
+  flutter_native_splash: ^2.4.4
+
+# App Icon Configuration
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/mr_sheaf_logo.png"
+  android_adaptive_icon:
+    background: "assets/mr_sheaf_logo.png"
+    foreground: "assets/mr_sheaf_logo.png"
+  min_sdk_android: 21
+  remove_alpha_ios: true
+
+# Native Splash Screen Configuration
+flutter_native_splash:
+  color: "#FFFFFF"
+  image: assets/mr_sheaf_logo.png
+  image_dark: assets/mr_sheaf_logo.png
+  android: true
+  ios: true
+  android_gravity: center
+  ios_content_mode: scaleAspectFit
+  fullscreen: true
 
 flutter:
   uses-material-design: true

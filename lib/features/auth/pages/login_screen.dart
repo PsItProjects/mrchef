@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mrsheaf/core/localization/translation_helper.dart';
+import 'package:mrsheaf/core/services/biometric_service.dart';
 import 'package:mrsheaf/features/auth/controllers/login_controller.dart';
 import 'package:mrsheaf/core/routes/app_routes.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
@@ -275,23 +276,9 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           ),
                         ),
-                        SizedBox(width: 8),
 
-                        // Fingerprint button
-                        Container(
-                          width: 50,
-                          height: 60,
-                          decoration: BoxDecoration(
-                            border: Border.all(
-                                color: AppColors.primaryColor, width: 1),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Icon(
-                            Icons.fingerprint,
-                            color: AppColors.primaryColor,
-                            size: 30,
-                          ),
-                        ),
+                        // Biometric button - يظهر فقط إذا كان الجهاز يدعم البصمة ومفعلة
+                        _buildBiometricButton(controller),
                       ],
                     ),
                   ),
@@ -353,6 +340,67 @@ class _LoginScreenState extends State<LoginScreen> {
       return '${digitsOnly.substring(0, 2)} ${digitsOnly.substring(2)}';
     } else {
       return '${digitsOnly.substring(0, 2)} ${digitsOnly.substring(2, 5)} ${digitsOnly.substring(5)}';
+    }
+  }
+
+  /// بناء زر البصمة - يظهر فقط إذا كان الجهاز يدعمها ومفعلة
+  Widget _buildBiometricButton(LoginController controller) {
+    // استخدام try-catch للتعامل مع حالة عدم تسجيل الخدمة
+    try {
+      final biometricService = Get.find<BiometricService>();
+      
+      return Obx(() {
+        // لا تظهر الزر إذا الجهاز لا يدعم البصمة أو غير مفعلة
+        if (!biometricService.isBiometricAvailable.value || 
+            !biometricService.isBiometricEnabled.value) {
+          return const SizedBox.shrink();
+        }
+
+        return Row(
+          children: [
+            const SizedBox(width: 8),
+            GestureDetector(
+              onTap: controller.isBiometricLoading.value
+                  ? null
+                  : () => controller.loginWithBiometric(),
+              child: Container(
+                width: 50,
+                height: 60,
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: controller.isBiometricLoading.value
+                        ? AppColors.disabledColor
+                        : AppColors.primaryColor,
+                    width: 1,
+                  ),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: controller.isBiometricLoading.value
+                    ? const Center(
+                        child: SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              AppColors.primaryColor,
+                            ),
+                          ),
+                        ),
+                      )
+                    : const Icon(
+                        Icons.fingerprint,
+                        color: AppColors.primaryColor,
+                        size: 30,
+                      ),
+              ),
+            ),
+          ],
+        );
+      });
+    } catch (e) {
+      // إذا لم تكن الخدمة مسجلة، لا تظهر الزر
+      return const SizedBox.shrink();
     }
   }
 }

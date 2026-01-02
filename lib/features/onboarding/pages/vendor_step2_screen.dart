@@ -27,7 +27,32 @@ class VendorStep2Screen extends StatelessWidget {
             child: Column(
               children: [
                 _buildHeader(),
-                const SizedBox(height: 30),
+                const SizedBox(height: 20),
+                // App logo circle
+                Container(
+                  width: 100,
+                  height: 100,
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Color(0xFFD2D2D2),
+                  ),
+                  child: ClipOval(
+                    child: Image.asset(
+                      'assets/mr_sheaf_logo.png',
+                      width: 100,
+                      height: 100,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return const Icon(
+                          Icons.restaurant,
+                          size: 50,
+                          color: Colors.white,
+                        );
+                      },
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 10),
                 const VendorStepper(currentStep: 2),
                 const SizedBox(height: 20),
                 _buildRequiredDocumentsWarning(),
@@ -110,7 +135,7 @@ class VendorStep2Screen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  TranslationHelper.tr('required_documents_warning'),
+                  'required_documents_warning'.tr,
                   style: const TextStyle(
                     fontFamily: 'Lato',
                     fontWeight: FontWeight.w700,
@@ -120,7 +145,7 @@ class VendorStep2Screen extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  TranslationHelper.tr('required_documents_message'),
+                  'required_documents_message'.tr,
                   style: const TextStyle(
                     fontFamily: 'Lato',
                     fontWeight: FontWeight.w400,
@@ -142,42 +167,42 @@ class VendorStep2Screen extends StatelessWidget {
       child: Column(
         children: [
           _buildInputField(
-            TranslationHelper.tr('store_name_english'),
-            TranslationHelper.tr('enter_store_name'),
+            'store_name_english'.tr,
+            'enter_store_name'.tr,
             controller.storeNameEn,
           ),
           const SizedBox(height: 20),
           _buildInputField(
-            TranslationHelper.tr('store_name_arabic'),
-            TranslationHelper.tr('enter_store_name'),
+            'store_name_arabic'.tr,
+            'enter_store_name'.tr,
             controller.storeNameAr,
           ),
           const SizedBox(height: 20),
           _buildInputField(
-            TranslationHelper.tr('commercial_registration_number'),
-            TranslationHelper.tr('enter_commercial_registration'),
+            'commercial_registration_number'.tr,
+            'enter_commercial_registration'.tr,
             controller.commercialRegistrationNumber,
           ),
           const SizedBox(height: 20),
           _buildFileUploadField(
             controller,
             'work_permit',
-            TranslationHelper.tr('work_permit'),
-            TranslationHelper.tr('work_permit_description'),
+            'work_permit'.tr,
+            'work_permit_description'.tr,
           ),
           const SizedBox(height: 20),
           _buildFileUploadField(
             controller,
             'id_or_passport',
-            TranslationHelper.tr('id_or_passport'),
-            TranslationHelper.tr('id_or_passport_description'),
+            'id_or_passport'.tr,
+            'id_or_passport_description'.tr,
           ),
           const SizedBox(height: 20),
           _buildFileUploadField(
             controller,
             'health_certificate',
-            TranslationHelper.tr('health_certificate'),
-            TranslationHelper.tr('health_certificate_description'),
+            'health_certificate'.tr,
+            'health_certificate_description'.tr,
           ),
         ],
       ),
@@ -371,9 +396,9 @@ class VendorStep2Screen extends StatelessWidget {
                 valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
               ),
             )
-          : const Text(
-              'Submit Business Information',
-              style: TextStyle(
+          : Text(
+              'submit_business_info'.tr,
+              style: const TextStyle(
                 fontFamily: 'Lato',
                 fontWeight: FontWeight.w700,
                 fontSize: 18,

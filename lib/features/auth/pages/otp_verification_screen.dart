@@ -70,16 +70,27 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                 ),
               ),
 
-              // Gray circle (background decoration)
+              // App Logo (centered)
               Positioned(
                 top: 84,
-                left: 164,
-                child: Container(
-                  width: 120,
-                  height: 120,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Color(0xFFD2D2D2), // Gray circle as per Figma
+                left: 0,
+                right: 0,
+                child: Center(
+                  child: Image.asset(
+                    'assets/mr_sheaf_logo.png',
+                    width: 120,
+                    height: 120,
+                    fit: BoxFit.contain,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        width: 120,
+                        height: 120,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Color(0xFFD2D2D2),
+                        ),
+                      );
+                    },
                   ),
                 ),
               ),
@@ -276,26 +287,6 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                     ],
                   ],
                 )),
-              ),
-
-              // Navigation bar (bottom)
-              Positioned(
-                bottom: 0,
-                left: 0,
-                right: 0,
-                child: Container(
-                  height: 28,
-                  child: Center(
-                    child: Container(
-                      width: 72,
-                      height: 2,
-                      decoration: BoxDecoration(
-                        color: Color(0xFF262626),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                  ),
-                ),
               ),
             ],
           ),

@@ -2,6 +2,7 @@ import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../features/auth/services/auth_service.dart';
 import '../../features/profile/services/profile_service.dart';
+import 'biometric_service.dart';
 
 class AppService extends GetxService {
   final RxBool isInitialized = false.obs;
@@ -28,6 +29,10 @@ class AppService extends GetxService {
       // Initialize shared preferences
       await SharedPreferences.getInstance();
       print('📱 SharedPreferences initialized');
+      
+      // Initialize biometric service
+      await Get.putAsync<BiometricService>(() => BiometricService().init(), permanent: true);
+      print('📱 BiometricService registered');
       
       // Initialize auth service
       final authService = Get.put<AuthService>(AuthService(), permanent: true);
