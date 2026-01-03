@@ -116,8 +116,8 @@ class ProfileMenuList extends GetView<ProfileController> {
         
         if (token == null || user == null || userType.isEmpty) {
           Get.snackbar(
-            'فشل التفعيل',
-            'لا يمكن تفعيل البصمة. تأكد من تسجيل الدخول أولاً',
+            TranslationHelper.tr('biometric_enable_failed'),
+            TranslationHelper.tr('biometric_login_manually'),
             snackPosition: SnackPosition.BOTTOM,
             backgroundColor: Colors.red.withValues(alpha: 0.3),
           );
@@ -133,23 +133,23 @@ class ProfileMenuList extends GetView<ProfileController> {
         
         if (success) {
           Get.snackbar(
-            'تم التفعيل',
-            'تم تفعيل تسجيل الدخول بالبصمة',
+            TranslationHelper.tr('success'),
+            TranslationHelper.tr('biometric_enable_success'),
             snackPosition: SnackPosition.BOTTOM,
             backgroundColor: Colors.green.withValues(alpha: 0.3),
           );
         } else {
           Get.snackbar(
-            'فشل التفعيل',
-            'لا يمكن تفعيل البصمة',
+            TranslationHelper.tr('error'),
+            TranslationHelper.tr('biometric_enable_failed'),
             snackPosition: SnackPosition.BOTTOM,
             backgroundColor: Colors.red.withValues(alpha: 0.3),
           );
         }
       } catch (e) {
         Get.snackbar(
-          'فشل التفعيل',
-          'لا يمكن تفعيل البصمة. تأكد من تسجيل الدخول أولاً',
+          TranslationHelper.tr('error'),
+          TranslationHelper.tr('biometric_enable_failed'),
           snackPosition: SnackPosition.BOTTOM,
           backgroundColor: Colors.red.withValues(alpha: 0.3),
         );
@@ -158,8 +158,8 @@ class ProfileMenuList extends GetView<ProfileController> {
       // إلغاء تفعيل البصمة
       await biometricService.disableBiometricLogin();
       Get.snackbar(
-        'تم الإلغاء',
-        'تم إلغاء تسجيل الدخول بالبصمة',
+        TranslationHelper.tr('success'),
+        TranslationHelper.tr('biometric_disable_success'),
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.orange.withValues(alpha: 0.3),
       );

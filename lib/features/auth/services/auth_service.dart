@@ -228,6 +228,41 @@ class AuthService extends getx.GetxService {
     }
   }
 
+  /// تجديد التوكن من السيرفر (للبصمة)
+  /// يستخدم التوكن الحالي لطلب توكن جديد
+  Future<RefreshTokenResult?> refreshToken() async {
+    try {
+      print('🔄 Refreshing token...');
+      
+      final response = await _apiClient.post('/auth/refresh-token');
+      
+      if (response.statusCode == 200 && response.data['data'] != null) {
+        final data = response.data['data'];
+        final newToken = data['token'] as String;
+        final refreshedUserType = data['user_type'] as String;
+        
+        // حفظ التوكن الجديد
+        await saveTokenWithUserType(newToken, refreshedUserType);
+        
+        print('✅ Token refreshed successfully');
+        return RefreshTokenResult(
+          token: newToken,
+          userType: refreshedUserType,
+        );
+      }
+      
+      print('❌ Failed to refresh token: Invalid response');
+      return null;
+    } catch (e) {
+      print('❌ Error refreshing token: $e');
+      if (e is DioException) {
+        print('   Status code: ${e.response?.statusCode}');
+        print('   Response: ${e.response?.data}');
+      }
+      return null;
+    }
+  }
+
   /// الحصول على معرف المستخدم الحالي
   int? get currentUserId => currentUser.value?.id;
 
@@ -564,16 +599,8 @@ class AuthService extends getx.GetxService {
         print('Error deactivating FCM token: $e');
       }
 
-      // تعطيل البصمة عند تسجيل الخروج (لأن التوكن سيُلغى من السيرفر)
-      try {
-        if (getx.Get.isRegistered<BiometricService>()) {
-          final biometricService = getx.Get.find<BiometricService>();
-          await biometricService.disableBiometricLogin();
-          print('🔐 Biometric disabled on logout');
-        }
-      } catch (e) {
-        print('Error disabling biometric: $e');
-      }
+      // ⚠️ لا نعطل البصمة عند logout - سيتم تحديث التوكن تلقائياً
+      // عند تسجيل دخول ناجح أو من خلال refresh token
 
       // Determine the correct logout endpoint based on user type
       final userType = currentUser.value?.userType ?? 'customer';
@@ -859,4 +886,15 @@ class AuthService extends getx.GetxService {
       isLoading.value = false;
     }
   }
+}
+
+/// نتيجة تجديد التوكن
+class RefreshTokenResult {
+  final String token;
+  final String userType;
+
+  RefreshTokenResult({
+    required this.token,
+    required this.userType,
+  });
 }

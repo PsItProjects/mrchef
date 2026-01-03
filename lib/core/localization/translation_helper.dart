@@ -103,6 +103,20 @@ class TranslationHelper {
     'profile_update_failed': 'Failed to update profile',
     'error': 'Error',
     'success': 'Success',
+
+    // Biometric Login
+    'biometric_login': 'Fingerprint Login',
+    'biometric_enabled': 'Fingerprint login enabled',
+    'biometric_disabled': 'Fingerprint login disabled',
+    'biometric_enable_success': 'Fingerprint login enabled successfully',
+    'biometric_disable_success': 'Fingerprint login disabled',
+    'biometric_enable_failed': 'Failed to enable fingerprint login',
+    'biometric_auth_failed': 'Fingerprint authentication failed',
+    'biometric_verify_identity': 'Please verify your identity',
+    'biometric_login_success': 'Login successful',
+    'biometric_welcome_back': 'Welcome back!',
+    'biometric_session_expired': 'Session expired',
+    'biometric_login_manually': 'Please login with OTP',
   };
 
   // Arabic translations
@@ -205,6 +219,20 @@ class TranslationHelper {
     'profile_update_failed': 'فشل تحديث الملف الشخصي',
     'error': 'خطأ',
     'success': 'نجح',
+
+    // Biometric Login
+    'biometric_login': 'تسجيل الدخول بالبصمة',
+    'biometric_enabled': 'تسجيل الدخول بالبصمة مفعل',
+    'biometric_disabled': 'تسجيل الدخول بالبصمة معطل',
+    'biometric_enable_success': 'تم تفعيل البصمة بنجاح',
+    'biometric_disable_success': 'تم إلغاء تفعيل البصمة',
+    'biometric_enable_failed': 'فشل تفعيل البصمة',
+    'biometric_auth_failed': 'فشل التحقق بالبصمة',
+    'biometric_verify_identity': 'يرجى التحقق من هويتك',
+    'biometric_login_success': 'تم تسجيل الدخول',
+    'biometric_welcome_back': 'مرحباً بعودتك!',
+    'biometric_session_expired': 'انتهت الجلسة',
+    'biometric_login_manually': 'يرجى تسجيل الدخول برمز التحقق',
   };
 
   /// Get translated text by key

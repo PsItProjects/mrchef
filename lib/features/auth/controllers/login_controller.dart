@@ -187,15 +187,46 @@ class LoginController extends GetxController {
             Get.offAllNamed(AppRoutes.HOME);
           }
         } else {
-          // التوكن غير صالح أو منتهي الصلاحية - لا نعطل البصمة
-          // سيتم تحديث التوكن تلقائياً عند تسجيل دخول ناجح بـ OTP
-          print('⚠️ Token expired - please login again');
-          Get.snackbar(
-            'انتهت الجلسة',
-            'يرجى تسجيل الدخول بكلمة المرور لمرة واحدة',
-            snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: Colors.orange.withValues(alpha: 0.3),
-          );
+          // التوكن غير صالح - محاولة تجديد التوكن
+          print('⚠️ Token expired - trying to refresh...');
+          
+          final refreshResult = await _authService.refreshToken();
+          
+          if (refreshResult != null) {
+            print('✅ Token refreshed successfully!');
+            
+            // تحديث التوكن في البصمة
+            await biometricService.updateCredentialsWithoutAuth(
+              token: refreshResult.token,
+              userType: refreshResult.userType,
+              userId: result.userId,
+              phoneNumber: result.phoneNumber,
+            );
+            
+            // تحميل بيانات المستخدم مرة أخرى
+            final userLoadedAfterRefresh = await _authService.loadUserFromToken();
+            
+            if (userLoadedAfterRefresh) {
+              Get.snackbar(
+                'تم تسجيل الدخول',
+                'مرحباً بعودتك!',
+                snackPosition: SnackPosition.BOTTOM,
+                backgroundColor: Colors.green.withValues(alpha: 0.3),
+              );
+              
+              if (refreshResult.userType == 'merchant') {
+                Get.offAllNamed(AppRoutes.MERCHANT_HOME);
+              } else {
+                Get.offAllNamed(AppRoutes.HOME);
+              }
+            } else {
+              _showLoginRequired();
+            }
+          } else {
+            // فشل تجديد التوكن - يجب تسجيل الدخول يدوياً
+            print('❌ Token refresh failed - manual login required');
+            _showLoginRequired();
+          }
         }
       } else {
         // فشل المصادقة البيومترية أو لا توجد بيانات محفوظة
@@ -218,6 +249,16 @@ class LoginController extends GetxController {
     } finally {
       isBiometricLoading.value = false;
     }
+  }
+
+  /// عرض رسالة طلب تسجيل الدخول يدوياً
+  void _showLoginRequired() {
+    Get.snackbar(
+      'انتهت الجلسة',
+      'يرجى تسجيل الدخول برمز التحقق',
+      snackPosition: SnackPosition.BOTTOM,
+      backgroundColor: Colors.orange.withValues(alpha: 0.3),
+    );
   }
 
   /// التحقق من توفر البصمة وتفعيلها
