@@ -186,6 +186,7 @@ class BiometricService extends GetxService {
   }
   
   /// Perform biometric login - returns credentials if successful
+  /// Note: This assumes biometric authentication was already done by the caller
   Future<BiometricLoginResult?> loginWithBiometric() async {
     try {
       isLoading.value = true;
@@ -195,15 +196,7 @@ class BiometricService extends GetxService {
         return null;
       }
       
-      // Authenticate with biometric
-      final bool authenticated = await authenticate();
-      
-      if (!authenticated) {
-        print('🔐 Biometric authentication failed');
-        return null;
-      }
-      
-      // Return saved credentials
+      // Return saved credentials (biometric auth is done by caller to avoid double prompt)
       final result = BiometricLoginResult(
         token: savedToken!,
         userType: savedUserType!,

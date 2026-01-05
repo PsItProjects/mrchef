@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mrsheaf/core/routes/app_routes.dart';
 import '../../../core/services/biometric_service.dart';
+import '../../../core/network/api_client.dart';
 import '../services/auth_service.dart';
 import '../models/auth_request.dart';
 
@@ -16,6 +17,7 @@ class LoginController extends GetxController {
   bool _isInitialized = false;
 
   final AuthService _authService = Get.find<AuthService>();
+  final ApiClient _apiClient = ApiClient.instance;
   BiometricService? _biometricService;
   
   BiometricService get biometricService {
@@ -134,6 +136,9 @@ class LoginController extends GetxController {
     if (isBiometricLoading.value) return;
     
     isBiometricLoading.value = true;
+    
+    // منع عرض رسالة session expired أثناء عملية البصمة
+    _apiClient.setBiometricLoginInProgress(true);
 
     try {
       // التحقق من البصمة أولاً
@@ -146,12 +151,15 @@ class LoginController extends GetxController {
           snackPosition: SnackPosition.BOTTOM,
           backgroundColor: Colors.red.withValues(alpha: 0.3),
         );
+        // cleanup and return
+        isBiometricLoading.value = false;
+        _apiClient.setBiometricLoginInProgress(false);
         return;
       }
 
       print('🔐 Starting biometric login...');
       
-      // محاولة تسجيل الدخول بالتوكن المحفوظ
+      // محاولة تسجيل الدخول بالتوكن المحفوظ (البصمة تم التحقق منها مسبقاً)
       final result = await biometricService.loginWithBiometric();
       
       print('🔐 Biometric result: ${result != null}');
@@ -187,26 +195,31 @@ class LoginController extends GetxController {
             Get.offAllNamed(AppRoutes.HOME);
           }
         } else {
-          // التوكن غير صالح - محاولة تجديد التوكن
-          print('⚠️ Token expired - trying to refresh...');
+          // التوكن غير صالح - استخدام API البصمة للحصول على توكن جديد
+          print('⚠️ Token expired - calling biometric login API...');
           
-          final refreshResult = await _authService.refreshToken();
+          // استدعاء API تسجيل الدخول بالبصمة
+          final apiResult = await _authService.biometricLoginApi(
+            phoneNumber: result.phoneNumber,
+            userType: result.userType,
+            userId: result.userId,
+          );
           
-          if (refreshResult != null) {
-            print('✅ Token refreshed successfully!');
+          if (apiResult != null) {
+            print('✅ Biometric API login successful!');
             
             // تحديث التوكن في البصمة
             await biometricService.updateCredentialsWithoutAuth(
-              token: refreshResult.token,
-              userType: refreshResult.userType,
+              token: apiResult.token,
+              userType: apiResult.userType,
               userId: result.userId,
               phoneNumber: result.phoneNumber,
             );
             
             // تحميل بيانات المستخدم مرة أخرى
-            final userLoadedAfterRefresh = await _authService.loadUserFromToken();
+            final userLoadedAfterApi = await _authService.loadUserFromToken();
             
-            if (userLoadedAfterRefresh) {
+            if (userLoadedAfterApi) {
               Get.snackbar(
                 'تم تسجيل الدخول',
                 'مرحباً بعودتك!',
@@ -214,7 +227,7 @@ class LoginController extends GetxController {
                 backgroundColor: Colors.green.withValues(alpha: 0.3),
               );
               
-              if (refreshResult.userType == 'merchant') {
+              if (apiResult.userType == 'merchant') {
                 Get.offAllNamed(AppRoutes.MERCHANT_HOME);
               } else {
                 Get.offAllNamed(AppRoutes.HOME);
@@ -223,8 +236,8 @@ class LoginController extends GetxController {
               _showLoginRequired();
             }
           } else {
-            // فشل تجديد التوكن - يجب تسجيل الدخول يدوياً
-            print('❌ Token refresh failed - manual login required');
+            // فشل تسجيل الدخول - يجب تسجيل الدخول يدوياً
+            print('❌ Biometric API login failed - manual login required');
             _showLoginRequired();
           }
         }
@@ -248,6 +261,8 @@ class LoginController extends GetxController {
       );
     } finally {
       isBiometricLoading.value = false;
+      // إعادة تفعيل رسالة session expired
+      _apiClient.setBiometricLoginInProgress(false);
     }
   }
 

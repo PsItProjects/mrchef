@@ -10,6 +10,7 @@ class ApiClient {
   late Dio _dio;
   static ApiClient? _instance;
   bool _isHandlingUnauthorized = false; // Flag to prevent multiple redirects
+  bool _isBiometricLoginInProgress = false; // Flag to suppress 401 during biometric login
 
   ApiClient._internal() {
     _dio = Dio();
@@ -85,15 +86,20 @@ class ApiClient {
             final uri = error.requestOptions.uri.toString();
 
             // Skip 401 handling for auth-related and device endpoints (guest allowed)
+            // Also skip for biometric login flow to avoid showing session expired during biometric re-auth
             final isExcludedRequest = uri.contains('/login') ||
                 uri.contains('/verify-login-otp') ||
                 uri.contains('/verify-otp') ||
                 uri.contains('/send-login-otp') ||
                 uri.contains('/send-otp') ||
                 uri.contains('/register') ||
+                uri.contains('/biometric-login') ||
                 uri.contains('/device/'); // Device endpoints (guest allowed)
 
-            if (!isExcludedRequest) {
+            // Skip if biometric login is in progress
+            if (_isBiometricLoginInProgress) {
+              print('⚠️ 401 during biometric login flow, skipping session expired');
+            } else if (!isExcludedRequest) {
               // Only show session expired if user was actually logged in
               final prefs = await SharedPreferences.getInstance();
               final token = prefs.getString('auth_token');
@@ -325,5 +331,11 @@ class ApiClient {
     } catch (e) {
       rethrow;
     }
+  }
+
+  /// Set biometric login in progress flag to suppress 401 handling
+  void setBiometricLoginInProgress(bool value) {
+    _isBiometricLoginInProgress = value;
+    print('🔐 Biometric login in progress: $value');
   }
 }

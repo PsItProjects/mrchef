@@ -229,12 +229,30 @@ class AuthService extends getx.GetxService {
   }
 
   /// تجديد التوكن من السيرفر (للبصمة)
-  /// يستخدم التوكن الحالي لطلب توكن جديد
-  Future<RefreshTokenResult?> refreshToken() async {
+  /// يستخدم التوكن المحفوظ في البصمة لطلب توكن جديد
+  Future<RefreshTokenResult?> refreshToken({String? oldToken}) async {
     try {
       print('🔄 Refreshing token...');
       
-      final response = await _apiClient.post('/auth/refresh-token');
+      // استخدام التوكن المُمرر أو محاولة الحصول عليه من storage
+      String? tokenToUse = oldToken ?? await getToken();
+      
+      if (tokenToUse == null || tokenToUse.isEmpty) {
+        print('❌ No token available for refresh');
+        return null;
+      }
+      
+      print('🔄 Using token: ${tokenToUse.substring(0, 10)}...');
+      
+      // إرسال الطلب مع التوكن القديم في الـ header
+      final response = await _apiClient.post(
+        '/auth/refresh-token',
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $tokenToUse',
+          },
+        ),
+      );
       
       if (response.statusCode == 200 && response.data['data'] != null) {
         final data = response.data['data'];
@@ -255,6 +273,55 @@ class AuthService extends getx.GetxService {
       return null;
     } catch (e) {
       print('❌ Error refreshing token: $e');
+      if (e is DioException) {
+        print('   Status code: ${e.response?.statusCode}');
+        print('   Response: ${e.response?.data}');
+      }
+      return null;
+    }
+  }
+
+  /// تسجيل الدخول بالبصمة - يُنشئ توكن جديد بناءً على بيانات البصمة المحفوظة
+  /// لا يحتاج توكن صالح - الجهاز يتولى المصادقة
+  Future<BiometricLoginApiResult?> biometricLoginApi({
+    required String phoneNumber,
+    required String userType,
+    required String userId,
+  }) async {
+    try {
+      print('🔐 API: Biometric login request...');
+      print('   Phone: $phoneNumber');
+      print('   User type: $userType');
+      print('   User ID: $userId');
+      
+      final response = await _apiClient.post(
+        '/auth/biometric-login',
+        data: {
+          'phone_number': phoneNumber,
+          'user_type': userType,
+          'user_id': int.parse(userId),
+        },
+      );
+      
+      if (response.statusCode == 200 && response.data['data'] != null) {
+        final data = response.data['data'];
+        final newToken = data['token'] as String;
+        final returnedUserType = data['user_type'] as String;
+        
+        // حفظ التوكن الجديد
+        await saveTokenWithUserType(newToken, returnedUserType);
+        
+        print('✅ Biometric login API successful');
+        return BiometricLoginApiResult(
+          token: newToken,
+          userType: returnedUserType,
+        );
+      }
+      
+      print('❌ Biometric login API failed: Invalid response');
+      return null;
+    } catch (e) {
+      print('❌ Error in biometric login API: $e');
       if (e is DioException) {
         print('   Status code: ${e.response?.statusCode}');
         print('   Response: ${e.response?.data}');
@@ -894,6 +961,17 @@ class RefreshTokenResult {
   final String userType;
 
   RefreshTokenResult({
+    required this.token,
+    required this.userType,
+  });
+}
+
+/// نتيجة تسجيل الدخول بالبصمة من API
+class BiometricLoginApiResult {
+  final String token;
+  final String userType;
+
+  BiometricLoginApiResult({
     required this.token,
     required this.userType,
   });
