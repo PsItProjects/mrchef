@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:mrsheaf/core/routes/app_routes.dart';
 import '../../../core/services/biometric_service.dart';
 import '../../../core/network/api_client.dart';
+import '../../../core/localization/translation_helper.dart';
 import '../services/auth_service.dart';
 import '../models/auth_request.dart';
 
@@ -146,8 +147,8 @@ class LoginController extends GetxController {
       
       if (!isAuthenticated) {
         Get.snackbar(
-          'فشل التحقق',
-          'لم يتم التعرف على البصمة',
+          TranslationHelper.tr('biometric_auth_failed'),
+          TranslationHelper.tr('biometric_verify_identity'),
           snackPosition: SnackPosition.BOTTOM,
           backgroundColor: Colors.red.withValues(alpha: 0.3),
         );
@@ -180,8 +181,8 @@ class LoginController extends GetxController {
         if (userLoaded) {
           print('✅ Biometric login successful!');
           Get.snackbar(
-            'تم تسجيل الدخول',
-            'مرحباً بعودتك!',
+            TranslationHelper.tr('biometric_login_success'),
+            TranslationHelper.tr('biometric_welcome_back'),
             snackPosition: SnackPosition.BOTTOM,
             backgroundColor: Colors.green.withValues(alpha: 0.3),
           );
@@ -221,8 +222,8 @@ class LoginController extends GetxController {
             
             if (userLoadedAfterApi) {
               Get.snackbar(
-                'تم تسجيل الدخول',
-                'مرحباً بعودتك!',
+                TranslationHelper.tr('biometric_login_success'),
+                TranslationHelper.tr('biometric_welcome_back'),
                 snackPosition: SnackPosition.BOTTOM,
                 backgroundColor: Colors.green.withValues(alpha: 0.3),
               );
@@ -245,8 +246,8 @@ class LoginController extends GetxController {
         // فشل المصادقة البيومترية أو لا توجد بيانات محفوظة
         print('❌ Biometric authentication failed or no saved data');
         Get.snackbar(
-          'فشلت المصادقة',
-          'يرجى تسجيل الدخول يدوياً',
+          TranslationHelper.tr('biometric_auth_failed'),
+          TranslationHelper.tr('biometric_login_manually'),
           snackPosition: SnackPosition.BOTTOM,
           backgroundColor: Colors.red.withValues(alpha: 0.3),
         );
@@ -254,8 +255,8 @@ class LoginController extends GetxController {
     } catch (e) {
       print('❌ Biometric login error: $e');
       Get.snackbar(
-        'خطأ',
-        'حدث خطأ أثناء تسجيل الدخول بالبصمة',
+        TranslationHelper.tr('error'),
+        TranslationHelper.tr('biometric_enable_failed'),
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.red.withValues(alpha: 0.3),
       );
@@ -269,8 +270,8 @@ class LoginController extends GetxController {
   /// عرض رسالة طلب تسجيل الدخول يدوياً
   void _showLoginRequired() {
     Get.snackbar(
-      'انتهت الجلسة',
-      'يرجى تسجيل الدخول برمز التحقق',
+      TranslationHelper.tr('biometric_session_expired'),
+      TranslationHelper.tr('biometric_login_manually'),
       snackPosition: SnackPosition.BOTTOM,
       backgroundColor: Colors.orange.withValues(alpha: 0.3),
     );

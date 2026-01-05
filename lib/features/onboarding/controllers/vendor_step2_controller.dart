@@ -3,7 +3,8 @@ import 'package:get/get.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:dio/dio.dart' as dio;
-import '../../../core/network/api_client.dart';
+import 'package:mrsheaf/core/network/api_client.dart';
+import 'package:mrsheaf/core/localization/translation_helper.dart';
 
 class VendorStep2Controller extends GetxController {
   final ApiClient _apiClient = ApiClient.instance;
@@ -169,32 +170,32 @@ class VendorStep2Controller extends GetxController {
   /// Validate form
   bool _validateForm() {
     if (storeNameEn.value.trim().isEmpty) {
-      Get.snackbar('خطأ', 'يرجى إدخال اسم المتجر بالإنجليزية');
+      Get.snackbar(TranslationHelper.tr('error'), TranslationHelper.tr('enter_store_name_en'));
       return false;
     }
 
     if (storeNameAr.value.trim().isEmpty) {
-      Get.snackbar('خطأ', 'يرجى إدخال اسم المتجر بالعربية');
+      Get.snackbar(TranslationHelper.tr('error'), TranslationHelper.tr('enter_store_name_ar'));
       return false;
     }
 
     if (commercialRegistrationNumber.value.trim().isEmpty) {
-      Get.snackbar('خطأ', 'يرجى إدخال رقم السجل التجاري');
+      Get.snackbar(TranslationHelper.tr('error'), TranslationHelper.tr('enter_commercial_registration'));
       return false;
     }
 
     if (workPermitFile.value == null) {
-      Get.snackbar('خطأ', 'يرجى رفع ملف رخصة العمل');
+      Get.snackbar(TranslationHelper.tr('error'), TranslationHelper.tr('upload_work_permit'));
       return false;
     }
 
     if (idOrPassportFile.value == null) {
-      Get.snackbar('خطأ', 'يرجى رفع ملف الهوية أو جواز السفر');
+      Get.snackbar(TranslationHelper.tr('error'), TranslationHelper.tr('upload_id_passport'));
       return false;
     }
 
     if (healthCertificateFile.value == null) {
-      Get.snackbar('خطأ', 'يرجى رفع ملف الشهادة الصحية');
+      Get.snackbar(TranslationHelper.tr('error'), TranslationHelper.tr('upload_health_certificate'));
       return false;
     }
 
