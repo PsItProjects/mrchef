@@ -399,7 +399,7 @@ class MerchantSettingsService extends GetxService {
             // Map current step to route based on what's missing
             // Only 2 steps for merchants:
             // Step 1: subscription_selection → /vendor-step1
-            // Step 2: business_information → /vendor-step2 (includes documents)
+            // Step 2: business_information → /vendor-step2
             if (currentStep == 'subscription_selection') {
               redirectRoute = '/vendor-step1';
             } else if (currentStep == 'business_information') {

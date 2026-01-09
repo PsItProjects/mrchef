@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:mrsheaf/core/routes/app_routes.dart';
 import 'package:mrsheaf/features/onboarding/widgets/vendor_stepper.dart';
 import '../controllers/vendor_step2_controller.dart';
 import '../../../core/theme/app_theme.dart';
@@ -54,8 +53,6 @@ class VendorStep2Screen extends StatelessWidget {
                 ),
                 const SizedBox(height: 10),
                 const VendorStepper(currentStep: 2),
-                const SizedBox(height: 20),
-                _buildRequiredDocumentsWarning(),
                 const SizedBox(height: 20),
                 _buildStoreInformationForm(controller),
                 const SizedBox(height: 40),
@@ -114,53 +111,6 @@ class VendorStep2Screen extends StatelessWidget {
     );
   }
 
-  Widget _buildRequiredDocumentsWarning() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFFFFF3CD),
-        border: Border.all(color: const Color(0xFFFFE69C), width: 1),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        children: [
-          const Icon(
-            Icons.warning_amber_rounded,
-            color: Color(0xFFFF9800),
-            size: 24,
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'required_documents_warning'.tr,
-                  style: const TextStyle(
-                    fontFamily: 'Lato',
-                    fontWeight: FontWeight.w700,
-                    fontSize: 14,
-                    color: Color(0xFF856404),
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'required_documents_message'.tr,
-                  style: const TextStyle(
-                    fontFamily: 'Lato',
-                    fontWeight: FontWeight.w400,
-                    fontSize: 12,
-                    color: Color(0xFF856404),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildStoreInformationForm(VendorStep2Controller controller) {
     return SizedBox(
       width: 380,
@@ -177,33 +127,6 @@ class VendorStep2Screen extends StatelessWidget {
             'enter_store_name'.tr,
             controller.storeNameAr,
           ),
-          const SizedBox(height: 20),
-          _buildInputField(
-            'commercial_registration_number'.tr,
-            'enter_commercial_registration'.tr,
-            controller.commercialRegistrationNumber,
-          ),
-          const SizedBox(height: 20),
-          _buildFileUploadField(
-            controller,
-            'work_permit',
-            'work_permit'.tr,
-            'work_permit_description'.tr,
-          ),
-          const SizedBox(height: 20),
-          _buildFileUploadField(
-            controller,
-            'id_or_passport',
-            'id_or_passport'.tr,
-            'id_or_passport_description'.tr,
-          ),
-          const SizedBox(height: 20),
-          _buildFileUploadField(
-            controller,
-            'health_certificate',
-            'health_certificate'.tr,
-            'health_certificate_description'.tr,
-          ),
         ],
       ),
     );
@@ -218,154 +141,40 @@ class VendorStep2Screen extends StatelessWidget {
           style: const TextStyle(
             fontFamily: 'Lato',
             fontWeight: FontWeight.w600,
-            fontSize: 16,
+            fontSize: 14,
             color: Color(0xFF262626),
           ),
         ),
         const SizedBox(height: 8),
         Container(
-          height: 56,
+          width: double.infinity,
           decoration: BoxDecoration(
-            border: Border.all(
-              color: const Color(0xFFE3E3E3),
-              width: 1,
-            ),
+            color: Colors.white,
+            border: Border.all(color: const Color(0xFFD2D2D2), width: 1),
             borderRadius: BorderRadius.circular(10),
           ),
-          child: TextField(
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          child: TextFormField(
+            initialValue: value.value,
             onChanged: (text) => value.value = text,
+            style: const TextStyle(
+              fontFamily: 'Lato',
+              fontWeight: FontWeight.w400,
+              fontSize: 14,
+              color: Color(0xFF262626),
+            ),
             decoration: InputDecoration(
               hintText: placeholder,
               hintStyle: const TextStyle(
                 fontFamily: 'Lato',
                 fontWeight: FontWeight.w400,
-                fontSize: 14,
+                fontSize: 12,
                 color: Color(0xFFB7B7B7),
               ),
               border: InputBorder.none,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
             ),
           ),
         ),
-      ],
-    );
-  }
-
-  Widget _buildFileUploadField(
-    VendorStep2Controller controller,
-    String fileType,
-    String label,
-    String placeholder,
-  ) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: const TextStyle(
-            fontFamily: 'Lato',
-            fontWeight: FontWeight.w600,
-            fontSize: 16,
-            color: Color(0xFF262626),
-          ),
-        ),
-        const SizedBox(height: 8),
-        Obx(() {
-          final isSelected = controller.isFileSelected(fileType);
-          final isLoading = controller.isFileLoading(fileType);
-          final fileName = controller.getFileName(fileType);
-
-          return GestureDetector(
-            onTap: isLoading ? null : () => controller.pickFile(fileType),
-            child: Container(
-              height: 80,
-              decoration: BoxDecoration(
-                border: Border.all(
-                  color: isSelected
-                    ? const Color(0xFF4CAF50)
-                    : const Color(0xFFE3E3E3),
-                  width: 1,
-                ),
-                borderRadius: BorderRadius.circular(10),
-                color: isSelected
-                  ? const Color(0xFFF1F8E9)
-                  : Colors.white,
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    width: 56,
-                    child: isLoading
-                      ? const SizedBox(
-                          width: 24,
-                          height: 24,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : Icon(
-                          isSelected ? Icons.check_circle : Icons.attach_file,
-                          color: isSelected
-                            ? const Color(0xFF4CAF50)
-                            : const Color(0xFF999999),
-                          size: 24,
-                        ),
-                  ),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        if (isSelected) ...[
-                          Text(
-                            fileName,
-                            style: const TextStyle(
-                              fontFamily: 'Lato',
-                              fontWeight: FontWeight.w600,
-                              fontSize: 14,
-                              color: Color(0xFF4CAF50),
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          Text(
-                            controller.getFileTypeText(fileType),
-                            style: const TextStyle(
-                              fontFamily: 'Lato',
-                              fontWeight: FontWeight.w400,
-                              fontSize: 12,
-                              color: Color(0xFF4CAF50),
-                            ),
-                          ),
-                        ] else ...[
-                          Text(
-                            placeholder,
-                            style: const TextStyle(
-                              fontFamily: 'Lato',
-                              fontWeight: FontWeight.w400,
-                              fontSize: 12,
-                              color: Color(0xFFB7B7B7),
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
-                  if (isSelected)
-                    GestureDetector(
-                      onTap: () => controller.removeFile(fileType),
-                      child: Container(
-                        width: 40,
-                        child: const Icon(
-                          Icons.close,
-                          color: Color(0xFF999999),
-                          size: 20,
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-            ),
-          );
-        }),
       ],
     );
   }
@@ -373,7 +182,7 @@ class VendorStep2Screen extends StatelessWidget {
   Widget _buildSignupButton(VendorStep2Controller controller) {
     return Obx(() => SizedBox(
       width: double.infinity,
-      height: 56,
+      height: 60,
       child: ElevatedButton(
         onPressed: controller.isLoading.value
           ? null
@@ -382,31 +191,34 @@ class VendorStep2Screen extends StatelessWidget {
           backgroundColor: controller.isLoading.value
             ? const Color(0xFFD2D2D2)
             : AppColors.primaryColor,
+          foregroundColor: AppColors.secondaryColor,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(10),
           ),
           elevation: 0,
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
         ),
-        child: controller.isLoading.value
-          ? const SizedBox(
-              width: 24,
-              height: 24,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+        child: Center(
+          child: controller.isLoading.value
+            ? const SizedBox(
+                width: 24,
+                height: 24,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                ),
+              )
+            : Text(
+                'submit_business_info'.tr,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontFamily: 'Lato',
+                  fontWeight: FontWeight.w700,
+                  fontSize: 18,
+                  letterSpacing: -0.005,
+                ),
               ),
-            )
-          : Text(
-              'submit_business_info'.tr,
-              style: const TextStyle(
-                fontFamily: 'Lato',
-                fontWeight: FontWeight.w700,
-                fontSize: 18,
-                color: AppColors.secondaryColor,
-                letterSpacing: -0.005,
-                height: 1.45,
-              ),
-            ),
+        ),
       ),
     ));
   }
