@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -285,74 +286,186 @@ class MerchantChatScreen extends GetView<MerchantChatController> {
   }
 
   Widget _buildMessageInput() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withAlpha(13),
-            blurRadius: 8,
-            offset: const Offset(0, -2),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // Image preview when selected
+        Obx(() {
+          if (controller.selectedImage.value != null) {
+            return Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: const Color(0xFFF5F5F5),
-                borderRadius: BorderRadius.circular(24),
-              ),
-              child: TextField(
-                controller: controller.messageController,
-                textDirection: TranslationHelper.isRTL
-                    ? TextDirection.rtl
-                    : TextDirection.ltr,
-                decoration: InputDecoration(
-                  hintText: TranslationHelper.tr('type_message'),
-                  hintStyle: TextStyle(fontSize: 14, color: Colors.grey[500]),
-                  border: InputBorder.none,
+                color: Colors.grey[100],
+                border: Border(
+                  bottom: BorderSide(color: Colors.grey[300]!, width: 1),
                 ),
-                maxLines: null,
-                textInputAction: TextInputAction.send,
-                onSubmitted: (_) => controller.sendMessage(),
               ),
-            ),
-          ),
-          const SizedBox(width: 12),
-          Obx(() => GestureDetector(
-                onTap:
-                    controller.isSending.value ? null : controller.sendMessage,
-                child: Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    color: controller.isSending.value
-                        ? Colors.grey[400]
-                        : AppColors.primaryColor,
-                    borderRadius: BorderRadius.circular(22),
+              child: Row(
+                children: [
+                  // Image preview
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: Image.file(
+                      controller.selectedImage.value!,
+                      width: 60,
+                      height: 60,
+                      fit: BoxFit.cover,
+                    ),
                   ),
-                  child: controller.isSending.value
-                      ? const Center(
-                          child: SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor:
-                                  AlwaysStoppedAnimation<Color>(Colors.white),
-                            ),
-                          ),
-                        )
-                      : const Icon(Icons.send,
-                          color: Color(0xFF262626), size: 20),
+                  const SizedBox(width: 12),
+                  // Image info
+                  Expanded(
+                    child: Text(
+                      TranslationHelper.tr('image_attached'),
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey[700],
+                      ),
+                    ),
+                  ),
+                  // Remove button
+                  GestureDetector(
+                    onTap: controller.clearSelectedImage,
+                    child: Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: Colors.red[50],
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Icon(
+                        Icons.close,
+                        color: Colors.red[400],
+                        size: 18,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }
+          return const SizedBox.shrink();
+        }),
+        // Message input area
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withAlpha(13),
+                blurRadius: 8,
+                offset: const Offset(0, -2),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              // Camera button for image upload
+              Obx(() => GestureDetector(
+                    onTap: controller.isUploadingImage.value
+                        ? null
+                        : controller.showImagePicker,
+                    child: Container(
+                      width: 40,
+                      height: 40,
+                      margin: const EdgeInsets.only(right: 8),
+                      decoration: BoxDecoration(
+                        color: controller.isUploadingImage.value
+                            ? Colors.grey[300]
+                            : const Color(0xFFF5F5F5),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: controller.isUploadingImage.value
+                          ? const Center(
+                              child: SizedBox(
+                                width: 18,
+                                height: 18,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor:
+                                      AlwaysStoppedAnimation<Color>(Colors.amber),
+                                ),
+                              ),
+                            )
+                          : Icon(Icons.camera_alt,
+                              color: Colors.grey[600], size: 22),
+                    ),
+                  )),
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF5F5F5),
+                    borderRadius: BorderRadius.circular(24),
+                  ),
+                  child: TextField(
+                    controller: controller.messageController,
+                    textDirection: TranslationHelper.isRTL
+                        ? TextDirection.rtl
+                        : TextDirection.ltr,
+                    decoration: InputDecoration(
+                      hintText: TranslationHelper.tr('type_message'),
+                      hintStyle: TextStyle(fontSize: 14, color: Colors.grey[500]),
+                      border: InputBorder.none,
+                    ),
+                    maxLines: null,
+                    textInputAction: TextInputAction.send,
+                    onSubmitted: (_) {
+                      if (controller.selectedImage.value != null) {
+                        controller.sendSelectedImage();
+                      } else {
+                        controller.sendMessage();
+                      }
+                    },
+                  ),
                 ),
-              )),
-        ],
-      ),
+              ),
+              const SizedBox(width: 12),
+              Obx(() {
+                final isBusy = controller.isSending.value || controller.isUploadingImage.value;
+                final hasImage = controller.selectedImage.value != null;
+                return GestureDetector(
+                  onTap: isBusy
+                      ? null
+                      : () {
+                          if (hasImage) {
+                            controller.sendSelectedImage();
+                          } else {
+                            controller.sendMessage();
+                          }
+                        },
+                  child: Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: isBusy ? Colors.grey[400] : AppColors.primaryColor,
+                      borderRadius: BorderRadius.circular(22),
+                    ),
+                    child: isBusy
+                        ? const Center(
+                            child: SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor:
+                                    AlwaysStoppedAnimation<Color>(Colors.white),
+                              ),
+                            ),
+                          )
+                        : Icon(
+                            hasImage ? Icons.image : Icons.send,
+                            color: const Color(0xFF262626),
+                            size: 20,
+                          ),
+                  ),
+                );
+              }),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

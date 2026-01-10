@@ -138,6 +138,14 @@ class ProfileController extends GetxController {
     Get.to(() => const SettingsScreen());
   }
 
+  void navigateToSupportTickets() {
+    Get.toNamed('/support/tickets');
+  }
+
+  void navigateToMyReports() {
+    Get.toNamed('/support/reports');
+  }
+
   // Profile actions
   void updateProfile(UserProfileModel updatedProfile) {
     userProfile.value = updatedProfile;

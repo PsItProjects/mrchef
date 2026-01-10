@@ -1,21 +1,35 @@
 import 'package:get/get.dart';
 import 'package:mrsheaf/core/network/api_client.dart';
 import 'package:dio/dio.dart' as dio;
+import 'package:mrsheaf/features/auth/services/auth_service.dart';
 
 class NotificationsService extends GetxService {
-  final ApiClient _apiClient = Get.find<ApiClient>();
+  final ApiClient _apiClient = ApiClient.instance;
 
-  /// Get all notifications with pagination (for customer)
+  /// Get the correct base path based on user type
+  String get _basePath {
+    try {
+      final authService = Get.find<AuthService>();
+      final userType = authService.userType.value;
+      if (userType == 'merchant') {
+        return '/merchant'; // Merchant notifications are at /merchant/notifications
+      }
+    } catch (_) {}
+    return '/customer/shopping'; // Customer notifications are at /customer/shopping/notifications
+  }
+
+  /// Get all notifications with pagination
   Future<Map<String, dynamic>?> getNotifications({
     int page = 1,
     int perPage = 20,
     bool unreadOnly = false,
   }) async {
     try {
-      print('🔔 Loading customer notifications...');
+      final path = '$_basePath/notifications';
+      print('🔔 Loading notifications from $path...');
       
       final response = await _apiClient.get(
-        '/customer/shopping/notifications',
+        path,
         queryParameters: {
           'page': page,
           'per_page': perPage,
@@ -27,9 +41,12 @@ class NotificationsService extends GetxService {
         print('✅ Notifications loaded successfully');
         return response.data['data'];
       }
+      print('⚠️ Notifications response: ${response.data}');
       return null;
     } on dio.DioException catch (e) {
       print('❌ Error loading notifications: ${e.message}');
+      print('❌ Status code: ${e.response?.statusCode}');
+      print('❌ Response: ${e.response?.data}');
       return null;
     }
   }
@@ -38,7 +55,7 @@ class NotificationsService extends GetxService {
   Future<bool> markAsRead(String notificationId) async {
     try {
       final response = await _apiClient.post(
-        '/customer/shopping/notifications/$notificationId/read',
+        '$_basePath/notifications/$notificationId/read',
       );
       
       if (response.statusCode == 200 && response.data['success'] == true) {
@@ -56,7 +73,7 @@ class NotificationsService extends GetxService {
   Future<bool> markAllAsRead() async {
     try {
       final response = await _apiClient.post(
-        '/customer/shopping/notifications/read-all',
+        '$_basePath/notifications/read-all',
       );
       
       if (response.statusCode == 200 && response.data['success'] == true) {

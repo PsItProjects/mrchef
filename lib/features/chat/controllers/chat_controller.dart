@@ -1,7 +1,9 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:mrsheaf/core/localization/translation_helper.dart';
 import 'package:mrsheaf/core/services/fcm_service.dart';
 import 'package:mrsheaf/core/services/realtime_chat_service.dart';
@@ -12,12 +14,15 @@ import 'package:mrsheaf/features/support/services/support_service.dart';
 class ChatController extends GetxController {
   final ChatService _chatService = ChatService();
   final SupportService _supportService = SupportService();
+  final ImagePicker _imagePicker = ImagePicker();
 
   // Observable state
   final Rx<ConversationModel?> conversation = Rx<ConversationModel?>(null);
   final RxList<MessageModel> messages = <MessageModel>[].obs;
   final RxBool isLoading = false.obs;
   final RxBool isSending = false.obs;
+  final RxBool isUploadingImage = false.obs;
+  final Rx<File?> selectedImage = Rx<File?>(null);
   final RxInt highlightedMessageId = 0.obs;
   final RxBool isOtherTyping = false.obs;
 
@@ -273,6 +278,129 @@ class ChatController extends GetxController {
     } finally {
       isSending.value = false;
     }
+  }
+
+  /// Pick an image (without sending)
+  Future<void> pickImage({required ImageSource source}) async {
+    try {
+      final XFile? pickedFile = await _imagePicker.pickImage(
+        source: source,
+        maxWidth: 1920,
+        maxHeight: 1920,
+        imageQuality: 85,
+      );
+
+      if (pickedFile == null) return;
+
+      selectedImage.value = File(pickedFile.path);
+    } catch (e) {
+      String errorMessage = e.toString();
+      if (errorMessage.startsWith('Exception: ')) {
+        errorMessage = errorMessage.substring(11);
+      }
+
+      Get.snackbar(
+        'خطأ',
+        errorMessage,
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+        duration: const Duration(seconds: 3),
+      );
+    }
+  }
+
+  /// Clear selected image
+  void clearSelectedImage() {
+    selectedImage.value = null;
+  }
+
+  /// Send the selected image
+  Future<void> sendSelectedImage() async {
+    if (selectedImage.value == null) return;
+
+    try {
+      isUploadingImage.value = true;
+
+      final newMessage = await _chatService.sendImageMessage(
+        conversationId,
+        selectedImage.value!,
+        repliedToMessageId: repliedToMessageId,
+      );
+
+      // Clear selected image
+      selectedImage.value = null;
+
+      // Add message to list
+      messages.add(newMessage);
+
+      // Create GlobalKey for new message
+      messageKeys[newMessage.id] = GlobalKey();
+
+      // Sync to Firestore for real-time
+      if (Get.isRegistered<RealtimeChatService>()) {
+        RealtimeChatService.instance
+            .syncMessageToFirestore(conversationId, newMessage);
+      }
+
+      // Clear replied message reference
+      repliedToMessageId = null;
+
+      // Scroll to bottom
+      _scrollToBottom();
+    } catch (e) {
+      String errorMessage = e.toString();
+
+      // Remove "Exception: " prefix if present
+      if (errorMessage.startsWith('Exception: ')) {
+        errorMessage = errorMessage.substring(11);
+      }
+
+      Get.snackbar(
+        'خطأ',
+        errorMessage,
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+        duration: const Duration(seconds: 3),
+      );
+    } finally {
+      isUploadingImage.value = false;
+    }
+  }
+
+  /// Show image source picker bottom sheet
+  void showImagePicker() {
+    Get.bottomSheet(
+      Container(
+        padding: const EdgeInsets.all(20),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.camera_alt, color: Colors.amber),
+              title: Text('camera'.tr),
+              onTap: () {
+                Get.back();
+                pickImage(source: ImageSource.camera);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library, color: Colors.amber),
+              title: Text('gallery'.tr),
+              onTap: () {
+                Get.back();
+                pickImage(source: ImageSource.gallery);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   /// Scroll to bottom of messages

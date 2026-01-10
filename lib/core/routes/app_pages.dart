@@ -56,6 +56,10 @@ import 'package:mrsheaf/features/support/controllers/support_ticket_detail_contr
 import 'package:mrsheaf/features/support/controllers/support_tickets_controller.dart';
 import 'package:mrsheaf/features/support/pages/support_ticket_detail_screen.dart';
 import 'package:mrsheaf/features/support/pages/support_tickets_screen.dart';
+import 'package:mrsheaf/features/reports/controllers/my_reports_controller.dart';
+import 'package:mrsheaf/features/reports/controllers/report_detail_controller.dart';
+import 'package:mrsheaf/features/reports/pages/my_reports_screen.dart';
+import 'package:mrsheaf/features/reports/pages/report_detail_screen.dart';
 
 class AppPages {
   static const INITIAL = AppRoutes.SPLASH;
@@ -269,6 +273,26 @@ class AppPages {
       page: () => const SupportTicketDetailScreen(),
       binding: BindingsBuilder(() {
         Get.lazyPut<SupportTicketDetailController>(() => SupportTicketDetailController());
+      }),
+      middlewares: [AuthMiddleware()],
+      transition: Transition.rightToLeft,
+    ),
+
+    // Reports
+    GetPage(
+      name: AppRoutes.MY_REPORTS,
+      page: () => const MyReportsScreen(),
+      binding: BindingsBuilder(() {
+        Get.lazyPut<MyReportsController>(() => MyReportsController());
+      }),
+      middlewares: [AuthMiddleware()],
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.REPORT_DETAIL,
+      page: () => const ReportDetailScreen(),
+      binding: BindingsBuilder(() {
+        Get.lazyPut<ReportDetailController>(() => ReportDetailController());
       }),
       middlewares: [AuthMiddleware()],
       transition: Transition.rightToLeft,

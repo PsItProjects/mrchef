@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:mrsheaf/core/network/api_client.dart';
@@ -94,7 +96,7 @@ class ChatService {
     }
   }
 
-  /// Send a message in a conversation
+  /// Send a message in a conversation (text only)
   Future<MessageModel> sendMessage(
     int conversationId,
     String message, {
@@ -146,6 +148,71 @@ class ChatService {
         throw Exception('الرسالة مطلوبة');
       } else {
         final message = e.response?.data['message'] ?? 'فشل في إرسال الرسالة';
+        throw Exception(message);
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ CHAT SERVICE ERROR: $e');
+      }
+      rethrow;
+    }
+  }
+
+  /// Send an image message in a conversation
+  Future<MessageModel> sendImageMessage(
+    int conversationId,
+    File imageFile, {
+    String? caption,
+    int? repliedToMessageId,
+  }) async {
+    try {
+      if (kDebugMode) {
+        print('📷 CHAT SERVICE: Sending image to conversation $conversationId...');
+        print('📷 IMAGE PATH: ${imageFile.path}');
+        if (caption != null) print('📷 CAPTION: $caption');
+      }
+
+      final formData = FormData.fromMap({
+        'image': await MultipartFile.fromFile(
+          imageFile.path,
+          filename: imageFile.path.split('/').last,
+        ),
+        if (caption != null && caption.isNotEmpty) 'message': caption,
+        if (repliedToMessageId != null) 'replied_to_message_id': repliedToMessageId,
+      });
+
+      final response = await _apiClient.post(
+        '/customer/chat/conversations/$conversationId/messages',
+        data: formData,
+      );
+
+      if (response.data['success'] == true) {
+        if (kDebugMode) {
+          print('✅ CHAT SERVICE: Image sent successfully');
+        }
+
+        return MessageModel.fromJson(response.data['data']['message']);
+      } else {
+        throw Exception(response.data['message'] ?? 'Failed to send image');
+      }
+    } on DioException catch (e) {
+      if (kDebugMode) {
+        print('❌ CHAT SERVICE ERROR: ${e.response?.statusCode} ${e.message}');
+        print('❌ RESPONSE DATA: ${e.response?.data}');
+      }
+
+      if (e.response?.statusCode == 401) {
+        throw Exception('يجب تسجيل الدخول أولاً');
+      } else if (e.response?.statusCode == 404) {
+        throw Exception('المحادثة غير موجودة');
+      } else if (e.response?.statusCode == 422) {
+        final errors = e.response?.data['errors'];
+        if (errors != null && errors['image'] != null) {
+          throw Exception(errors['image'][0]);
+        }
+        throw Exception('فشل في رفع الصورة');
+      } else {
+        final message = e.response?.data['message'] ?? 'فشل في إرسال الصورة';
         throw Exception(message);
       }
     } catch (e) {

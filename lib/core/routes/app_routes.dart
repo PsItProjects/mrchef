@@ -38,6 +38,8 @@ abstract class AppRoutes {
   // Support
   static const SUPPORT_TICKETS = '/support/tickets';
   static const SUPPORT_TICKET_DETAIL = '/support/tickets/:id';
+  static const MY_REPORTS = '/support/reports';
+  static const REPORT_DETAIL = '/support/reports/:id';
 
   // Restaurants routes
   static const ALL_RESTAURANTS = '/all-restaurants';

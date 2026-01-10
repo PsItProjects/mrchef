@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:mrsheaf/core/network/api_client.dart';
 
@@ -45,8 +46,39 @@ class SupportService {
     required String userType,
     required String subject,
     String? description,
+    File? imageFile,
   }) async {
     final base = _basePathForUserType(userType);
+    
+    // Use FormData if image is provided
+    if (imageFile != null) {
+      final formData = FormData.fromMap({
+        'subject': subject,
+        if (description != null) 'description': description,
+        'image': await MultipartFile.fromFile(
+          imageFile.path,
+          filename: imageFile.path.split('/').last,
+        ),
+      });
+      
+      final res = await _apiClient.post(
+        '$base/support/tickets',
+        data: formData,
+      );
+
+      final data = res.data;
+      if (data is Map && data['success'] == true) {
+        return (data['data']?['ticket_id'] as num).toInt();
+      }
+      throw DioException(
+        requestOptions: res.requestOptions,
+        response: res,
+        error: data,
+        type: DioExceptionType.badResponse,
+      );
+    }
+    
+    // Regular JSON request without image
     final res = await _apiClient.post(
       '$base/support/tickets',
       data: {
@@ -97,6 +129,44 @@ class SupportService {
         'message': message,
       },
     );
+    final data = res.data;
+    if (data is Map && data['success'] == true) {
+      return Map<String, dynamic>.from(data['data']?['message'] as Map);
+    }
+    throw DioException(
+      requestOptions: res.requestOptions,
+      response: res,
+      error: data,
+      type: DioExceptionType.badResponse,
+    );
+  }
+
+  /// Send an image message to a support ticket
+  Future<Map<String, dynamic>> sendTicketImageMessage({
+    required String userType,
+    required int ticketId,
+    required File imageFile,
+    String? caption,
+  }) async {
+    final base = _basePathForUserType(userType);
+    
+    final formData = FormData.fromMap({
+      'image': await MultipartFile.fromFile(
+        imageFile.path,
+        filename: imageFile.path.split('/').last,
+      ),
+      if (caption != null && caption.isNotEmpty) 'message': caption,
+      'type': 'image',
+    });
+
+    final res = await _apiClient.post(
+      '$base/support/tickets/$ticketId/messages',
+      data: formData,
+      options: Options(
+        contentType: 'multipart/form-data',
+      ),
+    );
+    
     final data = res.data;
     if (data is Map && data['success'] == true) {
       return Map<String, dynamic>.from(data['data']?['message'] as Map);

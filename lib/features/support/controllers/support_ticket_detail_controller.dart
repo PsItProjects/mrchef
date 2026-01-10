@@ -1,6 +1,8 @@
+import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:mrsheaf/core/localization/translation_helper.dart';
 import 'package:mrsheaf/features/auth/services/auth_service.dart';
 import 'package:mrsheaf/features/support/services/support_service.dart';
@@ -8,10 +10,13 @@ import 'package:mrsheaf/features/support/services/support_service.dart';
 class SupportTicketDetailController extends GetxController {
   final SupportService _supportService = SupportService();
   final AuthService _authService = Get.find<AuthService>();
+  final ImagePicker _imagePicker = ImagePicker();
 
   final RxBool isLoading = false.obs;
+  final RxBool isUploading = false.obs;
   final RxMap<String, dynamic> ticket = <String, dynamic>{}.obs;
   final RxList<Map<String, dynamic>> messages = <Map<String, dynamic>>[].obs;
+  final Rx<File?> selectedImage = Rx<File?>(null);
 
   final TextEditingController messageController = TextEditingController();
   final ScrollController scrollController = ScrollController();
@@ -59,6 +64,13 @@ class SupportTicketDetailController extends GetxController {
 
   Future<void> sendMessage() async {
     final text = messageController.text.trim();
+
+    // Check if we have image to send
+    if (selectedImage.value != null) {
+      await _sendImageMessage();
+      return;
+    }
+
     if (text.isEmpty) return;
 
     try {
@@ -81,6 +93,92 @@ class SupportTicketDetailController extends GetxController {
     } finally {
       isLoading.value = false;
     }
+  }
+
+  Future<void> _sendImageMessage() async {
+    if (selectedImage.value == null) return;
+
+    try {
+      isUploading.value = true;
+      await _supportService.sendTicketImageMessage(
+        userType: _userType,
+        ticketId: ticketId,
+        imageFile: selectedImage.value!,
+        caption: messageController.text.trim(),
+      );
+      messageController.clear();
+      selectedImage.value = null;
+      await loadTicket();
+    } on DioException catch (e) {
+      final msg = _extractBackendMessage(e) ?? TranslationHelper.tr('error');
+      Get.snackbar(
+        TranslationHelper.tr('error'),
+        msg,
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red.withValues(alpha: 0.2),
+      );
+    } finally {
+      isUploading.value = false;
+    }
+  }
+
+  Future<void> pickImage({required ImageSource source}) async {
+    try {
+      final XFile? pickedFile = await _imagePicker.pickImage(
+        source: source,
+        maxWidth: 1920,
+        maxHeight: 1920,
+        imageQuality: 85,
+      );
+
+      if (pickedFile == null) return;
+
+      selectedImage.value = File(pickedFile.path);
+    } catch (e) {
+      Get.snackbar(
+        TranslationHelper.tr('error'),
+        e.toString(),
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red.withValues(alpha: 0.2),
+      );
+    }
+  }
+
+  void clearSelectedImage() {
+    selectedImage.value = null;
+  }
+
+  void showImagePicker() {
+    Get.bottomSheet(
+      Container(
+        padding: const EdgeInsets.all(20),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.camera_alt, color: Colors.amber),
+              title: Text('camera'.tr),
+              onTap: () {
+                Get.back();
+                pickImage(source: ImageSource.camera);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library, color: Colors.amber),
+              title: Text('gallery'.tr),
+              onTap: () {
+                Get.back();
+                pickImage(source: ImageSource.gallery);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   void _scrollToBottom() {

@@ -34,30 +34,21 @@ class ProfileMenuList extends GetView<ProfileController> {
         // Biometric Login - يظهر فقط إذا كان الجهاز يدعم البصمة
         _buildBiometricToggle(),
 
-        // Payment Method
-        // Obx(() => ProfileMenuItem(
-        //   title: TranslationHelper.tr('payment_methods'),
-        //   subtitle: controller.cardCountText,
-        //   onTap: controller.navigateToPaymentMethods,
-        // )),
-        //
-        // const SizedBox(height: 16),
-        //
-        // // My reviews
-        // Obx(() => ProfileMenuItem(
-        //   title: TranslationHelper.tr('my_reviews'),
-        //   subtitle: controller.reviewCountText,
-        //   onTap: controller.navigateToMyReviews,
-        // )),
-        //
-        // const SizedBox(height: 16),
-        //
-        // // Setting
-        // ProfileMenuItem(
-        //   title: 'settings'.tr,
-        //   subtitle: 'notification_password_faq_content'.tr,
-        //   onTap: controller.navigateToSettings,
-        // ),
+        // Support Tickets
+        ProfileMenuItem(
+          title: TranslationHelper.tr('support_tickets'),
+          subtitle: TranslationHelper.tr('support_tickets_desc'),
+          onTap: controller.navigateToSupportTickets,
+        ),
+
+        const SizedBox(height: 16),
+
+        // My Reports
+        ProfileMenuItem(
+          title: TranslationHelper.tr('my_reports'),
+          subtitle: TranslationHelper.tr('my_reports_desc'),
+          onTap: controller.navigateToMyReports,
+        ),
         
         const SizedBox(height: 16),
         

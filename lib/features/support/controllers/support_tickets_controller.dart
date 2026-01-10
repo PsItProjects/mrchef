@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -40,18 +41,24 @@ class SupportTicketsController extends GetxController {
     }
   }
 
-  Future<void> createTicket({required String subject, String? description}) async {
+  Future<void> createTicket({
+    required String subject,
+    String? description,
+    File? imageFile,
+  }) async {
     try {
       isLoading.value = true;
       await _supportService.createTicket(
         userType: _userType,
         subject: subject,
         description: description,
+        imageFile: imageFile,
       );
+      
       await loadTickets();
       Get.snackbar(
         TranslationHelper.tr('success'),
-        TranslationHelper.tr('success'),
+        TranslationHelper.tr('ticket_created'),
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.green.withValues(alpha: 0.2),
       );
@@ -63,6 +70,7 @@ class SupportTicketsController extends GetxController {
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.red.withValues(alpha: 0.2),
       );
+      rethrow; // Rethrow to let the caller know about the error
     } finally {
       isLoading.value = false;
     }
