@@ -128,6 +128,10 @@ class SettingsController extends GetxController {
     );
   }
 
+  void navigateToSupport() {
+    Get.toNamed('/support/tickets');
+  }
+
   Widget _buildCurrencyOption(String code, String name) {
     return ListTile(
       title: Text(

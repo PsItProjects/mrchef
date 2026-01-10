@@ -21,12 +21,18 @@ class VendorStep2Controller extends GetxController {
   /// Validate form
   bool _validateForm() {
     if (storeNameEn.value.trim().isEmpty) {
-      Get.snackbar(TranslationHelper.tr('error'), TranslationHelper.tr('enter_store_name_en'));
+      Get.snackbar(
+        TranslationHelper.tr('error'),
+        TranslationHelper.tr('enter_store_name_en'),
+      );
       return false;
     }
 
     if (storeNameAr.value.trim().isEmpty) {
-      Get.snackbar(TranslationHelper.tr('error'), TranslationHelper.tr('enter_store_name_ar'));
+      Get.snackbar(
+        TranslationHelper.tr('error'),
+        TranslationHelper.tr('enter_store_name_ar'),
+      );
       return false;
     }
 
@@ -72,8 +78,8 @@ class VendorStep2Controller extends GetxController {
 
           // Show success message
           Get.snackbar(
-            '🎉 تم إكمال التسجيل',
-            'تم حفظ معلومات المتجر بنجاح! جاري تحويلك إلى لوحة التحكم...',
+            TranslationHelper.tr('registration_completed_title'),
+            TranslationHelper.tr('store_info_saved_redirecting'),
             snackPosition: SnackPosition.BOTTOM,
             duration: const Duration(seconds: 3),
             backgroundColor: Get.theme.colorScheme.primary,
@@ -92,8 +98,8 @@ class VendorStep2Controller extends GetxController {
         } else {
           print('⚠️ Server response does not indicate completion');
           Get.snackbar(
-            'تنبيه',
-            'تم حفظ البيانات لكن قد تحتاج لإكمال خطوات إضافية',
+            TranslationHelper.tr('warning'),
+            TranslationHelper.tr('data_saved_may_require_more_steps'),
             snackPosition: SnackPosition.BOTTOM,
           );
         }
@@ -103,11 +109,11 @@ class VendorStep2Controller extends GetxController {
     } catch (e) {
       print('❌ Error submitting business info: $e');
       
-      String errorMessage = 'حدث خطأ أثناء حفظ البيانات';
+      String errorMessage = TranslationHelper.tr('error_saving_data');
       // ApiClient wraps Dio; response parsing happens there.
 
       Get.snackbar(
-        'خطأ',
+        TranslationHelper.tr('error'),
         errorMessage,
         snackPosition: SnackPosition.BOTTOM,
       );

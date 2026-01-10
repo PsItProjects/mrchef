@@ -4,6 +4,7 @@ import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/features/chat/controllers/chat_controller.dart';
 import 'package:mrsheaf/features/chat/widgets/message_bubble.dart';
 import 'package:mrsheaf/features/chat/widgets/product_attachment_card.dart';
+import 'package:mrsheaf/features/support/widgets/report_conversation_dialog.dart';
 
 class ChatScreen extends GetView<ChatController> {
   const ChatScreen({super.key});
@@ -174,6 +175,24 @@ class ChatScreen extends GetView<ChatController> {
           ],
         );
       }),
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.flag_outlined, color: Color(0xFF262626)),
+          onPressed: _showReportDialog,
+          tooltip: 'report'.tr,
+        ),
+      ],
+    );
+  }
+
+  void _showReportDialog() {
+    Get.dialog(
+      ReportConversationDialog(
+        onSubmit: (reason, details) => controller.reportConversation(
+          reason: reason,
+          details: details,
+        ),
+      ),
     );
   }
 
@@ -205,7 +224,7 @@ class ChatScreen extends GetView<ChatController> {
           ),
           const SizedBox(height: 16),
           Text(
-            isArabic ? 'لا توجد رسائل' : 'No messages',
+            'no_messages'.tr,
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w600,
@@ -244,7 +263,7 @@ class ChatScreen extends GetView<ChatController> {
                 controller: controller.messageController,
                 textDirection: isArabic ? TextDirection.rtl : TextDirection.ltr,
                 decoration: InputDecoration(
-                  hintText: isArabic ? 'اكتب رسالة...' : 'Type a message...',
+                  hintText: 'type_message'.tr,
                   hintStyle: TextStyle(
                     fontSize: 14,
                     color: Colors.grey[500],

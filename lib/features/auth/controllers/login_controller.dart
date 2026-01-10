@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dio/dio.dart';
 import 'package:get/get.dart';
 import 'package:mrsheaf/core/routes/app_routes.dart';
 import '../../../core/services/biometric_service.dart';
@@ -46,6 +47,19 @@ class LoginController extends GetxController {
       String phoneNumber = phoneController.text.replaceAll(' ', '');
       isPhoneNumberValid.value = phoneNumber.length >= 9;
     }
+  }
+
+  String _extractBackendMessage(Object error) {
+    if (error is DioException) {
+      final data = error.response?.data;
+      if (data is Map && data['message'] != null) {
+        return data['message'].toString();
+      }
+      if (data is String && data.trim().isNotEmpty) {
+        return data;
+      }
+    }
+    return 'unexpected_error'.tr;
   }
 
   /// Reset phone input for new login attempt
@@ -104,8 +118,8 @@ class LoginController extends GetxController {
       }
     } catch (e) {
       Get.snackbar(
-        'Error',
-        'An unexpected error occurred',
+        'error'.tr,
+        _extractBackendMessage(e is Object ? e : Exception(e.toString())),
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.red.withValues(alpha: 0.3),
       );

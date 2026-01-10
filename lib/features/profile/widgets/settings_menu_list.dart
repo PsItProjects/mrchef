@@ -26,7 +26,7 @@ class SettingsMenuList extends GetView<SettingsController> {
 
           // Biometric Login - يظهر فقط إذا كان الجهاز يدعم البصمة
           _buildBiometricToggle(),
-          
+
           // Currency
           Obx(() => SettingsMenuItem(
             title: 'currency_label'.tr,
@@ -52,6 +52,14 @@ class SettingsMenuList extends GetView<SettingsController> {
             showDivider: true,
           ),
 
+          // Help & Support
+          SettingsMenuItem(
+            title: 'help_support'.tr,
+            hasArrow: true,
+            onTap: controller.navigateToSupport,
+            showDivider: true,
+          ),
+
           // Notification
           SettingsMenuItem(
             title: 'notification_label'.tr,
@@ -59,7 +67,7 @@ class SettingsMenuList extends GetView<SettingsController> {
             onTap: controller.openNotificationSettings,
             showDivider: true,
           ),
-          
+
           // Security
           SettingsMenuItem(
             title: 'security'.tr,
@@ -67,7 +75,7 @@ class SettingsMenuList extends GetView<SettingsController> {
             onTap: controller.openSecuritySettings,
             showDivider: true,
           ),
-          
+
           // Clear app cache
           Obx(() => SettingsMenuItem(
             title: 'clear_app_cache'.tr,
@@ -75,7 +83,7 @@ class SettingsMenuList extends GetView<SettingsController> {
             onTap: controller.clearAppCache,
             showDivider: true,
           )),
-          
+
           // Rate the app
           SettingsMenuItem(
             title: 'rate_the_app'.tr,
@@ -83,7 +91,7 @@ class SettingsMenuList extends GetView<SettingsController> {
             onTap: controller.rateTheApp,
             showDivider: true,
           ),
-          
+
           // About Heba App
           SettingsMenuItem(
             title: 'about_heba_app'.tr,
@@ -91,7 +99,7 @@ class SettingsMenuList extends GetView<SettingsController> {
             onTap: controller.showAboutApp,
             showDivider: true,
           ),
-          
+
           // Invite Friends
           SettingsMenuItem(
             title: 'invite_friends'.tr,
@@ -108,7 +116,7 @@ class SettingsMenuList extends GetView<SettingsController> {
   Widget _buildBiometricToggle() {
     try {
       final biometricService = Get.find<BiometricService>();
-      
+
       return Obx(() {
         // لا تظهر الخيار إذا الجهاز لا يدعم البصمة
         if (!biometricService.isBiometricAvailable.value) {
@@ -138,7 +146,7 @@ class SettingsMenuList extends GetView<SettingsController> {
         final token = await authService.getToken();
         final user = authService.currentUser.value;
         final userType = authService.userType.value;
-        
+
         if (token == null || user == null || userType.isEmpty) {
           Get.snackbar(
             TranslationHelper.tr('biometric_enable_failed'),
@@ -148,14 +156,14 @@ class SettingsMenuList extends GetView<SettingsController> {
           );
           return;
         }
-        
+
         final success = await biometricService.enableBiometricLogin(
           token: token,
           userType: userType,
           userId: user.id.toString(),
           phoneNumber: user.phoneNumber ?? '',
         );
-        
+
         if (success) {
           Get.snackbar(
             TranslationHelper.tr('success'),

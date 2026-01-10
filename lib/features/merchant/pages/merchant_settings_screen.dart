@@ -9,6 +9,7 @@ import 'package:mrsheaf/features/merchant/pages/working_hours_screen.dart';
 import 'package:mrsheaf/features/merchant/pages/notification_settings_screen.dart';
 import 'package:mrsheaf/features/merchant/pages/edit_personal_profile_screen.dart';
 import 'package:mrsheaf/features/profile/widgets/about_app_bottom_sheet.dart';
+import 'package:mrsheaf/core/routes/app_routes.dart';
 
 class MerchantSettingsScreen extends StatefulWidget {
   const MerchantSettingsScreen({Key? key}) : super(key: key);
@@ -278,6 +279,13 @@ class _MerchantSettingsScreenState extends State<MerchantSettingsScreen> {
       title: 'app_settings'.tr,
       items: [
         _buildLanguageTile(),
+        _buildSettingsTile(
+          icon: Icons.support_agent,
+          iconColor: const Color(0xFF2196F3),
+          title: 'help_support'.tr,
+          subtitle: 'contact_support'.tr,
+          onTap: () => Get.toNamed(AppRoutes.SUPPORT_TICKETS),
+        ),
         _buildSettingsTile(
           icon: Icons.info_outline,
           iconColor: AppColors.primaryColor,

@@ -6,6 +6,7 @@ import 'package:mrsheaf/core/localization/translation_helper.dart';
 import 'package:mrsheaf/features/merchant/controllers/merchant_chat_controller.dart';
 import 'package:mrsheaf/features/merchant/widgets/merchant_product_attachment_card.dart';
 import 'package:mrsheaf/features/chat/widgets/message_bubble.dart';
+import 'package:mrsheaf/features/support/widgets/report_conversation_dialog.dart';
 
 class MerchantChatScreen extends GetView<MerchantChatController> {
   const MerchantChatScreen({super.key});
@@ -175,6 +176,24 @@ class MerchantChatScreen extends GetView<MerchantChatController> {
           ],
         );
       }),
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.flag_outlined, color: Color(0xFF262626)),
+          onPressed: _showReportDialog,
+          tooltip: 'report'.tr,
+        ),
+      ],
+    );
+  }
+
+  void _showReportDialog() {
+    Get.dialog(
+      ReportConversationDialog(
+        onSubmit: (reason, details) => controller.reportConversation(
+          reason: reason,
+          details: details,
+        ),
+      ),
     );
   }
 

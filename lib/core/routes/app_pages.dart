@@ -52,6 +52,10 @@ import 'package:mrsheaf/features/merchant/controllers/merchant_chat_controller.d
 import 'package:mrsheaf/features/merchant/pages/merchant_statistics_screen.dart';
 import 'package:mrsheaf/features/merchant/pages/merchant_notifications_screen.dart';
 import 'package:mrsheaf/features/notifications/pages/notifications_screen.dart';
+import 'package:mrsheaf/features/support/controllers/support_ticket_detail_controller.dart';
+import 'package:mrsheaf/features/support/controllers/support_tickets_controller.dart';
+import 'package:mrsheaf/features/support/pages/support_ticket_detail_screen.dart';
+import 'package:mrsheaf/features/support/pages/support_tickets_screen.dart';
 
 class AppPages {
   static const INITIAL = AppRoutes.SPLASH;
@@ -246,6 +250,26 @@ class AppPages {
     GetPage(
       name: AppRoutes.NOTIFICATIONS,
       page: () => const NotificationsScreen(),
+      middlewares: [AuthMiddleware()],
+      transition: Transition.rightToLeft,
+    ),
+
+    // Support
+    GetPage(
+      name: AppRoutes.SUPPORT_TICKETS,
+      page: () => const SupportTicketsScreen(),
+      binding: BindingsBuilder(() {
+        Get.lazyPut<SupportTicketsController>(() => SupportTicketsController());
+      }),
+      middlewares: [AuthMiddleware()],
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.SUPPORT_TICKET_DETAIL,
+      page: () => const SupportTicketDetailScreen(),
+      binding: BindingsBuilder(() {
+        Get.lazyPut<SupportTicketDetailController>(() => SupportTicketDetailController());
+      }),
       middlewares: [AuthMiddleware()],
       transition: Transition.rightToLeft,
     ),

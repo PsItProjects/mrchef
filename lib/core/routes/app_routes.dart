@@ -35,6 +35,10 @@ abstract class AppRoutes {
   static const CHAT = '/chat/:id';
   static const CHECKOUT = '/checkout';
 
+  // Support
+  static const SUPPORT_TICKETS = '/support/tickets';
+  static const SUPPORT_TICKET_DETAIL = '/support/tickets/:id';
+
   // Restaurants routes
   static const ALL_RESTAURANTS = '/all-restaurants';
 }

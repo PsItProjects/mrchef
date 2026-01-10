@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dio/dio.dart';
 import 'package:get/get.dart';
 import 'package:mrsheaf/core/routes/app_routes.dart';
 import '../services/auth_service.dart';
@@ -30,6 +31,19 @@ class NewSignupController extends GetxController {
   bool _isDisposed = false;
 
   final AuthService _authService = Get.find<AuthService>();
+
+  String _extractBackendMessage(Object error) {
+    if (error is DioException) {
+      final data = error.response?.data;
+      if (data is Map && data['message'] != null) {
+        return data['message'].toString();
+      }
+      if (data is String && data.trim().isNotEmpty) {
+        return data;
+      }
+    }
+    return 'unexpected_error'.tr;
+  }
 
   void toggleUserType(bool vendor) {
     isVendor.value = vendor;
@@ -162,8 +176,8 @@ class NewSignupController extends GetxController {
       }
     } catch (e) {
       Get.snackbar(
-        'Error',
-        'An unexpected error occurred',
+        'error'.tr,
+        _extractBackendMessage(e is Object ? e : Exception(e.toString())),
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.red.withValues(alpha: 0.3),
       );

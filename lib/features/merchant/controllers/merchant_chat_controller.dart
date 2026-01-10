@@ -2,15 +2,18 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/localization/translation_helper.dart';
 import 'package:mrsheaf/core/network/api_client.dart';
 import 'package:mrsheaf/core/services/fcm_service.dart';
 import 'package:mrsheaf/core/services/realtime_chat_service.dart';
 import 'package:mrsheaf/features/chat/models/conversation_model.dart';
 import 'package:mrsheaf/features/merchant/services/merchant_chat_service.dart';
+import 'package:mrsheaf/features/support/services/support_service.dart';
 
 class MerchantChatController extends GetxController {
   final MerchantChatService _chatService = MerchantChatService();
   final ApiClient _apiClient = ApiClient.instance;
+  final SupportService _supportService = SupportService();
 
   // Observable state
   final Rx<ConversationModel?> conversation = Rx<ConversationModel?>(null);
@@ -165,6 +168,30 @@ class MerchantChatController extends GetxController {
         .listen((isTyping) {
       isOtherTyping.value = isTyping;
     });
+  }
+
+  Future<void> reportConversation({required String reason, String? details}) async {
+    try {
+      await _supportService.reportConversation(
+        userType: 'merchant',
+        conversationId: conversationId,
+        reason: reason,
+        details: details,
+      );
+      Get.snackbar(
+        TranslationHelper.tr('success'),
+        'report_submitted'.tr,
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.green.withValues(alpha: 0.2),
+      );
+    } catch (e) {
+      Get.snackbar(
+        TranslationHelper.tr('error'),
+        TranslationHelper.tr('error'),
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red.withValues(alpha: 0.2),
+      );
+    }
   }
 
   /// Notify backend that user entered this chat (to prevent push notifications)
@@ -333,7 +360,14 @@ class MerchantChatController extends GetxController {
       isLoading.value = true;
 
       final fetchedMessages = await _chatService.getMessages(conversationId);
-      messages.value = fetchedMessages;
+      final seenIds = <int>{};
+      final deduped = <MessageModel>[];
+      for (final msg in fetchedMessages) {
+        if (seenIds.add(msg.id)) {
+          deduped.add(msg);
+        }
+      }
+      messages.value = deduped;
 
       // Create GlobalKeys for each message
       messageKeys.clear();

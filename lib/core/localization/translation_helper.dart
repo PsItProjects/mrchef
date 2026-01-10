@@ -103,6 +103,15 @@ class TranslationHelper {
     'profile_update_failed': 'Failed to update profile',
     'error': 'Error',
     'success': 'Success',
+    'warning': 'Warning',
+
+    // Onboarding (Vendor Step 2)
+    'enter_store_name_en': 'Please enter store name in English',
+    'enter_store_name_ar': 'Please enter store name in Arabic',
+    'registration_completed_title': 'Registration Completed',
+    'store_info_saved_redirecting': 'Store information saved successfully! Redirecting you to the dashboard...',
+    'data_saved_may_require_more_steps': 'Data saved, but you may need to complete additional steps',
+    'error_saving_data': 'An error occurred while saving data',
 
     // Biometric Login
     'biometric_login': 'Fingerprint Login',
@@ -219,6 +228,15 @@ class TranslationHelper {
     'profile_update_failed': 'فشل تحديث الملف الشخصي',
     'error': 'خطأ',
     'success': 'نجح',
+    'warning': 'تنبيه',
+
+    // Onboarding (Vendor Step 2)
+    'enter_store_name_en': 'يرجى إدخال اسم المتجر باللغة الإنجليزية',
+    'enter_store_name_ar': 'يرجى إدخال اسم المتجر باللغة العربية',
+    'registration_completed_title': 'تم إكمال التسجيل',
+    'store_info_saved_redirecting': 'تم حفظ معلومات المتجر بنجاح! جاري تحويلك إلى لوحة التحكم...',
+    'data_saved_may_require_more_steps': 'تم حفظ البيانات لكن قد تحتاج لإكمال خطوات إضافية',
+    'error_saving_data': 'حدث خطأ أثناء حفظ البيانات',
 
     // Biometric Login
     'biometric_login': 'تسجيل الدخول بالبصمة',

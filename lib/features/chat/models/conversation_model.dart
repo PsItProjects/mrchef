@@ -196,8 +196,11 @@ class MessageModel {
 
   /// Create from Firestore document
   factory MessageModel.fromFirestore(Map<String, dynamic> data, String docId) {
+    final parsedId = int.tryParse(docId);
+    final fallbackId = (docId.hashCode & 0x7fffffff);
+
     return MessageModel(
-      id: int.tryParse(docId) ?? 0,
+      id: parsedId ?? (data['id'] as int?) ?? (fallbackId == 0 ? 1 : fallbackId),
       conversationId: data['conversation_id'] ?? 0,
       repliedToMessageId: data['replied_to_message_id'],
       repliedToMessage: null,

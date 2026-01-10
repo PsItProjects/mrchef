@@ -57,6 +57,12 @@ class LanguageService extends GetxService {
       await prefs.setString('user_language', languageCode);
       _currentLanguage.value = languageCode;
 
+      // Update GetX locale immediately
+      final locale = languageCode == 'ar'
+          ? const Locale('ar', 'SA')
+          : const Locale('en', 'US');
+      Get.updateLocale(locale);
+
       // Update device language on server for push notifications
       _updateDeviceLanguage(languageCode);
     } catch (e) {

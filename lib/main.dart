@@ -80,36 +80,32 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final languageService = LanguageService.instance;
+    final initialLocale = languageService.currentLanguage == 'ar'
+        ? const Locale('ar', 'SA')
+        : const Locale('en', 'US');
 
-    return Obx(() {
-      final isArabic = languageService.currentLanguage == 'ar';
-      final locale =
-          isArabic ? const Locale('ar', 'SA') : const Locale('en', 'US');
-
-      return Directionality(
-        textDirection: isArabic ? TextDirection.rtl : TextDirection.ltr,
-        child: Listener(
-          onPointerUp: (_) {
-            FocusScopeNode currentFocus = FocusScope.of(context);
-            if (!currentFocus.hasPrimaryFocus &&
-                currentFocus.focusedChild != null) {
-              currentFocus.focusedChild?.unfocus();
-            }
-          },
-          child: GetMaterialApp(
-            title: 'MrSheaf',
-            debugShowCheckedModeBanner: false,
-            theme: AppTheme.lightTheme,
-            darkTheme: AppTheme.darkTheme,
-            themeMode: ThemeMode.system,
-            locale: locale,
-            fallbackLocale: const Locale('en', 'US'),
-            translations: AppTranslations(),
-            initialRoute: AppPages.INITIAL,
-            getPages: AppPages.routes,
+    return GetMaterialApp(
+      title: 'MrSheaf',
+      debugShowCheckedModeBanner: false,
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      themeMode: ThemeMode.system,
+      locale: initialLocale,
+      fallbackLocale: const Locale('en', 'US'),
+      translations: AppTranslations(),
+      initialRoute: AppPages.INITIAL,
+      getPages: AppPages.routes,
+      builder: (context, child) {
+        final isArabic = (Get.locale?.languageCode ?? 'en') == 'ar';
+        return Directionality(
+          textDirection: isArabic ? TextDirection.rtl : TextDirection.ltr,
+          child: GestureDetector(
+            behavior: HitTestBehavior.translucent,
+            onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+            child: child ?? const SizedBox.shrink(),
           ),
-        ),
-      );
-    });
+        );
+      },
+    );
   }
 }
