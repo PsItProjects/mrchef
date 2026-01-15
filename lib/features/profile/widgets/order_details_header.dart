@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/features/profile/models/order_details_model.dart';
 
@@ -36,34 +37,9 @@ class OrderDetailsHeader extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Order Code',
-                    style: TextStyle(
-                      fontFamily: 'Lato',
-                      fontSize: 12,
-                      fontWeight: FontWeight.w400,
-                      color: AppColors.lightGreyTextColor,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
                   Text(
-                    order.orderNumber,
+                    'date'.tr,
                     style: const TextStyle(
-                      fontFamily: 'Lato',
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.darkTextColor,
-                    ),
-                  ),
-                ],
-              ),
-
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  const Text(
-                    'Date',
-                    style: TextStyle(
                       fontFamily: 'Lato',
                       fontSize: 12,
                       fontWeight: FontWeight.w400,
@@ -82,25 +58,52 @@ class OrderDetailsHeader extends StatelessWidget {
                   ),
                 ],
               ),
+
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    'order_code'.tr,
+                    style: const TextStyle(
+                      fontFamily: 'Lato',
+                      fontSize: 12,
+                      fontWeight: FontWeight.w400,
+                      color: AppColors.lightGreyTextColor,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    order.orderNumber,
+                    style: const TextStyle(
+                      fontFamily: 'Lato',
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.darkTextColor,
+                    ),
+                  ),
+                ],
+              ),
             ],
           ),
 
           const SizedBox(height: 16),
 
           // Status badge
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            decoration: BoxDecoration(
-              color: order.statusColor.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Text(
-              order.statusText,
-              style: TextStyle(
-                fontFamily: 'Lato',
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: order.statusColor,
+          Center(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: order.statusColor.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text(
+                order.statusText,
+                style: TextStyle(
+                  fontFamily: 'Lato',
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: order.statusColor,
+                ),
               ),
             ),
           ),

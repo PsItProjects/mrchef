@@ -75,7 +75,11 @@ class ConversationsController extends GetxController {
 
   /// Navigate to chat screen
   void openConversation(ConversationModel conversation) {
-    Get.toNamed('/chat/${conversation.id}', arguments: conversation);
+    Get.toNamed('/chat', arguments: {
+      'conversationId': conversation.id,
+      'conversation_id': conversation.id, // Also pass snake_case for compatibility
+      'conversation': conversation, // Pass the conversation object
+    });
   }
 
   /// Get total unread count

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/features/profile/models/order_details_model.dart';
 import 'package:mrsheaf/features/profile/models/order_model.dart';
 import 'package:mrsheaf/features/profile/controllers/order_details_controller.dart';
+import 'package:mrsheaf/shared/widgets/order_review_widgets.dart';
 
 class OrderActionsBar extends StatelessWidget {
   final OrderDetailsModel order;
@@ -14,6 +16,9 @@ class OrderActionsBar extends StatelessWidget {
   Widget build(BuildContext context) {
     // Get controller explicitly
     final controller = Get.find<OrderDetailsController>();
+    final isCompleted = order.status == OrderStatus.completed;
+    final isAwaitingConfirmation = order.status == OrderStatus.delivered;
+    final canCancel = order.status == OrderStatus.pending || order.status == OrderStatus.confirmed;
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -28,66 +33,221 @@ class OrderActionsBar extends StatelessWidget {
         ],
       ),
       child: SafeArea(
-        child: Row(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            // Chat button
-            Expanded(
-              flex: order.status == OrderStatus.pending || order.status == OrderStatus.confirmed ? 1 : 1,
-              child: ElevatedButton.icon(
-                onPressed: () {
-                  print('💬 Chat button pressed!');
-                  controller.openChat();
-                },
-                icon: const Icon(Icons.chat_bubble_outline, size: 20),
-                label: const Text(
-                  'Chat with Restaurant',
-                  style: TextStyle(
-                    fontFamily: 'Lato',
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
+            // Confirm Delivery button (only for delivered/awaiting confirmation orders)
+            if (isAwaitingConfirmation) ...[
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: () => _showConfirmDeliveryDialog(context, controller),
+                  icon: const Icon(Icons.check_circle_outline, size: 22),
+                  label: Text(
+                    'confirm_delivery'.tr,
+                    style: const TextStyle(
+                      fontFamily: 'Lato',
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primaryColor,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  elevation: 0,
-                ),
-              ),
-            ),
-
-            // Cancel button (only for pending/confirmed orders)
-            if (order.status == OrderStatus.pending || order.status == OrderStatus.confirmed) ...[
-              const SizedBox(width: 12),
-              Expanded(
-                flex: 1,
-                child: OutlinedButton(
-                  onPressed: () => _showCancelDialog(context),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: AppColors.errorColor,
-                    side: const BorderSide(color: AppColors.errorColor, width: 2),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.successColor,
+                    foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
-                  ),
-                  child: const Text(
-                    'Cancel Order',
-                    style: TextStyle(
-                      fontFamily: 'Lato',
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                    ),
+                    elevation: 0,
                   ),
                 ),
               ),
+              const SizedBox(height: 12),
             ],
+            
+            // Rate Order button (only for completed orders)
+            if (isCompleted) ...[
+              SizedBox(
+                width: double.infinity,
+                height: 52,
+                child: ElevatedButton.icon(
+                  onPressed: () => _showReviewDialog(context, controller),
+                  icon: const Icon(Icons.star_rounded, size: 22),
+                  label: Text(
+                    'rate_order'.tr,
+                    style: const TextStyle(
+                      fontFamily: 'Lato',
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primaryColor,
+                    foregroundColor: AppColors.secondaryColor,
+                    padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    elevation: 0,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+            ],
+            
+            Row(
+              children: [
+                // Chat button
+                Expanded(
+                  flex: canCancel ? 1 : 2,
+                  child: SizedBox(
+                    height: 52,
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        HapticFeedback.lightImpact();
+                        controller.openChat();
+                      },
+                      icon: const Icon(Icons.chat_bubble_outline, size: 20),
+                      label: Text(
+                        'chat_with_restaurant'.tr,
+                        style: const TextStyle(
+                          fontFamily: 'Lato',
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: (isCompleted || isAwaitingConfirmation) 
+                            ? AppColors.secondaryColor.withOpacity(0.1)
+                            : AppColors.primaryColor,
+                        foregroundColor: (isCompleted || isAwaitingConfirmation)
+                            ? AppColors.secondaryColor
+                            : Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        elevation: 0,
+                      ),
+                    ),
+                  ),
+                ),
+
+                // Cancel button (only for pending/confirmed orders)
+                if (canCancel) ...[
+                  const SizedBox(width: 12),
+                  Expanded(
+                    flex: 1,
+                    child: OutlinedButton(
+                      onPressed: () => _showCancelDialog(context),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppColors.errorColor,
+                        side: const BorderSide(color: AppColors.errorColor, width: 2),
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: Text(
+                        'cancel_order'.tr,
+                        style: const TextStyle(
+                          fontFamily: 'Lato',
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ],
+            ),
           ],
         ),
       ),
+    );
+  }
+  
+  void _showConfirmDeliveryDialog(BuildContext context, OrderDetailsController controller) {
+    HapticFeedback.lightImpact();
+    
+    Get.dialog(
+      AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        title: Text(
+          'confirm_delivery'.tr,
+          style: const TextStyle(
+            fontFamily: 'Lato',
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        content: Text(
+          'confirm_delivery_message'.tr,
+          style: const TextStyle(
+            fontFamily: 'Lato',
+            fontSize: 16,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(),
+            child: Text(
+              'cancel'.tr,
+              style: TextStyle(
+                color: Colors.grey[600],
+                fontFamily: 'Lato',
+              ),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Get.back();
+              await controller.confirmDelivery();
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.successColor,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            child: Text(
+              'confirm'.tr,
+              style: const TextStyle(
+                fontFamily: 'Lato',
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  void _showReviewDialog(BuildContext context, OrderDetailsController controller) {
+    HapticFeedback.lightImpact();
+    
+    // Convert order items to reviewable items
+    final itemsToReview = order.items.map((item) => OrderItemToReview(
+      productId: item.productId,
+      name: item.productName,
+      imageUrl: item.productImage,
+      isReviewed: false, // TODO: Check from API if already reviewed
+    )).toList();
+    
+    OrderReviewPromptDialog.show(
+      orderNumber: order.orderNumber,
+      items: itemsToReview,
+      onLater: () {
+        // User chose to review later
+      },
+      onReview: (productId, rating, comment, images) async {
+        // TODO: Implement review submission via controller
+        // await controller.submitProductReview(productId, rating, comment, images);
+      },
     );
   }
 

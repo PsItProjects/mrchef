@@ -22,11 +22,69 @@ class MyReviewsScreen extends GetView<MyReviewsController> {
             // Content
             Expanded(
               child: Obx(() {
+                // Loading state
+                if (controller.isLoading.value) {
+                  return const Center(
+                    child: CircularProgressIndicator(
+                      color: AppColors.primaryColor,
+                    ),
+                  );
+                }
+                
+                // Error state
+                if (controller.errorMessage.value.isNotEmpty) {
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.error_outline_rounded,
+                          size: 64,
+                          color: Colors.grey[400],
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          controller.errorMessage.value,
+                          style: TextStyle(
+                            fontFamily: 'Lato',
+                            fontSize: 16,
+                            color: Colors.grey[600],
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 24),
+                        ElevatedButton.icon(
+                          onPressed: controller.refreshReviews,
+                          icon: const Icon(Icons.refresh),
+                          label: Text('retry'.tr),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primaryColor,
+                            foregroundColor: AppColors.secondaryColor,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 24,
+                              vertical: 12,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+                
+                // Empty state
                 if (!controller.hasReviews) {
                   return const EmptyReviewsWidget();
-                } else {
-                  return const ReviewsList();
                 }
+                
+                // Reviews list with pull to refresh
+                return RefreshIndicator(
+                  onRefresh: controller.refreshReviews,
+                  color: AppColors.primaryColor,
+                  child: const ReviewsList(),
+                );
               }),
             ),
           ],

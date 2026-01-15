@@ -1,15 +1,20 @@
+import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mrsheaf/core/network/api_client.dart';
 import 'package:mrsheaf/core/routes/app_routes.dart';
+import 'package:mrsheaf/core/services/review_service.dart';
+import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/features/profile/models/order_details_model.dart';
 import 'package:mrsheaf/features/profile/services/order_service.dart';
 import 'package:mrsheaf/features/chat/services/chat_service.dart';
 import 'package:mrsheaf/features/chat/models/conversation_model.dart';
+import 'package:mrsheaf/shared/widgets/order_review_widgets.dart';
 
 class OrderDetailsController extends GetxController {
   late final OrderService _orderService;
+  late final ReviewService _reviewService;
   final ChatService _chatService = ChatService();
   late int _currentOrderId;
 
@@ -17,10 +22,12 @@ class OrderDetailsController extends GetxController {
   final Rx<OrderDetailsModel?> orderDetails = Rx<OrderDetailsModel?>(null);
   final RxBool isLoading = true.obs;
   final RxString errorMessage = ''.obs;
+  final RxMap<int, bool> reviewedProducts = <int, bool>{}.obs; // Track which products have been reviewed
 
   // Constructor - Initialize services
   OrderDetailsController() {
     _orderService = OrderService(Get.find<ApiClient>());
+    _reviewService = ReviewService();
   }
 
   /// Load order details from API
@@ -93,6 +100,48 @@ class OrderDetailsController extends GetxController {
     }
   }
 
+  /// Confirm delivery of order
+  Future<void> confirmDelivery() async {
+    try {
+      if (kDebugMode) {
+        print('✅ ORDER DETAILS: Confirming delivery for order #$_currentOrderId...');
+      }
+
+      isLoading.value = true;
+
+      await _orderService.confirmDelivery(_currentOrderId);
+
+      if (kDebugMode) {
+        print('✅ ORDER DETAILS: Delivery confirmed successfully');
+      }
+
+      // Reload order details to get updated status
+      await loadOrderDetails(_currentOrderId);
+
+      Get.snackbar(
+        'delivery_confirmed'.tr,
+        'order_confirmed_successfully'.tr,
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: AppColors.successColor,
+        colorText: Colors.white,
+      );
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ ORDER DETAILS: Error confirming delivery - $e');
+      }
+
+      Get.snackbar(
+        'error'.tr,
+        e.toString(),
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: AppColors.errorColor,
+        colorText: Colors.white,
+      );
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
   /// Navigate to chat with restaurant for this order
   Future<void> openChat() async {
     try {
@@ -139,8 +188,10 @@ class OrderDetailsController extends GetxController {
 
         // Navigate to chat screen with arguments
         Get.toNamed(
-          AppRoutes.CHAT.replaceAll(':id', conversation.id.toString()),
+          AppRoutes.CHAT,
           arguments: {
+            'conversationId': conversation.id,
+            'conversation_id': conversation.id, // Also pass snake_case for compatibility
             'orderMessageId': orderMessageId,
           },
         );
@@ -158,11 +209,12 @@ class OrderDetailsController extends GetxController {
         // Close order details bottom sheet
         Get.back();
 
-        // Navigate to chat screen with the original conversation
-        // We need to get the order message ID from the backend
+        // Navigate to chat screen with the conversation ID
         Get.toNamed(
-          AppRoutes.CHAT.replaceAll(':id', conversationId.toString()),
+          AppRoutes.CHAT,
           arguments: {
+            'conversationId': conversationId,
+            'conversation_id': conversationId, // Also pass snake_case for compatibility
             'fromOrder': true,
           },
         );
@@ -186,6 +238,107 @@ class OrderDetailsController extends GetxController {
         'Failed to open chat. Please try again.',
         snackPosition: SnackPosition.BOTTOM,
       );
+    }
+  }
+
+  /// Show review prompt dialog for delivered orders
+  void showReviewPrompt() {
+    final order = orderDetails.value;
+    if (order == null) return;
+
+    // Only show for delivered or completed orders
+    if (order.status != 'delivered' && order.status != 'completed') {
+      if (kDebugMode) {
+        print('⚠️ Order not eligible for review. Status: ${order.status}');
+      }
+      return;
+    }
+
+    // Build list of items to review
+    final itemsToReview = order.items.map((item) {
+      return OrderItemToReview(
+        productId: item.productId,
+        name: item.productName,
+        imageUrl: item.productImage,
+        isReviewed: reviewedProducts[item.productId] ?? false,
+      );
+    }).toList();
+
+    OrderReviewPromptDialog.show(
+      orderNumber: order.orderNumber,
+      items: itemsToReview,
+      onLater: () {
+        if (kDebugMode) {
+          print('⏰ User chose to review later');
+        }
+      },
+      onReview: (productId, rating, comment, images) async {
+        await submitProductReview(
+          productId: productId,
+          rating: rating,
+          comment: comment,
+          images: images,
+        );
+      },
+    );
+  }
+
+  /// Submit a review for a specific product
+  Future<void> submitProductReview({
+    required int productId,
+    required int rating,
+    required String comment,
+    List<String>? images,
+  }) async {
+    try {
+      if (kDebugMode) {
+        print('⭐ Submitting review for product #$productId, rating: $rating');
+      }
+
+      // Convert image paths to Files
+      List<Map<String, dynamic>> reviews = [
+        {
+          'product_id': productId,
+          'rating': rating,
+          'comment': comment,
+          if (images != null && images.isNotEmpty)
+            'images': images.map((path) => File(path)).toList(),
+        }
+      ];
+
+      final response = await _reviewService.submitOrderReviews(
+        orderId: _currentOrderId,
+        reviews: reviews,
+      );
+
+      // Mark as reviewed
+      reviewedProducts[productId] = true;
+
+      if (kDebugMode) {
+        print('✅ Review submitted successfully');
+      }
+
+      Get.snackbar(
+        'success'.tr,
+        'review_submitted'.tr,
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: AppColors.successColor,
+        colorText: Colors.white,
+      );
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ Error submitting review: $e');
+      }
+
+      Get.snackbar(
+        'error'.tr,
+        'failed_to_submit_review'.tr,
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: AppColors.errorColor,
+        colorText: Colors.white,
+      );
+      
+      rethrow;
     }
   }
 }

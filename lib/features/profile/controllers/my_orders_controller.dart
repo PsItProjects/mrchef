@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/features/profile/models/order_model.dart';
 import 'package:mrsheaf/features/profile/services/order_service.dart';
 import 'package:mrsheaf/core/network/api_client.dart';
 import 'package:mrsheaf/features/profile/widgets/order_details_bottom_sheet.dart';
 
 class MyOrdersController extends GetxController {
-  // Selected tab index (0: All, 1: Pending, 2: Confirmed, 3: Preparing, 4: Out for Delivery, 5: Delivered, 6: Cancelled)
+  // Selected tab index (0: All, 1: Pending, 2: Confirmed, 3: Preparing, 4: Out for Delivery, 5: Delivered, 6: Completed, 7: Cancelled)
   final RxInt selectedTabIndex = 0.obs;
 
   // All orders
@@ -24,15 +25,16 @@ class MyOrdersController extends GetxController {
   // Search mode
   final RxBool isSearching = false.obs;
 
-  // Tab labels
-  final List<String> tabLabels = [
-    'All',
-    'Pending',
-    'Confirmed',
-    'Preparing',
-    'Out for Delivery',
-    'Delivered',
-    'Cancelled',
+  // Tab labels - computed to support language switching
+  List<String> get tabLabels => [
+    'all'.tr,
+    'pending'.tr,
+    'confirmed'.tr,
+    'preparing'.tr,
+    'out_for_delivery'.tr,
+    'awaiting_confirmation'.tr,
+    'completed'.tr,
+    'cancelled'.tr,
   ];
 
   // Service
@@ -103,10 +105,13 @@ class MyOrdersController extends GetxController {
       case 4: // Out for Delivery
         tabFiltered = orders.where((order) => order.status == OrderStatus.outForDelivery).toList();
         break;
-      case 5: // Delivered
+      case 5: // Awaiting Confirmation (delivered)
         tabFiltered = orders.where((order) => order.status == OrderStatus.delivered).toList();
         break;
-      case 6: // Cancelled
+      case 6: // Completed
+        tabFiltered = orders.where((order) => order.status == OrderStatus.completed).toList();
+        break;
+      case 7: // Cancelled
         tabFiltered = orders.where((order) => order.status == OrderStatus.cancelled || order.status == OrderStatus.rejected).toList();
         break;
       default:
@@ -179,6 +184,37 @@ class MyOrdersController extends GetxController {
       snackPosition: SnackPosition.BOTTOM,
     );
     // TODO: Add items to cart and navigate to cart
+  }
+
+  /// Confirm delivery of an order
+  Future<void> confirmDelivery(OrderModel order) async {
+    try {
+      isLoading.value = true;
+
+      await _orderService.confirmDelivery(order.id);
+
+      Get.snackbar(
+        'delivery_confirmed'.tr,
+        'order_confirmed_successfully'.tr,
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: AppColors.successColor,
+        colorText: Colors.white,
+      );
+
+      // Refresh orders to update the list
+      await fetchOrders();
+    } catch (e) {
+      print('❌ ORDERS CONTROLLER: Error confirming delivery - $e');
+      Get.snackbar(
+        'error'.tr,
+        e.toString(),
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: AppColors.errorColor,
+        colorText: Colors.white,
+      );
+    } finally {
+      isLoading.value = false;
+    }
   }
 
   // Navigation

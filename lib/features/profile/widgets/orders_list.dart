@@ -22,6 +22,9 @@ class OrdersList extends GetView<MyOrdersController> {
             child: OrderItemWidget(
               order: order,
               onViewDetails: () => controller.viewOrderDetails(order),
+              onConfirmDelivery: order.canConfirmDelivery
+                  ? () => controller.confirmDelivery(order)
+                  : null,
             ),
           );
         },

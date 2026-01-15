@@ -1,14 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/features/profile/models/order_model.dart';
 
 class OrderItemWidget extends StatelessWidget {
   final OrderModel order;
   final VoidCallback onViewDetails;
+  final VoidCallback? onConfirmDelivery;
 
   const OrderItemWidget({
     super.key,
     required this.order,
     required this.onViewDetails,
+    this.onConfirmDelivery,
   });
 
   @override
@@ -43,9 +47,9 @@ class OrderItemWidget extends StatelessWidget {
                     // Order code section
                     Row(
                       children: [
-                        const Text(
-                          'Order Code',
-                          style: TextStyle(
+                        Text(
+                          'order_code'.tr,
+                          style: const TextStyle(
                             fontFamily: 'Lato',
                             fontWeight: FontWeight.w600,
                             fontSize: 14,
@@ -137,9 +141,9 @@ class OrderItemWidget extends StatelessWidget {
                       ),
                       child: GestureDetector(
                         onTap: onViewDetails,
-                        child: const Text(
-                          'Detail',
-                          style: TextStyle(
+                        child: Text(
+                          'detail'.tr,
+                          style: const TextStyle(
                             fontFamily: 'Lato',
                             fontWeight: FontWeight.w600,
                             fontSize: 16,
@@ -149,25 +153,46 @@ class OrderItemWidget extends StatelessWidget {
                       ),
                     ),
                     
-                    // Status button
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 6),
-                      decoration: BoxDecoration(
-                        borderRadius: const BorderRadius.only(
-                          topRight: Radius.circular(4),
-                          bottomRight: Radius.circular(4),
+                    // Confirm Delivery button for delivered orders, or Status text
+                    if (order.canConfirmDelivery && onConfirmDelivery != null)
+                      GestureDetector(
+                        onTap: onConfirmDelivery,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: AppColors.successColor,
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            'confirm_delivery'.tr,
+                            style: const TextStyle(
+                              fontFamily: 'Lato',
+                              fontWeight: FontWeight.w600,
+                              fontSize: 14,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      )
+                    else
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 6),
+                        decoration: BoxDecoration(
+                          borderRadius: const BorderRadius.only(
+                            topRight: Radius.circular(4),
+                            bottomRight: Radius.circular(4),
+                          ),
+                        ),
+                        child: Text(
+                          order.statusText,
+                          style: TextStyle(
+                            fontFamily: 'Lato',
+                            fontWeight: FontWeight.w600,
+                            fontSize: 16,
+                            color: order.statusTextColor,
+                          ),
                         ),
                       ),
-                      child: Text(
-                        order.statusText,
-                        style: TextStyle(
-                          fontFamily: 'Lato',
-                          fontWeight: FontWeight.w600,
-                          fontSize: 16,
-                          color: order.statusTextColor,
-                        ),
-                      ),
-                    ),
                   ],
                 ),
               ],

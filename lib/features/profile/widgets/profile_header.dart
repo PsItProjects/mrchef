@@ -31,7 +31,7 @@ class ProfileHeader extends StatelessWidget {
           
           // Title
           Text(
-            TranslationHelper.tr('profile'),
+            TranslationHelper.tr('settings'),
             style: const TextStyle(
               fontFamily: 'Lato',
               fontWeight: FontWeight.w600,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/features/profile/models/order_details_model.dart';
 
@@ -53,7 +54,7 @@ class OrderDeliveryInfo extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      order.restaurantName ?? 'Restaurant',
+                      order.restaurantName ?? 'restaurant'.tr,
                       style: const TextStyle(
                         fontFamily: 'Lato',
                         fontSize: 16,
@@ -89,9 +90,9 @@ class OrderDeliveryInfo extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
-                'Delivery Address',
-                style: TextStyle(
+              Text(
+                'delivery_address'.tr,
+                style: const TextStyle(
                   fontFamily: 'Lato',
                   fontSize: 14,
                   fontWeight: FontWeight.w700,
@@ -152,9 +153,9 @@ class OrderDeliveryInfo extends StatelessWidget {
           // Notes (if any)
           if (order.notes != null && order.notes!.isNotEmpty) ...[
             const SizedBox(height: 16),
-            const Text(
-              'Notes',
-              style: TextStyle(
+            Text(
+              'notes'.tr,
+              style: const TextStyle(
                 fontFamily: 'Lato',
                 fontSize: 14,
                 fontWeight: FontWeight.w700,

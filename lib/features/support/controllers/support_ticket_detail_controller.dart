@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
@@ -22,6 +23,8 @@ class SupportTicketDetailController extends GetxController {
   final ScrollController scrollController = ScrollController();
 
   late final int ticketId;
+  Timer? _pollingTimer;
+  static const Duration _pollingInterval = Duration(seconds: 3); // Faster refresh
 
   String get _userType => _authService.userType.value.isEmpty
       ? 'customer'
@@ -32,13 +35,61 @@ class SupportTicketDetailController extends GetxController {
     super.onInit();
     ticketId = int.tryParse(Get.parameters['id'] ?? '') ?? 0;
     loadTicket();
+    _startPolling();
   }
 
   @override
   void onClose() {
+    _stopPolling();
     messageController.dispose();
     scrollController.dispose();
     super.onClose();
+  }
+
+  /// Start auto-refresh polling for real-time updates
+  void _startPolling() {
+    _pollingTimer = Timer.periodic(_pollingInterval, (_) {
+      _silentRefresh();
+    });
+  }
+
+  /// Stop polling
+  void _stopPolling() {
+    _pollingTimer?.cancel();
+    _pollingTimer = null;
+  }
+
+  /// Silent refresh without showing loading indicator
+  Future<void> _silentRefresh() async {
+    // Don't refresh if ticket is closed
+    if (ticket['status'] == 'closed') {
+      _stopPolling();
+      return;
+    }
+
+    try {
+      final t = await _supportService.getTicket(userType: _userType, ticketId: ticketId);
+      final newMsgs = (t['messages'] as List?) ?? const [];
+      
+      // Only update if there are new messages
+      if (newMsgs.length > messages.length) {
+        print('🔄 New messages detected: ${newMsgs.length} vs ${messages.length}');
+        ticket.assignAll(t);
+        messages.assignAll(newMsgs.map((e) => Map<String, dynamic>.from(e as Map)).toList());
+        _scrollToBottom();
+      }
+      
+      // Update status if changed
+      if (t['status'] != ticket['status']) {
+        ticket.assignAll(t);
+        if (t['status'] == 'closed') {
+          _stopPolling();
+        }
+      }
+    } catch (e) {
+      // Silent fail - don't show errors for background refresh
+      print('❌ Silent refresh error: $e');
+    }
   }
 
   Future<void> loadTicket() async {
@@ -49,6 +100,11 @@ class SupportTicketDetailController extends GetxController {
       final msgs = (t['messages'] as List?) ?? const [];
       messages.assignAll(msgs.map((e) => Map<String, dynamic>.from(e as Map)).toList());
       _scrollToBottom();
+      
+      // Restart polling if ticket was reopened
+      if (t['status'] != 'closed' && _pollingTimer == null) {
+        _startPolling();
+      }
     } on DioException catch (e) {
       final msg = _extractBackendMessage(e) ?? TranslationHelper.tr('error');
       Get.snackbar(

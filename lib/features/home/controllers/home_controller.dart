@@ -204,6 +204,10 @@ class HomeController extends GetxController {
     // Use LanguageService to get localized text
     final languageService = LanguageService.instance;
 
+    print('🔄 CONVERTING PRODUCT:');
+    print('   Backend ID: ${backendData['id']}');
+    print('   Backend Name: ${backendData['name']}');
+
     String getName(dynamic nameField) {
       return languageService.getLocalizedText(nameField);
     }
@@ -227,7 +231,7 @@ class HomeController extends GetxController {
       return 'https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=400&h=300&fit=crop'; // fallback image
     }
 
-    return {
+    final converted = {
       'id': backendData['id'],
       'name': getName(backendData['name']),
       'description': backendData['description'] ?? '',
@@ -247,6 +251,11 @@ class HomeController extends GetxController {
       'categoryId': backendData['category_id'], // إضافة categoryId للفلترة
       'isFavorite': false,
     };
+    
+    print('   ✅ Converted Product ID: ${converted['id']}');
+    print('   ✅ Converted Product Name: ${converted['name']}');
+    
+    return converted;
   }
 
   // Methods
@@ -443,9 +452,19 @@ class HomeController extends GetxController {
   }
 
   void navigateToProductDetails({int? productId}) {
+    if (productId == null) {
+      Get.snackbar(
+        'خطأ',
+        'معرف المنتج غير صحيح',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+      return;
+    }
     Get.toNamed(
       AppRoutes.PRODUCT_DETAILS,
-      arguments: {'productId': productId ?? 1},
+      arguments: {'productId': productId},
     );
   }
 

@@ -23,24 +23,33 @@ class SupportTicketDetailScreen extends GetView<SupportTicketDetailController> {
                   '${'ticket'.tr} #${controller.ticketId}',
                   style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
-                Text(
-                  _getStatusText(controller.ticket['status']?.toString() ?? ''),
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: _getStatusColor(controller.ticket['status']?.toString() ?? ''),
-                  ),
+                Row(
+                  children: [
+                    Container(
+                      width: 8,
+                      height: 8,
+                      margin: const EdgeInsets.only(right: 6),
+                      decoration: BoxDecoration(
+                        color: controller.ticket['status'] == 'closed' 
+                            ? Colors.grey 
+                            : Colors.green,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    Text(
+                      _getStatusText(controller.ticket['status']?.toString() ?? ''),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: _getStatusColor(controller.ticket['status']?.toString() ?? ''),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             )),
         backgroundColor: Colors.white,
         foregroundColor: const Color(0xFF262626),
         elevation: 1,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: controller.loadTicket,
-          ),
-        ],
       ),
       body: Column(
         children: [

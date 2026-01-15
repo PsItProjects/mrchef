@@ -188,6 +188,8 @@ class MerchantOrdersController extends GetxController {
       case 'out_for_delivery':
         return Colors.indigo;
       case 'delivered':
+        return Colors.amber; // Awaiting customer confirmation
+      case 'completed':
         return Colors.green;
       case 'cancelled':
       case 'rejected':
@@ -214,6 +216,8 @@ class MerchantOrdersController extends GetxController {
       case 'out_for_delivery':
         return TranslationHelper.isArabic ? 'في الطريق' : 'On the way';
       case 'delivered':
+        return TranslationHelper.isArabic ? 'بانتظار التأكيد' : 'Awaiting Confirmation';
+      case 'completed':
         return TranslationHelper.isArabic ? 'مكتمل' : 'Completed';
       case 'cancelled':
         return TranslationHelper.isArabic ? 'ملغي' : 'Cancelled';

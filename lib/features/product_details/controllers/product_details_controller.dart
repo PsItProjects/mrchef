@@ -47,7 +47,22 @@ class ProductDetailsController extends GetxController {
   void onInit() {
     super.onInit();
     // Get product ID from arguments
-    productId = Get.arguments?['productId'] ?? 1;
+    final receivedId = Get.arguments?['productId'];
+    
+    if (receivedId == null) {
+      Get.snackbar(
+        'خطأ',
+        'معرف المنتج غير صحيح. يرجى المحاولة مرة أخرى.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+        duration: const Duration(seconds: 3),
+      );
+      Future.delayed(const Duration(seconds: 2), () => Get.back());
+      return;
+    }
+    
+    productId = receivedId;
     _loadProductDetails();
     _setupLanguageListener();
   }
@@ -66,6 +81,10 @@ class ProductDetailsController extends GetxController {
   Future<void> _loadProductDetails() async {
     try {
       isLoadingProduct.value = true;
+
+      if (kDebugMode) {
+        print('🔍 PRODUCT DETAILS: Loading product with ID: $productId');
+      }
 
       final productData = await _productDetailsService.getProductDetails(productId);
       product.value = productData;

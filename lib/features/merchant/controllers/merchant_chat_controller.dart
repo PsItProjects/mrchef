@@ -49,7 +49,7 @@ class MerchantChatController extends GetxController {
   StreamSubscription? _messagesSubscription;
   StreamSubscription? _typingSubscription;
 
-  late int conversationId;
+  int? conversationId;
 
   // Customer info from order or arguments
   String? customerName;
@@ -60,8 +60,51 @@ class MerchantChatController extends GetxController {
   void onInit() {
     super.onInit();
 
-    // Get conversation ID from route parameters
-    conversationId = int.parse(Get.parameters['id'] ?? '0');
+    // Get conversation ID from route parameters or arguments
+    if (Get.parameters.containsKey('id') && Get.parameters['id'] != null && Get.parameters['id']!.isNotEmpty) {
+      conversationId = int.parse(Get.parameters['id']!);
+    } else if (Get.arguments != null) {
+      // Try to get conversationId from arguments
+      if (Get.arguments is int) {
+        conversationId = Get.arguments as int;
+      } else if (Get.arguments is Map<String, dynamic>) {
+        final args = Get.arguments as Map<String, dynamic>;
+        // Try both camelCase and snake_case
+        if (args.containsKey('conversationId')) {
+          conversationId = args['conversationId'] as int?;
+        } else if (args.containsKey('conversation_id')) {
+          conversationId = args['conversation_id'] as int?;
+        }
+        // Also try to get from conversation object if present
+        if (conversationId == null && args.containsKey('conversation')) {
+          final convData = args['conversation'];
+          if (convData is ConversationModel) {
+            conversationId = convData.id;
+          } else if (convData is Map<String, dynamic>) {
+            conversationId = convData['id'] as int?;
+          }
+        }
+      }
+    }
+
+    if (conversationId == null || conversationId == 0) {
+      if (kDebugMode) {
+        print('❌ MERCHANT CHAT: Invalid conversation ID');
+        print('   Parameters: ${Get.parameters}');
+        print('   Arguments: ${Get.arguments}');
+      }
+      Get.snackbar(
+        TranslationHelper.tr('error'),
+        'Invalid conversation ID',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      Get.back();
+      return;
+    }
+
+    if (kDebugMode) {
+      print('✅ MERCHANT CHAT: Initialized with conversationId: $conversationId');
+    }
 
     // Get conversation from arguments if passed
     if (Get.arguments != null && Get.arguments is Map<String, dynamic>) {
@@ -139,8 +182,8 @@ class MerchantChatController extends GetxController {
     _leaveChat();
 
     // Clean up realtime service
-    if (Get.isRegistered<RealtimeChatService>()) {
-      RealtimeChatService.instance.disposeConversation(conversationId);
+    if (Get.isRegistered<RealtimeChatService>() && conversationId != null) {
+      RealtimeChatService.instance.disposeConversation(conversationId!);
     }
 
     messageController.dispose();
@@ -150,26 +193,58 @@ class MerchantChatController extends GetxController {
 
   /// Setup real-time listeners for messages and typing
   void _setupRealtimeListeners() {
-    if (!Get.isRegistered<RealtimeChatService>()) return;
+    if (!Get.isRegistered<RealtimeChatService>() || conversationId == null) return;
 
     final realtimeService = RealtimeChatService.instance;
 
-    // Listen to new messages
+    // Listen to new messages with merchant user type for proper API calls
     _messagesSubscription =
-        realtimeService.listenToMessages(conversationId).listen((newMessages) {
-      // Only add new messages that we don't have
-      for (var msg in newMessages) {
-        if (!messages.any((m) => m.id == msg.id)) {
-          messages.add(msg);
-          messageKeys[msg.id] = GlobalKey();
-          _scrollToBottom();
+        realtimeService.listenToMessages(conversationId!, userType: 'merchant').listen((receivedMessages) {
+      // IMPORTANT: Never replace messages with empty list!
+      if (receivedMessages.isEmpty) {
+        if (kDebugMode) {
+          print('CHAT: Received empty messages list - keeping current messages');
         }
+        return;
+      }
+
+      // Check if there are actual changes
+      final receivedIds = receivedMessages.map((msg) => msg.id).toSet();
+      final currentIds = messages.map((msg) => msg.id).toSet();
+
+      // Only update UI if there are actual new messages or changes
+      final hasNewMessages = receivedIds.difference(currentIds).isNotEmpty;
+      final hasRemovedMessages = currentIds.difference(receivedIds).isNotEmpty;
+      final countChanged = receivedMessages.length != messages.length;
+
+      if (hasNewMessages || hasRemovedMessages || countChanged) {
+        if (kDebugMode) {
+          print('CHAT: Updating messages (new: $hasNewMessages, removed: $hasRemovedMessages, count: ${receivedMessages.length})');
+        }
+
+        // Update the entire list to ensure consistency
+        messages.assignAll(receivedMessages);
+
+        // Update message keys only for new messages
+        for (var message in receivedMessages) {
+          if (!messageKeys.containsKey(message.id)) {
+            messageKeys[message.id] = GlobalKey();
+          }
+        }
+
+        // Scroll to bottom when new messages arrive (like WhatsApp)
+        if (hasNewMessages) {
+          _forceScrollToBottom();
+        }
+
+        // Fetch order details for any new product_attachment messages
+        _fetchOrdersFromMessages();
       }
     });
 
     // Listen to typing indicator
     _typingSubscription = realtimeService
-        .listenToTyping(conversationId, 'customer')
+        .listenToTyping(conversationId!, 'customer')
         .listen((isTyping) {
       isOtherTyping.value = isTyping;
     });
@@ -177,9 +252,11 @@ class MerchantChatController extends GetxController {
 
   Future<void> reportConversation({required String reason, String? details}) async {
     try {
+      if (conversationId == null) return;
+      
       await _supportService.reportConversation(
         userType: 'merchant',
-        conversationId: conversationId,
+        conversationId: conversationId!,
         reason: reason,
         details: details,
       );
@@ -202,8 +279,8 @@ class MerchantChatController extends GetxController {
   /// Notify backend that user entered this chat (to prevent push notifications)
   Future<void> _enterChat() async {
     try {
-      if (Get.isRegistered<FCMService>()) {
-        await FCMService.instance.enterChat(conversationId);
+      if (Get.isRegistered<FCMService>() && conversationId != null) {
+        await FCMService.instance.enterChat(conversationId!);
       }
     } catch (e) {
       if (kDebugMode) {
@@ -362,9 +439,24 @@ class MerchantChatController extends GetxController {
   /// Load messages for this conversation
   Future<void> loadMessages() async {
     try {
+      if (conversationId == null) {
+        if (kDebugMode) {
+          print('❌ MERCHANT CHAT: Cannot load messages - conversationId is null');
+        }
+        return;
+      }
+      
+      if (kDebugMode) {
+        print('📨 MERCHANT CHAT: Loading messages for conversation #$conversationId...');
+      }
+      
       isLoading.value = true;
 
-      final fetchedMessages = await _chatService.getMessages(conversationId);
+      final fetchedMessages = await _chatService.getMessages(conversationId!);
+      
+      if (kDebugMode) {
+        print('✅ MERCHANT CHAT: Fetched ${fetchedMessages.length} messages');
+      }
       final seenIds = <int>{};
       final deduped = <MessageModel>[];
       for (final msg in fetchedMessages) {
@@ -383,10 +475,8 @@ class MerchantChatController extends GetxController {
       // Fetch order details for product_attachment messages
       _fetchOrdersFromMessages();
 
-      // Scroll to bottom after loading messages
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _scrollToBottom();
-      });
+      // Scroll to bottom after loading messages (force with multiple attempts)
+      _forceScrollToBottom();
     } catch (e) {
       String errorMessage = e.toString();
       if (errorMessage.startsWith('Exception: ')) {
@@ -421,21 +511,36 @@ class MerchantChatController extends GetxController {
   /// Send a message
   Future<void> sendMessage() async {
     final messageText = messageController.text.trim();
-    if (messageText.isEmpty) return;
+    if (messageText.isEmpty || conversationId == null) return;
 
     try {
       isSending.value = true;
       messageController.clear();
 
       final newMessage =
-          await _chatService.sendMessage(conversationId, messageText);
-      messages.add(newMessage);
-      messageKeys[newMessage.id] = GlobalKey();
+          await _chatService.sendMessage(conversationId!, messageText);
 
-      // Sync to Firestore for real-time
+      // Add message to list immediately for instant UI feedback
+      if (!messages.any((m) => m.id == newMessage.id)) {
+        messages.add(newMessage);
+        messageKeys[newMessage.id] = GlobalKey();
+      }
+
+      // Scroll to bottom immediately to show the sent message
+      _scrollToBottom();
+
+      // Sync to Firestore for real-time and add to cache
       if (Get.isRegistered<RealtimeChatService>()) {
-        RealtimeChatService.instance
-            .syncMessageToFirestore(conversationId, newMessage);
+        final realtimeService = RealtimeChatService.instance;
+
+        // Add to cache immediately
+        realtimeService.addMessageToCache(conversationId!, newMessage);
+
+        // Sync to Firestore
+        realtimeService.syncMessageToFirestore(conversationId!, newMessage);
+
+        // Trigger refresh for other participants
+        await realtimeService.triggerManualRefresh(conversationId!);
       }
 
       _scrollToBottom();
@@ -494,26 +599,40 @@ class MerchantChatController extends GetxController {
 
   /// Send the selected image
   Future<void> sendSelectedImage() async {
-    if (selectedImage.value == null) return;
+    if (selectedImage.value == null || conversationId == null) return;
 
     try {
       isUploadingImage.value = true;
 
       final newMessage = await _chatService.sendImageMessage(
-        conversationId,
+        conversationId!,
         selectedImage.value!,
       );
 
       // Clear selected image
       selectedImage.value = null;
 
-      messages.add(newMessage);
-      messageKeys[newMessage.id] = GlobalKey();
+      // Add message to list immediately for instant UI feedback
+      if (!messages.any((m) => m.id == newMessage.id)) {
+        messages.add(newMessage);
+        messageKeys[newMessage.id] = GlobalKey();
+      }
 
-      // Sync to Firestore for real-time
+      // Scroll to bottom immediately to show the sent message
+      _scrollToBottom();
+
+      // Sync to Firestore for real-time and add to cache
       if (Get.isRegistered<RealtimeChatService>()) {
-        RealtimeChatService.instance
-            .syncMessageToFirestore(conversationId, newMessage);
+        final realtimeService = RealtimeChatService.instance;
+
+        // Add to cache immediately
+        realtimeService.addMessageToCache(conversationId!, newMessage);
+
+        // Sync to Firestore
+        realtimeService.syncMessageToFirestore(conversationId!, newMessage);
+
+        // Trigger refresh for other participants
+        await realtimeService.triggerManualRefresh(conversationId!);
       }
 
       _scrollToBottom();
@@ -569,14 +688,38 @@ class MerchantChatController extends GetxController {
     );
   }
 
-  void _scrollToBottom() {
-    if (scrollController.hasClients) {
+  void _scrollToBottom({bool immediate = false}) {
+    if (!scrollController.hasClients) return;
+
+    if (immediate) {
+      // Jump immediately without animation
+      scrollController.jumpTo(scrollController.position.maxScrollExtent);
+    } else {
+      // Animate to bottom
       scrollController.animateTo(
         scrollController.position.maxScrollExtent,
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeOut,
       );
     }
+  }
+
+  /// Force scroll to bottom after UI is built (with multiple attempts)
+  void _forceScrollToBottom() {
+    // First attempt - immediate
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scrollToBottom(immediate: true);
+
+      // Second attempt after short delay (for images/heavy content)
+      Future.delayed(const Duration(milliseconds: 100), () {
+        _scrollToBottom(immediate: true);
+      });
+
+      // Third attempt after longer delay (ensure all content is rendered)
+      Future.delayed(const Duration(milliseconds: 300), () {
+        _scrollToBottom();
+      });
+    });
   }
 
   void scrollToMessage(int messageId) {
@@ -600,9 +743,9 @@ class MerchantChatController extends GetxController {
 
   /// Notify that user is typing
   void setTyping(bool isTyping) {
-    if (Get.isRegistered<RealtimeChatService>()) {
+    if (Get.isRegistered<RealtimeChatService>() && conversationId != null) {
       RealtimeChatService.instance
-          .setTyping(conversationId, 'merchant', isTyping);
+          .setTyping(conversationId!, 'merchant', isTyping);
     }
   }
 }

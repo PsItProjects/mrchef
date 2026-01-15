@@ -866,8 +866,12 @@ class StoreDetailsController extends GetxController {
 
       // Navigate to chat screen
       Get.toNamed(
-        '/chat/${conversation.id}',
-        arguments: conversation,
+        '/chat',
+        arguments: {
+          'conversationId': conversation.id,
+          'conversation_id': conversation.id, // Also pass snake_case for compatibility
+          'conversation': conversation, // Pass the conversation object
+        },
       );
     } catch (e) {
       // Close loading dialog if open

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/features/profile/models/order_item_model.dart';
 
@@ -19,9 +20,9 @@ class OrderItemsList extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Order Items',
-            style: TextStyle(
+          Text(
+            'order_items'.tr,
+            style: const TextStyle(
               fontFamily: 'Lato',
               fontSize: 18,
               fontWeight: FontWeight.w700,

@@ -6,6 +6,7 @@ import 'package:mrsheaf/features/cart/services/cart_service.dart';
 import 'package:mrsheaf/features/product_details/models/product_model.dart';
 import 'package:mrsheaf/core/routes/app_routes.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
+import 'package:mrsheaf/core/localization/translation_helper.dart';
 
 class CartController extends GetxController {
   final CartService _cartService = CartService();
@@ -90,8 +91,8 @@ class CartController extends GetxController {
 
       // Show success message
       Get.snackbar(
-        'تم بنجاح',
-        'تم إضافة ${product.name} إلى السلة',
+        TranslationHelper.tr('success'),
+        TranslationHelper.tr('item_added_to_cart_successfully', args: {'@product_name': product.name}),
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: const Color(0xFF4CAF50),
         colorText: Colors.white,
@@ -153,8 +154,8 @@ class CartController extends GetxController {
       await _updateCartSummaryOnly();
 
       Get.snackbar(
-        'تم الحذف',
-        'تم حذف العنصر من السلة',
+        TranslationHelper.tr('deleted'),
+        TranslationHelper.tr('item_removed_from_cart'),
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: const Color(0xFF4CAF50),
         colorText: Colors.white,

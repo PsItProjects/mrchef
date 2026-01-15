@@ -1,48 +1,64 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/services/review_service.dart';
+import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/features/profile/models/review_model.dart';
 
 class MyReviewsController extends GetxController {
   // All reviews
   final RxList<ReviewModel> reviews = <ReviewModel>[].obs;
+  
+  // Loading state
+  final RxBool isLoading = false.obs;
+  
+  // Error state
+  final RxString errorMessage = ''.obs;
+  
+  // Review service
+  late final ReviewService _reviewService;
 
   @override
   void onInit() {
     super.onInit();
-    // _initializeSampleData(); // Temporarily disabled to test empty state
+    _reviewService = ReviewService();
+    fetchMyReviews();
   }
-
-  void _initializeSampleData() {
-    // Add sample reviews
-    reviews.addAll([
-      ReviewModel(
-        id: 1,
-        productName: 'Caesar salad',
-        productPrice: 50.00,
-        productImage: 'assets/images/pizza_main.png',
-        rating: 5,
-        reviewDate: DateTime(2020, 3, 20),
-        reviewText: 'It tasted amazing, and it\'s definitely worth a try! Every bite was enjoyable.',
-      ),
-      ReviewModel(
-        id: 2,
-        productName: 'Caesar salad',
-        productPrice: 50.00,
-        productImage: 'assets/images/pizza_main.png',
-        rating: 5,
-        reviewDate: DateTime(2020, 3, 20),
-        reviewText: 'The food was excellent, the taste was fresh and gave a feeling of comfort.',
-      ),
-      ReviewModel(
-        id: 3,
-        productName: 'Caesar salad',
-        productPrice: 50.00,
-        productImage: 'assets/images/pizza_main.png',
-        rating: 5,
-        reviewDate: DateTime(2020, 3, 20),
-        reviewText: 'It tasted amazing, and it\'s definitely worth a try! Every bite was enjoyable.',
-      ),
-    ]);
+  
+  /// Fetch user's reviews from API
+  Future<void> fetchMyReviews() async {
+    try {
+      isLoading.value = true;
+      errorMessage.value = '';
+      
+      if (kDebugMode) {
+        print('📝 MY_REVIEWS: Fetching user reviews...');
+      }
+      
+      reviews.value = await _reviewService.getMyReviews();
+      
+      if (kDebugMode) {
+        print('✅ MY_REVIEWS: Fetched ${reviews.length} reviews');
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ MY_REVIEWS: Error fetching reviews - $e');
+      }
+      errorMessage.value = e.toString().replaceAll('Exception: ', '');
+      
+      // If 404 or no reviews, just clear the list
+      if (e.toString().contains('404') || e.toString().contains('No reviews')) {
+        reviews.clear();
+        errorMessage.value = '';
+      }
+    } finally {
+      isLoading.value = false;
+    }
+  }
+  
+  /// Refresh reviews
+  Future<void> refreshReviews() async {
+    await fetchMyReviews();
   }
 
   // Review actions
@@ -129,7 +145,7 @@ class MyReviewsController extends GetxController {
 
   // Add sample data for testing
   void addSampleData() {
-    _initializeSampleData();
+    // TODO: Initialize sample data if needed for testing
   }
 
   // Clear all reviews for testing empty state

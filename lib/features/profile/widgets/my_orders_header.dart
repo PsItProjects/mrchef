@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mrsheaf/features/profile/controllers/my_orders_controller.dart';
+import 'package:mrsheaf/core/localization/translation_helper.dart';
 
 class MyOrdersHeader extends GetView<MyOrdersController> {
   const MyOrdersHeader({super.key});
@@ -35,7 +36,7 @@ class MyOrdersHeader extends GetView<MyOrdersController> {
                   autofocus: true,
                   onChanged: (value) => controller.updateSearchQuery(value),
                   decoration: InputDecoration(
-                    hintText: 'Search orders...',
+                    hintText: 'search_orders'.tr,
                     hintStyle: const TextStyle(
                       fontFamily: 'Lato',
                       fontSize: 14,
@@ -77,9 +78,9 @@ class MyOrdersHeader extends GetView<MyOrdersController> {
             ),
 
             // Title
-            const Text(
-              'My Order',
-              style: TextStyle(
+            Text(
+              'my_orders'.tr,
+              style: const TextStyle(
                 fontFamily: 'Lato',
                 fontWeight: FontWeight.w600,
                 fontSize: 16,

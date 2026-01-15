@@ -1,11 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/features/profile/models/order_details_model.dart';
+import 'package:mrsheaf/features/profile/models/order_model.dart';
 
 class OrderPricingSummary extends StatelessWidget {
   final OrderDetailsModel order;
 
   const OrderPricingSummary({super.key, required this.order});
+  
+  /// Get the effective payment status
+  /// For cash on delivery, if order is completed, payment is considered paid
+  String get _effectivePaymentStatus {
+    if (order.paymentMethod == 'cash' && 
+        (order.status == OrderStatus.completed || order.status == OrderStatus.delivered)) {
+      return 'paid';
+    }
+    return order.paymentStatus;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -26,9 +38,9 @@ class OrderPricingSummary extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Payment Summary',
-            style: TextStyle(
+          Text(
+            'payment_summary'.tr,
+            style: const TextStyle(
               fontFamily: 'Lato',
               fontSize: 18,
               fontWeight: FontWeight.w700,
@@ -48,7 +60,7 @@ class OrderPricingSummary extends StatelessWidget {
               children: [
                 // Subtotal
                 _buildPriceRow(
-                  label: 'Subtotal',
+                  label: 'subtotal'.tr,
                   value: '${order.subtotal.toStringAsFixed(2)} SAR',
                 ),
 
@@ -56,7 +68,7 @@ class OrderPricingSummary extends StatelessWidget {
 
                 // Delivery Fee
                 _buildPriceRow(
-                  label: 'Delivery Fee',
+                  label: 'delivery_fee'.tr,
                   value: '${order.deliveryFee.toStringAsFixed(2)} SAR',
                 ),
 
@@ -64,7 +76,7 @@ class OrderPricingSummary extends StatelessWidget {
                 if (order.serviceFee > 0) ...[
                   const SizedBox(height: 12),
                   _buildPriceRow(
-                    label: 'Service Fee',
+                    label: 'service_fee'.tr,
                     value: order.formattedServiceFee,
                   ),
                 ],
@@ -73,7 +85,7 @@ class OrderPricingSummary extends StatelessWidget {
                 if (order.taxAmount > 0) ...[
                   const SizedBox(height: 12),
                   _buildPriceRow(
-                    label: 'Tax',
+                    label: 'tax'.tr,
                     value: '${order.taxAmount.toStringAsFixed(2)} SAR',
                   ),
                 ],
@@ -82,7 +94,7 @@ class OrderPricingSummary extends StatelessWidget {
                 if (order.discountAmount > 0) ...[
                   const SizedBox(height: 12),
                   _buildPriceRow(
-                    label: 'Discount',
+                    label: 'discount'.tr,
                     value: '- ${order.formattedDiscountAmount}',
                     valueColor: AppColors.successColor,
                   ),
@@ -101,7 +113,7 @@ class OrderPricingSummary extends StatelessWidget {
               borderRadius: BorderRadius.circular(12),
             ),
             child: _buildPriceRow(
-              label: 'Total Amount',
+              label: 'total_amount'.tr,
               value: '${order.totalAmount.toStringAsFixed(2)} SAR',
               labelStyle: const TextStyle(
                 fontFamily: 'Lato',
@@ -150,9 +162,9 @@ class OrderPricingSummary extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'Payment Method',
-                        style: TextStyle(
+                      Text(
+                        'payment_method'.tr,
+                        style: const TextStyle(
                           fontFamily: 'Lato',
                           fontSize: 12,
                           fontWeight: FontWeight.w400,
@@ -161,7 +173,7 @@ class OrderPricingSummary extends StatelessWidget {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        order.paymentMethod == 'cash' ? 'Cash on Delivery' : 'Card Payment',
+                        order.paymentMethod == 'cash' ? 'cash_on_delivery'.tr : 'card_payment'.tr,
                         style: const TextStyle(
                           fontFamily: 'Lato',
                           fontSize: 15,
@@ -175,18 +187,18 @@ class OrderPricingSummary extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
-                    color: order.paymentStatus == 'paid'
+                    color: _effectivePaymentStatus == 'paid'
                         ? AppColors.successColor.withOpacity(0.1)
                         : AppColors.warningColor.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
-                    order.paymentStatus == 'paid' ? 'Paid' : 'Pending',
+                    _effectivePaymentStatus == 'paid' ? 'paid'.tr : 'pending'.tr,
                     style: TextStyle(
                       fontFamily: 'Lato',
                       fontSize: 12,
                       fontWeight: FontWeight.w700,
-                      color: order.paymentStatus == 'paid'
+                      color: _effectivePaymentStatus == 'paid'
                           ? AppColors.successColor
                           : AppColors.warningColor,
                     ),

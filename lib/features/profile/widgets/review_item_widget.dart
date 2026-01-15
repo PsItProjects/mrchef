@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:mrsheaf/features/profile/models/review_model.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 
@@ -104,26 +105,61 @@ class ReviewItemWidget extends StatelessWidget {
             
             const SizedBox(height: 16),
             
-            // Rating and date section
+            // Rating, verified badge, and date section
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                // Star rating
+                // Star rating and verified badge
                 Row(
-                  children: List.generate(5, (index) {
-                    return Container(
-                      width: 16,
-                      height: 16,
-                      margin: const EdgeInsets.only(right: 4),
-                      child: Icon(
-                        Icons.star,
-                        size: 16,
-                        color: review.starRatings[index] 
-                            ? AppColors.primaryColor 
-                            : const Color(0xFFE3E3E3),
+                  children: [
+                    // Star rating
+                    ...List.generate(5, (index) {
+                      return Container(
+                        width: 16,
+                        height: 16,
+                        margin: const EdgeInsets.only(right: 4),
+                        child: Icon(
+                          Icons.star_rounded,
+                          size: 16,
+                          color: review.starRatings[index] 
+                              ? AppColors.primaryColor 
+                              : const Color(0xFFE3E3E3),
+                        ),
+                      );
+                    }),
+                    
+                    // Verified purchase badge
+                    if (review.isVerifiedPurchase) ...[
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: AppColors.successColor.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.verified_rounded,
+                              size: 12,
+                              color: AppColors.successColor,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              'verified_purchase'.tr,
+                              style: const TextStyle(
+                                fontFamily: 'Lato',
+                                fontSize: 10,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.successColor,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    );
-                  }),
+                    ],
+                  ],
                 ),
                 
                 // Review date
@@ -152,6 +188,70 @@ class ReviewItemWidget extends StatelessWidget {
                 height: 1.4,
               ),
               textAlign: TextAlign.justify,
+            ),
+            
+            // Review images
+            if (review.images.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              SizedBox(
+                height: 60,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: review.images.length,
+                  itemBuilder: (context, index) {
+                    return GestureDetector(
+                      onTap: () => _showImageFullScreen(context, review.images, index),
+                      child: Container(
+                        width: 60,
+                        height: 60,
+                        margin: const EdgeInsets.only(right: 8),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(8),
+                          image: DecorationImage(
+                            image: NetworkImage(review.images[index]),
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+  
+  void _showImageFullScreen(BuildContext context, List<String> images, int initialIndex) {
+    Get.dialog(
+      Dialog(
+        backgroundColor: Colors.black,
+        insetPadding: EdgeInsets.zero,
+        child: Stack(
+          children: [
+            PageView.builder(
+              controller: PageController(initialPage: initialIndex),
+              itemCount: images.length,
+              itemBuilder: (context, index) {
+                return InteractiveViewer(
+                  child: Center(
+                    child: Image.network(
+                      images[index],
+                      fit: BoxFit.contain,
+                    ),
+                  ),
+                );
+              },
+            ),
+            Positioned(
+              top: 40,
+              right: 16,
+              child: IconButton(
+                onPressed: () => Get.back(),
+                icon: const Icon(Icons.close, color: Colors.white, size: 30),
+              ),
             ),
           ],
         ),

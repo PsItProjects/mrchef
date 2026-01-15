@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/features/product_details/controllers/product_details_controller.dart';
 import 'package:mrsheaf/features/product_details/widgets/review_item.dart';
+import 'package:mrsheaf/shared/widgets/add_review_bottom_sheet.dart';
 
 class ReviewsBottomSheet extends GetView<ProductDetailsController> {
   const ReviewsBottomSheet({super.key});
@@ -132,9 +133,28 @@ class ReviewsBottomSheet extends GetView<ProductDetailsController> {
                       Container(
                         margin: const EdgeInsets.fromLTRB(24, 0, 24, 32),
                         child: GestureDetector(
-                          onTap: () => controller.addReview(5, "Great product!"),
+                          onTap: () {
+                            // Close this bottom sheet first
+                            Get.back();
+                            // Show add review bottom sheet
+                            if (controller.product.value != null) {
+                              AddReviewBottomSheet.show(
+                                productId: controller.product.value!.id,
+                                productName: controller.product.value!.name,
+                                productImage: controller.product.value!.image,
+                                onSubmit: (rating, comment, images) async {
+                                  try {
+                                    await controller.addReview(rating, comment, images: images);
+                                    return true;
+                                  } catch (e) {
+                                    return false;
+                                  }
+                                },
+                              );
+                            }
+                          },
                           child: Container(
-                            width: 380,
+                            width: double.infinity,
                             height: 50,
                             decoration: BoxDecoration(
                               color: Colors.white,
@@ -144,10 +164,10 @@ class ReviewsBottomSheet extends GetView<ProductDetailsController> {
                                 width: 2,
                               ),
                             ),
-                            child: const Center(
+                            child: Center(
                               child: Text(
-                                'Add your review',
-                                style: TextStyle(
+                                'write_a_review'.tr,
+                                style: const TextStyle(
                                   fontFamily: 'Lato',
                                   fontWeight: FontWeight.w700,
                                   fontSize: 18,

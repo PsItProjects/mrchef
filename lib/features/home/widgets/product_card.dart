@@ -21,10 +21,29 @@ class ProductCard extends GetView<HomeController> {
     final bool isInHorizontalList = section != 'search';
 
     return GestureDetector(
-      onTap: () => Get.toNamed(
-        AppRoutes.PRODUCT_DETAILS,
-        arguments: {'productId': product['id'] ?? 1},
-      ),
+      onTap: () {
+        final productId = product['id'];
+        print('👆 PRODUCT CARD: Clicked on product!');
+        print('   Product Data: ${product.toString()}');
+        print('   Product ID: $productId');
+        print('   Product Name: ${product['name']}');
+        
+        if (productId == null) {
+          Get.snackbar(
+            'خطأ',
+            'معرف المنتج غير صحيح',
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: Colors.red,
+            colorText: Colors.white,
+          );
+          return;
+        }
+        print('➡️ PRODUCT CARD: Navigating to product details with ID: $productId');
+        Get.toNamed(
+          AppRoutes.PRODUCT_DETAILS,
+          arguments: {'productId': productId},
+        );
+      },
       child: Container(
       width: isInHorizontalList ? 182 : null, // Full width in grid
       height: isInHorizontalList ? 240 : null, // Auto height in grid

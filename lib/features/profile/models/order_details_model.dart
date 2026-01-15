@@ -148,6 +148,8 @@ class OrderDetailsModel extends OrderModel {
         return OrderStatus.outForDelivery;
       case 'delivered':
         return OrderStatus.delivered;
+      case 'completed':
+        return OrderStatus.completed;
       case 'cancelled':
         return OrderStatus.cancelled;
       case 'rejected':

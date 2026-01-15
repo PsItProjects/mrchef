@@ -412,25 +412,51 @@ class MerchantOrdersScreen extends GetView<MerchantOrdersController> {
                   ),
                 ),
               ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: () => _showStatusUpdateModal(order),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primaryColor,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+              // Only show Update Status button if order is not in final state
+              if (!['delivered', 'completed', 'cancelled', 'rejected'].contains(status)) ...[
+                const SizedBox(width: 10),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () => _showStatusUpdateModal(order),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primaryColor,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                     ),
-                  ),
-                  child: Text(
-                    'update_status'.tr,
-                    style: const TextStyle(
-                      color: AppColors.secondaryColor,
-                      fontSize: 14,
+                    child: Text(
+                      'update_status'.tr,
+                      style: const TextStyle(
+                        color: AppColors.secondaryColor,
+                        fontSize: 14,
+                      ),
                     ),
                   ),
                 ),
-              ),
+              ],
+              // Show awaiting confirmation text for delivered orders
+              if (status == 'delivered') ...[
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+                    decoration: BoxDecoration(
+                      color: AppColors.warningColor.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: AppColors.warningColor),
+                    ),
+                    child: Text(
+                      'awaiting_customer_confirmation'.tr,
+                      style: const TextStyle(
+                        color: AppColors.warningColor,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+              ],
             ],
           ),
         ],

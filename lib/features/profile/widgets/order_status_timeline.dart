@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/features/profile/models/order_details_model.dart';
 import 'package:mrsheaf/features/profile/models/order_model.dart';
@@ -27,9 +28,9 @@ class OrderStatusTimeline extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Order Status',
-            style: TextStyle(
+          Text(
+            'order_status'.tr,
+            style: const TextStyle(
               fontFamily: 'Lato',
               fontSize: 18,
               fontWeight: FontWeight.w700,
@@ -41,7 +42,7 @@ class OrderStatusTimeline extends StatelessWidget {
           // Timeline
           _buildTimelineItem(
             icon: Icons.shopping_bag,
-            title: 'Order Placed',
+            title: 'order_placed'.tr,
             isCompleted: true,
             isActive: order.status == OrderStatus.pending,
             time: order.formattedDate,
@@ -49,7 +50,7 @@ class OrderStatusTimeline extends StatelessWidget {
           
           _buildTimelineItem(
             icon: Icons.check_circle,
-            title: 'Confirmed',
+            title: 'confirmed'.tr,
             isCompleted: _isStatusCompleted(OrderStatus.confirmed),
             isActive: order.status == OrderStatus.confirmed,
             time: order.confirmedAt != null ? _formatDateTime(order.confirmedAt!) : null,
@@ -57,23 +58,23 @@ class OrderStatusTimeline extends StatelessWidget {
           
           _buildTimelineItem(
             icon: Icons.restaurant,
-            title: 'Preparing',
+            title: 'preparing'.tr,
             isCompleted: _isStatusCompleted(OrderStatus.preparing),
             isActive: order.status == OrderStatus.preparing,
           ),
           
           _buildTimelineItem(
             icon: Icons.delivery_dining,
-            title: 'Out for Delivery',
+            title: 'out_for_delivery'.tr,
             isCompleted: _isStatusCompleted(OrderStatus.outForDelivery),
             isActive: order.status == OrderStatus.outForDelivery,
           ),
           
           _buildTimelineItem(
             icon: Icons.home,
-            title: 'Delivered',
-            isCompleted: order.status == OrderStatus.delivered,
-            isActive: order.status == OrderStatus.delivered,
+            title: 'delivered'.tr,
+            isCompleted: order.status == OrderStatus.delivered || order.status == OrderStatus.completed,
+            isActive: order.status == OrderStatus.delivered || order.status == OrderStatus.completed,
             time: order.deliveredAt != null ? _formatDateTime(order.deliveredAt!) : null,
             isLast: true,
           ),

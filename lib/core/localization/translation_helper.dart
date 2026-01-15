@@ -48,6 +48,8 @@ class TranslationHelper {
     'top_picks': 'Top Picks',
     'special_offers': 'Special Offers',
     'item': 'Item',
+    'item_added_to_cart_successfully': 'Successfully added @product_name to cart',
+    'item_removed_from_cart': 'Item removed from cart',
     'promo_code': 'Promo Code',
     'session_expired': 'Session Expired',
     'please_login_again': 'Please login again',
@@ -126,6 +128,15 @@ class TranslationHelper {
     'biometric_welcome_back': 'Welcome back!',
     'biometric_session_expired': 'Session expired',
     'biometric_login_manually': 'Please login with OTP',
+
+    // Support & Reports
+    'support_tickets': 'Support Tickets',
+    'support_tickets_desc': 'View and manage your support tickets',
+    'my_reports': 'My Reports',
+    'my_reports_desc': 'View and track your submitted reports',
+    'no_reports': 'No reports found',
+    'no_tickets': 'No support tickets found',
+    'settings': 'Settings',
   };
 
   // Arabic translations
@@ -173,6 +184,8 @@ class TranslationHelper {
     'top_picks': 'أفضل الاختيارات',
     'special_offers': 'العروض الخاصة',
     'item': 'عنصر',
+    'item_added_to_cart_successfully': 'تم إضافة @product_name إلى السلة بنجاح',
+    'item_removed_from_cart': 'تم حذف العنصر من السلة',
     'promo_code': 'رمز الخصم',
     'session_expired': 'انتهت الجلسة',
     'please_login_again': 'يرجى تسجيل الدخول مرة أخرى',
@@ -251,6 +264,15 @@ class TranslationHelper {
     'biometric_welcome_back': 'مرحباً بعودتك!',
     'biometric_session_expired': 'انتهت الجلسة',
     'biometric_login_manually': 'يرجى تسجيل الدخول برمز التحقق',
+
+    // Support & Reports
+    'support_tickets': 'تذاكر الدعم',
+    'support_tickets_desc': 'عرض وإدارة تذاكر الدعم الخاصة بك',
+    'my_reports': 'بلاغاتي',
+    'my_reports_desc': 'عرض ومتابعة البلاغات المقدمة',
+    'no_reports': 'لا توجد بلاغات',
+    'no_tickets': 'لا توجد تذاكر دعم',
+    'settings': 'الإعدادات',
   };
 
   /// Get translated text by key

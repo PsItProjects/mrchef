@@ -3,6 +3,8 @@ import 'package:get/get.dart';
 import 'package:mrsheaf/core/localization/translation_helper.dart';
 import 'package:mrsheaf/core/services/language_service.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
+import 'package:mrsheaf/features/profile/services/profile_service.dart';
+import 'package:mrsheaf/features/auth/services/auth_service.dart';
 
 class LanguageSwitcher extends StatelessWidget {
   final bool showLabel;
@@ -111,11 +113,16 @@ class LanguageSwitcher extends StatelessWidget {
     );
   }
 
-  void _toggleLanguage() {
+  void _toggleLanguage() async {
     final languageService = LanguageService.instance;
     final newLanguage = languageService.isArabic ? 'en' : 'ar';
-    languageService.setLanguage(newLanguage);
+    
+    // Update locally first for immediate UI feedback
+    await languageService.setLanguage(newLanguage);
     Get.updateLocale(Locale(newLanguage));
+    
+    // Sync with backend if user is authenticated
+    _syncLanguageWithBackend(newLanguage);
   }
 
   void _showLanguageDialog() {
@@ -170,10 +177,13 @@ class LanguageSwitcher extends StatelessWidget {
     final isSelected = languageService.currentLanguage == code;
 
     return GestureDetector(
-      onTap: () {
-        languageService.setLanguage(code);
+      onTap: () async {
+        await languageService.setLanguage(code);
         Get.updateLocale(Locale(code));
         Get.back();
+        
+        // Sync with backend if user is authenticated
+        _syncLanguageWithBackend(code);
       },
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -251,6 +261,40 @@ class LanguageSwitcher extends StatelessWidget {
         return Colors.blue;
       default:
         return Colors.grey;
+    }
+  }
+
+  /// Sync language preference with backend for authenticated users
+  void _syncLanguageWithBackend(String languageCode) async {
+    try {
+      final authService = Get.find<AuthService>();
+      
+      // Only sync if user is authenticated
+      if (!authService.isAuthenticated) {
+        return;
+      }
+
+      final userType = authService.userType.value;
+      
+      if (userType == 'customer') {
+        // Sync with customer profile endpoint
+        final profileService = ProfileService();
+        await profileService.updateLanguage(languageCode);
+      } else if (userType == 'merchant') {
+        // Sync with merchant profile endpoint
+        // MerchantProfileService handles this
+        try {
+          final merchantService = Get.find<dynamic>(); // MerchantProfileService
+          if (merchantService != null) {
+            await merchantService.updateLanguage(languageCode);
+          }
+        } catch (e) {
+          // Merchant service not available
+        }
+      }
+    } catch (e) {
+      // Silent fail - local language is already updated
+      debugPrint('Failed to sync language with backend: $e');
     }
   }
 }

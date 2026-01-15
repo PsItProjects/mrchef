@@ -5,8 +5,8 @@ class ReportService {
   final ApiClient _apiClient = ApiClient.instance;
 
   String _basePathForUserType(String userType) {
-    if (userType == 'merchant') return '/merchant';
-    return '/customer';
+    if (userType == 'merchant') return '/merchant/support';
+    return '/customer/support';
   }
 
   /// List all reports for the current user

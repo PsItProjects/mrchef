@@ -1,4 +1,5 @@
 import 'dart:ui';
+import 'package:get/get.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 
 enum OrderStatus {
@@ -8,6 +9,7 @@ enum OrderStatus {
   ready,
   outForDelivery,
   delivered,
+  completed, // Customer confirmed delivery
   cancelled,
   rejected,
 }
@@ -31,6 +33,7 @@ class OrderModel {
   final DateTime? confirmedAt;
   final DateTime? deliveredAt;
   final DateTime? cancelledAt;
+  final DateTime? customerConfirmedAt;
 
   OrderModel({
     required this.id,
@@ -51,6 +54,7 @@ class OrderModel {
     this.confirmedAt,
     this.deliveredAt,
     this.cancelledAt,
+    this.customerConfirmedAt,
   });
 
   factory OrderModel.fromJson(Map<String, dynamic> json) {
@@ -81,6 +85,9 @@ class OrderModel {
       cancelledAt: json['cancelled_at'] != null
           ? DateTime.tryParse(json['cancelled_at'])
           : null,
+      customerConfirmedAt: json['customer_confirmed_at'] != null
+          ? DateTime.tryParse(json['customer_confirmed_at'])
+          : null,
     );
   }
 
@@ -98,6 +105,8 @@ class OrderModel {
         return OrderStatus.outForDelivery;
       case 'delivered':
         return OrderStatus.delivered;
+      case 'completed':
+        return OrderStatus.completed;
       case 'cancelled':
         return OrderStatus.cancelled;
       case 'rejected':
@@ -114,34 +123,38 @@ class OrderModel {
     return '${orderDate.day.toString().padLeft(2, '0')}/${orderDate.month.toString().padLeft(2, '0')}/${orderDate.year}';
   }
 
-  String get formattedQuantity => 'Quantity: ${quantity.toString().padLeft(2, '0')}';
+  String get formattedQuantity => '${'quantity'.tr}: ${quantity.toString().padLeft(2, '0')}';
 
-  String get formattedAmount => 'Total Amount: \$${totalAmount.toStringAsFixed(0)}';
+  String get formattedAmount => '${'total_amount'.tr}: \$${totalAmount.toStringAsFixed(0)}';
 
   String get statusText {
     switch (status) {
       case OrderStatus.pending:
-        return 'Pending';
+        return 'pending'.tr;
       case OrderStatus.confirmed:
-        return 'Confirmed';
+        return 'confirmed'.tr;
       case OrderStatus.preparing:
-        return 'Preparing';
+        return 'preparing'.tr;
       case OrderStatus.ready:
-        return 'Ready';
+        return 'ready'.tr;
       case OrderStatus.outForDelivery:
-        return 'Out for Delivery';
+        return 'out_for_delivery'.tr;
       case OrderStatus.delivered:
-        return 'Delivered';
+        return 'awaiting_confirmation'.tr;
+      case OrderStatus.completed:
+        return 'completed'.tr;
       case OrderStatus.cancelled:
-        return 'Cancelled';
+        return 'cancelled'.tr;
       case OrderStatus.rejected:
-        return 'Rejected';
+        return 'rejected'.tr;
     }
   }
 
   Color get statusColor {
     switch (status) {
       case OrderStatus.delivered:
+        return AppColors.warningColor; // Yellow - awaiting confirmation
+      case OrderStatus.completed:
         return AppColors.successColor;
       case OrderStatus.pending:
       case OrderStatus.confirmed:
@@ -162,6 +175,8 @@ class OrderModel {
   Color get statusTextColor {
     switch (status) {
       case OrderStatus.delivered:
+        return AppColors.warningColor; // Yellow - awaiting confirmation
+      case OrderStatus.completed:
         return AppColors.successColor;
       case OrderStatus.pending:
       case OrderStatus.confirmed:
@@ -189,8 +204,23 @@ class OrderModel {
     return status == OrderStatus.cancelled || status == OrderStatus.rejected;
   }
 
-  // Check if order is delivered
+  // Check if order is delivered (awaiting customer confirmation)
   bool get isDelivered {
     return status == OrderStatus.delivered;
+  }
+
+  // Check if order is completed (customer confirmed)
+  bool get isCompleted {
+    return status == OrderStatus.completed;
+  }
+
+  // Check if customer can confirm delivery
+  bool get canConfirmDelivery {
+    return status == OrderStatus.delivered;
+  }
+
+  // Check if customer can review this order
+  bool get canReview {
+    return status == OrderStatus.completed;
   }
 }

@@ -74,9 +74,9 @@ class _OrderDetailsBottomSheetState extends State<OrderDetailsBottomSheet> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
-                  'Order Details',
-                  style: TextStyle(
+                Text(
+                  'order_details'.tr,
+                  style: const TextStyle(
                     fontFamily: 'Lato',
                     fontSize: 20,
                     fontWeight: FontWeight.w700,
@@ -135,7 +135,7 @@ class _OrderDetailsBottomSheetState extends State<OrderDetailsBottomSheet> {
                             vertical: 12,
                           ),
                         ),
-                        child: const Text('Retry'),
+                        child: Text('retry'.tr),
                       ),
                     ],
                   ),
@@ -144,8 +144,8 @@ class _OrderDetailsBottomSheetState extends State<OrderDetailsBottomSheet> {
 
               final order = controller.orderDetails.value;
               if (order == null) {
-                return const Center(
-                  child: Text('Order not found'),
+                return Center(
+                  child: Text('order_not_found'.tr),
                 );
               }
 

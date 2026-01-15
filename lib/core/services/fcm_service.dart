@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -167,6 +168,16 @@ class FCMService extends GetxService {
       }
     }
 
+    // Don't show notification if user is viewing this support ticket
+    if (type == 'support_reply' || type == 'support_status_changed') {
+      final ticketId = data['ticket_id']?.toString();
+      if (ticketId != null && Get.currentRoute.contains('/support/tickets/$ticketId')) {
+        // Just trigger refresh, don't show notification
+        _refreshSupportTicketDetail();
+        return;
+      }
+    }
+
     // Show local notification
     _showLocalNotification(message);
 
@@ -174,7 +185,10 @@ class FCMService extends GetxService {
     if (type == 'system' ||
         type == 'promotion' ||
         type == 'new_order' ||
-        type == 'order_status_changed') {
+        type == 'order_status_changed' ||
+        type == 'support_reply' ||
+        type == 'support_status_changed' ||
+        type == 'support_closed') {
       _triggerNotificationsRefresh();
     }
   }
@@ -212,6 +226,17 @@ class FCMService extends GetxService {
     }
   }
 
+  /// Refresh support ticket detail if viewing
+  void _refreshSupportTicketDetail() {
+    try {
+      // The controller will auto-refresh via polling, but we can trigger immediate refresh
+      // by checking if SupportTicketDetailController is registered
+      print('🔔 Support ticket update received - auto-refresh active');
+    } catch (_) {
+      // Controller not registered, ignore
+    }
+  }
+
   /// Show local notification
   Future<void> _showLocalNotification(RemoteMessage message) async {
     final notification = message.notification;
@@ -242,7 +267,7 @@ class FCMService extends GetxService {
       notification.title,
       notification.body,
       details,
-      payload: message.data.toString(),
+      payload: jsonEncode(message.data),
     );
   }
 
@@ -256,34 +281,110 @@ class FCMService extends GetxService {
 
   /// Handle notification tap from local notification
   void _onNotificationTapped(NotificationResponse response) {
-    // Parse payload and navigate
     print('🔔 Notification tapped: ${response.payload}');
+    
+    if (response.payload == null || response.payload!.isEmpty) return;
+    
+    try {
+      final data = jsonDecode(response.payload!) as Map<String, dynamic>;
+      final type = data['type'] ?? '';
+      _navigateBasedOnType(type, data);
+    } catch (e) {
+      print('❌ Error parsing notification payload: $e');
+    }
   }
 
   /// Navigate based on notification type
   void _navigateBasedOnType(String type, Map<String, dynamic> data) {
+    final orderId = data['order_id'];
+    final ticketId = data['ticket_id'];
+    final reportId = data['report_id'];
+    final conversationId = data['conversation_id'];
+    final recipientType = data['recipient_type'];
+    
+    print('🔔 Merchant Notification tap: type=$type, orderId=$orderId, ticketId=$ticketId, reportId=$reportId');
+    
+    // Determine if user is merchant or customer
+    final isMerchant = recipientType == 'merchant';
+    
     switch (type) {
+      // Order notifications (both merchant and customer)
       case 'new_order':
-        final orderId = data['order_id'];
+        // Merchant receives new order
         if (orderId != null) {
-          Get.toNamed('/merchant/orders/$orderId');
+          Get.toNamed('/merchant/order-details', arguments: {'orderId': int.tryParse(orderId.toString())});
         }
         break;
+      
       case 'order_status_changed':
-        final orderId = data['order_id'];
+      case 'order_confirmed':
+      case 'order_preparing':
+      case 'order_ready':
+      case 'order_out_for_delivery':
+      case 'order_delivered':
+      case 'delivery_confirmed':
+      case 'confirm_delivery_required':
+      case 'order_completed':
+      case 'order_cancelled':
+      case 'order_rejected':
         if (orderId != null) {
-          Get.toNamed('/orders/$orderId');
+          // Customer order details
+          Get.toNamed('/orders/${orderId.toString()}');
         }
         break;
+      
+      // Chat notifications
       case 'new_message':
-        final conversationId = data['conversation_id'];
         if (conversationId != null) {
-          Get.toNamed('/chat/$conversationId');
+          if (isMerchant) {
+            // Merchant chat screen
+            Get.toNamed('/merchant/chat', arguments: {'conversationId': int.tryParse(conversationId.toString())});
+          } else {
+            // Customer chat screen
+            Get.toNamed('/chat', arguments: {'conversationId': int.tryParse(conversationId.toString())});
+          }
         }
         break;
+      
+      // Support ticket notifications (both merchant and customer)
+      case 'support_reply':
+      case 'support_status_changed':
+      case 'support_closed':
+      case 'new_ticket':
+        if (ticketId != null) {
+          Get.toNamed('/support/tickets/${ticketId.toString()}');
+        }
+        break;
+      
+      // Report notifications (both merchant and customer)
+      case 'report_reply':
+      case 'report_status_changed':
+      case 'report_resolved':
+      case 'new_report':
+        if (reportId != null) {
+          Get.toNamed('/support/reports/${reportId.toString()}');
+        }
+        break;
+      
+      // General notifications
       case 'system':
       case 'promotion':
-        Get.toNamed('/notifications');
+      case 'announcement':
+        // Navigate to appropriate notifications screen
+        if (isMerchant) {
+          Get.toNamed('/merchant/notifications');
+        } else {
+          Get.toNamed('/notifications');
+        }
+        break;
+      
+      default:
+        // Default navigation based on user type
+        if (isMerchant) {
+          Get.toNamed('/merchant/notifications');
+        } else {
+          Get.toNamed('/notifications');
+        }
         break;
     }
   }

@@ -76,5 +76,23 @@ class OrderService {
       rethrow;
     }
   }
+
+  /// Confirm delivery of an order (customer confirms receipt)
+  Future<Map<String, dynamic>> confirmDelivery(int orderId) async {
+    try {
+      final response = await _apiClient.post(
+        '${ApiConstants.baseUrl}${ApiConstants.customerOrders}/$orderId/confirm-delivery',
+      );
+
+      if (response.statusCode == 200 && response.data['success'] == true) {
+        return response.data['data'];
+      } else {
+        throw Exception(response.data['message'] ?? 'Failed to confirm delivery');
+      }
+    } catch (e) {
+      print('❌ ORDER SERVICE: Error confirming delivery - $e');
+      rethrow;
+    }
+  }
 }
 
