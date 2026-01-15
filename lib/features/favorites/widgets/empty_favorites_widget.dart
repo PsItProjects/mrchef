@@ -52,7 +52,7 @@ class EmptyFavoritesWidget extends GetView<FavoritesController> {
           // Checkout button (as per Figma design)
           Container(
             width: 380,
-            height: 50,
+            height: 60,
             child: ElevatedButton(
               onPressed: () {
                 // Navigate to home or categories to find favorites
@@ -64,6 +64,7 @@ class EmptyFavoritesWidget extends GetView<FavoritesController> {
                   borderRadius: BorderRadius.circular(10),
                 ),
                 elevation: 0,
+                padding: const EdgeInsets.symmetric(vertical: 16),
               ),
               child: Text(
                 'home'.tr,

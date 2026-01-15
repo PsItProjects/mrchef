@@ -1,4 +1,3 @@
-import 'package:awesome_bottom_bar/awesome_bottom_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
@@ -30,27 +29,27 @@ class MainScreen extends GetView<MainController> {
       {
         'icon': 'assets/icons/home_icon.svg',
         'title': 'home'.tr,
-        'fallbackIcon': Icons.home,
+        'fallbackIcon': Icons.home_outlined,
       },
       {
         'icon': 'assets/icons/category_icon.svg',
         'title': 'categories'.tr,
-        'fallbackIcon': Icons.category,
+        'fallbackIcon': Icons.category_outlined,
       },
       {
         'icon': 'assets/icons/cart_icon.svg',
         'title': 'cart'.tr,
-        'fallbackIcon': Icons.shopping_cart,
+        'fallbackIcon': Icons.shopping_cart_outlined,
       },
       {
         'icon': 'assets/icons/heart_icon.svg',
         'title': 'favorites'.tr,
-        'fallbackIcon': Icons.favorite,
+        'fallbackIcon': Icons.favorite_outline,
       },
       {
-        'icon': 'assets/icons/profile_icon.svg',
+        'icon': 'assets/icons/settings_icon.svg',
         'title': 'profile'.tr,
-        'fallbackIcon': Icons.person,
+        'fallbackIcon': Icons.settings_outlined,
       },
     ];
 
@@ -90,20 +89,16 @@ class MainScreen extends GetView<MainController> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          // Icon
-                          Container(
+                          // Icon with fallback
+                          SizedBox(
                             width: 24,
                             height: 24,
-                            child: SvgPicture.asset(
+                            child: _buildNavIcon(
                               item['icon'],
-                              width: 24,
-                              height: 24,
-                              colorFilter: ColorFilter.mode(
-                                isSelected
+                              item['fallbackIcon'],
+                              isSelected
                                   ? AppColors.primaryColor
                                   : AppColors.lightGreyTextColor,
-                                BlendMode.srcIn,
-                              ),
                             ),
                           ),
                           const SizedBox(height: 8),
@@ -128,6 +123,20 @@ class MainScreen extends GetView<MainController> {
             )),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildNavIcon(String svgPath, IconData fallbackIcon, Color color) {
+    return SvgPicture.asset(
+      svgPath,
+      width: 24,
+      height: 24,
+      colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
+      placeholderBuilder: (context) => Icon(
+        fallbackIcon,
+        size: 24,
+        color: color,
       ),
     );
   }

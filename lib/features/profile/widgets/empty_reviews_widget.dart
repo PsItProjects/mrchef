@@ -32,29 +32,30 @@ class EmptyReviewsWidget extends GetView<MyReviewsController> {
           // Empty reviews text
           Column(
             children: [
-              const Text(
-                'No Reviews Yet',
-                style: TextStyle(
+              Text(
+                'no_reviews_yet'.tr,
+                style: const TextStyle(
                   fontFamily: 'Lato',
                   fontWeight: FontWeight.w700,
-                  fontSize: 18,
+                  fontSize: 20,
                   color: Color(0xFF1C1C1C),
-                  letterSpacing: -0.005,
+                  letterSpacing: -0.5,
                 ),
               ),
-              
-              const SizedBox(height: 8),
-              
+
+              const SizedBox(height: 12),
+
               Container(
                 width: 285,
-                child: const Text(
-                  'You haven\'t written any reviews yet. Order some food and share your experience!',
+                child: Text(
+                  'no_reviews_message'.tr,
                   textAlign: TextAlign.center,
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontFamily: 'Lato',
                     fontWeight: FontWeight.w400,
-                    fontSize: 14,
+                    fontSize: 15,
                     color: Color(0xFF5E5E5E),
+                    height: 1.4,
                   ),
                 ),
               ),
@@ -64,26 +65,26 @@ class EmptyReviewsWidget extends GetView<MyReviewsController> {
           const SizedBox(height: 24),
           
           // Go to home page button
-          Container(
+          SizedBox(
             width: 380,
-            // height: 50,
+            height: 54,
             child: ElevatedButton(
               onPressed: () => Get.offAllNamed('/home'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primaryColor,
+                foregroundColor: AppColors.secondaryColor,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(12),
                 ),
                 elevation: 0,
               ),
-              child: const Text(
-                'Start Shopping',
-                style: TextStyle(
+              child: Text(
+                'start_shopping'.tr,
+                style: const TextStyle(
                   fontFamily: 'Lato',
                   fontWeight: FontWeight.w700,
                   fontSize: 18,
-                  color: Color(0xFF592E2C),
-                  letterSpacing: -0.005,
+                  letterSpacing: -0.3,
                 ),
               ),
             ),

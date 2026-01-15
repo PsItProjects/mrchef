@@ -17,14 +17,20 @@ class FavoritesController extends GetxController {
 
   // Favorite stores
   final RxList<FavoriteStoreModel> favoriteStores = <FavoriteStoreModel>[].obs;
+  final RxList<FavoriteStoreModel> _allStores = <FavoriteStoreModel>[].obs;
 
   // Favorite products
   final RxList<FavoriteProductModel> favoriteProducts = <FavoriteProductModel>[].obs;
+  final RxList<FavoriteProductModel> _allProducts = <FavoriteProductModel>[].obs;
 
   // Loading states
   final RxBool isLoading = false.obs;
   final RxBool isLoadingProducts = false.obs;
   final RxBool isLoadingStores = false.obs;
+
+  // Search
+  final RxString searchQuery = ''.obs;
+  final RxBool isSearching = false.obs;
 
   @override
   void onInit() {
@@ -70,7 +76,7 @@ class FavoritesController extends GetxController {
 
       // Parse products
       final products = favorites['products'] as List<dynamic>;
-      favoriteProducts.value = products.map((productData) {
+      _allProducts.value = products.map((productData) {
         // Convert API data to the format expected by FavoriteProductModel
         final convertedData = {
           'id': productData['id'],
@@ -81,12 +87,14 @@ class FavoritesController extends GetxController {
         };
         return FavoriteProductModel.fromJson(convertedData);
       }).toList();
+      favoriteProducts.value = List.from(_allProducts);
 
       // Parse merchants/stores
       final merchants = favorites['merchants'] as List<dynamic>;
-      favoriteStores.value = merchants.map((merchantData) {
+      _allStores.value = merchants.map((merchantData) {
         return FavoriteStoreModel.fromJson(merchantData);
       }).toList();
+      favoriteStores.value = List.from(_allStores);
 
       if (kDebugMode) {
         print('✅ FAVORITES CONTROLLER: Favorites loaded successfully');
@@ -119,6 +127,44 @@ class FavoritesController extends GetxController {
   // Tab switching
   void switchTab(int index) {
     selectedTabIndex.value = index;
+    // Clear search when switching tabs
+    if (searchQuery.value.isNotEmpty) {
+      updateSearchQuery('');
+    }
+  }
+
+  // Search functionality
+  void toggleSearch() {
+    isSearching.value = !isSearching.value;
+    if (!isSearching.value) {
+      // Clear search when closing
+      updateSearchQuery('');
+    }
+  }
+
+  void updateSearchQuery(String query) {
+    searchQuery.value = query;
+    _filterFavorites();
+  }
+
+  void _filterFavorites() {
+    if (searchQuery.value.isEmpty) {
+      // Show all items
+      favoriteProducts.value = List.from(_allProducts);
+      favoriteStores.value = List.from(_allStores);
+    } else {
+      final query = searchQuery.value.toLowerCase();
+
+      // Filter products by name
+      favoriteProducts.value = _allProducts.where((product) {
+        return product.name.toLowerCase().contains(query);
+      }).toList();
+
+      // Filter stores by name
+      favoriteStores.value = _allStores.where((store) {
+        return store.name.toLowerCase().contains(query);
+      }).toList();
+    }
   }
 
   // Store management

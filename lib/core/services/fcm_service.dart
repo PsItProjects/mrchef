@@ -408,14 +408,19 @@ class FCMService extends GetxService {
   Future<void> enterChat(int conversationId) async {
     _currentConversationId = conversationId;
 
-    if (_deviceToken == null) return;
+    if (_deviceToken == null) {
+      print('⚠️ Cannot enter chat - device token is null');
+      return;
+    }
 
     try {
+      print('📱 Entering chat #$conversationId with token: ${_deviceToken?.substring(0, 20)}...');
       final apiClient = Get.find<ApiClient>();
-      await apiClient.post('/device/enter-chat', data: {
+      final response = await apiClient.post('/device/enter-chat', data: {
         'device_token': _deviceToken,
         'conversation_id': conversationId,
       });
+      print('✅ Successfully entered chat #$conversationId: ${response.data}');
     } catch (e) {
       print('❌ Error entering chat: $e');
     }
@@ -423,15 +428,21 @@ class FCMService extends GetxService {
 
   /// Leave chat
   Future<void> leaveChat() async {
+    final previousConversationId = _currentConversationId;
     _currentConversationId = null;
 
-    if (_deviceToken == null) return;
+    if (_deviceToken == null) {
+      print('⚠️ Cannot leave chat - device token is null');
+      return;
+    }
 
     try {
+      print('📱 Leaving chat #$previousConversationId with token: ${_deviceToken?.substring(0, 20)}...');
       final apiClient = Get.find<ApiClient>();
-      await apiClient.post('/device/leave-chat', data: {
+      final response = await apiClient.post('/device/leave-chat', data: {
         'device_token': _deviceToken,
       });
+      print('✅ Successfully left chat: ${response.data}');
     } catch (e) {
       print('❌ Error leaving chat: $e');
     }

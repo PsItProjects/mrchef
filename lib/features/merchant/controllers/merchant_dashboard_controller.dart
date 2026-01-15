@@ -140,20 +140,27 @@ class MerchantDashboardController extends GetxController {
         final data = response.data['data'];
         statisticsData.value = data;
 
-        // Update stats
-        totalOrders.value = data['total_orders'] ?? 0;
-        totalRevenue.value = (data['total_revenue'] ?? 0).toDouble();
-        completedOrders.value = data['completed_orders'] ?? 0;
-        pendingOrders.value = data['pending_orders'] ?? 0;
-        cancelledOrders.value = data['cancelled_orders'] ?? 0;
-        filterLabel.value = data['filter_label'] ?? getFilterLabel();
+        // Update stats - API returns nested structure
+        // orders: { total, completed, pending, cancelled }
+        // revenue: { total, average_order_value }
+        final orders = data['orders'] ?? {};
+        final revenue = data['revenue'] ?? {};
 
-        // Update comparison
-        if (data['previous_period'] != null) {
-          previousPeriodOrders.value = data['previous_period']['orders'] ?? 0;
-          previousPeriodRevenue.value =
-              (data['previous_period']['revenue'] ?? 0).toDouble();
-        }
+        totalOrders.value = orders['total'] ?? 0;
+        completedOrders.value = orders['completed'] ?? 0;
+        pendingOrders.value = orders['pending'] ?? 0;
+        cancelledOrders.value = orders['cancelled'] ?? 0;
+        totalRevenue.value = (revenue['total'] ?? 0).toDouble();
+
+        // Get filter label from API response
+        final filter = data['filter'] ?? {};
+        filterLabel.value = filter['label'] ?? getFilterLabel();
+
+        // Update comparison - API returns:
+        // comparison: { orders_change, revenue_change, previous_orders, previous_revenue }
+        final comparison = data['comparison'] ?? {};
+        previousPeriodOrders.value = comparison['previous_orders'] ?? 0;
+        previousPeriodRevenue.value = (comparison['previous_revenue'] ?? 0).toDouble();
 
         // Update top products
         if (data['top_products'] != null) {

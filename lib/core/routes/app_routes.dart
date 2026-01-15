@@ -28,6 +28,9 @@ abstract class AppRoutes {
   static const MY_ORDERS = '/my-orders';
   static const ORDER_DETAILS = '/orders/:id';
 
+  // Customer reviews
+  static const MY_REVIEWS = '/my-reviews';
+
   // Vendor onboarding routes
   static const VENDOR_STEP1 = '/vendor-step1';
   static const VENDOR_STEP2 = '/vendor-step2';

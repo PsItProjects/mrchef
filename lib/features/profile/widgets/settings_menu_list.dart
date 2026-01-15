@@ -44,6 +44,9 @@ class SettingsMenuList extends GetView<SettingsController> {
             isLoading: controller.isChangingLanguage.value,
           )),
 
+          // My Reviews - Only for customers
+          _buildMyReviewsItem(),
+
           // Conversations
           SettingsMenuItem(
             title: 'conversations'.tr,
@@ -110,6 +113,28 @@ class SettingsMenuList extends GetView<SettingsController> {
         ],
       ),
     );
+  }
+
+  /// بناء خيار "تقييماتي" - يظهر فقط للعملاء (Customers)
+  Widget _buildMyReviewsItem() {
+    try {
+      final authService = Get.find<AuthService>();
+      final user = authService.currentUser.value;
+
+      // إخفاء "تقييماتي" من التجار - تظهر فقط للعملاء
+      if (user == null || user.isMerchant) {
+        return const SizedBox.shrink();
+      }
+
+      return SettingsMenuItem(
+        title: 'my_reviews'.tr,
+        hasArrow: true,
+        onTap: controller.navigateToMyReviews,
+        showDivider: true,
+      );
+    } catch (e) {
+      return const SizedBox.shrink();
+    }
   }
 
   /// بناء خيار تفعيل البصمة - يظهر فقط إذا كان الجهاز يدعمها

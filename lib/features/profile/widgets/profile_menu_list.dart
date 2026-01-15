@@ -49,9 +49,18 @@ class ProfileMenuList extends GetView<ProfileController> {
           subtitle: TranslationHelper.tr('my_reports_desc'),
           onTap: controller.navigateToMyReports,
         ),
-        
+
         const SizedBox(height: 16),
-        
+
+        // My Reviews - تقييماتي
+        ProfileMenuItem(
+          title: TranslationHelper.tr('my_reviews'),
+          subtitle: TranslationHelper.tr('my_reviews_desc'),
+          onTap: controller.navigateToMyReviews,
+        ),
+
+        const SizedBox(height: 16),
+
         // Log out
         ProfileMenuItem(
           title: 'logout'.tr,

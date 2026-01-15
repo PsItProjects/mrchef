@@ -5,6 +5,7 @@ import 'package:mrsheaf/core/services/language_service.dart';
 import 'package:mrsheaf/features/profile/services/profile_service.dart';
 import 'package:mrsheaf/core/network/api_client.dart';
 import 'package:mrsheaf/features/profile/widgets/about_app_bottom_sheet.dart';
+import 'package:mrsheaf/core/routes/app_routes.dart';
 
 class SettingsController extends GetxController {
   final ProfileService _profileService = Get.find<ProfileService>();
@@ -389,6 +390,10 @@ class SettingsController extends GetxController {
 
   void navigateToConversations() {
     Get.toNamed('/conversations');
+  }
+
+  void navigateToMyReviews() {
+    Get.toNamed(AppRoutes.MY_REVIEWS);
   }
 
   void _saveSettings() {

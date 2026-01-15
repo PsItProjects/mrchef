@@ -230,7 +230,7 @@ class KitchenModel {
   }
 
   // Helper getters for UI
-  String get displayName => name;
+  String get displayName => businessName.isNotEmpty ? businessName : name;
   String get displayDescription => description;
   String get displayAddress => address ?? '';
   String get deliveryTimeText => '${preparationTime} دقيقة';
@@ -241,6 +241,17 @@ class KitchenModel {
 
   // For backward compatibility with existing UI
   String get image => logo ?? 'assets/images/default_restaurant.png';
+
+  /// Get full logo URL - handles both full URLs and relative paths
+  String? get logoUrl {
+    if (logo == null || logo!.isEmpty) return null;
+    // If already a full URL, return as-is
+    if (logo!.startsWith('http://') || logo!.startsWith('https://')) {
+      return logo;
+    }
+    // Otherwise, it's a relative path - but API returns full URL now
+    return logo;
+  }
   double get rating => averageRating;
   int get reviewCount => reviewsCount;
   List<String> get specialties => categories?.map((cat) => _getTranslatedText(cat['name'])).toList() ?? [];

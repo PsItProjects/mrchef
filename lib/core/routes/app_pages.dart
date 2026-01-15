@@ -53,6 +53,8 @@ import 'package:mrsheaf/features/merchant/pages/merchant_statistics_screen.dart'
 import 'package:mrsheaf/features/merchant/pages/merchant_notifications_screen.dart';
 import 'package:mrsheaf/features/notifications/pages/notifications_screen.dart';
 import 'package:mrsheaf/features/profile/pages/order_details_screen.dart';
+import 'package:mrsheaf/features/profile/pages/my_reviews_screen.dart';
+import 'package:mrsheaf/features/profile/controllers/my_reviews_controller.dart';
 import 'package:mrsheaf/features/support/controllers/support_ticket_detail_controller.dart';
 import 'package:mrsheaf/features/support/controllers/support_tickets_controller.dart';
 import 'package:mrsheaf/features/support/pages/support_ticket_detail_screen.dart';
@@ -263,6 +265,17 @@ class AppPages {
     GetPage(
       name: AppRoutes.ORDER_DETAILS,
       page: () => const OrderDetailsScreen(),
+      middlewares: [AuthMiddleware()],
+      transition: Transition.rightToLeft,
+    ),
+
+    // Customer Reviews
+    GetPage(
+      name: AppRoutes.MY_REVIEWS,
+      page: () => const MyReviewsScreen(),
+      binding: BindingsBuilder(() {
+        Get.lazyPut<MyReviewsController>(() => MyReviewsController());
+      }),
       middlewares: [AuthMiddleware()],
       transition: Transition.rightToLeft,
     ),

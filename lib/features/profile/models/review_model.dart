@@ -1,6 +1,7 @@
 class ReviewModel {
   final int id;
   final int? productId;
+  final int? orderId;
   final String productName;
   final double productPrice;
   final String productImage;
@@ -15,6 +16,7 @@ class ReviewModel {
   ReviewModel({
     required this.id,
     this.productId,
+    this.orderId,
     required this.productName,
     required this.productPrice,
     required this.productImage,
@@ -31,6 +33,7 @@ class ReviewModel {
     return ReviewModel(
       id: json['id'],
       productId: json['productId'] ?? json['product_id'],
+      orderId: json['orderId'] ?? json['order_id'],
       productName: json['productName'] ?? json['product_name'] ?? 'Unknown Product',
       productPrice: (json['productPrice'] ?? json['product_price'] ?? 0).toDouble(),
       productImage: json['productImage'] ?? json['product_image'] ?? '',
@@ -48,16 +51,17 @@ class ReviewModel {
   factory ReviewModel.fromApiJson(Map<String, dynamic> json) {
     // Handle nested product data
     final product = json['product'] as Map<String, dynamic>?;
-    
+
     return ReviewModel(
       id: json['id'] ?? 0,
       productId: json['product_id'],
+      orderId: json['order_id'],
       productName: product?['name'] ?? json['product_name'] ?? 'Unknown Product',
       productPrice: (product?['price'] ?? json['product_price'] ?? 0).toDouble(),
       productImage: product?['image'] ?? json['product_image'] ?? '',
       rating: json['rating'] ?? 0,
-      reviewDate: json['created_at'] != null 
-          ? DateTime.parse(json['created_at']) 
+      reviewDate: json['created_at'] != null
+          ? DateTime.parse(json['created_at'])
           : DateTime.now(),
       reviewText: json['comment'] ?? '',
       images: List<String>.from(json['images'] ?? []),
@@ -71,6 +75,7 @@ class ReviewModel {
     return {
       'id': id,
       'productId': productId,
+      'orderId': orderId,
       'productName': productName,
       'productPrice': productPrice,
       'productImage': productImage,
@@ -87,6 +92,7 @@ class ReviewModel {
   ReviewModel copyWith({
     int? id,
     int? productId,
+    int? orderId,
     String? productName,
     double? productPrice,
     String? productImage,
@@ -101,6 +107,7 @@ class ReviewModel {
     return ReviewModel(
       id: id ?? this.id,
       productId: productId ?? this.productId,
+      orderId: orderId ?? this.orderId,
       productName: productName ?? this.productName,
       productPrice: productPrice ?? this.productPrice,
       productImage: productImage ?? this.productImage,

@@ -67,31 +67,45 @@ class OrderActionsBar extends StatelessWidget {
             
             // Rate Order button (only for completed orders)
             if (isCompleted) ...[
-              SizedBox(
-                width: double.infinity,
-                height: 52,
-                child: ElevatedButton.icon(
-                  onPressed: () => _showReviewDialog(context, controller),
-                  icon: const Icon(Icons.star_rounded, size: 22),
-                  label: Text(
-                    'rate_order'.tr,
-                    style: const TextStyle(
-                      fontFamily: 'Lato',
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
+              Obx(() {
+                // Check if all products in this order have been reviewed
+                final allReviewed = order.items.every((item) =>
+                  controller.reviewedProducts[item.productId] ?? false
+                );
+
+                return SizedBox(
+                  width: double.infinity,
+                  height: 52,
+                  child: ElevatedButton.icon(
+                    onPressed: allReviewed ? null : () => _showReviewDialog(context, controller),
+                    icon: Icon(
+                      allReviewed ? Icons.check_circle : Icons.star_rounded,
+                      size: 22,
+                    ),
+                    label: Text(
+                      allReviewed ? 'order_reviewed'.tr : 'rate_order'.tr,
+                      style: const TextStyle(
+                        fontFamily: 'Lato',
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: allReviewed
+                        ? AppColors.successColor
+                        : AppColors.primaryColor,
+                      foregroundColor: AppColors.secondaryColor,
+                      disabledBackgroundColor: AppColors.successColor,
+                      disabledForegroundColor: AppColors.secondaryColor,
+                      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      elevation: 0,
                     ),
                   ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primaryColor,
-                    foregroundColor: AppColors.secondaryColor,
-                    padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    elevation: 0,
-                  ),
-                ),
-              ),
+                );
+              }),
               const SizedBox(height: 12),
             ],
             
@@ -229,15 +243,15 @@ class OrderActionsBar extends StatelessWidget {
   
   void _showReviewDialog(BuildContext context, OrderDetailsController controller) {
     HapticFeedback.lightImpact();
-    
+
     // Convert order items to reviewable items
     final itemsToReview = order.items.map((item) => OrderItemToReview(
       productId: item.productId,
       name: item.productName,
       imageUrl: item.productImage,
-      isReviewed: false, // TODO: Check from API if already reviewed
+      isReviewed: controller.reviewedProducts[item.productId] ?? false,
     )).toList();
-    
+
     OrderReviewPromptDialog.show(
       orderNumber: order.orderNumber,
       items: itemsToReview,
@@ -245,8 +259,12 @@ class OrderActionsBar extends StatelessWidget {
         // User chose to review later
       },
       onReview: (productId, rating, comment, images) async {
-        // TODO: Implement review submission via controller
-        // await controller.submitProductReview(productId, rating, comment, images);
+        await controller.submitProductReview(
+          productId: productId,
+          rating: rating,
+          comment: comment,
+          images: images,
+        );
       },
     );
   }

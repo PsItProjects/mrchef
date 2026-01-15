@@ -412,7 +412,7 @@ class _MerchantHomeScreenState extends State<MerchantHomeScreen> {
           ),
           const SizedBox(height: 12),
 
-          // Order Status Row (Completed & Pending)
+          // Order Status Row (Completed & Cancelled)
           Row(
             children: [
               Expanded(
@@ -427,9 +427,9 @@ class _MerchantHomeScreenState extends State<MerchantHomeScreen> {
               const SizedBox(width: 12),
               Expanded(
                 child: _buildStatCard(
-                  title: 'pending'.tr,
-                  value: '${dashboardController.pendingOrders.value}',
-                  icon: Icons.pending_rounded,
+                  title: 'cancelled'.tr,
+                  value: '${dashboardController.cancelledOrders.value}',
+                  icon: Icons.cancel_rounded,
                   color: const Color(0xFFFF9800),
                   backgroundColor: const Color(0xFFFFF3E0),
                 ),

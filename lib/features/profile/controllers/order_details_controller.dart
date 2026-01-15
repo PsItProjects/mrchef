@@ -7,6 +7,7 @@ import 'package:mrsheaf/core/routes/app_routes.dart';
 import 'package:mrsheaf/core/services/review_service.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/features/profile/models/order_details_model.dart';
+import 'package:mrsheaf/features/profile/models/order_model.dart';
 import 'package:mrsheaf/features/profile/services/order_service.dart';
 import 'package:mrsheaf/features/chat/services/chat_service.dart';
 import 'package:mrsheaf/features/chat/models/conversation_model.dart';
@@ -44,10 +45,14 @@ class OrderDetailsController extends GetxController {
       final data = await _orderService.getOrderDetails(orderId);
       orderDetails.value = OrderDetailsModel.fromJson(data);
 
+      // Load review status for each product
+      await _loadReviewStatus();
+
       if (kDebugMode) {
         print('✅ ORDER DETAILS: Loaded successfully');
         print('📦 ORDER: ${orderDetails.value?.orderNumber}');
         print('🍽️ ITEMS: ${orderDetails.value?.items.length}');
+        print('⭐ REVIEWED PRODUCTS: ${reviewedProducts.length}');
       }
     } catch (e) {
       errorMessage.value = 'Failed to load order details';
@@ -62,6 +67,34 @@ class OrderDetailsController extends GetxController {
   /// Refresh order details
   Future<void> refreshOrderDetails() async {
     await loadOrderDetails(_currentOrderId);
+  }
+
+  /// Load review status for products in this order from API
+  Future<void> _loadReviewStatus() async {
+    try {
+      final order = orderDetails.value;
+      if (order == null) return;
+
+      // Get user's reviews
+      final reviews = await _reviewService.getMyReviews();
+
+      // Mark products that have been reviewed for this order
+      for (final item in order.items) {
+        final hasReview = reviews.any((review) =>
+          review.productId == item.productId &&
+          review.orderId == _currentOrderId
+        );
+        reviewedProducts[item.productId] = hasReview;
+      }
+
+      if (kDebugMode) {
+        print('⭐ REVIEW STATUS: ${reviewedProducts.entries.where((e) => e.value).length} products reviewed');
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ REVIEW STATUS: Error loading - $e');
+      }
+    }
   }
 
   /// Cancel order
@@ -247,7 +280,7 @@ class OrderDetailsController extends GetxController {
     if (order == null) return;
 
     // Only show for delivered or completed orders
-    if (order.status != 'delivered' && order.status != 'completed') {
+    if (order.status != OrderStatus.delivered && order.status != OrderStatus.completed) {
       if (kDebugMode) {
         print('⚠️ Order not eligible for review. Status: ${order.status}');
       }
@@ -293,6 +326,9 @@ class OrderDetailsController extends GetxController {
     try {
       if (kDebugMode) {
         print('⭐ Submitting review for product #$productId, rating: $rating');
+        print('📝 Comment: $comment');
+        print('🖼️ Images: ${images?.length ?? 0}');
+        print('📦 Order ID: $_currentOrderId');
       }
 
       // Convert image paths to Files
@@ -306,6 +342,10 @@ class OrderDetailsController extends GetxController {
         }
       ];
 
+      if (kDebugMode) {
+        print('📤 Sending review to API...');
+      }
+
       final response = await _reviewService.submitOrderReviews(
         orderId: _currentOrderId,
         reviews: reviews,
@@ -316,28 +356,211 @@ class OrderDetailsController extends GetxController {
 
       if (kDebugMode) {
         print('✅ Review submitted successfully');
+        print('📊 Response: $response');
       }
 
-      Get.snackbar(
-        'success'.tr,
-        'review_submitted'.tr,
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: AppColors.successColor,
-        colorText: Colors.white,
+      // Close the review bottom sheet
+      if (Get.isBottomSheetOpen ?? false) {
+        Get.back();
+      }
+
+      // Show success dialog
+      await Get.dialog(
+        Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+          ),
+          child: Container(
+            padding: const EdgeInsets.all(32),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(24),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Success icon
+                Container(
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    color: AppColors.successColor.withValues(alpha: 0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.check_circle,
+                    color: AppColors.successColor,
+                    size: 48,
+                  ),
+                ),
+                const SizedBox(height: 24),
+
+                // Title
+                Text(
+                  'review_submitted_successfully'.tr,
+                  style: const TextStyle(
+                    fontFamily: 'Lato',
+                    fontWeight: FontWeight.w700,
+                    fontSize: 20,
+                    color: Color(0xFF262626),
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 12),
+
+                // Message
+                Text(
+                  'thank_you_for_review'.tr,
+                  style: const TextStyle(
+                    fontFamily: 'Lato',
+                    fontWeight: FontWeight.w400,
+                    fontSize: 14,
+                    color: Color(0xFF5E5E5E),
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 24),
+
+                // OK button
+                SizedBox(
+                  width: double.infinity,
+                  height: 48,
+                  child: ElevatedButton(
+                    onPressed: () => Get.back(),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primaryColor,
+                      foregroundColor: AppColors.secondaryColor,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      elevation: 0,
+                    ),
+                    child: Text(
+                      'ok'.tr,
+                      style: const TextStyle(
+                        fontFamily: 'Lato',
+                        fontWeight: FontWeight.w600,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        barrierDismissible: false,
       );
+
+      // Reload order details to update button state
+      await loadOrderDetails(_currentOrderId);
     } catch (e) {
       if (kDebugMode) {
         print('❌ Error submitting review: $e');
+        print('❌ Error type: ${e.runtimeType}');
       }
 
-      Get.snackbar(
-        'error'.tr,
-        'failed_to_submit_review'.tr,
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: AppColors.errorColor,
-        colorText: Colors.white,
+      // Close the review bottom sheet if open
+      if (Get.isBottomSheetOpen ?? false) {
+        Get.back();
+      }
+
+      // Show more specific error message
+      String errorMessage = 'failed_to_submit_review'.tr;
+      if (e.toString().contains('401') || e.toString().contains('Unauthenticated')) {
+        errorMessage = 'please_login_first'.tr;
+      } else if (e.toString().contains('Already reviewed')) {
+        errorMessage = 'already_reviewed'.tr;
+      }
+
+      // Show error dialog
+      await Get.dialog(
+        Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+          ),
+          child: Container(
+            padding: const EdgeInsets.all(32),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(24),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Error icon
+                Container(
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    color: AppColors.errorColor.withValues(alpha: 0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.error_outline,
+                    color: AppColors.errorColor,
+                    size: 48,
+                  ),
+                ),
+                const SizedBox(height: 24),
+
+                // Title
+                Text(
+                  'error'.tr,
+                  style: const TextStyle(
+                    fontFamily: 'Lato',
+                    fontWeight: FontWeight.w700,
+                    fontSize: 20,
+                    color: Color(0xFF262626),
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 12),
+
+                // Message
+                Text(
+                  errorMessage,
+                  style: const TextStyle(
+                    fontFamily: 'Lato',
+                    fontWeight: FontWeight.w400,
+                    fontSize: 14,
+                    color: Color(0xFF5E5E5E),
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 24),
+
+                // OK button
+                SizedBox(
+                  width: double.infinity,
+                  height: 48,
+                  child: ElevatedButton(
+                    onPressed: () => Get.back(),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.errorColor,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      elevation: 0,
+                    ),
+                    child: Text(
+                      'ok'.tr,
+                      style: const TextStyle(
+                        fontFamily: 'Lato',
+                        fontWeight: FontWeight.w600,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        barrierDismissible: false,
       );
-      
+
       rethrow;
     }
   }
