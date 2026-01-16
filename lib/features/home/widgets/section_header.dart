@@ -24,16 +24,21 @@ class SectionHeader extends GetView<HomeController> {
       child: Obx(() => Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            _getLocalizedTitle(languageService.currentLanguage),
-            style: const TextStyle(
-              fontFamily: 'Lato',
-              fontWeight: FontWeight.w700,
-              fontSize: 18,
-              color: AppColors.textDarkColor,
-              letterSpacing: -0.005,
+          Expanded(
+            child: Text(
+              _getLocalizedTitle(languageService.currentLanguage),
+              style: const TextStyle(
+                fontFamily: 'Lato',
+                fontWeight: FontWeight.w700,
+                fontSize: 18,
+                color: AppColors.textDarkColor,
+                letterSpacing: -0.005,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
           ),
+          const SizedBox(width: 8),
           GestureDetector(
             onTap: () => controller.onSeeAllTap(section),
             child: Text(

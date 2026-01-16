@@ -18,7 +18,7 @@ class RestaurantsGrid extends GetView<AllRestaurantsController> {
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 2,
-            childAspectRatio: 0.75,
+            childAspectRatio: 182 / 223,
             crossAxisSpacing: 16,
             mainAxisSpacing: 16,
           ),

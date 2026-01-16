@@ -51,8 +51,27 @@ class RestaurantModel {
     required this.stats,
   });
 
+  // Helper getters for UI
+  String get displayName => businessName.isNotEmpty ? businessName : name;
+  String get displayDescription => description;
+  String get displayAddress => location.address;
+  String get deliveryTimeText => delivery.estimatedTime;
+  String get ratingText => rating.average.toStringAsFixed(1);
+  String get reviewCountText => '${rating.count} تقييم';
+  String get minimumOrderText => delivery.minimumOrder != null
+      ? '${delivery.minimumOrder!.toStringAsFixed(0)} ر.س'
+      : '';
+  String get deliveryFeeText => delivery.fee != null
+      ? '${delivery.fee!.toStringAsFixed(0)} ر.س'
+      : '';
+
   factory RestaurantModel.fromJson(Map<String, dynamic> json) {
     try {
+      // Debug rating data
+      if (kDebugMode && json['rating'] != null) {
+        print('⭐ RATING DATA for ${json['business_name']}: ${json['rating']} (Type: ${json['rating'].runtimeType})');
+      }
+
       return RestaurantModel(
         id: json['id'] ?? 0,
         name: _parseTranslatable(json['name']),
@@ -113,6 +132,13 @@ class RestaurantModel {
     try {
       if (data is Map<String, dynamic>) {
         return RatingInfo.fromJson(data);
+      } else if (data is num) {
+        // If rating is sent as a number directly
+        return RatingInfo(
+          average: data.toDouble(),
+          count: 0,
+          stars: {},
+        );
       }
       return RatingInfo.fromJson({});
     } catch (e) {
@@ -267,10 +293,26 @@ class RatingInfo {
   });
 
   factory RatingInfo.fromJson(Map<String, dynamic> json) {
+    // Handle different rating formats from API
+    double average = 0.0;
+    int count = 0;
+
+    if (json.containsKey('average')) {
+      average = RestaurantModel._parseDouble(json['average']) ?? 0.0;
+    } else if (json.containsKey('rating')) {
+      average = RestaurantModel._parseDouble(json['rating']) ?? 0.0;
+    }
+
+    if (json.containsKey('count')) {
+      count = json['count'] is int ? json['count'] : int.tryParse(json['count'].toString()) ?? 0;
+    } else if (json.containsKey('total_reviews')) {
+      count = json['total_reviews'] is int ? json['total_reviews'] : int.tryParse(json['total_reviews'].toString()) ?? 0;
+    }
+
     return RatingInfo(
-      average: RestaurantModel._parseDouble(json['average']) ?? 4.5,
-      count: json['count'] ?? 0,
-      stars: Map<int, int>.from(json['stars'] ?? {}),
+      average: average,
+      count: count,
+      stars: json['stars'] != null ? Map<int, int>.from(json['stars']) : {},
     );
   }
 }

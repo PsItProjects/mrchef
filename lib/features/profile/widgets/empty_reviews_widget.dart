@@ -65,9 +65,9 @@ class EmptyReviewsWidget extends GetView<MyReviewsController> {
           const SizedBox(height: 24),
           
           // Go to home page button
-          SizedBox(
+          Container(
             width: 380,
-            height: 54,
+            height: 60,
             child: ElevatedButton(
               onPressed: () => Get.offAllNamed('/home'),
               style: ElevatedButton.styleFrom(
@@ -77,6 +77,7 @@ class EmptyReviewsWidget extends GetView<MyReviewsController> {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 elevation: 0,
+                padding: const EdgeInsets.symmetric(vertical: 16),
               ),
               child: Text(
                 'start_shopping'.tr,
@@ -85,34 +86,6 @@ class EmptyReviewsWidget extends GetView<MyReviewsController> {
                   fontWeight: FontWeight.w700,
                   fontSize: 18,
                   letterSpacing: -0.3,
-                ),
-              ),
-            ),
-          ),
-          
-          const SizedBox(height: 16),
-          
-          // Test button to add sample data
-          Container(
-            width: 380,
-            // height: 50,
-            child: ElevatedButton(
-              onPressed: controller.addSampleData,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF592E2C),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                elevation: 0,
-              ),
-              child: const Text(
-                'Add Sample Reviews (Test)',
-                style: TextStyle(
-                  fontFamily: 'Lato',
-                  fontWeight: FontWeight.w700,
-                  fontSize: 18,
-                  color: Colors.white,
-                  letterSpacing: -0.005,
                 ),
               ),
             ),

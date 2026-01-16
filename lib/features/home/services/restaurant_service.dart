@@ -85,6 +85,39 @@ class RestaurantService {
 
         for (var restaurantData in restaurantsData) {
           try {
+            // Parse rating from API
+            double ratingAverage = 0.0;
+            int ratingCount = 0;
+
+            // Check different possible rating fields
+            if (restaurantData['rating'] != null) {
+              if (restaurantData['rating'] is num) {
+                ratingAverage = (restaurantData['rating'] as num).toDouble();
+              } else if (restaurantData['rating'] is Map) {
+                ratingAverage = _parseDouble(restaurantData['rating']['average']) ?? 0.0;
+                ratingCount = restaurantData['rating']['count'] ?? 0;
+              }
+            }
+
+            if (restaurantData['average_rating'] != null) {
+              ratingAverage = _parseDouble(restaurantData['average_rating']) ?? ratingAverage;
+            }
+
+            if (restaurantData['total_reviews'] != null) {
+              ratingCount = restaurantData['total_reviews'] is int
+                  ? restaurantData['total_reviews']
+                  : int.tryParse(restaurantData['total_reviews'].toString()) ?? ratingCount;
+            } else if (restaurantData['reviews_count'] != null) {
+              ratingCount = restaurantData['reviews_count'] is int
+                  ? restaurantData['reviews_count']
+                  : int.tryParse(restaurantData['reviews_count'].toString()) ?? ratingCount;
+            }
+
+            if (kDebugMode) {
+              print('📦 RESTAURANT: ${_parseTranslatableString(restaurantData['business_name'])}');
+              print('   ⭐ Rating: $ratingAverage, Count: $ratingCount');
+            }
+
             // Create a simplified restaurant model
             final restaurant = RestaurantModel(
               id: restaurantData['id'] ?? 0,
@@ -111,9 +144,9 @@ class RestaurantService {
               isOpenNow: true,
               nextOpeningTime: null,
               rating: RatingInfo(
-                average: 4.5,
-                count: 100,
-                stars: {5: 80, 4: 15, 3: 3, 2: 1, 1: 1},
+                average: ratingAverage,
+                count: ratingCount,
+                stars: {},
               ),
               status: 'active',
               isFeatured: restaurantData['is_featured'] ?? false,
@@ -167,6 +200,15 @@ class RestaurantService {
       return value['current'] ?? value['ar'] ?? value['en'] ?? '';
     }
     return value.toString();
+  }
+
+  /// Helper method to parse double values
+  static double? _parseDouble(dynamic value) {
+    if (value == null) return null;
+    if (value is double) return value;
+    if (value is int) return value.toDouble();
+    if (value is String) return double.tryParse(value);
+    return null;
   }
 
   /// Get featured restaurants

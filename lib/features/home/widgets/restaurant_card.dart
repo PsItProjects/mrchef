@@ -171,7 +171,7 @@ class RestaurantCard extends StatelessWidget {
                     const SizedBox(height: 8), // Space for logo
                     // Restaurant name
                     Text(
-                      restaurant.businessName,
+                      restaurant.displayName,
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,

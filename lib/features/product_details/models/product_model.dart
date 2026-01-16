@@ -89,20 +89,31 @@ class ProductModel {
       restaurantId = json['restaurant_id'];
     }
 
+    // Helper function to safely parse price
+    double parsePrice(dynamic priceField) {
+      if (priceField == null) return 0.0;
+      if (priceField is double) return priceField;
+      if (priceField is int) return priceField.toDouble();
+      if (priceField is String) {
+        return double.tryParse(priceField) ?? 0.0;
+      }
+      return 0.0;
+    }
+
     return ProductModel(
       id: json['id'],
       name: getName(json['name']),
       description: getDescription(json['description']),
-      price: (json['price'] ?? 0).toDouble(),
-      originalPrice: json['originalPrice']?.toDouble(),
-      image: getImageUrl(json['primary_image']),
+      price: parsePrice(json['price']),
+      originalPrice: json['originalPrice'] != null ? parsePrice(json['originalPrice']) : null,
+      image: getImageUrl(json['primary_image'] ?? json['image']),
       rating: getRating(json['rating']),
       reviewCount: getReviewCount(json['reviewCount'] ?? json['rating']),
       productCode: json['productCode'] ?? 'N/A',
       sizes: _extractSizes(json['sizes']),
       rawSizes: _extractRawSizes(json['sizes']),
       additionalOptions: _extractAdditionalOptions(json['additionalOptions']),
-      images: List<String>.from(json['images'] ?? [json['primary_image'] ?? '']),
+      images: List<String>.from(json['images'] ?? [json['primary_image'] ?? json['image'] ?? '']),
       categoryId: json['internal_category_id'] ?? json['categoryId'] ?? json['category']?['id'],
       restaurantId: restaurantId,
     );

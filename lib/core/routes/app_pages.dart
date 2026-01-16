@@ -46,6 +46,7 @@ import 'package:mrsheaf/features/search/pages/search_screen.dart';
 import 'package:mrsheaf/features/search/bindings/search_binding.dart';
 import 'package:mrsheaf/features/restaurants/pages/all_restaurants_screen.dart';
 import 'package:mrsheaf/features/restaurants/bindings/all_restaurants_binding.dart';
+import 'package:mrsheaf/features/products/pages/all_products_screen.dart';
 import 'package:mrsheaf/features/merchant/pages/merchant_order_details_screen.dart';
 import 'package:mrsheaf/features/merchant/pages/merchant_chat_screen.dart';
 import 'package:mrsheaf/features/merchant/controllers/merchant_chat_controller.dart';
@@ -244,6 +245,11 @@ class AppPages {
       name: AppRoutes.ALL_RESTAURANTS,
       page: () => const AllRestaurantsScreen(),
       binding: AllRestaurantsBinding(),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.ALL_PRODUCTS,
+      page: () => const AllProductsScreen(),
       transition: Transition.rightToLeft,
     ),
     // Merchant Notifications

@@ -441,6 +441,12 @@ class HomeController extends GetxController {
     if (section == 'restaurants') {
       // Navigate to All Restaurants screen
       Get.toNamed('/all-restaurants');
+    } else if (section == 'bestSeller') {
+      // Navigate to All Best Seller Products screen
+      Get.toNamed('/all-products', arguments: {'type': 'best_seller'});
+    } else if (section == 'backAgain') {
+      // Navigate to All Recently Added Products screen
+      Get.toNamed('/all-products', arguments: {'type': 'recently_added'});
     } else {
       // TODO: Navigate to other sections
       Get.snackbar(

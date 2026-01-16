@@ -47,9 +47,12 @@ class AllRestaurantsController extends GetxController {
       
       allRestaurants.value = restaurants;
       filteredRestaurants.value = restaurants;
-      
+
       if (kDebugMode) {
         print('✅ ALL RESTAURANTS: Fetched ${allRestaurants.length} restaurants');
+        for (var restaurant in restaurants.take(3)) {
+          print('⭐ ${restaurant.displayName}: Rating=${restaurant.rating.average}, Count=${restaurant.rating.count}');
+        }
       }
     } catch (e) {
       if (kDebugMode) {

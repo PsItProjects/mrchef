@@ -50,4 +50,7 @@ abstract class AppRoutes {
 
   // Restaurants routes
   static const ALL_RESTAURANTS = '/all-restaurants';
+
+  // Products routes
+  static const ALL_PRODUCTS = '/all-products';
 }
