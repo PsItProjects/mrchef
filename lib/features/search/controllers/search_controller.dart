@@ -20,6 +20,7 @@ class SearchController extends GetxController {
 
   // Observable variables
   final RxString searchQuery = ''.obs;
+  final RxString searchType = 'products'.obs; // 'products' or 'restaurants'
   final RxList<Map<String, dynamic>> searchResults = <Map<String, dynamic>>[].obs;
   final RxBool isLoading = false.obs;
   final RxBool isSearching = false.obs;
@@ -90,11 +91,21 @@ class SearchController extends GetxController {
     suggestions.value = sug;
   }
 
+  /// Set search type (products or restaurants)
+  void setSearchType(String type) {
+    searchType.value = type;
+    // Re-search if there's a query or active filters
+    if (searchQuery.value.isNotEmpty || filters.value.hasActiveFilters) {
+      search();
+    }
+  }
+
   /// Perform search
   Future<void> search({bool loadMore = false}) async {
     final query = searchQuery.value.trim();
-    
-    if (query.isEmpty) {
+
+    // Allow search with filters even if query is empty
+    if (query.isEmpty && !filters.value.hasActiveFilters) {
       searchResults.clear();
       return;
     }
@@ -109,33 +120,95 @@ class SearchController extends GetxController {
         searchResults.clear();
       }
 
-      final result = await _searchService.searchProducts(
-        query: query,
-        filters: filters.value,
-        page: currentPage.value,
-        perPage: 20,
+      // Search based on type
+      if (searchType.value == 'restaurants') {
+        await _searchRestaurants(query, loadMore);
+      } else {
+        await _searchProducts(query, loadMore);
+      }
+
+      // Save to recent searches
+      if (!loadMore && query.isNotEmpty) {
+        await _searchService.saveRecentSearch(query);
+        await _loadRecentSearches();
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ SEARCH ERROR: $e');
+      }
+    } finally {
+      isLoading.value = false;
+      isSearching.value = false;
+    }
+  }
+
+  /// Search for products
+  Future<void> _searchProducts(String query, bool loadMore) async {
+    final result = await _searchService.searchProducts(
+      query: query,
+      filters: filters.value,
+      page: currentPage.value,
+      perPage: 20,
+    );
+
+    if (result['success'] == true) {
+      final List<dynamic> products = result['products'] ?? [];
+
+      if (loadMore) {
+        searchResults.addAll(products.cast<Map<String, dynamic>>());
+      } else {
+        searchResults.value = products.cast<Map<String, dynamic>>();
+      }
+
+      // Update pagination info
+      final pagination = result['pagination'] ?? {};
+      totalPages.value = pagination['last_page'] ?? 1;
+      totalResults.value = pagination['total'] ?? 0;
+      hasMore.value = pagination['has_more'] ?? false;
+    }
+  }
+
+  /// Search for restaurants
+  Future<void> _searchRestaurants(String query, bool loadMore) async {
+    try {
+      final Map<String, dynamic> queryParams = {
+        'page': currentPage.value,
+        'per_page': 20,
+      };
+
+      if (query.isNotEmpty) {
+        queryParams['search'] = query;
+      }
+
+      // Add filters
+      if (filters.value.categoryId != null) {
+        queryParams['category_id'] = filters.value.categoryId;
+      }
+      if (filters.value.minRating != null) {
+        queryParams['min_rating'] = filters.value.minRating;
+      }
+      if (filters.value.sortBy != null) {
+        queryParams['sort_by'] = filters.value.sortBy;
+        queryParams['sort_order'] = filters.value.sortOrder ?? 'desc';
+      }
+
+      final response = await _apiClient.get(
+        '${ApiConstants.baseUrl}${ApiConstants.kitchens}',
+        queryParameters: queryParams,
       );
 
-      if (result['success'] == true) {
-        final List<dynamic> products = result['products'] ?? [];
-        
+      if (response.data['success'] == true) {
+        final List<dynamic> restaurants = response.data['data'] ?? [];
+
         if (loadMore) {
-          searchResults.addAll(products.cast<Map<String, dynamic>>());
+          searchResults.addAll(restaurants.cast<Map<String, dynamic>>());
         } else {
-          searchResults.value = products.cast<Map<String, dynamic>>();
+          searchResults.value = restaurants.cast<Map<String, dynamic>>();
         }
 
         // Update pagination info
-        final pagination = result['pagination'] ?? {};
-        totalPages.value = pagination['last_page'] ?? 1;
-        totalResults.value = pagination['total'] ?? 0;
-        hasMore.value = pagination['has_more'] ?? false;
-
-        // Save to recent searches
-        if (!loadMore) {
-          await _searchService.saveRecentSearch(query);
-          await _loadRecentSearches();
-        }
+        totalResults.value = restaurants.length;
+        hasMore.value = false; // Adjust based on API response
       }
     } catch (e) {
       if (kDebugMode) {
@@ -154,8 +227,8 @@ class SearchController extends GetxController {
     // Cancel previous timer
     _debounceTimer?.cancel();
 
-    // If query is empty, clear results immediately
-    if (query.trim().isEmpty) {
+    // If query is empty but filters are active, keep results
+    if (query.trim().isEmpty && !filters.value.hasActiveFilters) {
       searchResults.clear();
       return;
     }
@@ -177,13 +250,19 @@ class SearchController extends GetxController {
   /// Apply filters
   void applyFilters(SearchFilterModel newFilters) {
     filters.value = newFilters;
+    // Always search when filters are applied, even if query is empty
     search();
   }
 
   /// Clear filters
   void clearFilters() {
     filters.value = SearchFilterModel();
-    search();
+    // Clear results if no search query
+    if (searchQuery.value.isEmpty) {
+      searchResults.clear();
+    } else {
+      search();
+    }
   }
 
   /// Update specific filter

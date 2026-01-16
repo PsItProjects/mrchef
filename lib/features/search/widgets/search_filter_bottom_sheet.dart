@@ -10,44 +10,78 @@ class SearchFilterBottomSheet extends GetView<search.SearchController> {
   @override
   Widget build(BuildContext context) {
     return Container(
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 0.85,
+      ),
       decoration: const BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(24),
-          topRight: Radius.circular(24),
+          topLeft: Radius.circular(28),
+          topRight: Radius.circular(28),
         ),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Header
+          // Handle bar
           Container(
-            padding: const EdgeInsets.all(20),
+            margin: const EdgeInsets.only(top: 12),
+            width: 40,
+            height: 4,
             decoration: BoxDecoration(
-              border: Border(
-                bottom: BorderSide(color: Colors.grey[200]!),
-              ),
+              color: Colors.grey[300],
+              borderRadius: BorderRadius.circular(2),
             ),
+          ),
+
+          // Header
+          Padding(
+            padding: const EdgeInsets.fromLTRB(24, 16, 16, 16),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  'filters'.tr,
-                  style: const TextStyle(
-                    fontFamily: 'Lato',
-                    fontWeight: FontWeight.w700,
-                    fontSize: 20,
-                    color: Color(0xFF262626),
-                  ),
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: AppColors.primaryColor.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Icon(
+                        Icons.tune_rounded,
+                        color: AppColors.primaryColor,
+                        size: 20,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Text(
+                      'filters'.tr,
+                      style: const TextStyle(
+                        fontFamily: 'Lato',
+                        fontWeight: FontWeight.w700,
+                        fontSize: 20,
+                        color: Color(0xFF262626),
+                      ),
+                    ),
+                  ],
                 ),
                 IconButton(
                   onPressed: () => Get.back(),
-                  icon: const Icon(Icons.close),
+                  style: IconButton.styleFrom(
+                    backgroundColor: Colors.grey[100],
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  icon: const Icon(Icons.close_rounded, size: 20),
                   color: Colors.grey[600],
                 ),
               ],
             ),
           ),
+
+          Divider(color: Colors.grey[200], height: 1),
 
           // Filters content
           Flexible(
@@ -105,72 +139,103 @@ class SearchFilterBottomSheet extends GetView<search.SearchController> {
 
           // Footer buttons
           Container(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
             decoration: BoxDecoration(
               color: Colors.white,
-              border: Border(
-                top: BorderSide(color: Colors.grey[200]!),
-              ),
-            ),
-            child: Row(
-              children: [
-                // Clear all button
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () {
-                      controller.clearFilters();
-                      Get.back();
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: AppColors.primaryColor),
-                      ),
-                      child: Center(
-                        child: Text(
-                          'clear_all'.tr,
-                          style: const TextStyle(
-                            fontFamily: 'Lato',
-                            fontWeight: FontWeight.w600,
-                            fontSize: 16,
-                            color: AppColors.primaryColor,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                // Apply button
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () {
-                      controller.applyFilters(controller.filters.value);
-                      Get.back();
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      decoration: BoxDecoration(
-                        color: AppColors.primaryColor,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Center(
-                        child: Text(
-                          'apply'.tr,
-                          style: const TextStyle(
-                            fontFamily: 'Lato',
-                            fontWeight: FontWeight.w600,
-                            fontSize: 16,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.05),
+                  blurRadius: 10,
+                  offset: const Offset(0, -4),
                 ),
               ],
+            ),
+            child: SafeArea(
+              top: false,
+              child: Row(
+                children: [
+                  // Clear all button
+                  Expanded(
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onTap: () {
+                          controller.clearFilters();
+                          Get.back();
+                        },
+                        borderRadius: BorderRadius.circular(14),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          decoration: BoxDecoration(
+                            color: Colors.grey[100],
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          child: Center(
+                            child: Text(
+                              'clear_all'.tr,
+                              style: TextStyle(
+                                fontFamily: 'Lato',
+                                fontWeight: FontWeight.w600,
+                                fontSize: 16,
+                                color: Colors.grey[700],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  // Apply button
+                  Expanded(
+                    flex: 2,
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onTap: () {
+                          controller.applyFilters(controller.filters.value);
+                          Get.back();
+                        },
+                        borderRadius: BorderRadius.circular(14),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [AppColors.primaryColor, Color(0xFFFFC107)],
+                              begin: Alignment.centerLeft,
+                              end: Alignment.centerRight,
+                            ),
+                            borderRadius: BorderRadius.circular(14),
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppColors.primaryColor.withValues(alpha: 0.3),
+                                blurRadius: 8,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(Icons.check_rounded, color: Colors.white, size: 20),
+                              const SizedBox(width: 8),
+                              Text(
+                                'apply'.tr,
+                                style: const TextStyle(
+                                  fontFamily: 'Lato',
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 16,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ],
@@ -179,44 +244,84 @@ class SearchFilterBottomSheet extends GetView<search.SearchController> {
   }
 
   Widget _buildSectionTitle(String title) {
-    return Text(
-      title,
-      style: const TextStyle(
-        fontFamily: 'Lato',
-        fontWeight: FontWeight.w600,
-        fontSize: 16,
-        color: Color(0xFF262626),
-      ),
+    return Row(
+      children: [
+        Container(
+          width: 4,
+          height: 18,
+          decoration: BoxDecoration(
+            color: AppColors.primaryColor,
+            borderRadius: BorderRadius.circular(2),
+          ),
+        ),
+        const SizedBox(width: 10),
+        Text(
+          title,
+          style: const TextStyle(
+            fontFamily: 'Lato',
+            fontWeight: FontWeight.w700,
+            fontSize: 16,
+            color: Color(0xFF262626),
+          ),
+        ),
+      ],
     );
   }
 
   Widget _buildCategoryFilter() {
     return Obx(() {
+      if (controller.isLoadingCategories.value) {
+        return const Center(
+          child: SizedBox(
+            height: 40,
+            child: CircularProgressIndicator(
+              color: AppColors.primaryColor,
+              strokeWidth: 2,
+            ),
+          ),
+        );
+      }
+
       return Wrap(
-        spacing: 8,
-        runSpacing: 8,
+        spacing: 10,
+        runSpacing: 10,
         children: controller.categories.map((category) {
           final isSelected = controller.filters.value.categoryId == category.id;
-          return GestureDetector(
-            onTap: () => controller.updateFilter(
-              categoryId: isSelected ? null : category.id,
-            ),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              decoration: BoxDecoration(
-                color: isSelected ? AppColors.primaryColor : Colors.white,
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: isSelected ? AppColors.primaryColor : Colors.grey[300]!,
-                ),
+          return Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: () => controller.updateFilter(
+                categoryId: isSelected ? null : category.id,
               ),
-              child: Text(
-                category.displayName,
-                style: TextStyle(
-                  fontFamily: 'Lato',
-                  fontWeight: FontWeight.w500,
-                  fontSize: 14,
-                  color: isSelected ? Colors.white : const Color(0xFF262626),
+              borderRadius: BorderRadius.circular(25),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                decoration: BoxDecoration(
+                  color: isSelected ? AppColors.primaryColor : Colors.white,
+                  borderRadius: BorderRadius.circular(25),
+                  border: Border.all(
+                    color: isSelected ? AppColors.primaryColor : Colors.grey[300]!,
+                    width: isSelected ? 1.5 : 1,
+                  ),
+                  boxShadow: isSelected
+                      ? [
+                          BoxShadow(
+                            color: AppColors.primaryColor.withValues(alpha: 0.3),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ]
+                      : null,
+                ),
+                child: Text(
+                  category.displayName,
+                  style: TextStyle(
+                    fontFamily: 'Lato',
+                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                    fontSize: 14,
+                    color: isSelected ? Colors.white : const Color(0xFF262626),
+                  ),
                 ),
               ),
             ),
@@ -227,47 +332,79 @@ class SearchFilterBottomSheet extends GetView<search.SearchController> {
   }
 
   Widget _buildPriceRangeFilter(SearchFilterModel filters) {
-    return Column(
-      children: [
-        Row(
-          children: [
-            Expanded(
-              child: _buildPriceInput(
-                'min'.tr,
-                filters.minPrice?.toString() ?? '',
-                (value) {
-                  final price = double.tryParse(value);
-                  controller.updateFilter(minPrice: price);
-                },
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.grey[50],
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey[200]!),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: _buildPriceInput(
+              'min'.tr,
+              filters.minPrice?.toString() ?? '',
+              (value) {
+                final price = double.tryParse(value);
+                controller.updateFilter(minPrice: price);
+              },
+              Icons.arrow_downward_rounded,
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Container(
+              width: 30,
+              height: 2,
+              decoration: BoxDecoration(
+                color: Colors.grey[400],
+                borderRadius: BorderRadius.circular(1),
               ),
             ),
-            const SizedBox(width: 12),
-            const Text('-', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _buildPriceInput(
-                'max'.tr,
-                filters.maxPrice?.toString() ?? '',
-                (value) {
-                  final price = double.tryParse(value);
-                  controller.updateFilter(maxPrice: price);
-                },
-              ),
+          ),
+          Expanded(
+            child: _buildPriceInput(
+              'max'.tr,
+              filters.maxPrice?.toString() ?? '',
+              (value) {
+                final price = double.tryParse(value);
+                controller.updateFilter(maxPrice: price);
+              },
+              Icons.arrow_upward_rounded,
             ),
-          ],
-        ),
-      ],
+          ),
+        ],
+      ),
     );
   }
 
-  Widget _buildPriceInput(String label, String value, Function(String) onChanged) {
+  Widget _buildPriceInput(String label, String value, Function(String) onChanged, IconData icon) {
     return TextField(
       decoration: InputDecoration(
         labelText: label,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
+        prefixIcon: Icon(icon, size: 18, color: AppColors.primaryColor),
+        suffixText: 'ر.س',
+        suffixStyle: TextStyle(
+          fontFamily: 'Lato',
+          fontSize: 12,
+          color: Colors.grey[600],
         ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.grey[300]!),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.grey[300]!),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: AppColors.primaryColor, width: 1.5),
+        ),
+        filled: true,
+        fillColor: Colors.white,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
       ),
       keyboardType: TextInputType.number,
       onChanged: onChanged,
@@ -276,61 +413,92 @@ class SearchFilterBottomSheet extends GetView<search.SearchController> {
   }
 
   Widget _buildRatingFilter(SearchFilterModel filters) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: [1, 2, 3, 4, 5].map((rating) {
-        final isSelected = filters.minRating == rating.toDouble();
-        return GestureDetector(
-          onTap: () => controller.updateFilter(
-            minRating: isSelected ? null : rating.toDouble(),
-          ),
-          child: Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: isSelected ? AppColors.primaryColor : Colors.white,
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(
-                color: isSelected ? AppColors.primaryColor : Colors.grey[300]!,
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [1, 2, 3, 4, 5].map((rating) {
+          final isSelected = filters.minRating == rating.toDouble();
+          return Expanded(
+            child: Padding(
+              padding: EdgeInsets.only(
+                left: rating == 1 ? 0 : 4,
+                right: rating == 5 ? 0 : 4,
               ),
-            ),
-            child: Row(
-              children: [
-                Text(
-                  '$rating',
-                  style: TextStyle(
-                    fontFamily: 'Lato',
-                    fontWeight: FontWeight.w600,
-                    fontSize: 16,
-                    color: isSelected ? Colors.white : Color(0xFF262626),
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: () => controller.updateFilter(
+                    minRating: isSelected ? null : rating.toDouble(),
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    decoration: BoxDecoration(
+                      color: isSelected ? AppColors.primaryColor : Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: isSelected ? AppColors.primaryColor : Colors.grey[300]!,
+                        width: isSelected ? 1.5 : 1,
+                      ),
+                      boxShadow: isSelected
+                          ? [
+                              BoxShadow(
+                                color: AppColors.primaryColor.withValues(alpha: 0.3),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ]
+                          : null,
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.star_rounded,
+                          size: 24,
+                          color: isSelected ? Colors.white : const Color(0xFFFFB800),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          '$rating+',
+                          style: TextStyle(
+                            fontFamily: 'Lato',
+                            fontWeight: FontWeight.w700,
+                            fontSize: 14,
+                            color: isSelected ? Colors.white : const Color(0xFF262626),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-                const SizedBox(width: 4),
-                Icon(
-                  Icons.star,
-                  size: 16,
-                  color: isSelected ? Colors.white : AppColors.primaryColor,
-                ),
-              ],
+              ),
             ),
-          ),
-        );
-      }).toList(),
+          );
+        }).toList(),
+      ),
     );
   }
 
   Widget _buildDietaryOptions(SearchFilterModel filters) {
-    return Column(
+    return Row(
       children: [
-        _buildCheckboxOption(
-          'vegetarian'.tr,
-          filters.isVegetarian ?? false,
-          (value) => controller.updateFilter(isVegetarian: value),
+        Expanded(
+          child: _buildCheckboxOption(
+            'vegetarian'.tr,
+            filters.isVegetarian ?? false,
+            (value) => controller.updateFilter(isVegetarian: value),
+          ),
         ),
-        const SizedBox(height: 12),
-        _buildCheckboxOption(
-          'spicy'.tr,
-          filters.isSpicy ?? false,
-          (value) => controller.updateFilter(isSpicy: value),
+        const SizedBox(width: 12),
+        Expanded(
+          child: _buildCheckboxOption(
+            'spicy'.tr,
+            filters.isSpicy ?? false,
+            (value) => controller.updateFilter(isSpicy: value),
+          ),
         ),
       ],
     );
@@ -361,10 +529,11 @@ class SearchFilterBottomSheet extends GetView<search.SearchController> {
             margin: const EdgeInsets.only(bottom: 8),
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: isSelected ? AppColors.primaryColor.withOpacity(0.1) : Colors.white,
-              borderRadius: BorderRadius.circular(10),
+              color: isSelected ? AppColors.primaryColor.withValues(alpha: 0.1) : Colors.white,
+              borderRadius: BorderRadius.circular(12),
               border: Border.all(
                 color: isSelected ? AppColors.primaryColor : Colors.grey[300]!,
+                width: isSelected ? 1.5 : 1,
               ),
             ),
             child: Row(
@@ -372,15 +541,16 @@ class SearchFilterBottomSheet extends GetView<search.SearchController> {
                 Icon(
                   isSelected ? Icons.radio_button_checked : Icons.radio_button_unchecked,
                   color: isSelected ? AppColors.primaryColor : Colors.grey[400],
+                  size: 22,
                 ),
                 const SizedBox(width: 12),
                 Text(
                   option['label']!,
                   style: TextStyle(
                     fontFamily: 'Lato',
-                    fontWeight: FontWeight.w500,
+                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                     fontSize: 14,
-                    color: isSelected ? AppColors.primaryColor : Color(0xFF262626),
+                    color: isSelected ? AppColors.primaryColor : const Color(0xFF262626),
                   ),
                 ),
               ],
@@ -392,34 +562,50 @@ class SearchFilterBottomSheet extends GetView<search.SearchController> {
   }
 
   Widget _buildCheckboxOption(String label, bool value, Function(bool) onChanged) {
-    return GestureDetector(
-      onTap: () => onChanged(!value),
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: value ? AppColors.primaryColor.withOpacity(0.1) : Colors.white,
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(
-            color: value ? AppColors.primaryColor : Colors.grey[300]!,
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () => onChanged(!value),
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: value ? AppColors.primaryColor.withValues(alpha: 0.1) : Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: value ? AppColors.primaryColor : Colors.grey[300]!,
+              width: value ? 1.5 : 1,
+            ),
           ),
-        ),
-        child: Row(
-          children: [
-            Icon(
-              value ? Icons.check_box : Icons.check_box_outline_blank,
-              color: value ? AppColors.primaryColor : Colors.grey[400],
-            ),
-            const SizedBox(width: 12),
-            Text(
-              label,
-              style: TextStyle(
-                fontFamily: 'Lato',
-                fontWeight: FontWeight.w500,
-                fontSize: 14,
-                color: value ? AppColors.primaryColor : Color(0xFF262626),
+          child: Row(
+            children: [
+              Container(
+                width: 24,
+                height: 24,
+                decoration: BoxDecoration(
+                  color: value ? AppColors.primaryColor : Colors.transparent,
+                  borderRadius: BorderRadius.circular(6),
+                  border: Border.all(
+                    color: value ? AppColors.primaryColor : Colors.grey[400]!,
+                    width: 2,
+                  ),
+                ),
+                child: value
+                    ? const Icon(Icons.check_rounded, color: Colors.white, size: 18)
+                    : null,
               ),
-            ),
-          ],
+              const SizedBox(width: 12),
+              Text(
+                label,
+                style: TextStyle(
+                  fontFamily: 'Lato',
+                  fontWeight: value ? FontWeight.w600 : FontWeight.w500,
+                  fontSize: 14,
+                  color: value ? AppColors.primaryColor : const Color(0xFF262626),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

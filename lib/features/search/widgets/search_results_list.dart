@@ -2,17 +2,22 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/features/home/widgets/product_card.dart';
+import 'package:mrsheaf/features/home/models/restaurant_model.dart';
+import 'package:mrsheaf/features/restaurants/widgets/restaurant_grid_item.dart';
+import 'package:mrsheaf/core/routes/app_routes.dart';
 
 class SearchResultsList extends StatefulWidget {
   final RxList<Map<String, dynamic>> results;
   final VoidCallback onLoadMore;
   final bool hasMore;
+  final String searchType; // 'products' or 'restaurants'
 
   const SearchResultsList({
     super.key,
     required this.results,
     required this.onLoadMore,
     required this.hasMore,
+    this.searchType = 'products',
   });
 
   @override
@@ -48,11 +53,11 @@ class _SearchResultsListState extends State<SearchResultsList> {
       return GridView.builder(
         controller: _scrollController,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2, // Two items per row
-          childAspectRatio: 0.68, // Width to height ratio (adjusted for better look)
-          crossAxisSpacing: 12, // Horizontal spacing between items
-          mainAxisSpacing: 16, // Vertical spacing between items
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          childAspectRatio: widget.searchType == 'restaurants' ? 0.85 : 0.68,
+          crossAxisSpacing: 12,
+          mainAxisSpacing: 16,
         ),
         itemCount: widget.results.length + (widget.hasMore ? 1 : 0),
         itemBuilder: (context, index) {
@@ -68,10 +73,22 @@ class _SearchResultsListState extends State<SearchResultsList> {
             );
           }
 
-          final product = widget.results[index];
+          final item = widget.results[index];
+
+          // Show restaurant card or product card based on search type
+          if (widget.searchType == 'restaurants') {
+            final restaurant = RestaurantModel.fromJson(item);
+            return RestaurantGridItem(
+              restaurant: restaurant,
+              onTap: () => Get.toNamed(
+                AppRoutes.STORE_DETAILS,
+                arguments: {'restaurant': restaurant},
+              ),
+            );
+          }
 
           return ProductCard(
-            product: product,
+            product: item,
             section: 'search',
           );
         },
