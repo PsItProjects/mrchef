@@ -209,8 +209,22 @@ jobs:
           APPSTORE_KEY_P8: ${{ secrets.APPSTORE_KEY_P8_BASE64 }}
         run: |
           set -euo pipefail
-          # Decode from Base64 first
-          DECODED_KEY=$(echo "$APPSTORE_KEY_P8" | base64 -D)
+          # Check if the secret is raw PEM or Base64 encoded
+          if echo "$APPSTORE_KEY_P8" | grep -q "BEGIN PRIVATE KEY"; then
+            # Already raw PEM format
+            DECODED_KEY="$APPSTORE_KEY_P8"
+            echo "API Key is in raw PEM format"
+          else
+            # Base64 encoded - decode it
+            DECODED_KEY=$(echo "$APPSTORE_KEY_P8" | base64 -D)
+            echo "API Key decoded from Base64"
+          fi
+          # Validate the key looks correct
+          if ! echo "$DECODED_KEY" | grep -q "BEGIN PRIVATE KEY"; then
+            echo "ERROR: API Key does not contain valid PEM header" >&2
+            exit 1
+          fi
+          # Output the key for the next step
           echo "api_private_key<<EOF" >> "$GITHUB_OUTPUT"
           printf '%s\n' "$DECODED_KEY" >> "$GITHUB_OUTPUT"
           echo "EOF" >> "$GITHUB_OUTPUT"
