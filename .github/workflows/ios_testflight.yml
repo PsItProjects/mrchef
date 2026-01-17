@@ -157,46 +157,37 @@ jobs:
             -allowProvisioningUpdates
 
       - name: Export IPA for App Store
-        env:
-          IOS_PROVISION_PROFILE_BASE64: ${{ secrets.IOS_PROVISION_PROFILE_BASE64 }}
         run: |
           set -euo pipefail
-
-          # Get provisioning profile UUID
-          PROFILE_UUID=$(/usr/libexec/PlistBuddy -c 'Print :UUID' /dev/stdin <<< "$(security cms -D -i $HOME/Library/MobileDevice/Provisioning\ Profiles/*.mobileprovision 2>/dev/null | head -1)")
-
-          # Create ExportOptions.plist
-          cat > $RUNNER_TEMP/ExportOptions.plist <<EOF
-          <?xml version="1.0" encoding="UTF-8"?>
-          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-          <plist version="1.0">
-          <dict>
-              <key>method</key>
-              <string>app-store-connect</string>
-              <key>teamID</key>
-              <string>HV9C8SYRKZ</string>
-              <key>uploadSymbols</key>
-              <true/>
-              <key>signingStyle</key>
-              <string>manual</string>
-              <key>provisioningProfiles</key>
-              <dict>
-                  <key>com.mrchef.app</key>
-                  <string>Mr.Chef</string>
-              </dict>
-          </dict>
-          </plist>
-          EOF
-
+          # Create ExportOptions.plist using printf (heredoc breaks YAML indentation)
+          printf '%s\n' \
+            '<?xml version="1.0" encoding="UTF-8"?>' \
+            '<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">' \
+            '<plist version="1.0">' \
+            '<dict>' \
+            '    <key>method</key>' \
+            '    <string>app-store-connect</string>' \
+            '    <key>teamID</key>' \
+            '    <string>HV9C8SYRKZ</string>' \
+            '    <key>uploadSymbols</key>' \
+            '    <true/>' \
+            '    <key>signingStyle</key>' \
+            '    <string>manual</string>' \
+            '    <key>provisioningProfiles</key>' \
+            '    <dict>' \
+            '        <key>com.mrchef.app</key>' \
+            '        <string>Mr.Chef</string>' \
+            '    </dict>' \
+            '</dict>' \
+            '</plist>' > $RUNNER_TEMP/ExportOptions.plist
+          echo "=== ExportOptions.plist ==="
           cat $RUNNER_TEMP/ExportOptions.plist
-
           # Export IPA
           mkdir -p build/ios/ipa
           xcodebuild -exportArchive \
             -archivePath $RUNNER_TEMP/Runner.xcarchive \
             -exportPath build/ios/ipa \
             -exportOptionsPlist $RUNNER_TEMP/ExportOptions.plist
-
           ls -la build/ios/ipa/
 
       - name: Resolve IPA path
