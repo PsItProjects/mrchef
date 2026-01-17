@@ -20,42 +20,70 @@ class CartSummarySection extends GetView<CartController> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Promo code section - exactly as in Figma
-              Container(
-                width: 380,
-                height: 52,
-                padding: const EdgeInsets.only(left: 32),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFFFAE6), // Light yellow background
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Row(
-                  children: [
-                    // Promo code text
-                    Expanded(
-                      child: Text(
-                        TranslationHelper.tr('promo_code'),
-                        style: AppTheme.searchTextStyle,
+              // Promo code section
+              Obx(() {
+                final hasCoupon = controller.appliedCouponCode.isNotEmpty;
+                final isBusy = controller.isCouponUpdating.value;
+
+                return Container(
+                  width: 380,
+                  height: 52,
+                  padding: const EdgeInsets.only(left: 32),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFFAE6), // Light yellow background
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: controller.promoCodeController,
+                          enabled: !hasCoupon && !isBusy,
+                          decoration: InputDecoration(
+                            hintText: TranslationHelper.tr('promo_code'),
+                            hintStyle: AppTheme.searchTextStyle,
+                            border: InputBorder.none,
+                          ),
+                          style: AppTheme.searchTextStyle,
+                        ),
                       ),
-                    ),
-                    
-                    // Yellow circle with icon - positioned at the right edge
-                    Container(
-                      width: 52,
-                      height: 52,
-                      decoration: BoxDecoration(
-                        color: AppColors.primaryColor, // Yellow
-                        borderRadius: BorderRadius.circular(26),
+
+                      GestureDetector(
+                        onTap: isBusy
+                            ? null
+                            : (hasCoupon
+                                ? controller.removePromoCode
+                                : controller.applyPromoCode),
+                        child: Container(
+                          width: 52,
+                          height: 52,
+                          decoration: BoxDecoration(
+                            color: AppColors.primaryColor,
+                            borderRadius: BorderRadius.circular(26),
+                          ),
+                          child: isBusy
+                              ? const Padding(
+                                  padding: EdgeInsets.all(14.0),
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2.5,
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                      AppColors.searchIconColor,
+                                    ),
+                                  ),
+                                )
+                              : Icon(
+                                  hasCoupon
+                                      ? Icons.close
+                                      : Icons.local_offer_outlined,
+                                  color: AppColors.searchIconColor,
+                                  size: 24,
+                                ),
+                        ),
                       ),
-                      child: const Icon(
-                        Icons.local_offer_outlined,
-                        color: AppColors.searchIconColor,
-                        size: 24,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+                    ],
+                  ),
+                );
+              }),
               
               const SizedBox(height: 24),
               
@@ -85,6 +113,14 @@ class CartSummarySection extends GetView<CartController> {
                       _getLabel('service_fee'),
                       _getFormattedPrice('service_fee'),
                     ),
+
+                    if (controller.discountAmount > 0) ...[
+                      const SizedBox(height: 8),
+                      _buildSummaryRow(
+                        _getLabel('discount_amount'),
+                        '- ${_getFormattedPrice('discount_amount')}',
+                      ),
+                    ],
 
                     const SizedBox(height: 8),
 
@@ -192,6 +228,8 @@ class CartSummarySection extends GetView<CartController> {
         return TranslationHelper.tr('tax'); // Using tax as service fee
       case 'total':
         return TranslationHelper.tr('total');
+      case 'discount_amount':
+        return TranslationHelper.tr('discount_amount');
       default:
         return key;
     }
@@ -215,6 +253,8 @@ class CartSummarySection extends GetView<CartController> {
         return CurrencyHelper.formatPrice(controller.serviceFee);
       case 'total':
         return CurrencyHelper.formatPrice(controller.totalAmount);
+      case 'discount_amount':
+        return CurrencyHelper.formatPrice(controller.discountAmount);
       default:
         return '0.0 ر.س';
     }

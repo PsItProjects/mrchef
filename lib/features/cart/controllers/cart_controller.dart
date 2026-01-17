@@ -11,6 +11,10 @@ import 'package:mrsheaf/core/localization/translation_helper.dart';
 class CartController extends GetxController {
   final CartService _cartService = CartService();
 
+  // Promo code controller
+  final TextEditingController promoCodeController = TextEditingController();
+  final RxBool isCouponUpdating = false.obs;
+
   // Observable cart items
   final RxList<CartItemModel> cartItems = <CartItemModel>[].obs;
 
@@ -40,6 +44,13 @@ class CartController extends GetxController {
 
       final summaryData = cartData['summary'] as Map<String, dynamic>;
       cartSummary.value = summaryData;
+
+      final appliedCode = (summaryData['coupon_code'] ?? '').toString();
+      if (appliedCode.isNotEmpty) {
+        promoCodeController.text = appliedCode;
+      } else {
+        promoCodeController.clear();
+      }
 
       // Debug logging
       if (kDebugMode) {
@@ -260,7 +271,13 @@ class CartController extends GetxController {
   Future<void> _updateCartSummaryOnly() async {
     try {
       final cartData = await _cartService.getCartItems();
-      cartSummary.value = cartData['summary'] as Map<String, dynamic>;
+      final summaryData = cartData['summary'] as Map<String, dynamic>;
+      cartSummary.value = summaryData;
+
+      final appliedCode = (summaryData['coupon_code'] ?? '').toString();
+      if (appliedCode.isNotEmpty) {
+        promoCodeController.text = appliedCode;
+      }
 
       if (kDebugMode) {
         print('🛒 CART CONTROLLER: Summary updated silently');
@@ -409,5 +426,94 @@ class CartController extends GetxController {
   void proceedToCheckout() {
     if (cartItems.isEmpty) return;
     Get.toNamed(AppRoutes.CHECKOUT);
+  }
+
+  String get appliedCouponCode {
+    return (cartSummary['coupon_code'] ?? '').toString();
+  }
+
+  double get discountAmount {
+    if (cartSummary.isNotEmpty && cartSummary['discount_amount'] != null) {
+      return (cartSummary['discount_amount'] as num).toDouble();
+    }
+    return 0.0;
+  }
+
+  Future<void> applyPromoCode() async {
+    final code = promoCodeController.text.trim();
+    if (code.isEmpty) {
+      Get.snackbar(
+        TranslationHelper.tr('warning'),
+        TranslationHelper.tr('please_enter_promo_code'),
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.orange,
+        colorText: Colors.white,
+      );
+      return;
+    }
+
+    try {
+      isCouponUpdating.value = true;
+
+      final result = await _cartService.applyCoupon(code);
+      cartItems.value = result['items'] as List<CartItemModel>;
+      cartSummary.value = result['summary'] as Map<String, dynamic>;
+      promoCodeController.text = appliedCouponCode;
+
+      final message = (result['message'] ?? TranslationHelper.tr('success')).toString();
+      Get.snackbar(
+        TranslationHelper.tr('success'),
+        message,
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: const Color(0xFF4CAF50),
+        colorText: Colors.white,
+      );
+    } catch (e) {
+      Get.snackbar(
+        TranslationHelper.tr('error'),
+        e.toString().replaceFirst('Exception: ', ''),
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    } finally {
+      isCouponUpdating.value = false;
+    }
+  }
+
+  Future<void> removePromoCode() async {
+    try {
+      isCouponUpdating.value = true;
+
+      final result = await _cartService.removeCoupon();
+      cartItems.value = result['items'] as List<CartItemModel>;
+      cartSummary.value = result['summary'] as Map<String, dynamic>;
+      promoCodeController.clear();
+
+      final message = (result['message'] ?? TranslationHelper.tr('success')).toString();
+      Get.snackbar(
+        TranslationHelper.tr('success'),
+        message,
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: const Color(0xFF4CAF50),
+        colorText: Colors.white,
+      );
+    } catch (e) {
+      Get.snackbar(
+        TranslationHelper.tr('error'),
+        e.toString().replaceFirst('Exception: ', ''),
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    } finally {
+      isCouponUpdating.value = false;
+    }
+  }
+
+  @override
+  void onClose() {
+    promoCodeController.dispose();
+    super.onClose();
   }
 }

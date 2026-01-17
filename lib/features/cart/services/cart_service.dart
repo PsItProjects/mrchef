@@ -7,6 +7,19 @@ import 'package:mrsheaf/features/cart/models/cart_item_model.dart';
 class CartService {
   final ApiClient _apiClient = ApiClient.instance;
 
+  Map<String, dynamic> _parseCartPayload(dynamic data) {
+    final payload = data as Map<String, dynamic>? ?? {};
+    final summary = payload['summary'] as Map<String, dynamic>? ?? {};
+
+    return {
+      'items': (payload['items'] as List<dynamic>?)
+              ?.map((item) => CartItemModel.fromJson(item))
+              .toList() ??
+          <CartItemModel>[],
+      'summary': summary,
+    };
+  }
+
   /// Check if user is authenticated
   Future<bool> _isAuthenticated() async {
     try {
@@ -355,6 +368,77 @@ class CartService {
         print('❌ CART SERVICE ERROR: $e');
       }
       throw Exception('Failed to clear cart: $e');
+    }
+  }
+
+  /// Apply coupon code to cart
+  /// Backend: POST /customer/shopping/cart/coupon
+  Future<Map<String, dynamic>> applyCoupon(String couponCode) async {
+    try {
+      // Check if user is authenticated first
+      final isAuth = await _isAuthenticated();
+      if (!isAuth) {
+        throw Exception('يجب تسجيل الدخول أولاً');
+      }
+
+      final response = await _apiClient.post(
+        '/customer/shopping/cart/coupon',
+        data: {
+          'coupon_code': couponCode,
+        },
+      );
+
+      if (response.data['success'] == true) {
+        final parsed = _parseCartPayload(response.data['data']);
+        parsed['message'] = response.data['message'];
+        return parsed;
+      }
+
+      throw Exception(response.data['message'] ?? 'Failed to apply coupon');
+    } on DioException catch (e) {
+      if (kDebugMode) {
+        print('❌ CART SERVICE ERROR: ${e.response?.statusCode} ${e.message}');
+      }
+
+      final message = e.response?.data?['message'];
+      if (message is String && message.isNotEmpty) {
+        throw Exception(message);
+      }
+
+      throw Exception('Network error: ${e.message}');
+    }
+  }
+
+  /// Remove applied coupon from cart
+  /// Backend: DELETE /customer/shopping/cart/coupon
+  Future<Map<String, dynamic>> removeCoupon() async {
+    try {
+      // Check if user is authenticated first
+      final isAuth = await _isAuthenticated();
+      if (!isAuth) {
+        throw Exception('يجب تسجيل الدخول أولاً');
+      }
+
+      final response = await _apiClient.delete('/customer/shopping/cart/coupon');
+
+      if (response.data['success'] == true) {
+        final parsed = _parseCartPayload(response.data['data']);
+        parsed['message'] = response.data['message'];
+        return parsed;
+      }
+
+      throw Exception(response.data['message'] ?? 'Failed to remove coupon');
+    } on DioException catch (e) {
+      if (kDebugMode) {
+        print('❌ CART SERVICE ERROR: ${e.response?.statusCode} ${e.message}');
+      }
+
+      final message = e.response?.data?['message'];
+      if (message is String && message.isNotEmpty) {
+        throw Exception(message);
+      }
+
+      throw Exception('Network error: ${e.message}');
     }
   }
 

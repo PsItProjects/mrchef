@@ -52,6 +52,8 @@ class TranslationHelper {
     'item_added_to_cart_successfully': 'Successfully added @product_name to cart',
     'item_removed_from_cart': 'Item removed from cart',
     'promo_code': 'Promo Code',
+    'discount_amount': 'Discount',
+    'please_enter_promo_code': 'Please enter promo code',
     'session_expired': 'Session Expired',
     'please_login_again': 'Please login again',
 
@@ -189,6 +191,8 @@ class TranslationHelper {
     'item_added_to_cart_successfully': 'تم إضافة @product_name إلى السلة بنجاح',
     'item_removed_from_cart': 'تم حذف العنصر من السلة',
     'promo_code': 'رمز الخصم',
+    'discount_amount': 'الخصم',
+    'please_enter_promo_code': 'يرجى إدخال رمز الخصم',
     'session_expired': 'انتهت الجلسة',
     'please_login_again': 'يرجى تسجيل الدخول مرة أخرى',
 
