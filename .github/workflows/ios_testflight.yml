@@ -18,6 +18,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Setup Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          # Ensure the runner uses a recent Swift toolchain (some Pods require newer Swift keywords).
+          xcode-version: latest-stable
+
+      - name: Xcode & Swift versions
+        run: |
+          set -euo pipefail
+          xcodebuild -version
+          swiftc --version
+
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
