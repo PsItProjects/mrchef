@@ -69,6 +69,13 @@ jobs:
           echo "$IOS_DIST_CERT_P12_BASE64" | base64 -D > $RUNNER_TEMP/ios_dist.p12
           ls -l $RUNNER_TEMP/ios_dist.p12
 
+          # Sanity check: ensure the decoded P12 matches the provided password.
+          if ! openssl pkcs12 -info -in $RUNNER_TEMP/ios_dist.p12 -noout -passin "pass:$IOS_DIST_CERT_PASSWORD" >/dev/null 2>&1; then
+            echo "P12 sanity check failed: password mismatch or corrupted P12" >&2
+            exit 1
+          fi
+          shasum -a 256 $RUNNER_TEMP/ios_dist.p12
+
           # PKCS12 import fails with "MAC verification failed" when the password doesn't match.
           if ! security import $RUNNER_TEMP/ios_dist.p12 -P "$IOS_DIST_CERT_PASSWORD" -A -t cert -f pkcs12 -k "$KEYCHAIN_PATH"; then
             echo "Failed to import ios_dist.p12 into keychain. Most common cause: IOS_DIST_CERT_PASSWORD secret is wrong (or the P12 is corrupted)." >&2
