@@ -49,6 +49,10 @@
 		<string>This app needs access to your location to help you select your restaurant location on the map.</string>
 		<key>NSLocationAlwaysUsageDescription</key>
 		<string>This app needs access to your location to help you select your restaurant location on the map.</string>
+		<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+		<string>This app needs access to your location to help you select your restaurant location on the map and provide location-based services.</string>
+		<key>NSPhotoLibraryUsageDescription</key>
+		<string>This app needs access to your photo library to allow you to upload images for your restaurant, menu items, and profile.</string>
 		<key>UIStatusBarHidden</key>
 		<true/>
 		<key>UIViewControllerBasedStatusBarAppearance</key>
