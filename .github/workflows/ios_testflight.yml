@@ -21,7 +21,8 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: "stable"
+          # Pin Flutter version to avoid CI failures resolving "stable" on macos-14 (arm64)
+          flutter-version: "3.29.0"
           cache: true
 
       - name: Flutter pub get
