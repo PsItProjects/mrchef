@@ -6,6 +6,8 @@ import 'package:mrsheaf/features/profile/services/profile_service.dart';
 import 'package:mrsheaf/core/network/api_client.dart';
 import 'package:mrsheaf/features/profile/widgets/about_app_bottom_sheet.dart';
 import 'package:mrsheaf/core/routes/app_routes.dart';
+import 'package:mrsheaf/features/profile/pages/privacy_policy_screen.dart';
+import '../../../core/services/toast_service.dart';
 
 class SettingsController extends GetxController {
   final ProfileService _profileService = Get.find<ProfileService>();
@@ -72,11 +74,7 @@ class SettingsController extends GetxController {
     settings.value = settings.value.copyWith(isDarkMode: value);
     _saveSettings();
     
-    Get.snackbar(
-      'Dark Mode',
-      value ? 'Dark mode enabled' : 'Dark mode disabled',
-      snackPosition: SnackPosition.BOTTOM,
-    );
+    ToastService.showInfo(value ? 'Dark mode enabled' : 'Dark mode disabled');
   }
 
   void changeCurrency() {
@@ -149,11 +147,7 @@ class SettingsController extends GetxController {
         _saveSettings();
         Get.back();
 
-        Get.snackbar(
-          'Currency Changed',
-          'Currency changed to $code',
-          snackPosition: SnackPosition.BOTTOM,
-        );
+        ToastService.showSuccess('Currency changed to $code');
       },
     );
   }
@@ -212,32 +206,16 @@ class SettingsController extends GetxController {
         // Force reload all controllers
         _reloadAllControllers();
 
-        Get.snackbar(
-          languageCode == 'ar' ? 'تم تحديث اللغة' : 'Language Updated',
+        ToastService.showSuccess(
           languageCode == 'ar'
             ? 'تم تحديث اللغة بنجاح'
-            : 'Language updated successfully',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: const Color(0xFF27AE60),
-          colorText: Colors.white,
+            : 'Language updated successfully'
         );
       } else {
-        Get.snackbar(
-          'Error',
-          result['message'] ?? 'Failed to update language',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: const Color(0xFFEB5757),
-          colorText: Colors.white,
-        );
+        ToastService.showError(result['message'] ?? 'Failed to update language');
       }
     } catch (e) {
-      Get.snackbar(
-        'Error',
-        'Network error occurred',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: const Color(0xFFEB5757),
-        colorText: Colors.white,
-      );
+      ToastService.showError('Network error occurred');
     } finally {
       // Reset loading state
       isChangingLanguage.value = false;
@@ -270,20 +248,12 @@ class SettingsController extends GetxController {
   }
 
   void openNotificationSettings() {
-    Get.snackbar(
-      'Notification Settings',
-      'Opening notification settings...',
-      snackPosition: SnackPosition.BOTTOM,
-    );
+    ToastService.showInfo('Opening notification settings...');
     // TODO: Navigate to notification settings screen
   }
 
   void openSecuritySettings() {
-    Get.snackbar(
-      'Security Settings',
-      'Opening security settings...',
-      snackPosition: SnackPosition.BOTTOM,
-    );
+    ToastService.showInfo('Opening security settings...');
     // TODO: Navigate to security settings screen
   }
 
@@ -345,11 +315,7 @@ class SettingsController extends GetxController {
     // Simulate cache clearing
     settings.value = settings.value.copyWith(cacheSize: '0.00 MB');
     
-    Get.snackbar(
-      'Cache Cleared',
-      'App cache has been cleared successfully',
-      snackPosition: SnackPosition.BOTTOM,
-    );
+    ToastService.showSuccess('App cache has been cleared successfully');
     
     // Reset cache size after a delay (simulation)
     Future.delayed(const Duration(seconds: 3), () {
@@ -358,11 +324,7 @@ class SettingsController extends GetxController {
   }
 
   void rateTheApp() {
-    Get.snackbar(
-      'Rate the App',
-      'Opening app store for rating...',
-      snackPosition: SnackPosition.BOTTOM,
-    );
+    ToastService.showInfo('Opening app store for rating...');
     // TODO: Open app store for rating
   }
 
@@ -371,20 +333,12 @@ class SettingsController extends GetxController {
   }
 
   void inviteFriends() {
-    Get.snackbar(
-      'Invite Friends',
-      'Opening share dialog...',
-      snackPosition: SnackPosition.BOTTOM,
-    );
+    ToastService.showInfo('Opening share dialog...');
     // TODO: Open share dialog
   }
 
   void navigateToPaymentMethods() {
-    Get.snackbar(
-      'Payment Methods',
-      'Opening payment methods...',
-      snackPosition: SnackPosition.BOTTOM,
-    );
+    ToastService.showInfo('Opening payment methods...');
     // TODO: Navigate to payment methods screen
   }
 
@@ -398,6 +352,12 @@ class SettingsController extends GetxController {
 
   void _saveSettings() {
     // TODO: Save settings to local storage
+  }
+
+  /// Open Privacy Policy page in WebView
+  /// Account deletion is handled through the website: https://mr-shife.com/complaints
+  void openPrivacyPolicy() {
+    Get.to(() => const PrivacyPolicyScreen());
   }
 
   // Getters for UI

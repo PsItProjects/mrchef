@@ -5,6 +5,7 @@ import 'package:mrsheaf/core/network/api_client.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/core/localization/translation_helper.dart';
 import 'package:dio/dio.dart' as dio;
+import '../../../core/services/toast_service.dart';
 
 class MerchantProfileService extends GetxService {
   final ApiClient _apiClient = Get.find<ApiClient>();
@@ -76,21 +77,13 @@ class MerchantProfileService extends GetxService {
 
       if (response.statusCode == 200) {
         print('✅ Personal info updated successfully');
-        Get.snackbar(
-          'نجح',
-          'تم تحديث المعلومات الشخصية بنجاح',
-          snackPosition: SnackPosition.BOTTOM,
-        );
+        ToastService.showSuccess('تم تحديث المعلومات الشخصية بنجاح');
         return true;
       }
       return false;
     } on dio.DioException catch (e) {
       print('❌ Error updating personal info: ${e.message}');
-      Get.snackbar(
-        'خطأ',
-        'فشل تحديث المعلومات الشخصية',
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      ToastService.showError('فشل تحديث المعلومات الشخصية');
       return false;
     }
   }
@@ -254,21 +247,13 @@ class MerchantProfileService extends GetxService {
       
       if (response.statusCode == 200) {
         print('✅ Working hours updated successfully');
-        Get.snackbar(
-          'نجح',
-          'تم تحديث ساعات العمل بنجاح',
-          snackPosition: SnackPosition.BOTTOM,
-        );
+        ToastService.showSuccess('تم تحديث ساعات العمل بنجاح');
         return true;
       }
       return false;
     } on dio.DioException catch (e) {
       print('❌ Error updating working hours: ${e.message}');
-      Get.snackbar(
-        'خطأ',
-        'فشل تحديث ساعات العمل',
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      ToastService.showError('فشل تحديث ساعات العمل');
       return false;
     }
   }
@@ -304,21 +289,13 @@ class MerchantProfileService extends GetxService {
       
       if (response.statusCode == 200) {
         print('✅ Location updated successfully');
-        Get.snackbar(
-          'نجح',
-          'تم تحديث العنوان بنجاح',
-          snackPosition: SnackPosition.BOTTOM,
-        );
+        ToastService.showSuccess('تم تحديث العنوان بنجاح');
         return true;
       }
       return false;
     } on dio.DioException catch (e) {
       print('❌ Error updating location: ${e.message}');
-      Get.snackbar(
-        'خطأ',
-        'فشل تحديث العنوان',
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      ToastService.showError('فشل تحديث العنوان');
       return false;
     }
   }
@@ -348,21 +325,13 @@ class MerchantProfileService extends GetxService {
       
       if (response.statusCode == 200) {
         print('✅ Notification settings updated successfully');
-        Get.snackbar(
-          'نجح',
-          'تم تحديث إعدادات الإشعارات بنجاح',
-          snackPosition: SnackPosition.BOTTOM,
-        );
+        ToastService.showSuccess('تم تحديث إعدادات الإشعارات بنجاح');
         return true;
       }
       return false;
     } on dio.DioException catch (e) {
       print('❌ Error updating notification settings: ${e.message}');
-      Get.snackbar(
-        'خطأ',
-        'فشل تحديث إعدادات الإشعارات',
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      ToastService.showError('فشل تحديث إعدادات الإشعارات');
       return false;
     }
   }
@@ -390,13 +359,7 @@ class MerchantProfileService extends GetxService {
         // Get message from API response
         final message = response.data['message'] ?? TranslationHelper.tr('image_upload_success');
 
-        Get.snackbar(
-          TranslationHelper.tr('success'),
-          message,
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: AppColors.successColor,
-          colorText: Colors.white,
-        );
+        ToastService.showSuccess(message);
 
         return true;
       }
@@ -407,13 +370,7 @@ class MerchantProfileService extends GetxService {
       // Get error message from API response
       final errorMessage = e.response?.data['message'] ?? TranslationHelper.tr('image_upload_failed');
 
-      Get.snackbar(
-        TranslationHelper.tr('error'),
-        errorMessage,
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
+      ToastService.showError(errorMessage);
       return false;
     }
   }
@@ -427,21 +384,13 @@ class MerchantProfileService extends GetxService {
 
       if (response.statusCode == 200) {
         print('✅ Avatar deleted successfully');
-        Get.snackbar(
-          'نجح',
-          'تم حذف الصورة الشخصية بنجاح',
-          snackPosition: SnackPosition.BOTTOM,
-        );
+        ToastService.showSuccess('تم حذف الصورة الشخصية بنجاح');
         return true;
       }
       return false;
     } on dio.DioException catch (e) {
       print('❌ Error deleting avatar: ${e.message}');
-      Get.snackbar(
-        'خطأ',
-        'فشل حذف الصورة الشخصية',
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      ToastService.showError('فشل حذف الصورة الشخصية');
       return false;
     }
   }
@@ -468,13 +417,7 @@ class MerchantProfileService extends GetxService {
 
         final message = response.data['message'] ?? TranslationHelper.tr('image_upload_success');
 
-        Get.snackbar(
-          TranslationHelper.tr('success'),
-          message,
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: AppColors.successColor,
-          colorText: Colors.white,
-        );
+        ToastService.showSuccess(message);
 
         return true;
       }
@@ -484,13 +427,7 @@ class MerchantProfileService extends GetxService {
 
       final errorMessage = e.response?.data['message'] ?? TranslationHelper.tr('image_upload_failed');
 
-      Get.snackbar(
-        TranslationHelper.tr('error'),
-        errorMessage,
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
+      ToastService.showError(errorMessage);
       return false;
     }
   }
@@ -504,25 +441,13 @@ class MerchantProfileService extends GetxService {
 
       if (response.statusCode == 200) {
         print('✅ Merchant cover deleted successfully');
-        Get.snackbar(
-          TranslationHelper.tr('success'),
-          TranslationHelper.tr('cover_deleted_successfully'),
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: AppColors.successColor,
-          colorText: Colors.white,
-        );
+        ToastService.showSuccess(TranslationHelper.tr('cover_deleted_successfully'));
         return true;
       }
       return false;
     } on dio.DioException catch (e) {
       print('❌ Error deleting merchant cover: ${e.message}');
-      Get.snackbar(
-        TranslationHelper.tr('error'),
-        TranslationHelper.tr('cover_delete_failed'),
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
+      ToastService.showError(TranslationHelper.tr('cover_delete_failed'));
       return false;
     }
   }
@@ -550,13 +475,7 @@ class MerchantProfileService extends GetxService {
         // Get message from API response
         final message = response.data['message'] ?? TranslationHelper.tr('image_upload_success');
 
-        Get.snackbar(
-          TranslationHelper.tr('success'),
-          message,
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: AppColors.successColor,
-          colorText: Colors.white,
-        );
+        ToastService.showSuccess(message);
 
         return true;
       }
@@ -567,13 +486,7 @@ class MerchantProfileService extends GetxService {
       // Get error message from API response
       final errorMessage = e.response?.data['message'] ?? TranslationHelper.tr('image_upload_failed');
 
-      Get.snackbar(
-        TranslationHelper.tr('error'),
-        errorMessage,
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
+      ToastService.showError(errorMessage);
       return false;
     }
   }

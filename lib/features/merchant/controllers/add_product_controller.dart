@@ -8,6 +8,7 @@ import 'package:mrsheaf/features/merchant/services/merchant_products_service.dar
 import 'package:mrsheaf/features/merchant/models/merchant_product_model.dart';
 import 'package:mrsheaf/features/merchant/widgets/add_option_group_modal.dart';
 import 'package:mrsheaf/features/merchant/controllers/merchant_products_controller.dart';
+import '../../../core/services/toast_service.dart';
 
 class AddProductController extends GetxController {
   final MerchantProductsService _productsService = MerchantProductsService();
@@ -176,13 +177,7 @@ class AddProductController extends GetxController {
         selectedImages.addAll(imagesToAdd);
 
         if (images.length > remainingSlots) {
-          Get.snackbar(
-            'warning'.tr,
-            'max_images_reached'.tr,
-            snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: Colors.orange,
-            colorText: Colors.white,
-          );
+          ToastService.showWarning('max_images_reached'.tr);
         }
       }
     } catch (e) {
@@ -192,13 +187,7 @@ class AddProductController extends GetxController {
 
       // Only show error if it's not the "already_active" error
       if (!e.toString().contains('already_active')) {
-        Get.snackbar(
-          'error'.tr,
-          'image_upload_failed'.tr,
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.red,
-          colorText: Colors.white,
-        );
+        ToastService.showError('image_upload_failed'.tr);
       }
     } finally {
       // Always reset the flag after a delay to ensure cleanup
@@ -221,14 +210,7 @@ class AddProductController extends GetxController {
       final image = selectedImages.removeAt(index);
       selectedImages.insert(0, image);
 
-      Get.snackbar(
-        'success'.tr,
-        'primary_image_set'.tr,
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: AppColors.primaryColor,
-        colorText: Colors.white,
-        duration: const Duration(seconds: 2),
-      );
+      ToastService.showSuccess('primary_image_set'.tr);
     }
   }
 
@@ -301,14 +283,7 @@ class AddProductController extends GetxController {
 
     // Validate images (at least one image is required)
     if (selectedImages.isEmpty) {
-      Get.snackbar(
-        'error'.tr,
-        'at_least_one_image_required'.tr,
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-        duration: const Duration(seconds: 3),
-      );
+      ToastService.showError('at_least_one_image_required'.tr);
       return false;
     }
 
@@ -370,13 +345,7 @@ class AddProductController extends GetxController {
 
     // If there are errors, show snackbar and scroll to first error
     if (validationErrors.isNotEmpty) {
-      Get.snackbar(
-        'error'.tr,
-        'validation_error'.tr,
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
+      ToastService.showError('validation_error'.tr);
       scrollToFirstError();
       return false;
     }
@@ -471,25 +440,13 @@ class AddProductController extends GetxController {
 
           if (group.nameEn.isEmpty) {
             isLoading.value = false;
-            Get.snackbar(
-              'error'.tr,
-              'Option group ${i + 1}: Name is required',
-              snackPosition: SnackPosition.BOTTOM,
-              backgroundColor: Colors.red,
-              colorText: Colors.white,
-            );
+            ToastService.showError('Option group ${i + 1}: Name is required');
             return;
           }
 
           if (group.options.isEmpty) {
             isLoading.value = false;
-            Get.snackbar(
-              'error'.tr,
-              'Option group "${group.nameEn}": At least one option is required',
-              snackPosition: SnackPosition.BOTTOM,
-              backgroundColor: Colors.red,
-              colorText: Colors.white,
-            );
+            ToastService.showError('Option group "${group.nameEn}": At least one option is required');
             return;
           }
         }
@@ -529,14 +486,7 @@ class AddProductController extends GetxController {
         print('✅ Product created successfully, navigating to products list...');
 
         // Show success message
-        Get.snackbar(
-          'success'.tr,
-          'product_created_successfully'.tr,
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: AppColors.successColor,
-          colorText: Colors.white,
-          duration: const Duration(seconds: 2),
-        );
+        ToastService.showSuccess('product_created_successfully'.tr);
 
         // Wait a bit for the snackbar to show
         await Future.delayed(const Duration(milliseconds: 500));
@@ -555,13 +505,7 @@ class AddProductController extends GetxController {
         Get.offAllNamed('/merchant/products');
       } else {
         print('❌ Product creation returned null');
-        Get.snackbar(
-          'error'.tr,
-          'error_creating_product'.tr,
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.red,
-          colorText: Colors.white,
-        );
+        ToastService.showError('error_creating_product'.tr);
       }
     } catch (e) {
       print('❌ Error creating product: $e');
@@ -586,14 +530,7 @@ class AddProductController extends GetxController {
           }
         }
 
-        Get.snackbar(
-          'error'.tr,
-          errorMessage,
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.red,
-          colorText: Colors.white,
-          duration: const Duration(seconds: 4),
-        );
+        ToastService.showError(errorMessage);
       }
     } finally {
       isLoading.value = false;
@@ -657,35 +594,14 @@ class AddProductController extends GetxController {
       if (validationErrors.isNotEmpty) {
         scrollToFirstError();
 
-        Get.snackbar(
-          'error'.tr,
-          'validation_error'.tr,
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.red,
-          colorText: Colors.white,
-          duration: const Duration(seconds: 4),
-        );
+        ToastService.showError('validation_error'.tr);
       } else {
         // Fallback if we couldn't parse the errors
-        Get.snackbar(
-          'error'.tr,
-          'validation_error'.tr,
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.red,
-          colorText: Colors.white,
-          duration: const Duration(seconds: 4),
-        );
+        ToastService.showError('validation_error'.tr);
       }
     } catch (parseError) {
       print('❌ Error parsing validation errors: $parseError');
-      Get.snackbar(
-        'error'.tr,
-        'validation_error'.tr,
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-        duration: const Duration(seconds: 4),
-      );
+      ToastService.showError('validation_error'.tr);
     }
   }
 
@@ -702,13 +618,7 @@ class AddProductController extends GetxController {
       }
     } catch (e) {
       print('❌ Error uploading images: $e');
-      Get.snackbar(
-        'error'.tr,
-        'image_upload_failed'.tr,
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
+      ToastService.showError('image_upload_failed'.tr);
     }
 
     return uploadedPaths;

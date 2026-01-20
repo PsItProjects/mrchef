@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:mrsheaf/core/network/api_client.dart';
 import 'package:mrsheaf/core/constants/api_constants.dart';
 import 'package:mrsheaf/features/merchant/models/merchant_product_model.dart';
+import '../../../core/services/toast_service.dart';
 
 /// Service for managing merchant products
 class MerchantProductsService extends GetxService {
@@ -202,11 +203,7 @@ class MerchantProductsService extends GetxService {
           print('✅ Product created successfully');
         }
 
-        Get.snackbar(
-          'success'.tr,
-          'product_created_successfully'.tr,
-          snackPosition: SnackPosition.BOTTOM,
-        );
+        ToastService.showSuccess('product_created_successfully'.tr);
 
         return MerchantProductModel.fromJson(data);
       }
@@ -223,11 +220,7 @@ class MerchantProductsService extends GetxService {
 
       // Show error message
       final errorMessage = e.response?.data['message'] ?? 'failed_to_create_product'.tr;
-      Get.snackbar(
-        'error'.tr,
-        errorMessage,
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      ToastService.showError(errorMessage);
 
       rethrow;
     } catch (e) {
@@ -235,11 +228,7 @@ class MerchantProductsService extends GetxService {
         print('❌ Unexpected error creating product: $e');
       }
 
-      Get.snackbar(
-        'error'.tr,
-        'unexpected_error'.tr,
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      ToastService.showError('unexpected_error'.tr);
 
       rethrow;
     }
@@ -265,11 +254,7 @@ class MerchantProductsService extends GetxService {
           print('✅ Product updated successfully');
         }
 
-        Get.snackbar(
-          'success'.tr,
-          'product_updated_successfully'.tr,
-          snackPosition: SnackPosition.BOTTOM,
-        );
+        ToastService.showSuccess('product_updated_successfully'.tr);
 
         return MerchantProductModel.fromJson(data);
       }
@@ -286,11 +271,7 @@ class MerchantProductsService extends GetxService {
 
       // Show error message
       final errorMessage = e.response?.data['message'] ?? 'failed_to_update_product'.tr;
-      Get.snackbar(
-        'error'.tr,
-        errorMessage,
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      ToastService.showError(errorMessage);
 
       rethrow;
     } catch (e) {
@@ -298,11 +279,7 @@ class MerchantProductsService extends GetxService {
         print('❌ Unexpected error updating product: $e');
       }
 
-      Get.snackbar(
-        'error'.tr,
-        'unexpected_error'.tr,
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      ToastService.showError('unexpected_error'.tr);
 
       rethrow;
     }
@@ -324,11 +301,7 @@ class MerchantProductsService extends GetxService {
           print('✅ Product deleted successfully');
         }
 
-        Get.snackbar(
-          'success'.tr,
-          'product_deleted_successfully'.tr,
-          snackPosition: SnackPosition.BOTTOM,
-        );
+        ToastService.showSuccess('product_deleted_successfully'.tr);
 
         return true;
       }
@@ -345,11 +318,7 @@ class MerchantProductsService extends GetxService {
 
       // Show error message
       final errorMessage = e.response?.data['message'] ?? 'failed_to_delete_product'.tr;
-      Get.snackbar(
-        'error'.tr,
-        errorMessage,
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      ToastService.showError(errorMessage);
 
       rethrow;
     } catch (e) {
@@ -357,11 +326,7 @@ class MerchantProductsService extends GetxService {
         print('❌ Unexpected error deleting product: $e');
       }
 
-      Get.snackbar(
-        'error'.tr,
-        'unexpected_error'.tr,
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      ToastService.showError('unexpected_error'.tr);
 
       rethrow;
     }
@@ -384,11 +349,7 @@ class MerchantProductsService extends GetxService {
           print('✅ Product availability toggled successfully');
         }
 
-        Get.snackbar(
-          'success'.tr,
-          isAvailable ? 'product_now_available'.tr : 'product_now_unavailable'.tr,
-          snackPosition: SnackPosition.BOTTOM,
-        );
+        ToastService.showSuccess(isAvailable ? 'product_now_available'.tr : 'product_now_unavailable'.tr);
 
         return true;
       }

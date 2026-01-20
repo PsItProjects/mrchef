@@ -12,6 +12,7 @@ import 'package:mrsheaf/features/profile/services/order_service.dart';
 import 'package:mrsheaf/features/chat/services/chat_service.dart';
 import 'package:mrsheaf/features/chat/models/conversation_model.dart';
 import 'package:mrsheaf/shared/widgets/order_review_widgets.dart';
+import '../../../core/services/toast_service.dart';
 
 class OrderDetailsController extends GetxController {
   late final OrderService _orderService;
@@ -114,22 +115,14 @@ class OrderDetailsController extends GetxController {
         // Reload order details to get updated status
         await loadOrderDetails(_currentOrderId);
 
-        Get.snackbar(
-          'Success',
-          'Order cancelled successfully',
-          snackPosition: SnackPosition.BOTTOM,
-        );
+        ToastService.showSuccess('Order cancelled successfully');
       }
     } catch (e) {
       if (kDebugMode) {
         print('❌ ORDER DETAILS: Error cancelling order - $e');
       }
 
-      Get.snackbar(
-        'Error',
-        'Failed to cancel order',
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      ToastService.showError('Failed to cancel order');
     }
   }
 
@@ -151,25 +144,13 @@ class OrderDetailsController extends GetxController {
       // Reload order details to get updated status
       await loadOrderDetails(_currentOrderId);
 
-      Get.snackbar(
-        'delivery_confirmed'.tr,
-        'order_confirmed_successfully'.tr,
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: AppColors.successColor,
-        colorText: Colors.white,
-      );
+      ToastService.showSuccess('order_confirmed_successfully'.tr);
     } catch (e) {
       if (kDebugMode) {
         print('❌ ORDER DETAILS: Error confirming delivery - $e');
       }
 
-      Get.snackbar(
-        'error'.tr,
-        e.toString(),
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: AppColors.errorColor,
-        colorText: Colors.white,
-      );
+      ToastService.showError(e.toString());
     } finally {
       isLoading.value = false;
     }
@@ -266,11 +247,7 @@ class OrderDetailsController extends GetxController {
         print('❌ Error opening chat: $e');
       }
 
-      Get.snackbar(
-        'Error',
-        'Failed to open chat. Please try again.',
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      ToastService.showError('Failed to open chat. Please try again.');
     }
   }
 

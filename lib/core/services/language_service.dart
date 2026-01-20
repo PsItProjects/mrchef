@@ -3,6 +3,8 @@ import 'dart:ui';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mrsheaf/core/services/fcm_service.dart';
+import 'package:mrsheaf/features/auth/services/auth_service.dart';
+import 'package:mrsheaf/core/network/api_client.dart';
 
 class LanguageService extends GetxService {
   static LanguageService get instance => Get.find<LanguageService>();
@@ -65,6 +67,9 @@ class LanguageService extends GetxService {
 
       // Update device language on server for push notifications
       _updateDeviceLanguage(languageCode);
+      
+      // ✅ Update user's preferred language in backend
+      _updateUserPreferredLanguage(languageCode);
     } catch (e) {
       print('Error saving language: $e');
     }
@@ -79,6 +84,34 @@ class LanguageService extends GetxService {
       }
     } catch (e) {
       print('Error updating device language: $e');
+    }
+  }
+  
+  /// Update user's preferred language in backend
+  Future<void> _updateUserPreferredLanguage(String languageCode) async {
+    try {
+      // Check if user is logged in
+      if (!Get.isRegistered<AuthService>()) return;
+      
+      final authService = Get.find<AuthService>();
+      if (!authService.isLoggedIn.value) return;
+      
+      print('🌐 LANGUAGE: Updating user preferred language to: $languageCode');
+      
+      // Import the request model dynamically
+      final request = {
+        'preferred_language': languageCode,
+      };
+      
+      // Call API to update profile with new language
+      if (Get.isRegistered<ApiClient>()) {
+        final apiClient = Get.find<ApiClient>();
+        await apiClient.put('/customer/profile', data: request);
+        print('✅ LANGUAGE: User preferred language updated successfully');
+      }
+    } catch (e) {
+      print('❌ LANGUAGE: Error updating user preferred language - $e');
+      // Don't throw error, language still works locally
     }
   }
 

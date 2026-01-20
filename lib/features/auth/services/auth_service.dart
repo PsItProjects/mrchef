@@ -58,7 +58,7 @@ class AuthService extends getx.GetxService {
       currentUser.value = user;
       isLoggedIn.value = true;
 
-      // Update language from user profile
+      // ✅ Update language from user profile (synced with backend)
       try {
         final languageService = LanguageService.instance;
         final userData = user.toJson();
@@ -756,10 +756,24 @@ class AuthService extends getx.GetxService {
         );
 
         if (apiResponse.isSuccess && apiResponse.data != null) {
+          // ⚠️ مهم: نحفظ اللغة الحالية للمستخدم قبل التحديث
+          final currentLanguage = currentUser.value?.preferredLanguage;
+          print('🌐 PROFILE UPDATE: Current language before update: $currentLanguage');
+          print('🌐 PROFILE UPDATE: Backend returned language: ${apiResponse.data?.preferredLanguage}');
+          
           // Update current user data
           currentUser.value = apiResponse.data;
+          
+          // ✅ نعيد اللغة الأصلية لمنع تغيير لغة التطبيق
+          if (currentLanguage != null && currentUser.value != null) {
+            currentUser.value = currentUser.value!.copyWith(
+              preferredLanguage: currentLanguage,
+            );
+            print('✅ PROFILE UPDATE: Language preserved as: $currentLanguage');
+          }
+          
           await _saveUserToStorage(
-              apiResponse.data!,
+              currentUser.value!,
               (await SharedPreferences.getInstance()).getString('auth_token') ??
                   '');
         }
@@ -808,7 +822,7 @@ class AuthService extends getx.GetxService {
         if (apiResponse.isSuccess && apiResponse.data != null) {
           currentUser.value = apiResponse.data;
 
-          // Update language from user profile
+          // ✅ Update language from user profile (synced with backend)
           try {
             final languageService = LanguageService.instance;
             final userData = response.data['data'] as Map<String, dynamic>;

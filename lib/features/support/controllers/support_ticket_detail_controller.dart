@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mrsheaf/core/localization/translation_helper.dart';
+import '../../../core/services/toast_service.dart';
 import 'package:mrsheaf/features/auth/services/auth_service.dart';
 import 'package:mrsheaf/features/support/services/support_service.dart';
 
@@ -107,12 +108,7 @@ class SupportTicketDetailController extends GetxController {
       }
     } on DioException catch (e) {
       final msg = _extractBackendMessage(e) ?? TranslationHelper.tr('error');
-      Get.snackbar(
-        TranslationHelper.tr('error'),
-        msg,
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.withValues(alpha: 0.2),
-      );
+      ToastService.showError(msg);
     } finally {
       isLoading.value = false;
     }
@@ -140,12 +136,7 @@ class SupportTicketDetailController extends GetxController {
       await loadTicket();
     } on DioException catch (e) {
       final msg = _extractBackendMessage(e) ?? TranslationHelper.tr('error');
-      Get.snackbar(
-        TranslationHelper.tr('error'),
-        msg,
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.withValues(alpha: 0.2),
-      );
+      ToastService.showError(msg);
     } finally {
       isLoading.value = false;
     }
@@ -167,12 +158,7 @@ class SupportTicketDetailController extends GetxController {
       await loadTicket();
     } on DioException catch (e) {
       final msg = _extractBackendMessage(e) ?? TranslationHelper.tr('error');
-      Get.snackbar(
-        TranslationHelper.tr('error'),
-        msg,
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.withValues(alpha: 0.2),
-      );
+      ToastService.showError(msg);
     } finally {
       isUploading.value = false;
     }
@@ -191,12 +177,7 @@ class SupportTicketDetailController extends GetxController {
 
       selectedImage.value = File(pickedFile.path);
     } catch (e) {
-      Get.snackbar(
-        TranslationHelper.tr('error'),
-        e.toString(),
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.withValues(alpha: 0.2),
-      );
+      ToastService.showError(e.toString());
     }
   }
 

@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:mrsheaf/features/chat/models/conversation_model.dart';
 import 'package:mrsheaf/features/merchant/services/merchant_chat_service.dart';
+import '../../../core/services/toast_service.dart';
 
 class MerchantConversationsController extends GetxController {
   final MerchantChatService _chatService = MerchantChatService();
@@ -37,11 +38,7 @@ class MerchantConversationsController extends GetxController {
       if (kDebugMode) {
         print('MERCHANT CONVERSATIONS ERROR: $e');
       }
-      Get.snackbar(
-        'error'.tr,
-        'error_loading_conversations'.tr,
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      ToastService.showError('error_loading_conversations'.tr);
     } finally {
       isLoading.value = false;
     }

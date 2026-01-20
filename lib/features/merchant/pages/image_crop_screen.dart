@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:crop_your_image/crop_your_image.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/core/localization/translation_helper.dart';
+import '../../../core/services/toast_service.dart';
 
 class ImageCropScreen extends StatefulWidget {
   final Uint8List imageData;
@@ -81,13 +82,7 @@ class _ImageCropScreenState extends State<ImageCropScreen> {
                     Get.back(result: result.croppedImage);
                   } else if (result is CropFailure) {
                     setState(() => _isCropping = false);
-                    Get.snackbar(
-                      TranslationHelper.tr('error'),
-                      TranslationHelper.tr('crop_failed'),
-                      snackPosition: SnackPosition.BOTTOM,
-                      backgroundColor: Colors.red,
-                      colorText: Colors.white,
-                    );
+                    ToastService.showError(TranslationHelper.tr('crop_failed'));
                   }
                 },
                 aspectRatio: 1.0, // Square crop for profile picture

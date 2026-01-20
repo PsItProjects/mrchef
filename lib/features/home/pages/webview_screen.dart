@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
+import 'package:mrsheaf/core/services/toast_service.dart';
 
 class WebViewScreen extends StatefulWidget {
   final String url;
@@ -55,13 +56,7 @@ class _WebViewScreenState extends State<WebViewScreen> {
             setState(() {
               _isLoading = false;
             });
-            Get.snackbar(
-              'error'.tr,
-              'Failed to load page',
-              snackPosition: SnackPosition.BOTTOM,
-              backgroundColor: Colors.red,
-              colorText: Colors.white,
-            );
+            ToastService.showError('Failed to load page');
           },
         ),
       )

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
+import 'package:mrsheaf/core/services/toast_service.dart';
 import 'package:mrsheaf/features/cart/controllers/cart_controller.dart';
 
 class CartHeader extends StatelessWidget {
@@ -99,11 +100,7 @@ class CartHeader extends StatelessWidget {
               Get.back();
               final cartController = Get.find<CartController>();
               cartController.clearCart();
-              Get.snackbar(
-                'Cart Cleared',
-                'All items have been removed from your cart',
-                snackPosition: SnackPosition.BOTTOM,
-              );
+              ToastService.showSuccess('All items have been removed from your cart');
             },
             child: const Text(
               'Clear',

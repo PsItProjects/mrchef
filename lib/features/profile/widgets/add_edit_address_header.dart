@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mrsheaf/features/profile/controllers/add_edit_address_controller.dart';
+import '../../../core/services/toast_service.dart';
 
 class AddEditAddressHeader extends GetView<AddEditAddressController> {
   const AddEditAddressHeader({super.key});
@@ -41,11 +42,7 @@ class AddEditAddressHeader extends GetView<AddEditAddressController> {
           GestureDetector(
             onTap: () {
               // TODO: Implement search functionality
-              Get.snackbar(
-                'Search',
-                'Search functionality coming soon',
-                snackPosition: SnackPosition.BOTTOM,
-              );
+              ToastService.showInfo('Search functionality coming soon');
             },
             child: Container(
               width: 24,

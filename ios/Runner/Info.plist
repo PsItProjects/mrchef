@@ -53,6 +53,15 @@
 		<string>This app needs access to your location to help you select your restaurant location on the map and provide location-based services.</string>
 		<key>NSPhotoLibraryUsageDescription</key>
 		<string>This app needs access to your photo library to allow you to upload images for your restaurant, menu items, and profile.</string>
+		<key>NSCameraUsageDescription</key>
+		<string>This app needs access to your camera to take photos for your profile picture, menu items, and support tickets.</string>
+		<key>UIBackgroundModes</key>
+		<array>
+			<string>fetch</string>
+			<string>remote-notification</string>
+		</array>
+		<key>FirebaseAppDelegateProxyEnabled</key>
+		<false/>
 		<key>UIStatusBarHidden</key>
 		<true/>
 		<key>UIViewControllerBasedStatusBarAppearance</key>

@@ -8,6 +8,8 @@ import 'package:mrsheaf/features/profile/controllers/profile_controller.dart';
 import 'package:mrsheaf/features/merchant/pages/image_crop_screen.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/core/localization/translation_helper.dart';
+import 'package:mrsheaf/core/services/language_service.dart';
+import '../../../core/services/toast_service.dart';
 import '../../auth/services/auth_service.dart';
 import '../../auth/models/auth_request.dart';
 
@@ -158,12 +160,7 @@ class EditProfileController extends GetxController {
         selectedAvatar.value = tempFile;
       }
     } catch (e) {
-      Get.snackbar(
-        TranslationHelper.tr('error'),
-        TranslationHelper.tr('image_upload_failed'),
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
+      ToastService.showError(TranslationHelper.tr('image_upload_failed'));
     }
   }
 
@@ -180,27 +177,12 @@ class EditProfileController extends GetxController {
         selectedAvatar.value = null;
         currentAvatarUrl.value = '';
 
-        Get.snackbar(
-          TranslationHelper.tr('success'),
-          TranslationHelper.tr('avatar_deleted_successfully'),
-          backgroundColor: AppColors.successColor,
-          colorText: Colors.white,
-        );
+        ToastService.showSuccess(TranslationHelper.tr('avatar_deleted_successfully'));
       } else {
-        Get.snackbar(
-          TranslationHelper.tr('error'),
-          response.message,
-          backgroundColor: Colors.red,
-          colorText: Colors.white,
-        );
+        ToastService.showError(response.message);
       }
     } catch (e) {
-      Get.snackbar(
-        TranslationHelper.tr('error'),
-        TranslationHelper.tr('avatar_delete_failed'),
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
+      ToastService.showError(TranslationHelper.tr('avatar_delete_failed'));
     } finally {
       isLoading.value = false;
     }
@@ -219,12 +201,7 @@ class EditProfileController extends GetxController {
         final avatarResponse =
             await _authService.updateAvatar(selectedAvatar.value!);
         if (!avatarResponse.isSuccess) {
-          Get.snackbar(
-            TranslationHelper.tr('error'),
-            avatarResponse.message,
-            backgroundColor: Colors.red,
-            colorText: Colors.white,
-          );
+          ToastService.showError(avatarResponse.message);
           return;
         }
 
@@ -237,6 +214,9 @@ class EditProfileController extends GetxController {
       }
 
       // Create update request with only the fields that can be updated
+      // ✅ نرسل اللغة الحالية من التطبيق لضمان عدم تغييرها
+      final currentLanguage = LanguageService.instance.currentLanguage;
+      
       final request = CustomerProfileUpdateRequest(
         nameEn: fullNameController.text.trim(),
         nameAr: arabicNameController.text.trim().isNotEmpty
@@ -245,19 +225,15 @@ class EditProfileController extends GetxController {
         email: emailController.text.trim().isNotEmpty
             ? emailController.text.trim()
             : null,
-        preferredLanguage: 'en', // Default to English for now
+        preferredLanguage: currentLanguage, // ✅ إرسال اللغة الحالية
       );
+      
+      print('📤 EDIT PROFILE: Sending preferred_language: $currentLanguage');
 
       final response = await _authService.updateCustomerProfile(request);
 
       if (response.isSuccess) {
-        Get.snackbar(
-          TranslationHelper.tr('success'),
-          TranslationHelper.tr('profile_updated_successfully'),
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: AppColors.successColor,
-          colorText: Colors.white,
-        );
+        ToastService.showSuccess('profile_updated_successfully'.tr);
 
         // Refresh ProfileController from API to get latest data
         final profileController = Get.find<ProfileController>();
@@ -265,22 +241,10 @@ class EditProfileController extends GetxController {
 
         Get.back();
       } else {
-        Get.snackbar(
-          TranslationHelper.tr('error'),
-          response.message,
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.red,
-          colorText: Colors.white,
-        );
+        ToastService.showError(response.message);
       }
     } catch (e) {
-      Get.snackbar(
-        TranslationHelper.tr('error'),
-        TranslationHelper.tr('profile_update_failed'),
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
+      ToastService.showError('profile_update_failed'.tr);
     } finally {
       isLoading.value = false;
     }
@@ -289,10 +253,10 @@ class EditProfileController extends GetxController {
   // Form validation methods
   String? validateFullName(String? value) {
     if (value == null || value.trim().isEmpty) {
-      return 'English name is required';
+      return 'الاسم بالإنجليزية مطلوب';
     }
     if (value.trim().length < 2) {
-      return 'English name must be at least 2 characters';
+      return 'الاسم يجب أن يكون حرفين على الأقل';
     }
     return null;
   }
@@ -300,27 +264,27 @@ class EditProfileController extends GetxController {
   String? validateArabicName(String? value) {
     // Arabic name is optional
     if (value != null && value.trim().isNotEmpty && value.trim().length < 2) {
-      return 'Arabic name must be at least 2 characters';
+      return 'الاسم بالعربية يجب أن يكون حرفين على الأقل';
     }
     return null;
   }
 
   String? validateEmail(String? value) {
     if (value == null || value.trim().isEmpty) {
-      return 'Email is required';
+      return 'البريد الإلكتروني مطلوب';
     }
     if (!GetUtils.isEmail(value.trim())) {
-      return 'Please enter a valid email';
+      return 'الرجاء إدخال بريد إلكتروني صحيح';
     }
     return null;
   }
 
   String? validatePhone(String? value) {
     if (value == null || value.trim().isEmpty) {
-      return 'Phone number is required';
+      return 'رقم الهاتف مطلوب';
     }
     if (value.trim().length < 8) {
-      return 'Please enter a valid phone number';
+      return 'الرجاء إدخال رقم هاتف صحيح';
     }
     return null;
   }

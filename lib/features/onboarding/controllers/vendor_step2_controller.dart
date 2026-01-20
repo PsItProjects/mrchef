@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 import 'package:mrsheaf/core/network/api_client.dart';
 import 'package:mrsheaf/core/localization/translation_helper.dart';
+import '../../../core/services/toast_service.dart';
 
 class VendorStep2Controller extends GetxController {
   final ApiClient _apiClient = ApiClient.instance;
@@ -21,18 +22,12 @@ class VendorStep2Controller extends GetxController {
   /// Validate form
   bool _validateForm() {
     if (storeNameEn.value.trim().isEmpty) {
-      Get.snackbar(
-        TranslationHelper.tr('error'),
-        TranslationHelper.tr('enter_store_name_en'),
-      );
+      ToastService.showError(TranslationHelper.tr('enter_store_name_en'));
       return false;
     }
 
     if (storeNameAr.value.trim().isEmpty) {
-      Get.snackbar(
-        TranslationHelper.tr('error'),
-        TranslationHelper.tr('enter_store_name_ar'),
-      );
+      ToastService.showError(TranslationHelper.tr('enter_store_name_ar'));
       return false;
     }
 
@@ -77,14 +72,7 @@ class VendorStep2Controller extends GetxController {
           print('✅ Onboarding marked as completed by server');
 
           // Show success message
-          Get.snackbar(
-            TranslationHelper.tr('registration_completed_title'),
-            TranslationHelper.tr('store_info_saved_redirecting'),
-            snackPosition: SnackPosition.BOTTOM,
-            duration: const Duration(seconds: 3),
-            backgroundColor: Get.theme.colorScheme.primary,
-            colorText: Get.theme.colorScheme.onPrimary,
-          );
+          ToastService.showSuccess(TranslationHelper.tr('store_info_saved_redirecting'));
 
           // Wait a moment for user to see the success message
           await Future.delayed(const Duration(seconds: 2));
@@ -97,11 +85,7 @@ class VendorStep2Controller extends GetxController {
           Get.offAllNamed('/merchant-home');
         } else {
           print('⚠️ Server response does not indicate completion');
-          Get.snackbar(
-            TranslationHelper.tr('warning'),
-            TranslationHelper.tr('data_saved_may_require_more_steps'),
-            snackPosition: SnackPosition.BOTTOM,
-          );
+          ToastService.showWarning(TranslationHelper.tr('data_saved_may_require_more_steps'));
         }
       } else {
         throw Exception('Server returned ${response.statusCode}');
@@ -112,11 +96,7 @@ class VendorStep2Controller extends GetxController {
       String errorMessage = TranslationHelper.tr('error_saving_data');
       // ApiClient wraps Dio; response parsing happens there.
 
-      Get.snackbar(
-        TranslationHelper.tr('error'),
-        errorMessage,
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      ToastService.showError(errorMessage);
     } finally {
       isLoading.value = false;
     }

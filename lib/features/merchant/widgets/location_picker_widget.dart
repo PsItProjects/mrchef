@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geocoding/geocoding.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/services/toast_service.dart';
 
 /// Shows a bottom sheet modal for location selection
 /// Returns a Map with 'latitude' and 'longitude' keys when location is selected
@@ -125,12 +126,7 @@ class _LocationPickerWidgetState extends State<LocationPickerWidget> {
   Future<void> _searchLocation() async {
     final query = _searchController.text.trim();
     if (query.isEmpty) {
-      Get.snackbar(
-        'error'.tr,
-        'please_enter_search_query'.tr,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
+      ToastService.showError('please_enter_search_query'.tr);
       return;
     }
 
@@ -152,21 +148,11 @@ class _LocationPickerWidgetState extends State<LocationPickerWidget> {
         _getAddressFromLatLng(location);
       } else {
         setState(() => _isSearching = false);
-        Get.snackbar(
-          'error'.tr,
-          'location_not_found'.tr,
-          backgroundColor: Colors.red,
-          colorText: Colors.white,
-        );
+        ToastService.showError('location_not_found'.tr);
       }
     } catch (e) {
       setState(() => _isSearching = false);
-      Get.snackbar(
-        'error'.tr,
-        'search_failed'.tr,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
+      ToastService.showError('search_failed'.tr);
     }
   }
 
@@ -178,12 +164,7 @@ class _LocationPickerWidgetState extends State<LocationPickerWidget> {
         'longitude': _selectedLocation!.longitude,
       });
     } else {
-      Get.snackbar(
-        'error'.tr,
-        'location_not_selected'.tr,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
+      ToastService.showError('location_not_selected'.tr);
     }
   }
 

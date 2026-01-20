@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
 import 'package:mrsheaf/features/auth/services/auth_service.dart';
+import 'package:mrsheaf/core/services/toast_service.dart';
 
 class MainController extends GetxController {
   // Current selected tab index
@@ -23,23 +24,13 @@ class MainController extends GetxController {
     // Check if trying to access favorites (index 3) without authentication
     if (index == 3) { // Favorites tab
       if (!_authService.isAuthenticated) {
-        Get.snackbar(
-          'authentication_required'.tr,
-          'please_login_to_continue'.tr,
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.orange.withValues(alpha: 0.3),
-        );
+        ToastService.showWarning('please_login_to_continue'.tr);
         Get.toNamed('/login');
         return;
       }
 
       if (!_authService.isCustomer) {
-        Get.snackbar(
-          'access_denied'.tr,
-          'customer_only_feature'.tr,
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.red.withValues(alpha: 0.3),
-        );
+        ToastService.showError('customer_only_feature'.tr);
         return;
       }
     }

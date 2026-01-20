@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
+import '../../../core/services/toast_service.dart';
 import 'package:mrsheaf/features/store_details/controllers/store_details_controller.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -243,12 +244,7 @@ class LocationsSection extends GetView<StoreDetailsController> {
     if (await canLaunchUrl(url)) {
       await launchUrl(url, mode: LaunchMode.externalApplication);
     } else {
-      Get.snackbar(
-        'error'.tr,
-        'could_not_open_maps'.tr,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
+      ToastService.showError('could_not_open_maps'.tr);
     }
   }
 }

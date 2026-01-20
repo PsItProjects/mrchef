@@ -10,6 +10,7 @@ class SettingsMenuItem extends StatelessWidget {
   final VoidCallback? onTap;
   final bool showDivider;
   final bool isLoading;
+  final Color? textColor;
 
   const SettingsMenuItem({
     super.key,
@@ -22,6 +23,7 @@ class SettingsMenuItem extends StatelessWidget {
     this.onTap,
     this.showDivider = true,
     this.isLoading = false,
+    this.textColor,
   });
 
   @override
@@ -52,11 +54,11 @@ class SettingsMenuItem extends StatelessWidget {
                     children: [
                       Text(
                         title,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontFamily: 'Lato',
                           fontWeight: FontWeight.w600,
                           fontSize: 16,
-                          color: Color(0xFF262626),
+                          color: textColor ?? const Color(0xFF262626),
                         ),
                       ),
                       

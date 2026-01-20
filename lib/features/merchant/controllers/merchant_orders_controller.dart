@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:mrsheaf/core/network/api_client.dart';
 import 'package:mrsheaf/core/localization/translation_helper.dart';
 import 'package:dio/dio.dart' as dio;
+import '../../../core/services/toast_service.dart';
 
 class MerchantOrdersController extends GetxController {
   final ApiClient _apiClient = Get.find<ApiClient>();
@@ -255,33 +256,15 @@ class MerchantOrdersController extends GetxController {
         }
         _countPendingOrders();
 
-        Get.snackbar(
-          'success'.tr,
-          'order_status_updated'.tr,
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.green,
-          colorText: Colors.white,
-        );
+        ToastService.showSuccess('order_status_updated'.tr);
         return true;
       } else {
-        Get.snackbar(
-          'error'.tr,
-          response.data['message'] ?? 'error_updating_status'.tr,
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.red,
-          colorText: Colors.white,
-        );
+        ToastService.showError(response.data['message'] ?? 'error_updating_status'.tr);
         return false;
       }
     } on dio.DioException catch (e) {
       debugPrint('Error updating status: ${e.message}');
-      Get.snackbar(
-        'error'.tr,
-        'error_updating_status'.tr,
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
+      ToastService.showError('error_updating_status'.tr);
       return false;
     }
   }

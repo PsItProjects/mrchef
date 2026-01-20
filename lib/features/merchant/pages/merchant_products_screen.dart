@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/features/merchant/controllers/merchant_products_controller.dart';
 import 'package:mrsheaf/features/merchant/models/merchant_product_model.dart';
+import '../../../core/services/toast_service.dart';
 
 /// Screen for managing merchant products
 class MerchantProductsScreen extends GetView<MerchantProductsController> {
@@ -560,11 +561,7 @@ class MerchantProductsScreen extends GetView<MerchantProductsController> {
   /// Show filter dialog
   void _showFilterDialog(BuildContext context) {
     // TODO: Implement category filter dialog
-    Get.snackbar(
-      'coming_soon'.tr,
-      'feature_under_development'.tr,
-      snackPosition: SnackPosition.BOTTOM,
-    );
+    ToastService.showInfo('feature_under_development'.tr);
   }
 
   /// Show product options
@@ -627,11 +624,7 @@ class MerchantProductsScreen extends GetView<MerchantProductsController> {
               Get.back();
               final success = await controller.deleteProduct(product.id);
               if (success) {
-                Get.snackbar(
-                  'success'.tr,
-                  'product_deleted_successfully'.tr,
-                  snackPosition: SnackPosition.BOTTOM,
-                );
+                ToastService.showSuccess('product_deleted_successfully'.tr);
               }
             },
             child: Text('delete'.tr, style: const TextStyle(color: Colors.red)),

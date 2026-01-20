@@ -1,72 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/services/toast_service.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 
 enum NotificationType { success, error, warning, info }
 
 class AppNotifications {
   static void showSuccess(String message, {String? title}) {
-    Get.snackbar(
-      title ?? 'Success',
-      message,
-      snackPosition: SnackPosition.TOP,
-      backgroundColor: AppColors.successColor,
-      colorText: AppColors.textLightColor,
-      icon: const Icon(Icons.check_circle, color: AppColors.textLightColor),
-      duration: const Duration(seconds: 3),
-      margin: const EdgeInsets.all(16),
-      borderRadius: 12,
-      isDismissible: true,
-      dismissDirection: DismissDirection.horizontal,
-    );
+    ToastService.showSuccess(message, title: title);
   }
 
   static void showError(String message, {String? title}) {
-    Get.snackbar(
-      title ?? 'Error',
-      message,
-      snackPosition: SnackPosition.TOP,
-      backgroundColor: AppColors.errorColor,
-      colorText: AppColors.textLightColor,
-      icon: const Icon(Icons.error, color: AppColors.textLightColor),
-      duration: const Duration(seconds: 4),
-      margin: const EdgeInsets.all(16),
-      borderRadius: 12,
-      isDismissible: true,
-      dismissDirection: DismissDirection.horizontal,
-    );
+    ToastService.showError(message, title: title);
   }
 
   static void showWarning(String message, {String? title}) {
-    Get.snackbar(
-      title ?? 'Warning',
-      message,
-      snackPosition: SnackPosition.TOP,
-      backgroundColor: AppColors.warningColor,
-      colorText: AppColors.searchIconColor,
-      icon: const Icon(Icons.warning, color: AppColors.searchIconColor),
-      duration: const Duration(seconds: 3),
-      margin: const EdgeInsets.all(16),
-      borderRadius: 12,
-      isDismissible: true,
-      dismissDirection: DismissDirection.horizontal,
-    );
+    ToastService.showWarning(message, title: title);
   }
 
   static void showInfo(String message, {String? title}) {
-    Get.snackbar(
-      title ?? 'Info',
-      message,
-      snackPosition: SnackPosition.TOP,
-      backgroundColor: AppColors.primaryColor,
-      colorText: AppColors.searchIconColor,
-      icon: const Icon(Icons.info, color: AppColors.searchIconColor),
-      duration: const Duration(seconds: 3),
-      margin: const EdgeInsets.all(16),
-      borderRadius: 12,
-      isDismissible: true,
-      dismissDirection: DismissDirection.horizontal,
-    );
+    ToastService.showInfo(message, title: title);
   }
 
   static void showCustom({
@@ -78,18 +31,11 @@ class AppNotifications {
     Duration? duration,
     SnackPosition position = SnackPosition.TOP,
   }) {
-    Get.snackbar(
-      title,
-      message,
-      snackPosition: position,
-      backgroundColor: backgroundColor,
-      colorText: textColor,
-      icon: icon != null ? Icon(icon, color: textColor) : null,
-      duration: duration ?? const Duration(seconds: 3),
-      margin: const EdgeInsets.all(16),
-      borderRadius: 12,
-      isDismissible: true,
-      dismissDirection: DismissDirection.horizontal,
+    ToastService.showCustom(
+      title: title,
+      message: message,
+      icon: icon,
+      duration: duration,
     );
   }
 }

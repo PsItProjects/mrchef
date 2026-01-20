@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../core/routes/app_routes.dart';
 import '../../auth/services/auth_service.dart';
+import '../../../core/services/toast_service.dart';
 
 class SimpleMerchantHome extends StatelessWidget {
   const SimpleMerchantHome({super.key});
@@ -78,11 +79,7 @@ class SimpleMerchantHome extends StatelessWidget {
                 final authService = Get.find<AuthService>();
                 await authService.logout();
 
-                Get.snackbar(
-                  'Logged Out',
-                  'You have been logged out successfully',
-                  snackPosition: SnackPosition.BOTTOM,
-                );
+                ToastService.showSuccess('You have been logged out successfully');
               } catch (e) {
                 print('Logout error: $e');
               }

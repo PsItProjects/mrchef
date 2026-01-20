@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mrsheaf/core/routes/app_routes.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
+import 'package:mrsheaf/core/services/toast_service.dart';
 import 'package:mrsheaf/features/cart/controllers/cart_controller.dart';
 import 'package:mrsheaf/features/cart/services/cart_service.dart';
 import 'package:mrsheaf/features/profile/models/address_model.dart';
@@ -41,13 +42,7 @@ class CheckoutController extends GetxController {
         selectedAddress.value = defaultAddr ?? fetchedAddresses.first;
       }
     } catch (e) {
-      Get.snackbar(
-        'error'.tr,
-        'Failed to load addresses: ${e.toString()}',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
+      ToastService.showError('Failed to load addresses: ${e.toString()}');
     } finally {
       isLoadingAddresses.value = false;
     }
@@ -61,13 +56,7 @@ class CheckoutController extends GetxController {
   /// Create order (initiate chat)
   Future<void> createOrder() async {
     if (selectedAddress.value == null) {
-      Get.snackbar(
-        'warning'.tr,
-        'please_select_delivery_address'.tr,
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.orange,
-        colorText: Colors.white,
-      );
+      ToastService.showWarning('please_select_delivery_address'.tr);
       return;
     }
 
@@ -94,13 +83,7 @@ class CheckoutController extends GetxController {
         errorMessage = errorMessage.substring(11);
       }
 
-      Get.snackbar(
-        'error'.tr,
-        errorMessage,
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
+      ToastService.showError(errorMessage);
     } finally {
       isCreatingOrder.value = false;
     }

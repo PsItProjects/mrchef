@@ -4,6 +4,7 @@ import 'package:get/get.dart' as getx;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../constants/api_constants.dart';
 import '../services/language_service.dart';
+import '../services/toast_service.dart';
 import '../localization/translation_helper.dart';
 
 class ApiClient {
@@ -155,15 +156,7 @@ class ApiClient {
             getx.Get.offAllNamed(loginRoute);
 
             // Show session expired message ONCE
-            getx.Get.snackbar(
-              TranslationHelper.tr('session_expired'),
-              TranslationHelper.tr('please_login_again'),
-              snackPosition: getx.SnackPosition.BOTTOM,
-              backgroundColor:
-                  getx.Get.theme.colorScheme.error.withOpacity(0.1),
-              colorText: getx.Get.theme.colorScheme.error,
-              duration: const Duration(seconds: 3),
-            );
+            ToastService.showWarning(TranslationHelper.tr('please_login_again'));
 
             // Reset flag after navigation
             Future.delayed(const Duration(seconds: 2), () {

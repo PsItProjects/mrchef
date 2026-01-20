@@ -19,18 +19,20 @@ class LoginRequest {
 // Customer registration request model
 class CustomerRegistrationRequest {
   final String nameEn;
-  final String? nameAr;
+  final String nameAr;
   final String phoneNumber;
   final String countryCode;
   final String? email;
+  final String preferredLanguage;
   final bool agreeToTerms;
 
   CustomerRegistrationRequest({
     required this.nameEn,
-    this.nameAr,
+    required this.nameAr,
     required this.phoneNumber,
     this.countryCode = '+966',
     this.email,
+    required this.preferredLanguage,
     this.agreeToTerms = true,
   });
 
@@ -41,6 +43,7 @@ class CustomerRegistrationRequest {
       'phone_number': phoneNumber,
       'country_code': countryCode,
       'email': email,
+      'preferred_language': preferredLanguage,
       'agree_to_terms': agreeToTerms,
     };
   }

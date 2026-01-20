@@ -4,6 +4,7 @@ import 'package:mrsheaf/features/categories/services/kitchen_service.dart';
 import 'package:mrsheaf/core/services/language_service.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import '../../../core/services/toast_service.dart';
 import 'package:mrsheaf/features/cart/controllers/cart_controller.dart';
 import 'package:mrsheaf/features/product_details/models/product_model.dart';
 import 'package:mrsheaf/core/network/api_client.dart';
@@ -31,6 +32,7 @@ class StoreDetailsController extends GetxController {
   final RxInt reviewsCount = 0.obs;
   final RxInt totalProducts = 0.obs;
   final RxBool isLoading = false.obs;
+  final RxBool isAddingToCart = false.obs; // حماية من الضغط المتكرر
   final Rx<KitchenModel?> restaurant = Rx<KitchenModel?>(null);
   
   // Bottom sheet state
@@ -543,11 +545,7 @@ class StoreDetailsController extends GetxController {
       if (kDebugMode) {
         print('❌ Error loading restaurant details: $e');
       }
-      Get.snackbar(
-        'خطأ',
-        'فشل في تحميل تفاصيل المطعم',
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      ToastService.showError('فشل في تحميل تفاصيل المطعم');
     } finally {
       isLoading.value = false;
     }
@@ -774,27 +772,18 @@ class StoreDetailsController extends GetxController {
       }
 
       // Show success message
-      Get.snackbar(
-        isFavorite.value ? 'تمت الإضافة' : 'تمت الإزالة',
-        isFavorite.value ? 'تم إضافة المطعم إلى المفضلة' : 'تم إزالة المطعم من المفضلة',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: isFavorite.value ? Colors.green : Colors.orange,
-        colorText: Colors.white,
-        duration: const Duration(seconds: 2),
-      );
+      if (isFavorite.value) {
+        ToastService.showSuccess('تم إضافة المطعم إلى المفضلة');
+      } else {
+        ToastService.showInfo('تم إزالة المطعم من المفضلة');
+      }
 
     } catch (e) {
       if (kDebugMode) {
         print('❌ STORE DETAILS: Error toggling favorite: $e');
       }
 
-      Get.snackbar(
-        'خطأ',
-        'فشل في تحديث المفضلة',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
+      ToastService.showError('فشل في تحديث المفضلة');
     }
   }
 
@@ -841,13 +830,7 @@ class StoreDetailsController extends GetxController {
       // Get restaurant ID
       final restaurantId = int.tryParse(storeId.value);
       if (restaurantId == null || restaurantId == 0) {
-        Get.snackbar(
-          'خطأ',
-          'لا يمكن فتح المحادثة',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.red,
-          colorText: Colors.white,
-        );
+        ToastService.showError('لا يمكن فتح المحادثة');
         return;
       }
 
@@ -883,19 +866,20 @@ class StoreDetailsController extends GetxController {
         print('Error opening chat: $e');
       }
 
-      Get.snackbar(
-        'خطأ',
-        e.toString().replaceAll('Exception: ', ''),
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
+      ToastService.showError(e.toString().replaceAll('Exception: ', ''));
     }
   }
 
   /// Add product to cart with minimum required options (handled by backend)
   Future<void> addToCart(int productId) async {
+    // حماية من الضغط المتكرر
+    if (isAddingToCart.value) {
+      ToastService.showWarning('يتم إضافة المنتج للسلة الآن...');
+      return;
+    }
+
     try {
+      isAddingToCart.value = true;
       // Create a minimal ProductModel for the cart controller
       final product = ProductModel(
         id: productId,
@@ -924,18 +908,13 @@ class StoreDetailsController extends GetxController {
       );
 
     } catch (e) {
-      Get.snackbar(
-        'خطأ',
-        'فشل في إضافة المنتج إلى السلة',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-        duration: const Duration(seconds: 2),
-      );
+      ToastService.showError('فشل في إضافة المنتج إلى السلة');
 
       if (kDebugMode) {
         print('❌ ADD TO CART ERROR: $e');
       }
+    } finally {
+      isAddingToCart.value = false;
     }
   }
 }

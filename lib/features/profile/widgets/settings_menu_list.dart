@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mrsheaf/core/services/biometric_service.dart';
-import 'package:mrsheaf/core/localization/translation_helper.dart';
+import 'package:mrsheaf/core/services/toast_service.dart';
 import 'package:mrsheaf/features/auth/services/auth_service.dart';
 import 'package:mrsheaf/features/profile/controllers/settings_controller.dart';
 import 'package:mrsheaf/features/profile/widgets/settings_menu_item.dart';
@@ -108,6 +108,14 @@ class SettingsMenuList extends GetView<SettingsController> {
             title: 'invite_friends'.tr,
             hasArrow: true,
             onTap: controller.inviteFriends,
+            showDivider: true,
+          ),
+
+          // Privacy Policy - includes account deletion instructions
+          SettingsMenuItem(
+            title: 'privacy'.tr,
+            hasArrow: true,
+            onTap: controller.openPrivacyPolicy,
             showDivider: false,
           ),
         ],
@@ -173,12 +181,7 @@ class SettingsMenuList extends GetView<SettingsController> {
         final userType = authService.userType.value;
 
         if (token == null || user == null || userType.isEmpty) {
-          Get.snackbar(
-            TranslationHelper.tr('biometric_enable_failed'),
-            TranslationHelper.tr('biometric_login_manually'),
-            snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: Colors.red.withValues(alpha: 0.3),
-          );
+          ToastService.showError('biometric_login_manually'.tr);
           return;
         }
 
@@ -190,37 +193,17 @@ class SettingsMenuList extends GetView<SettingsController> {
         );
 
         if (success) {
-          Get.snackbar(
-            TranslationHelper.tr('success'),
-            TranslationHelper.tr('biometric_enable_success'),
-            snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: Colors.green.withValues(alpha: 0.3),
-          );
+          ToastService.showSuccess('biometric_enable_success'.tr);
         } else {
-          Get.snackbar(
-            TranslationHelper.tr('biometric_enable_failed'),
-            TranslationHelper.tr('biometric_auth_failed'),
-            snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: Colors.red.withValues(alpha: 0.3),
-          );
+          ToastService.showError('biometric_auth_failed'.tr);
         }
       } catch (e) {
-        Get.snackbar(
-          TranslationHelper.tr('biometric_enable_failed'),
-          TranslationHelper.tr('biometric_login_manually'),
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.red.withValues(alpha: 0.3),
-        );
+        ToastService.showError('biometric_login_manually'.tr);
       }
     } else {
       // إلغاء تفعيل البصمة
       await biometricService.disableBiometricLogin();
-      Get.snackbar(
-        TranslationHelper.tr('success'),
-        TranslationHelper.tr('biometric_disable_success'),
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.orange.withValues(alpha: 0.3),
-      );
+      ToastService.showWarning('biometric_disable_success'.tr);
     }
   }
 }

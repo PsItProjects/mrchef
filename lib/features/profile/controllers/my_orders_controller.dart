@@ -5,6 +5,7 @@ import 'package:mrsheaf/features/profile/models/order_model.dart';
 import 'package:mrsheaf/features/profile/services/order_service.dart';
 import 'package:mrsheaf/core/network/api_client.dart';
 import 'package:mrsheaf/features/profile/widgets/order_details_bottom_sheet.dart';
+import '../../../core/services/toast_service.dart';
 
 class MyOrdersController extends GetxController {
   // Selected tab index (0: All, 1: Pending, 2: Confirmed, 3: Preparing, 4: Out for Delivery, 5: Delivered, 6: Completed, 7: Cancelled)
@@ -64,11 +65,7 @@ class MyOrdersController extends GetxController {
     } catch (e) {
       print('❌ ORDERS CONTROLLER: Error fetching orders - $e');
       errorMessage.value = e.toString();
-      Get.snackbar(
-        'Error',
-        'Failed to load orders: $e',
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      ToastService.showError('Failed to load orders: $e');
     } finally {
       isLoading.value = false;
     }
@@ -178,11 +175,7 @@ class MyOrdersController extends GetxController {
   }
 
   void reorderItems(OrderModel order) {
-    Get.snackbar(
-      'Reorder',
-      'Reordering items from ${order.orderCode}',
-      snackPosition: SnackPosition.BOTTOM,
-    );
+    ToastService.showInfo('Reordering items from ${order.orderCode}');
     // TODO: Add items to cart and navigate to cart
   }
 
@@ -193,25 +186,13 @@ class MyOrdersController extends GetxController {
 
       await _orderService.confirmDelivery(order.id);
 
-      Get.snackbar(
-        'delivery_confirmed'.tr,
-        'order_confirmed_successfully'.tr,
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: AppColors.successColor,
-        colorText: Colors.white,
-      );
+      ToastService.showSuccess('order_confirmed_successfully'.tr);
 
       // Refresh orders to update the list
       await fetchOrders();
     } catch (e) {
       print('❌ ORDERS CONTROLLER: Error confirming delivery - $e');
-      Get.snackbar(
-        'error'.tr,
-        e.toString(),
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: AppColors.errorColor,
-        colorText: Colors.white,
-      );
+      ToastService.showError(e.toString());
     } finally {
       isLoading.value = false;
     }

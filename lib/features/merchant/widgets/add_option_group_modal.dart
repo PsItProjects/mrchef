@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/features/merchant/models/merchant_product_model.dart';
+import '../../../core/services/toast_service.dart';
 
 /// Modal for adding/editing option groups
 class AddOptionGroupModal extends StatefulWidget {
@@ -763,37 +764,19 @@ class _AddOptionGroupModalState extends State<AddOptionGroupModal> {
   void _saveOptionGroup() {
     // Validate
     if (nameEnController.text.trim().isEmpty) {
-      Get.snackbar(
-        'error'.tr,
-        'group_name_required'.tr,
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
+      ToastService.showError('group_name_required'.tr);
       return;
     }
 
     if (options.isEmpty) {
-      Get.snackbar(
-        'error'.tr,
-        'at_least_one_option_required'.tr,
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
+      ToastService.showError('at_least_one_option_required'.tr);
       return;
     }
 
     // Check if all options have names
     for (var i = 0; i < options.length; i++) {
       if (options[i].nameEn.trim().isEmpty) {
-        Get.snackbar(
-          'error'.tr,
-          '${'option'.tr} ${i + 1}: ${'option_name_required'.tr}',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.red,
-          colorText: Colors.white,
-        );
+        ToastService.showError('${'option'.tr} ${i + 1}: ${'option_name_required'.tr}');
         return;
       }
     }
@@ -801,35 +784,17 @@ class _AddOptionGroupModalState extends State<AddOptionGroupModal> {
     // Validate min/max selections
     if (isRequired) {
       if (minSelections < 1) {
-        Get.snackbar(
-          'error'.tr,
-          'min_selections_required_error'.tr,
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.red,
-          colorText: Colors.white,
-        );
+        ToastService.showError('min_selections_required_error'.tr);
         return;
       }
 
       if (maxSelections > 0 && maxSelections < minSelections) {
-        Get.snackbar(
-          'error'.tr,
-          'max_selections_min_error'.tr,
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.red,
-          colorText: Colors.white,
-        );
+        ToastService.showError('max_selections_min_error'.tr);
         return;
       }
 
       if (maxSelections > options.length) {
-        Get.snackbar(
-          'error'.tr,
-          'max_selections_exceed_error'.tr,
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.red,
-          colorText: Colors.white,
-        );
+        ToastService.showError('max_selections_exceed_error'.tr);
         return;
       }
     }

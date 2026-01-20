@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:mrsheaf/features/merchant/models/merchant_product_model.dart';
 import 'package:mrsheaf/features/merchant/services/merchant_products_service.dart';
+import '../../../core/services/toast_service.dart';
 
 /// Controller for managing merchant products
 class MerchantProductsController extends GetxController {
@@ -64,11 +65,7 @@ class MerchantProductsController extends GetxController {
         print('❌ Error loading products: $e');
       }
 
-      Get.snackbar(
-        'error'.tr,
-        'failed_to_load_products'.tr,
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      ToastService.showError('failed_to_load_products'.tr);
     } finally {
       isLoading.value = false;
       isRefreshing.value = false;
@@ -104,11 +101,7 @@ class MerchantProductsController extends GetxController {
         print('❌ Error loading product: $e');
       }
 
-      Get.snackbar(
-        'error'.tr,
-        'failed_to_load_product'.tr,
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      ToastService.showError('failed_to_load_product'.tr);
     } finally {
       isLoading.value = false;
     }

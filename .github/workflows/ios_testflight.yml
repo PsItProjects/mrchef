@@ -34,6 +34,25 @@ jobs:
           fi
           ls -l .env
 
+      - name: Setup Firebase GoogleService-Info.plist (iOS)
+        env:
+          GOOGLE_SERVICE_INFO_PLIST_BASE64: ${{ secrets.GOOGLE_SERVICE_INFO_PLIST_BASE64 }}
+        run: |
+          set -euo pipefail
+          # GoogleService-Info.plist is required for Firebase/FCM to work
+          if [[ -n "${GOOGLE_SERVICE_INFO_PLIST_BASE64:-}" ]]; then
+            echo "Setting up GoogleService-Info.plist from secret..."
+            echo "$GOOGLE_SERVICE_INFO_PLIST_BASE64" | base64 -D > ios/Runner/GoogleService-Info.plist
+            echo "✅ GoogleService-Info.plist created"
+          elif [[ -f ios/Runner/GoogleService-Info.plist ]]; then
+            echo "✅ GoogleService-Info.plist already exists in repository"
+          else
+            echo "⚠️ WARNING: GoogleService-Info.plist not found!"
+            echo "Firebase/FCM push notifications will NOT work without this file."
+            echo "Please add GOOGLE_SERVICE_INFO_PLIST_BASE64 secret or commit the file."
+          fi
+          ls -l ios/Runner/GoogleService-Info.plist 2>/dev/null || true
+
       - name: Setup Xcode
         uses: maxim-lobanov/setup-xcode@v1
         with:

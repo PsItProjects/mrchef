@@ -3,6 +3,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mrsheaf/core/localization/translation_helper.dart';
+import '../../../core/services/toast_service.dart';
 import 'package:mrsheaf/features/auth/services/auth_service.dart';
 import 'package:mrsheaf/features/support/services/support_service.dart';
 
@@ -30,12 +31,7 @@ class SupportTicketsController extends GetxController {
       tickets.assignAll(result);
     } on DioException catch (e) {
       final msg = _extractBackendMessage(e) ?? TranslationHelper.tr('error');
-      Get.snackbar(
-        TranslationHelper.tr('error'),
-        msg,
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.withValues(alpha: 0.2),
-      );
+      ToastService.showError(msg);
     } finally {
       isLoading.value = false;
     }
@@ -56,20 +52,10 @@ class SupportTicketsController extends GetxController {
       );
       
       await loadTickets();
-      Get.snackbar(
-        TranslationHelper.tr('success'),
-        TranslationHelper.tr('ticket_created'),
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.green.withValues(alpha: 0.2),
-      );
+      ToastService.showSuccess(TranslationHelper.tr('ticket_created'));
     } on DioException catch (e) {
       final msg = _extractBackendMessage(e) ?? TranslationHelper.tr('error');
-      Get.snackbar(
-        TranslationHelper.tr('error'),
-        msg,
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.withValues(alpha: 0.2),
-      );
+      ToastService.showError(msg);
       rethrow; // Rethrow to let the caller know about the error
     } finally {
       isLoading.value = false;

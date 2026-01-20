@@ -414,8 +414,12 @@ class AppTranslations extends Translations {
           'active_sessions': 'Active Sessions',
           'deactivate_account': 'Deactivate Account',
           'delete_account': 'Delete Account',
+          'delete_account_warning': 'Are you sure you want to delete your account? This action cannot be undone and all your data will be permanently deleted.',
+          'account_deleted_successfully': 'Your account has been deleted successfully',
+          'error_deleting_account': 'Failed to delete account. Please try again.',
           'account_deleted': 'Account deleted successfully',
           'profile_updated_successfully': 'Profile updated successfully',
+          'profile_update_failed': 'Failed to update profile',
           'changes_saved_successfully': 'Changes saved successfully',
 
           // Orders & History
@@ -547,6 +551,7 @@ class AppTranslations extends Translations {
           // Reviews & Ratings
           'my_reviews': 'My Reviews',
           'my_reviews_desc': 'View and manage your reviews',
+          'privacy_policy_desc': 'Terms, policies, and account deletion',
           'write_a_review': 'Write a Review',
           'rate_this_item': 'Rate this item',
           'rate_restaurant': 'Rate Restaurant',
@@ -1703,8 +1708,12 @@ class AppTranslations extends Translations {
           'active_sessions': 'الجلسات النشطة',
           'deactivate_account': 'إلغاء تفعيل الحساب',
           'delete_account': 'حذف الحساب',
+          'delete_account_warning': 'هل أنت متأكد من حذف حسابك؟ لا يمكن التراجع عن هذا الإجراء وسيتم حذف جميع بياناتك نهائياً.',
+          'account_deleted_successfully': 'تم حذف حسابك بنجاح',
+          'error_deleting_account': 'فشل حذف الحساب. يرجى المحاولة مرة أخرى.',
           'account_deleted': 'تم حذف الحساب بنجاح',
           'profile_updated_successfully': 'تم تحديث الملف الشخصي بنجاح',
+          'profile_update_failed': 'فشل تحديث الملف الشخصي',
           'changes_saved_successfully': 'تم حفظ التغييرات بنجاح',
 
           // Orders & History
@@ -1835,6 +1844,7 @@ class AppTranslations extends Translations {
           // Reviews & Ratings
           'my_reviews': 'تقييماتي',
           'my_reviews_desc': 'عرض وإدارة تقييماتك',
+          'privacy_policy_desc': 'الشروط والسياسات وحذف الحساب',
           'write_a_review': 'كتابة تقييم',
           'rate_this_item': 'قيم هذا العنصر',
           'rate_restaurant': 'قيم المطعم',

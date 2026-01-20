@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:mrsheaf/core/services/toast_service.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/features/profile/models/review_model.dart';
 import 'package:mrsheaf/shared/widgets/star_rating_widget.dart';
@@ -65,13 +66,7 @@ class EditReviewController extends GetxController {
   Future<void> pickImageFromGallery() async {
     try {
       if (totalImagesCount >= maxImages) {
-        Get.snackbar(
-          'limit_reached'.tr,
-          'max_images_message'.tr.replaceAll('@count', maxImages.toString()),
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: AppColors.warningColor,
-          colorText: Colors.white,
-        );
+        ToastService.showWarning('max_images_message'.tr.replaceAll('@count', maxImages.toString()));
         return;
       }
 
@@ -88,13 +83,7 @@ class EditReviewController extends GetxController {
         HapticFeedback.lightImpact();
       }
     } catch (e) {
-      Get.snackbar(
-        'error'.tr,
-        'failed_to_pick_image'.tr,
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: AppColors.errorColor,
-        colorText: Colors.white,
-      );
+      ToastService.showError('failed_to_pick_image'.tr);
     }
   }
 
@@ -102,13 +91,7 @@ class EditReviewController extends GetxController {
   Future<void> takePhoto() async {
     try {
       if (totalImagesCount >= maxImages) {
-        Get.snackbar(
-          'limit_reached'.tr,
-          'max_images_message'.tr.replaceAll('@count', maxImages.toString()),
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: AppColors.warningColor,
-          colorText: Colors.white,
-        );
+        ToastService.showWarning('max_images_message'.tr.replaceAll('@count', maxImages.toString()));
         return;
       }
 
@@ -125,13 +108,7 @@ class EditReviewController extends GetxController {
         HapticFeedback.lightImpact();
       }
     } catch (e) {
-      Get.snackbar(
-        'error'.tr,
-        'failed_to_take_photo'.tr,
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: AppColors.errorColor,
-        colorText: Colors.white,
-      );
+      ToastService.showError('failed_to_take_photo'.tr);
     }
   }
 
@@ -216,14 +193,7 @@ class EditReviewController extends GetxController {
       if (success) {
         HapticFeedback.heavyImpact();
         Get.back(result: true);
-        Get.snackbar(
-          'success'.tr,
-          'review_updated_successfully'.tr,
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: AppColors.successColor,
-          colorText: Colors.white,
-          duration: const Duration(seconds: 3),
-        );
+        ToastService.showSuccess('review_updated_successfully'.tr);
       }
     } catch (e) {
       errorMessage.value = e.toString().replaceAll('Exception: ', '');

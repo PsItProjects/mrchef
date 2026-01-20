@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 import 'package:get/get.dart';
 import 'package:mrsheaf/core/routes/app_routes.dart';
+import 'package:mrsheaf/core/services/language_service.dart';
+import 'package:mrsheaf/core/services/toast_service.dart';
 import '../services/auth_service.dart';
 import '../models/auth_request.dart';
 
@@ -78,22 +80,12 @@ class NewSignupController extends GetxController {
 
   Future<void> signup() async {
     if (!agreeToTerms.value) {
-      Get.snackbar(
-        'Error',
-        'Please agree to the terms and conditions',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.withValues(alpha: 0.3),
-      );
+      ToastService.showError('Please agree to the terms and conditions');
       return;
     }
 
     if (!isPhoneNumberValid.value) {
-      Get.snackbar(
-        'Invalid Phone Number',
-        'Please enter a valid phone number',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.withValues(alpha: 0.3),
-      );
+      ToastService.showError('Please enter a valid phone number');
       return;
     }
 
@@ -102,6 +94,8 @@ class NewSignupController extends GetxController {
     try {
       if (isVendor.value) {
         // Register as merchant
+        final languageService = Get.find<LanguageService>();
+        
         final request = MerchantRegistrationRequest(
           englishFullName: englishFullNameController.text.trim(),
           arabicFullName: arabicFullNameController.text.trim(),
@@ -114,20 +108,7 @@ class NewSignupController extends GetxController {
         final response = await _authService.registerMerchant(request);
 
         if (response.isSuccess) {
-          // Print OTP code clearly for testing
-          if (response.data != null && response.data!.verificationCode != null) {
-            print('🎯🎯🎯 OTP CODE FOR TESTING: ${response.data!.verificationCode} 🎯🎯🎯');
-            print('📱 Phone: ${phoneController.text.replaceAll(' ', '')}');
-            print('👤 User Type: merchant');
-            print('🎯🎯🎯 USE THIS CODE IN THE OTP SCREEN 🎯🎯🎯');
-          }
-
-          Get.snackbar(
-            'Registration Successful',
-            response.message,
-            snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: Colors.green.withValues(alpha: 0.3),
-          );
+          ToastService.showSuccess(response.message);
 
           // Navigate to OTP verification
           Get.toNamed(AppRoutes.OTP_VERIFICATION, arguments: {
@@ -142,25 +123,24 @@ class NewSignupController extends GetxController {
         }
       } else {
         // Register as customer
+        final languageService = Get.find<LanguageService>();
+        
         final request = CustomerRegistrationRequest(
-          nameEn: fullNameController.text.trim(),
+          nameEn: englishFullNameController.text.trim(),
+          nameAr: arabicFullNameController.text.trim(),
           phoneNumber: phoneController.text.replaceAll(' ', ''),
           countryCode: '+966',
           email: emailController.text.trim().isNotEmpty
               ? emailController.text.trim()
               : null,
+          preferredLanguage: languageService.currentLanguage, // Use current app language
           agreeToTerms: agreeToTerms.value,
         );
 
         final response = await _authService.registerCustomer(request);
 
         if (response.isSuccess) {
-          Get.snackbar(
-            'Registration Successful',
-            response.message,
-            snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: Colors.green.withValues(alpha: 0.3),
-          );
+          ToastService.showSuccess(response.message);
 
           // Navigate to OTP verification
           Get.toNamed(AppRoutes.OTP_VERIFICATION, arguments: {
@@ -174,13 +154,28 @@ class NewSignupController extends GetxController {
           _handleRegistrationErrors(response);
         }
       }
+    } on DioException catch (e) {
+      // Handle Dio errors (network, 409, etc.)
+      _clearValidationErrors();
+      
+      final data = e.response?.data;
+      String errorMessage = 'unexpected_error'.tr;
+      
+      if (data is Map && data['message'] != null) {
+        errorMessage = data['message'].toString();
+      }
+      
+      // Check if it's a phone error
+      if (errorMessage.contains('الهاتف') || 
+          errorMessage.contains('phone') ||
+          errorMessage.contains('مسجل') ||
+          e.response?.statusCode == 409) {
+        phoneNumberError.value = errorMessage;
+      }
+      
+      ToastService.showError(errorMessage);
     } catch (e) {
-      Get.snackbar(
-        'error'.tr,
-        _extractBackendMessage(e is Object ? e : Exception(e.toString())),
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.withValues(alpha: 0.3),
-      );
+      ToastService.showError('unexpected_error'.tr);
     } finally {
       isLoading.value = false;
     }
@@ -191,15 +186,35 @@ class NewSignupController extends GetxController {
     // Clear all previous errors
     _clearValidationErrors();
 
+    // Check if it's a phone already registered error (HTTP 409 or message contains phone)
+    final message = response.message ?? '';
+    final isPhoneError = response.statusCode == 409 || 
+        message.contains('الهاتف') || 
+        message.contains('phone') ||
+        message.contains('مسجل');
+    
+    if (isPhoneError && message.isNotEmpty) {
+      // Show phone number error in the field
+      phoneNumberError.value = message;
+      
+      // Show professional toast
+      ToastService.showError(message);
+      return;
+    }
+
     // Check if response has errors object
     if (response.errors != null && response.errors is Map) {
       final errors = response.errors as Map<String, dynamic>;
+      
+      // Collect all error messages
+      List<String> allErrorMessages = [];
 
       // Handle specific field errors
       if (errors.containsKey('phone_number')) {
         final phoneErrors = errors['phone_number'];
         if (phoneErrors is List && phoneErrors.isNotEmpty) {
           phoneNumberError.value = phoneErrors.first.toString();
+          allErrorMessages.add('• ${'phone_number'.tr}: ${phoneErrors.first}');
         }
       }
 
@@ -207,6 +222,7 @@ class NewSignupController extends GetxController {
         final emailErrors = errors['email'];
         if (emailErrors is List && emailErrors.isNotEmpty) {
           emailError.value = emailErrors.first.toString();
+          allErrorMessages.add('• ${'email'.tr}: ${emailErrors.first}');
         }
       }
 
@@ -214,6 +230,7 @@ class NewSignupController extends GetxController {
         final nameErrors = errors['english_full_name'];
         if (nameErrors is List && nameErrors.isNotEmpty) {
           englishNameError.value = nameErrors.first.toString();
+          allErrorMessages.add('• ${'english_full_name'.tr}: ${nameErrors.first}');
         }
       }
 
@@ -221,24 +238,36 @@ class NewSignupController extends GetxController {
         final nameErrors = errors['arabic_full_name'];
         if (nameErrors is List && nameErrors.isNotEmpty) {
           arabicNameError.value = nameErrors.first.toString();
+          allErrorMessages.add('• ${'arabic_full_name'.tr}: ${nameErrors.first}');
         }
       }
 
-      // Show general error message
-      Get.snackbar(
-        'registration_failed'.tr,
-        'please_check_errors_below'.tr,
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.withValues(alpha: 0.3),
-        duration: const Duration(seconds: 4),
-      );
+      if (errors.containsKey('name_ar')) {
+        final nameErrors = errors['name_ar'];
+        if (nameErrors is List && nameErrors.isNotEmpty) {
+          arabicNameError.value = nameErrors.first.toString();
+          allErrorMessages.add('• ${'arabic_full_name'.tr}: ${nameErrors.first}');
+        }
+      }
+
+      if (errors.containsKey('name_en')) {
+        final nameErrors = errors['name_en'];
+        if (nameErrors is List && nameErrors.isNotEmpty) {
+          englishNameError.value = nameErrors.first.toString();
+          allErrorMessages.add('• ${'english_full_name'.tr}: ${nameErrors.first}');
+        }
+      }
+
+      // Show detailed error message with all errors
+      String errorMessage = allErrorMessages.isNotEmpty
+          ? allErrorMessages.join('\n')
+          : 'please_check_errors_below'.tr;
+
+      ToastService.showValidationErrors({'message': [errorMessage]});
     } else {
-      // Show general error message
-      Get.snackbar(
-        'registration_failed'.tr,
+      // Show general error message from backend
+      ToastService.showError(
         response.message ?? 'unknown_error_occurred'.tr,
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.withValues(alpha: 0.3),
       );
     }
   }

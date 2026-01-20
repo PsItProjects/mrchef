@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:mrsheaf/features/home/models/restaurant_model.dart';
+import '../../../core/services/toast_service.dart';
 import 'package:mrsheaf/features/home/services/restaurant_service.dart';
 
 class AllRestaurantsController extends GetxController {
@@ -58,11 +59,7 @@ class AllRestaurantsController extends GetxController {
       if (kDebugMode) {
         print('❌ ALL RESTAURANTS ERROR: $e');
       }
-      Get.snackbar(
-        'error'.tr,
-        'failed_to_load_restaurants'.tr,
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      ToastService.showError('failed_to_load_restaurants'.tr);
     } finally {
       isLoading.value = false;
     }

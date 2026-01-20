@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mrsheaf/core/services/language_service.dart';
 import 'package:mrsheaf/core/services/merchant_language_service.dart';
+import 'package:mrsheaf/core/services/toast_service.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 
 class SimpleLanguageSwitcher extends StatelessWidget {
@@ -80,15 +81,10 @@ class SimpleLanguageSwitcher extends StatelessWidget {
     languageService.setLanguage(newLanguage);
     Get.updateLocale(Locale(newLanguage));
     
-    Get.snackbar(
-      'success'.tr,
+    ToastService.showSuccess(
       newLanguage == 'ar' 
           ? 'تم تغيير اللغة إلى العربية'
           : 'Language changed to English',
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: AppColors.successColor,
-      colorText: Colors.white,
-      duration: const Duration(seconds: 2),
     );
   }
 }
@@ -126,15 +122,10 @@ class LanguageFAB extends StatelessWidget {
     languageService.setLanguage(newLanguage);
     Get.updateLocale(Locale(newLanguage));
     
-    Get.snackbar(
-      'success'.tr,
+    ToastService.showSuccess(
       newLanguage == 'ar' 
           ? 'تم تغيير اللغة إلى العربية'
           : 'Language changed to English',
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: AppColors.successColor,
-      colorText: Colors.white,
-      duration: const Duration(seconds: 2),
     );
   }
 }

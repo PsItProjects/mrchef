@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:mrsheaf/features/profile/models/address_model.dart';
 import 'package:mrsheaf/features/profile/pages/add_edit_address_screen.dart';
 import 'package:mrsheaf/features/profile/services/address_service.dart';
+import '../../../core/services/toast_service.dart';
 
 class ShippingAddressesController extends GetxController {
   // All addresses
@@ -23,13 +24,7 @@ class ShippingAddressesController extends GetxController {
       final fetchedAddresses = await _addressService.getAddresses();
       addresses.value = fetchedAddresses;
     } catch (e) {
-      Get.snackbar(
-        'Error',
-        'Failed to load addresses: ${e.toString()}',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: const Color(0xFFEB5757),
-        colorText: Colors.white,
-      );
+      ToastService.showError('Failed to load addresses: ${e.toString()}');
     } finally {
       isLoading.value = false;
     }
@@ -104,21 +99,9 @@ class ShippingAddressesController extends GetxController {
     try {
       await _addressService.deleteAddress(address.id!);
       addresses.removeWhere((a) => a.id == address.id);
-      Get.snackbar(
-        'Address Deleted',
-        'Address has been deleted successfully',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.green,
-        colorText: Colors.white,
-      );
+      ToastService.showSuccess('Address has been deleted successfully');
     } catch (e) {
-      Get.snackbar(
-        'Error',
-        'Failed to delete address: ${e.toString()}',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: const Color(0xFFEB5757),
-        colorText: Colors.white,
-      );
+      ToastService.showError('Failed to delete address: ${e.toString()}');
     }
   }
 
@@ -138,21 +121,9 @@ class ShippingAddressesController extends GetxController {
         addresses[index] = addresses[index].copyWith(isDefault: true);
       }
 
-      Get.snackbar(
-        'Default Address Updated',
-        '${address.typeDisplayName} address set as default',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.green,
-        colorText: Colors.white,
-      );
+      ToastService.showSuccess('${address.typeDisplayName} address set as default');
     } catch (e) {
-      Get.snackbar(
-        'Error',
-        'Failed to set default address: ${e.toString()}',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: const Color(0xFFEB5757),
-        colorText: Colors.white,
-      );
+      ToastService.showError('Failed to set default address: ${e.toString()}');
     }
   }
 
@@ -167,13 +138,7 @@ class ShippingAddressesController extends GetxController {
         }
         Get.back();
         await Future.delayed(Duration(seconds: 1));
-        Get.snackbar(
-          'Address Updated',
-          'Address has been updated successfully',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.green,
-          colorText: Colors.white,
-        );
+        ToastService.showSuccess('Address has been updated successfully');
       } else {
         // Add new address
         final newAddress = await _addressService.addAddress(address);
@@ -181,27 +146,14 @@ class ShippingAddressesController extends GetxController {
         Get.back();
        await Future.delayed(Duration(seconds: 1));
 
-        Get.snackbar(
-          'Address Added',
-          'New address has been added successfully',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.green,
-          colorText: Colors.white,
-         // duration:  const Duration(seconds: 1)
-        );
+        ToastService.showSuccess('New address has been added successfully');
 
 
       }
 
       Get.back();
     } catch (e) {
-      Get.snackbar(
-        'Error',
-        'Failed to save address: ${e.toString()}',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: const Color(0xFFEB5757),
-        colorText: Colors.white,
-      );
+      ToastService.showError('Failed to save address: ${e.toString()}');
     }
   }
 

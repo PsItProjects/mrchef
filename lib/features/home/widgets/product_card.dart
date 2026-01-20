@@ -4,6 +4,7 @@ import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/core/routes/app_routes.dart';
 import 'package:mrsheaf/features/home/controllers/home_controller.dart';
 import 'package:mrsheaf/core/localization/currency_helper.dart';
+import 'package:mrsheaf/core/services/toast_service.dart';
 
 class ProductCard extends GetView<HomeController> {
   final Map<String, dynamic> product;
@@ -29,13 +30,7 @@ class ProductCard extends GetView<HomeController> {
         print('   Product Name: ${product['name']}');
         
         if (productId == null) {
-          Get.snackbar(
-            'خطأ',
-            'معرف المنتج غير صحيح',
-            snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: Colors.red,
-            colorText: Colors.white,
-          );
+          ToastService.showError('معرف المنتج غير صحيح');
           return;
         }
         print('➡️ PRODUCT CARD: Navigating to product details with ID: $productId');
@@ -164,29 +159,43 @@ class ProductCard extends GetView<HomeController> {
 
                     const SizedBox(height: 4),
 
-                    // Add to Cart button
-                    GestureDetector(
-                      onTap: () => controller.addToCart(product['id']),
-                      child: Container(
-                        width: double.infinity,
-                        height: isInHorizontalList ? 26 : 32,
-                        decoration: BoxDecoration(
-                          color: AppColors.primaryColor,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Center(
-                          child: Text(
-                            'Add to Cart',
-                            style: TextStyle(
-                              fontFamily: 'Lato',
-                              fontWeight: FontWeight.w700,
-                              fontSize: isInHorizontalList ? 10 : 11,
-                              color: const Color(0xFF592E2C),
-                            ),
+                    // Add to Cart button with loading state
+                    Obx(() {
+                      final isAdding = controller.isAddingToCart.value;
+                      return GestureDetector(
+                        onTap: isAdding ? null : () => controller.addToCart(product['id']),
+                        child: Container(
+                          width: double.infinity,
+                          height: isInHorizontalList ? 26 : 32,
+                          decoration: BoxDecoration(
+                            color: isAdding 
+                                ? AppColors.primaryColor.withOpacity(0.6)
+                                : AppColors.primaryColor,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Center(
+                            child: isAdding
+                                ? SizedBox(
+                                    width: isInHorizontalList ? 12 : 16,
+                                    height: isInHorizontalList ? 12 : 16,
+                                    child: const CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF592E2C)),
+                                    ),
+                                  )
+                                : Text(
+                                    'add_to_cart'.tr,
+                                    style: TextStyle(
+                                      fontFamily: 'Lato',
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: isInHorizontalList ? 10 : 11,
+                                      color: const Color(0xFF592E2C),
+                                    ),
+                                  ),
                           ),
                         ),
-                      ),
-                    ),
+                      );
+                    }),
                   ],
                 ),
               ),

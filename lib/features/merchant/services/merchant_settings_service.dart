@@ -5,6 +5,7 @@ import 'package:dio/dio.dart';
 import 'package:mrsheaf/core/network/api_client.dart';
 import 'package:mrsheaf/core/constants/api_constants.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
+import '../../../core/services/toast_service.dart';
 
 class MerchantSettingsService extends GetxService {
   static MerchantSettingsService get instance => Get.find<MerchantSettingsService>();
@@ -341,26 +342,12 @@ class MerchantSettingsService extends GetxService {
   
   /// Show success snackbar
   void _showSuccessSnackbar(String message) {
-    Get.snackbar(
-      'success'.tr,
-      message,
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: AppColors.successColor,
-      colorText: Colors.white,
-      duration: const Duration(seconds: 2),
-    );
+    ToastService.showSuccess(message);
   }
   
   /// Show error snackbar
   void _showErrorSnackbar(String message) {
-    Get.snackbar(
-      'error'.tr,
-      message,
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: AppColors.errorColor,
-      colorText: Colors.white,
-      duration: const Duration(seconds: 3),
-    );
+    ToastService.showError(message);
   }
 
   /// Handle onboarding required - redirect to appropriate step
@@ -428,14 +415,7 @@ class MerchantSettingsService extends GetxService {
       print('🔄 MERCHANT: Final decision - Redirecting to: $redirectRoute');
 
       // Show informative message
-      Get.snackbar(
-        'إكمال التسجيل',
-        'يجب إكمال عملية التسجيل أولاً',
-        snackPosition: SnackPosition.TOP,
-        backgroundColor: Colors.orange,
-        colorText: Colors.white,
-        duration: const Duration(seconds: 3),
-      );
+      ToastService.showWarning('يجب إكمال عملية التسجيل أولاً');
 
       // Navigate to appropriate onboarding step immediately
       print('🚀 MERCHANT: Executing navigation to $redirectRoute');

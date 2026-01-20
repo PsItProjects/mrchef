@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../core/services/toast_service.dart';
 
 class SettingsHeader extends StatelessWidget {
   const SettingsHeader({super.key});
@@ -40,11 +41,7 @@ class SettingsHeader extends StatelessWidget {
           GestureDetector(
             onTap: () {
               // TODO: Implement search functionality
-              Get.snackbar(
-                'Search',
-                'Search functionality coming soon',
-                snackPosition: SnackPosition.BOTTOM,
-              );
+              ToastService.showInfo('Search functionality coming soon');
             },
             child: Container(
               width: 24,

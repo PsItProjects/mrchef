@@ -6,6 +6,7 @@ import 'package:mrsheaf/core/services/review_service.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/features/profile/models/review_model.dart';
 import 'package:mrsheaf/shared/widgets/edit_review_bottom_sheet.dart';
+import '../../../core/services/toast_service.dart';
 
 class MyReviewsController extends GetxController {
   // All reviews (original list)
@@ -377,23 +378,12 @@ class MyReviewsController extends GetxController {
         print('❌ MY_REVIEWS: Error deleting review: $e');
       }
 
-      Get.snackbar(
-        'error'.tr,
-        'failed_to_delete_review'.tr,
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: AppColors.errorColor,
-        colorText: Colors.white,
-        duration: const Duration(seconds: 3),
-      );
+      ToastService.showError('failed_to_delete_review'.tr);
     }
   }
 
   void viewProductDetails(ReviewModel review) {
-    Get.snackbar(
-      'Product Details',
-      'Viewing details for ${review.productName}',
-      snackPosition: SnackPosition.BOTTOM,
-    );
+    ToastService.showInfo('Viewing details for ${review.productName}');
     // TODO: Navigate to product details screen
   }
 

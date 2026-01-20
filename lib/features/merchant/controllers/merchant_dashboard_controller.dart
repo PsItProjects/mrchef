@@ -2,6 +2,7 @@ import 'package:get/get.dart';
 import 'package:mrsheaf/features/auth/services/auth_service.dart';
 import 'package:mrsheaf/core/network/api_client.dart';
 import 'package:dio/dio.dart' as dio;
+import '../../../core/services/toast_service.dart';
 
 /// Statistics filter type enum
 enum StatisticsFilterType { daily, weekly, monthly, yearly, custom, all }
@@ -272,53 +273,29 @@ class MerchantDashboardController extends GetxController {
     try {
       isLoading.value = true;
       await _authService.logout();
-      Get.snackbar(
-        'تم تسجيل الخروج',
-        'تم تسجيل الخروج بنجاح',
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      ToastService.showSuccess('تم تسجيل الخروج بنجاح');
     } catch (e) {
       print('Logout error: $e');
-      Get.snackbar(
-        'خطأ',
-        'حدث خطأ أثناء تسجيل الخروج',
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      ToastService.showError('حدث خطأ أثناء تسجيل الخروج');
     } finally {
       isLoading.value = false;
     }
   }
 
   void navigateToProducts() {
-    Get.snackbar(
-      'قريباً',
-      'صفحة إدارة المنتجات قيد التطوير',
-      snackPosition: SnackPosition.BOTTOM,
-    );
+    ToastService.showInfo('صفحة إدارة المنتجات قيد التطوير');
   }
 
   void navigateToOrders() {
-    Get.snackbar(
-      'قريباً',
-      'صفحة الطلبات قيد التطوير',
-      snackPosition: SnackPosition.BOTTOM,
-    );
+    ToastService.showInfo('صفحة الطلبات قيد التطوير');
   }
 
   void navigateToReports() {
-    Get.snackbar(
-      'قريباً',
-      'صفحة التقارير قيد التطوير',
-      snackPosition: SnackPosition.BOTTOM,
-    );
+    ToastService.showInfo('صفحة التقارير قيد التطوير');
   }
 
   void navigateToSettings() {
-    Get.snackbar(
-      'قريباً',
-      'صفحة الإعدادات قيد التطوير',
-      snackPosition: SnackPosition.BOTTOM,
-    );
+    ToastService.showInfo('صفحة الإعدادات قيد التطوير');
   }
 
   /// Load unread notifications count

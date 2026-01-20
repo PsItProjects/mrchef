@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mrsheaf/core/services/language_service.dart';
+import 'package:mrsheaf/core/services/toast_service.dart';
 import 'package:mrsheaf/core/network/api_client.dart';
 import 'package:mrsheaf/core/constants/api_constants.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
@@ -33,28 +34,16 @@ class MerchantLanguageService extends GetxService {
       await _syncLanguageWithBackend(languageCode);
       
       // Show success message
-      Get.snackbar(
-        'success'.tr,
+      ToastService.showSuccess(
         languageCode == 'ar' 
             ? 'تم تغيير اللغة إلى العربية'
             : 'Language changed to English',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: AppColors.successColor,
-        colorText: Colors.white,
-        duration: const Duration(seconds: 2),
       );
       
     } catch (e) {
       print('Error changing language: $e');
       // Show error message
-      Get.snackbar(
-        'error'.tr,
-        'Failed to change language',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: AppColors.errorColor,
-        colorText: Colors.white,
-        duration: const Duration(seconds: 2),
-      );
+      ToastService.showError('Failed to change language');
     }
   }
   

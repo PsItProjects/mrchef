@@ -7,6 +7,7 @@ import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/features/merchant/services/merchant_profile_service.dart';
 import 'package:mrsheaf/core/localization/translation_helper.dart';
 import 'package:mrsheaf/features/merchant/pages/image_crop_screen.dart';
+import '../../../core/services/toast_service.dart';
 
 class EditPersonalProfileScreen extends StatefulWidget {
   final Map<String, dynamic>? profileData;
@@ -126,12 +127,7 @@ class _EditPersonalProfileScreenState extends State<EditPersonalProfileScreen> {
         setState(() => _selectedAvatar = tempFile);
       }
     } catch (e) {
-      Get.snackbar(
-        TranslationHelper.tr('error'),
-        TranslationHelper.tr('image_upload_failed'),
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
+      ToastService.showError(TranslationHelper.tr('image_upload_failed'));
     }
   }
 
@@ -147,12 +143,7 @@ class _EditPersonalProfileScreenState extends State<EditPersonalProfileScreen> {
       await tempFile.writeAsBytes(imageBytes);
       setState(() => _selectedCover = tempFile);
     } catch (e) {
-      Get.snackbar(
-        TranslationHelper.tr('error'),
-        TranslationHelper.tr('image_upload_failed'),
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
+      ToastService.showError(TranslationHelper.tr('image_upload_failed'));
     }
   }
 
@@ -274,14 +265,7 @@ class _EditPersonalProfileScreenState extends State<EditPersonalProfileScreen> {
       await _loadProfileData(forceRefresh: true);
 
       // Show success message
-      Get.snackbar(
-        TranslationHelper.tr('success'),
-        TranslationHelper.tr('profile_updated_successfully'),
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: AppColors.successColor,
-        colorText: Colors.white,
-        duration: const Duration(seconds: 2),
-      );
+      ToastService.showSuccess(TranslationHelper.tr('profile_updated_successfully'));
 
       // Wait a bit for snackbar to show before closing
       await Future.delayed(const Duration(milliseconds: 500));

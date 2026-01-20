@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mrsheaf/core/routes/app_routes.dart';
+import 'package:mrsheaf/core/services/toast_service.dart';
 import 'package:mrsheaf/features/categories/models/category_model.dart';
 import 'package:mrsheaf/features/product_details/models/product_model.dart';
 import 'package:mrsheaf/features/categories/widgets/filters_bottom_sheet.dart';
@@ -385,11 +386,7 @@ class CategoriesController extends GetxController with GetSingleTickerProviderSt
     }
 
     Get.back(); // Close bottom sheet
-    Get.snackbar(
-      'Filters Applied',
-      '${appliedFilters.length} filters applied',
-      snackPosition: SnackPosition.BOTTOM,
-    );
+    ToastService.showSuccess('${appliedFilters.length} filters applied');
   }
 
   void selectCategoryChip(int index) {

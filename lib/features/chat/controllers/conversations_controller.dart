@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/services/toast_service.dart';
 import 'package:mrsheaf/features/chat/models/conversation_model.dart';
 import 'package:mrsheaf/features/chat/services/chat_service.dart';
 
@@ -32,14 +33,7 @@ class ConversationsController extends GetxController {
         errorMessage = errorMessage.substring(11);
       }
 
-      Get.snackbar(
-        'خطأ',
-        errorMessage,
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-        duration: const Duration(seconds: 3),
-      );
+      ToastService.showError(errorMessage);
     } finally {
       isLoading.value = false;
     }
@@ -60,14 +54,7 @@ class ConversationsController extends GetxController {
         errorMessage = errorMessage.substring(11);
       }
 
-      Get.snackbar(
-        'خطأ',
-        errorMessage,
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-        duration: const Duration(seconds: 2),
-      );
+      ToastService.showError(errorMessage);
     } finally {
       isRefreshing.value = false;
     }

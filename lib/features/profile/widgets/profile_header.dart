@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:mrsheaf/core/localization/translation_helper.dart';
 import 'package:mrsheaf/core/widgets/language_switcher.dart';
 
 class ProfileHeader extends StatelessWidget {
@@ -31,7 +30,7 @@ class ProfileHeader extends StatelessWidget {
           
           // Title
           Text(
-            TranslationHelper.tr('settings'),
+            'settings'.tr,
             style: const TextStyle(
               fontFamily: 'Lato',
               fontWeight: FontWeight.w600,

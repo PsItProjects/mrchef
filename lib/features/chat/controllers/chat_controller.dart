@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:mrsheaf/core/localization/translation_helper.dart';
 import 'package:mrsheaf/core/services/fcm_service.dart';
 import 'package:mrsheaf/core/services/realtime_chat_service.dart';
+import 'package:mrsheaf/core/services/toast_service.dart';
 import 'package:mrsheaf/features/chat/models/conversation_model.dart';
 import 'package:mrsheaf/features/chat/services/chat_service.dart';
 import 'package:mrsheaf/features/support/services/support_service.dart';
@@ -77,11 +78,7 @@ class ChatController extends GetxController {
         print('   Parameters: ${Get.parameters}');
         print('   Arguments: ${Get.arguments}');
       }
-      Get.snackbar(
-        TranslationHelper.tr('error'),
-        'Invalid conversation ID',
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      ToastService.showError('Invalid conversation ID');
       Get.back();
       return;
     }
@@ -136,19 +133,9 @@ class ChatController extends GetxController {
         reason: reason,
         details: details,
       );
-      Get.snackbar(
-        TranslationHelper.tr('success'),
-        'report_submitted'.tr,
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.green.withValues(alpha: 0.2),
-      );
+      ToastService.showSuccess('report_submitted'.tr);
     } catch (e) {
-      Get.snackbar(
-        TranslationHelper.tr('error'),
-        TranslationHelper.tr('error'),
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.withValues(alpha: 0.2),
-      );
+      ToastService.showError(TranslationHelper.tr('error'));
     }
   }
 
@@ -299,14 +286,7 @@ class ChatController extends GetxController {
         errorMessage = errorMessage.substring(11);
       }
 
-      Get.snackbar(
-        'خطأ',
-        errorMessage,
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-        duration: const Duration(seconds: 3),
-      );
+      ToastService.showError(errorMessage);
     } finally {
       isLoading.value = false;
     }
@@ -367,14 +347,7 @@ class ChatController extends GetxController {
         errorMessage = errorMessage.substring(11);
       }
 
-      Get.snackbar(
-        'خطأ',
-        errorMessage,
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-        duration: const Duration(seconds: 3),
-      );
+      ToastService.showError(errorMessage);
 
       // Restore message text on error
       messageController.text = messageText;
@@ -402,14 +375,7 @@ class ChatController extends GetxController {
         errorMessage = errorMessage.substring(11);
       }
 
-      Get.snackbar(
-        'خطأ',
-        errorMessage,
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-        duration: const Duration(seconds: 3),
-      );
+      ToastService.showError(errorMessage);
     }
   }
 
@@ -470,14 +436,7 @@ class ChatController extends GetxController {
         errorMessage = errorMessage.substring(11);
       }
 
-      Get.snackbar(
-        'خطأ',
-        errorMessage,
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-        duration: const Duration(seconds: 3),
-      );
+      ToastService.showError(errorMessage);
     } finally {
       isUploadingImage.value = false;
     }

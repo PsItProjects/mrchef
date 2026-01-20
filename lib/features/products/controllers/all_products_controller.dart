@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:mrsheaf/features/product_details/models/product_model.dart';
+import '../../../core/services/toast_service.dart';
 import 'package:mrsheaf/core/network/api_client.dart';
 import 'package:mrsheaf/core/constants/api_constants.dart';
 
@@ -81,11 +82,7 @@ class AllProductsController extends GetxController {
       if (kDebugMode) {
         print('❌ ALL PRODUCTS ERROR: $e');
       }
-      Get.snackbar(
-        'error'.tr,
-        'failed_to_load_products'.tr,
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      ToastService.showError('failed_to_load_products'.tr);
     } finally {
       isLoading.value = false;
     }

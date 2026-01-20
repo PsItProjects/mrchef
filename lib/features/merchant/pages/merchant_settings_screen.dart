@@ -9,7 +9,9 @@ import 'package:mrsheaf/features/merchant/pages/working_hours_screen.dart';
 import 'package:mrsheaf/features/merchant/pages/notification_settings_screen.dart';
 import 'package:mrsheaf/features/merchant/pages/edit_personal_profile_screen.dart';
 import 'package:mrsheaf/features/profile/widgets/about_app_bottom_sheet.dart';
+import 'package:mrsheaf/features/profile/pages/privacy_policy_screen.dart';
 import 'package:mrsheaf/core/routes/app_routes.dart';
+import '../../../core/services/toast_service.dart';
 
 class MerchantSettingsScreen extends StatefulWidget {
   const MerchantSettingsScreen({Key? key}) : super(key: key);
@@ -280,6 +282,13 @@ class _MerchantSettingsScreenState extends State<MerchantSettingsScreen> {
       items: [
         _buildLanguageTile(),
         _buildSettingsTile(
+          icon: Icons.privacy_tip_outlined,
+          iconColor: const Color(0xFF9C27B0),
+          title: 'privacy'.tr,
+          subtitle: 'privacy_policy_desc'.tr,
+          onTap: () => Get.to(() => const PrivacyPolicyScreen()),
+        ),
+        _buildSettingsTile(
           icon: Icons.support_agent,
           iconColor: const Color(0xFF2196F3),
           title: 'help_support'.tr,
@@ -473,39 +482,20 @@ class _MerchantSettingsScreenState extends State<MerchantSettingsScreen> {
         Get.back();
 
         // Show success message
-        Get.snackbar(
-          'success'.tr,
-          'language_updated_successfully'.tr,
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.green,
-          colorText: Colors.white,
-          duration: const Duration(seconds: 2),
-        );
+        ToastService.showSuccess('language_updated_successfully'.tr);
       } else {
         // Close loading dialog
         Get.back();
 
         // Show error message
-        Get.snackbar(
-          'error'.tr,
-          'language_update_failed'.tr,
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.red,
-          colorText: Colors.white,
-        );
+        ToastService.showError('language_update_failed'.tr);
       }
     } catch (e) {
       // Close loading dialog
       Get.back();
 
       // Show error message
-      Get.snackbar(
-        'error'.tr,
-        'language_update_failed'.tr,
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
+      ToastService.showError('language_update_failed'.tr);
     }
   }
 

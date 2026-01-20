@@ -40,7 +40,7 @@ class EditProfileScreen extends GetView<EditProfileController> {
                     // Save button
                     Obx(() => Container(
                       width: 380,
-                      height: 50,
+                      height: 60,
                       child: ElevatedButton(
                         onPressed: controller.isLoading.value ? null : controller.saveProfile,
                         style: ElevatedButton.styleFrom(

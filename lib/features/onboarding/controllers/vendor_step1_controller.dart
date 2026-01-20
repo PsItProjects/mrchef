@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 import 'package:mrsheaf/core/network/api_client.dart';
 import 'package:mrsheaf/core/routes/app_routes.dart';
+import '../../../core/services/toast_service.dart';
 
 /// Controller for Vendor Step 1: Subscription Plan Selection
 class VendorStep1Controller extends GetxController {
@@ -60,11 +61,7 @@ class VendorStep1Controller extends GetxController {
       // Use fallback plans if API fails
       _useFallbackPlans();
 
-      Get.snackbar(
-        'تنبيه',
-        'تم تحميل الباقات الافتراضية',
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      ToastService.showInfo('تم تحميل الباقات الافتراضية');
     } finally {
       isLoadingPlans.value = false;
     }
@@ -149,11 +146,7 @@ class VendorStep1Controller extends GetxController {
   Future<void> submitSubscriptionPlan() async {
     final plan = selectedPlan;
     if (plan == null) {
-      Get.snackbar(
-        'خطأ',
-        'الرجاء اختيار باقة',
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      ToastService.showError('الرجاء اختيار باقة');
       return;
     }
 
@@ -173,11 +166,7 @@ class VendorStep1Controller extends GetxController {
         print('✅ Subscription plan selected successfully');
         print('📥 Response: ${response.data}');
 
-        Get.snackbar(
-          'نجح',
-          'تم اختيار الباقة بنجاح',
-          snackPosition: SnackPosition.BOTTOM,
-        );
+        ToastService.showSuccess('تم اختيار الباقة بنجاح');
 
         // Navigate to next step
         Get.toNamed(AppRoutes.VENDOR_STEP2);
@@ -187,11 +176,7 @@ class VendorStep1Controller extends GetxController {
     } catch (e) {
       print('❌ Error submitting subscription plan: $e');
 
-      Get.snackbar(
-        'خطأ',
-        'حدث خطأ أثناء اختيار الباقة',
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      ToastService.showError('حدث خطأ أثناء اختيار الباقة');
     } finally {
       isSubmitting.value = false;
     }

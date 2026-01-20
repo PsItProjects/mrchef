@@ -5,6 +5,7 @@ import 'package:mrsheaf/core/routes/app_routes.dart';
 import '../../../core/services/biometric_service.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/localization/translation_helper.dart';
+import '../../../core/services/toast_service.dart';
 import '../services/auth_service.dart';
 import '../models/auth_request.dart';
 
@@ -72,12 +73,7 @@ class LoginController extends GetxController {
 
   Future<void> sendLoginOTP() async {
     if (!isPhoneNumberValid.value) {
-      Get.snackbar(
-        'Invalid Phone Number',
-        'Please enter a valid phone number',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.withValues(alpha: 0.3),
-      );
+      ToastService.showError('Please enter a valid phone number');
       return;
     }
 
@@ -92,12 +88,7 @@ class LoginController extends GetxController {
       final response = await _authService.sendLoginOTP(request);
 
       if (response.isSuccess) {
-        Get.snackbar(
-          'OTP Sent',
-          response.message,
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.green.withValues(alpha: 0.3),
-        );
+        ToastService.showSuccess(response.message);
 
         // Navigate to OTP verification screen
         final arguments = {
@@ -109,20 +100,10 @@ class LoginController extends GetxController {
         print('🚀 LOGIN: Navigating to OTP with arguments: $arguments');
         Get.toNamed(AppRoutes.OTP_VERIFICATION, arguments: arguments);
       } else {
-        Get.snackbar(
-          'Error',
-          response.message,
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.red.withValues(alpha: 0.3),
-        );
+        ToastService.showError(response.message);
       }
     } catch (e) {
-      Get.snackbar(
-        'error'.tr,
-        _extractBackendMessage(e is Object ? e : Exception(e.toString())),
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.withValues(alpha: 0.3),
-      );
+      ToastService.showError(_extractBackendMessage(e is Object ? e : Exception(e.toString())));
     } finally {
       isLoading.value = false;
     }
@@ -130,20 +111,12 @@ class LoginController extends GetxController {
 
   void loginWithFacebook() {
     // Implement Facebook login
-    Get.snackbar(
-      'Facebook Login',
-      'Processing Facebook login...',
-      snackPosition: SnackPosition.BOTTOM,
-    );
+    ToastService.showInfo('Processing Facebook login...');
   }
 
   void loginWithGoogle() {
     // Implement Google login
-    Get.snackbar(
-      'Google Login',
-      'Processing Google login...',
-      snackPosition: SnackPosition.BOTTOM,
-    );
+    ToastService.showInfo('Processing Google login...');
   }
 
   /// تسجيل الدخول بالبصمة
@@ -160,12 +133,7 @@ class LoginController extends GetxController {
       final isAuthenticated = await biometricService.authenticate();
       
       if (!isAuthenticated) {
-        Get.snackbar(
-          TranslationHelper.tr('biometric_auth_failed'),
-          TranslationHelper.tr('biometric_verify_identity'),
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.red.withValues(alpha: 0.3),
-        );
+        ToastService.showError(TranslationHelper.tr('biometric_verify_identity'));
         // cleanup and return
         isBiometricLoading.value = false;
         _apiClient.setBiometricLoginInProgress(false);
@@ -194,12 +162,7 @@ class LoginController extends GetxController {
         
         if (userLoaded) {
           print('✅ Biometric login successful!');
-          Get.snackbar(
-            TranslationHelper.tr('biometric_login_success'),
-            TranslationHelper.tr('biometric_welcome_back'),
-            snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: Colors.green.withValues(alpha: 0.3),
-          );
+          ToastService.showSuccess(TranslationHelper.tr('biometric_welcome_back'));
 
           // التوجيه حسب نوع المستخدم
           if (result.userType == 'merchant') {
@@ -235,12 +198,7 @@ class LoginController extends GetxController {
             final userLoadedAfterApi = await _authService.loadUserFromToken();
             
             if (userLoadedAfterApi) {
-              Get.snackbar(
-                TranslationHelper.tr('biometric_login_success'),
-                TranslationHelper.tr('biometric_welcome_back'),
-                snackPosition: SnackPosition.BOTTOM,
-                backgroundColor: Colors.green.withValues(alpha: 0.3),
-              );
+              ToastService.showSuccess(TranslationHelper.tr('biometric_welcome_back'));
               
               if (apiResult.userType == 'merchant') {
                 Get.offAllNamed(AppRoutes.MERCHANT_HOME);
@@ -259,21 +217,11 @@ class LoginController extends GetxController {
       } else {
         // فشل المصادقة البيومترية أو لا توجد بيانات محفوظة
         print('❌ Biometric authentication failed or no saved data');
-        Get.snackbar(
-          TranslationHelper.tr('biometric_auth_failed'),
-          TranslationHelper.tr('biometric_login_manually'),
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.red.withValues(alpha: 0.3),
-        );
+        ToastService.showError(TranslationHelper.tr('biometric_login_manually'));
       }
     } catch (e) {
       print('❌ Biometric login error: $e');
-      Get.snackbar(
-        TranslationHelper.tr('error'),
-        TranslationHelper.tr('biometric_enable_failed'),
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.withValues(alpha: 0.3),
-      );
+      ToastService.showError(TranslationHelper.tr('biometric_enable_failed'));
     } finally {
       isBiometricLoading.value = false;
       // إعادة تفعيل رسالة session expired
@@ -283,12 +231,7 @@ class LoginController extends GetxController {
 
   /// عرض رسالة طلب تسجيل الدخول يدوياً
   void _showLoginRequired() {
-    Get.snackbar(
-      TranslationHelper.tr('biometric_session_expired'),
-      TranslationHelper.tr('biometric_login_manually'),
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: Colors.orange.withValues(alpha: 0.3),
-    );
+    ToastService.showWarning(TranslationHelper.tr('biometric_login_manually'));
   }
 
   /// التحقق من توفر البصمة وتفعيلها

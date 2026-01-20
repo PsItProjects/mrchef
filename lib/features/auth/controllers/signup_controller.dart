@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mrsheaf/core/routes/app_routes.dart';
+import '../../../core/services/toast_service.dart';
 
 class SignupController extends GetxController {
   final formKey = GlobalKey<FormState>();
@@ -28,11 +29,7 @@ class SignupController extends GetxController {
   void signup() {
     if (formKey.currentState!.validate() && agreeToTerms.value) {
       // Implement signup functionality
-      Get.snackbar(
-        'Signup',
-        'Processing signup...',
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      ToastService.showInfo('Processing signup...');
       
       // Simulate signup success
       Future.delayed(const Duration(seconds: 2), () {
@@ -40,31 +37,18 @@ class SignupController extends GetxController {
         Get.offAllNamed(AppRoutes.LOGIN);
       });
     } else if (!agreeToTerms.value) {
-      Get.snackbar(
-        'Error',
-        'Please agree to the terms and conditions',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.withOpacity(0.3),
-      );
+      ToastService.showError('Please agree to the terms and conditions');
     }
   }
 
   void signupWithFacebook() {
     // Implement Facebook signup
-    Get.snackbar(
-      'Facebook Signup',
-      'Processing Facebook signup...',
-      snackPosition: SnackPosition.BOTTOM,
-    );
+    ToastService.showInfo('Processing Facebook signup...');
   }
 
   void signupWithGoogle() {
     // Implement Google signup
-    Get.snackbar(
-      'Google Signup',
-      'Processing Google signup...',
-      snackPosition: SnackPosition.BOTTOM,
-    );
+    ToastService.showInfo('Processing Google signup...');
   }
 
   @override

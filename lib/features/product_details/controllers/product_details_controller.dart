@@ -2,6 +2,7 @@ import 'package:get/get.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:mrsheaf/features/product_details/models/product_model.dart';
+import '../../../core/services/toast_service.dart';
 import 'package:mrsheaf/features/product_details/models/review_model.dart';
 import 'package:mrsheaf/features/product_details/widgets/reviews_bottom_sheet.dart';
 import 'package:mrsheaf/features/cart/controllers/cart_controller.dart';
@@ -36,6 +37,7 @@ class ProductDetailsController extends GetxController {
   final RxBool isLoadingProduct = true.obs;
   final RxBool isLoadingReviews = false.obs;
   final RxBool isAddingReview = false.obs;
+  final RxBool isAddingToCart = false.obs; // حماية من الضغط المتكرر
 
   // Product data
   final Rx<ProductModel?> product = Rx<ProductModel?>(null);
@@ -50,14 +52,7 @@ class ProductDetailsController extends GetxController {
     final receivedId = Get.arguments?['productId'];
     
     if (receivedId == null) {
-      Get.snackbar(
-        'خطأ',
-        'معرف المنتج غير صحيح. يرجى المحاولة مرة أخرى.',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-        duration: const Duration(seconds: 3),
-      );
+      ToastService.showError('معرف المنتج غير صحيح. يرجى المحاولة مرة أخرى.');
       Future.delayed(const Duration(seconds: 2), () => Get.back());
       return;
     }
@@ -139,13 +134,7 @@ class ProductDetailsController extends GetxController {
       await _calculatePrice();
 
     } catch (e) {
-      Get.snackbar(
-        'Error',
-        'Failed to load product details: $e',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
+      ToastService.showError('Failed to load product details: $e');
     } finally {
       isLoadingProduct.value = false;
     }
@@ -265,13 +254,7 @@ class ProductDetailsController extends GetxController {
         print('❌ PRODUCT DETAILS: Error toggling favorite: $e');
       }
 
-      Get.snackbar(
-        'خطأ',
-        'فشل في تحديث المفضلة',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
+      ToastService.showError('فشل في تحديث المفضلة');
     }
   }
   
@@ -335,8 +318,15 @@ class ProductDetailsController extends GetxController {
   /// Add product to cart via server
   Future<void> addToCart() async {
     if (product.value == null) return;
+    
+    // حماية من الضغط المتكرر
+    if (isAddingToCart.value) {
+      ToastService.showWarning('يتم إضافة المنتج للسلة الآن...');
+      return;
+    }
 
     try {
+      isAddingToCart.value = true;
       final cartController = Get.find<CartController>();
 
       await cartController.addToCart(
@@ -371,23 +361,17 @@ class ProductDetailsController extends GetxController {
       if (kDebugMode) {
         print('❌ ADD TO CART ERROR: $e');
       }
+    } finally {
+      isAddingToCart.value = false;
     }
   }
   
   void messageStore() {
-    Get.snackbar(
-      'Message Store',
-      'Opening chat with store...',
-      snackPosition: SnackPosition.BOTTOM,
-    );
+    ToastService.showInfo('Opening chat with store...');
   }
   
   void shareWithFriend() {
-    Get.snackbar(
-      'Share',
-      'Sharing ${product.value?.name ?? 'product'} with friend...',
-      snackPosition: SnackPosition.BOTTOM,
-    );
+    ToastService.showInfo('Sharing ${product.value?.name ?? 'product'} with friend...');
   }
   
   void goBack() {
@@ -414,11 +398,7 @@ class ProductDetailsController extends GetxController {
         print('❌ PRODUCT DETAILS: Restaurant ID not found in product');
       }
 
-      Get.snackbar(
-        'خطأ',
-        'لم يتم العثور على معلومات المطعم',
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      ToastService.showError('لم يتم العثور على معلومات المطعم');
     }
   }
 
@@ -451,13 +431,7 @@ class ProductDetailsController extends GetxController {
         reviews.refresh();
       }
     } catch (e) {
-      Get.snackbar(
-        'Error',
-        e.toString(),
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
+      ToastService.showError(e.toString());
     }
   }
 
@@ -478,22 +452,12 @@ class ProductDetailsController extends GetxController {
         reviews.refresh();
       }
     } catch (e) {
-      Get.snackbar(
-        'Error',
-        e.toString(),
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
+      ToastService.showError(e.toString());
     }
   }
 
   void replyToReview(int reviewId) {
-    Get.snackbar(
-      'Reply',
-      'Reply functionality coming soon',
-      snackPosition: SnackPosition.BOTTOM,
-    );
+    ToastService.showInfo('Reply functionality coming soon');
   }
 
   Future<void> addReview(int rating, String comment, {List<String>? images}) async {
@@ -510,25 +474,13 @@ class ProductDetailsController extends GetxController {
       );
 
       if (success) {
-        Get.snackbar(
-          'Success',
-          'Review added successfully',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.green,
-          colorText: Colors.white,
-        );
+        ToastService.showSuccess('Review added successfully');
 
         // Reload reviews
         await _loadProductReviews();
       }
     } catch (e) {
-      Get.snackbar(
-        'Error',
-        e.toString(),
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
+      ToastService.showError(e.toString());
     } finally {
       isAddingReview.value = false;
     }

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:mrsheaf/core/localization/translation_helper.dart';
 import 'package:mrsheaf/core/services/biometric_service.dart';
+import 'package:mrsheaf/core/services/toast_service.dart';
 import 'package:mrsheaf/features/auth/services/auth_service.dart';
 import 'package:mrsheaf/features/profile/controllers/profile_controller.dart';
 import 'package:mrsheaf/features/profile/widgets/profile_menu_item.dart';
@@ -15,7 +15,7 @@ class ProfileMenuList extends GetView<ProfileController> {
       children: [
         // My Order
         Obx(() => ProfileMenuItem(
-          title: TranslationHelper.tr('my_orders'),
+          title: 'my_orders'.tr,
           subtitle: controller.orderCountText,
           onTap: controller.navigateToMyOrders,
         )),
@@ -24,7 +24,7 @@ class ProfileMenuList extends GetView<ProfileController> {
 
         // Shipping Addresses
         Obx(() => ProfileMenuItem(
-          title: TranslationHelper.tr('shipping_addresses'),
+          title: 'shipping_addresses'.tr,
           subtitle: controller.addressCountText,
           onTap: controller.navigateToShippingAddresses,
         )),
@@ -36,8 +36,8 @@ class ProfileMenuList extends GetView<ProfileController> {
 
         // Support Tickets
         ProfileMenuItem(
-          title: TranslationHelper.tr('support_tickets'),
-          subtitle: TranslationHelper.tr('support_tickets_desc'),
+          title: 'support_tickets'.tr,
+          subtitle: 'support_tickets_desc'.tr,
           onTap: controller.navigateToSupportTickets,
         ),
 
@@ -45,8 +45,8 @@ class ProfileMenuList extends GetView<ProfileController> {
 
         // My Reports
         ProfileMenuItem(
-          title: TranslationHelper.tr('my_reports'),
-          subtitle: TranslationHelper.tr('my_reports_desc'),
+          title: 'my_reports'.tr,
+          subtitle: 'my_reports_desc'.tr,
           onTap: controller.navigateToMyReports,
         ),
 
@@ -54,9 +54,18 @@ class ProfileMenuList extends GetView<ProfileController> {
 
         // My Reviews - تقييماتي
         ProfileMenuItem(
-          title: TranslationHelper.tr('my_reviews'),
-          subtitle: TranslationHelper.tr('my_reviews_desc'),
+          title: 'my_reviews'.tr,
+          subtitle: 'my_reviews_desc'.tr,
           onTap: controller.navigateToMyReviews,
+        ),
+
+        const SizedBox(height: 16),
+
+        // Privacy Policy - includes account deletion instructions
+        ProfileMenuItem(
+          title: 'privacy'.tr,
+          subtitle: 'privacy_policy_desc'.tr,
+          onTap: controller.openPrivacyPolicy,
         ),
 
         const SizedBox(height: 16),
@@ -86,10 +95,10 @@ class ProfileMenuList extends GetView<ProfileController> {
         return Column(
           children: [
             ProfileMenuItem(
-              title: TranslationHelper.tr('biometric_login'),
+              title: 'biometric_login'.tr,
               subtitle: biometricService.isBiometricEnabled.value 
-                  ? TranslationHelper.tr('enabled')
-                  : TranslationHelper.tr('disabled'),
+                  ? 'enabled'.tr
+                  : 'disabled'.tr,
               hasToggle: true,
               toggleValue: biometricService.isBiometricEnabled.value,
               onToggleChanged: (value) => _handleBiometricToggle(value, biometricService),
@@ -115,12 +124,7 @@ class ProfileMenuList extends GetView<ProfileController> {
         final userType = authService.userType.value;
         
         if (token == null || user == null || userType.isEmpty) {
-          Get.snackbar(
-            TranslationHelper.tr('biometric_enable_failed'),
-            TranslationHelper.tr('biometric_login_manually'),
-            snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: Colors.red.withValues(alpha: 0.3),
-          );
+          ToastService.showError('biometric_login_manually'.tr);
           return;
         }
         
@@ -132,37 +136,17 @@ class ProfileMenuList extends GetView<ProfileController> {
         );
         
         if (success) {
-          Get.snackbar(
-            TranslationHelper.tr('success'),
-            TranslationHelper.tr('biometric_enable_success'),
-            snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: Colors.green.withValues(alpha: 0.3),
-          );
+          ToastService.showSuccess('biometric_enable_success'.tr);
         } else {
-          Get.snackbar(
-            TranslationHelper.tr('error'),
-            TranslationHelper.tr('biometric_enable_failed'),
-            snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: Colors.red.withValues(alpha: 0.3),
-          );
+          ToastService.showError('biometric_enable_failed'.tr);
         }
       } catch (e) {
-        Get.snackbar(
-          TranslationHelper.tr('error'),
-          TranslationHelper.tr('biometric_enable_failed'),
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.red.withValues(alpha: 0.3),
-        );
+        ToastService.showError('biometric_enable_failed'.tr);
       }
     } else {
       // إلغاء تفعيل البصمة
       await biometricService.disableBiometricLogin();
-      Get.snackbar(
-        TranslationHelper.tr('success'),
-        TranslationHelper.tr('biometric_disable_success'),
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.orange.withValues(alpha: 0.3),
-      );
+      ToastService.showWarning('biometric_disable_success'.tr);
     }
   }
 }

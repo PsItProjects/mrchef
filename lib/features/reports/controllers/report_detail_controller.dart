@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mrsheaf/core/localization/translation_helper.dart';
+import '../../../core/services/toast_service.dart';
 import 'package:mrsheaf/features/auth/services/auth_service.dart';
 import 'package:mrsheaf/features/reports/services/report_service.dart';
 
@@ -47,12 +48,7 @@ class ReportDetailController extends GetxController {
       _scrollToBottom();
     } on DioException catch (e) {
       final msg = _extractBackendMessage(e) ?? TranslationHelper.tr('error');
-      Get.snackbar(
-        TranslationHelper.tr('error'),
-        msg,
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.withValues(alpha: 0.2),
-      );
+      ToastService.showError(msg);
     } finally {
       isLoading.value = false;
     }
@@ -73,12 +69,7 @@ class ReportDetailController extends GetxController {
       await loadReport();
     } on DioException catch (e) {
       final msg = _extractBackendMessage(e) ?? TranslationHelper.tr('error');
-      Get.snackbar(
-        TranslationHelper.tr('error'),
-        msg,
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.withValues(alpha: 0.2),
-      );
+      ToastService.showError(msg);
     } finally {
       isSending.value = false;
     }

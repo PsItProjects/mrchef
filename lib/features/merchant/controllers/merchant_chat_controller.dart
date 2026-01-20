@@ -11,6 +11,7 @@ import 'package:mrsheaf/core/services/realtime_chat_service.dart';
 import 'package:mrsheaf/features/chat/models/conversation_model.dart';
 import 'package:mrsheaf/features/merchant/services/merchant_chat_service.dart';
 import 'package:mrsheaf/features/support/services/support_service.dart';
+import '../../../core/services/toast_service.dart';
 
 class MerchantChatController extends GetxController {
   final MerchantChatService _chatService = MerchantChatService();
@@ -93,11 +94,7 @@ class MerchantChatController extends GetxController {
         print('   Parameters: ${Get.parameters}');
         print('   Arguments: ${Get.arguments}');
       }
-      Get.snackbar(
-        TranslationHelper.tr('error'),
-        'Invalid conversation ID',
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      ToastService.showError('Invalid conversation ID');
       Get.back();
       return;
     }
@@ -260,19 +257,9 @@ class MerchantChatController extends GetxController {
         reason: reason,
         details: details,
       );
-      Get.snackbar(
-        TranslationHelper.tr('success'),
-        'report_submitted'.tr,
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.green.withValues(alpha: 0.2),
-      );
+      ToastService.showSuccess('report_submitted'.tr);
     } catch (e) {
-      Get.snackbar(
-        TranslationHelper.tr('error'),
-        TranslationHelper.tr('error'),
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.withValues(alpha: 0.2),
-      );
+      ToastService.showError(TranslationHelper.tr('error'));
     }
   }
 
@@ -377,13 +364,7 @@ class MerchantChatController extends GetxController {
           orderData.value = updatedOrder;
         }
 
-        Get.snackbar(
-          'success'.tr,
-          'order_status_updated'.tr,
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.green,
-          colorText: Colors.white,
-        );
+        ToastService.showSuccess('order_status_updated'.tr);
         return true;
       } else {
         throw Exception(response.data['message'] ?? 'Failed to update status');
@@ -392,13 +373,7 @@ class MerchantChatController extends GetxController {
       if (kDebugMode) {
         print('Error updating order status: $e');
       }
-      Get.snackbar(
-        'error'.tr,
-        'error_updating_status'.tr,
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
+      ToastService.showError('error_updating_status'.tr);
       return false;
     } finally {
       updatingOrders[orderId] = false;
@@ -483,13 +458,7 @@ class MerchantChatController extends GetxController {
         errorMessage = errorMessage.substring(11);
       }
 
-      Get.snackbar(
-        'error'.tr,
-        errorMessage,
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
+      ToastService.showError(errorMessage);
     } finally {
       isLoading.value = false;
     }
@@ -550,13 +519,7 @@ class MerchantChatController extends GetxController {
         errorMessage = errorMessage.substring(11);
       }
 
-      Get.snackbar(
-        'error'.tr,
-        errorMessage,
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
+      ToastService.showError(errorMessage);
       messageController.text = messageText;
     } finally {
       isSending.value = false;
@@ -582,13 +545,7 @@ class MerchantChatController extends GetxController {
         errorMessage = errorMessage.substring(11);
       }
 
-      Get.snackbar(
-        'error'.tr,
-        errorMessage,
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
+      ToastService.showError(errorMessage);
     }
   }
 
@@ -642,13 +599,7 @@ class MerchantChatController extends GetxController {
         errorMessage = errorMessage.substring(11);
       }
 
-      Get.snackbar(
-        'error'.tr,
-        errorMessage,
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
+      ToastService.showError(errorMessage);
     } finally {
       isUploadingImage.value = false;
     }

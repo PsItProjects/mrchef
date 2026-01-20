@@ -1,3 +1,6 @@
+import 'package:get/get.dart';
+import 'package:mrsheaf/core/services/language_service.dart';
+
 class UserModel {
   final int id;
   final String? nameEn;
@@ -85,6 +88,28 @@ class UserModel {
   }
 
   String get displayName {
+    // ✅ عرض الاسم حسب اللغة الحالية
+    try {
+      if (Get.isRegistered<LanguageService>()) {
+        final currentLanguage = LanguageService.instance.currentLanguage;
+        
+        if (currentLanguage == 'ar') {
+          // إذا كانت اللغة عربية، نعرض الاسم العربي أولاً
+          if (nameAr != null && nameAr!.isNotEmpty) {
+            return nameAr!;
+          }
+        } else {
+          // إذا كانت اللغة إنجليزية، نعرض الاسم الإنجليزي أولاً
+          if (nameEn != null && nameEn!.isNotEmpty) {
+            return nameEn!;
+          }
+        }
+      }
+    } catch (e) {
+      print('❌ Error getting display name: $e');
+    }
+    
+    // Fallback: إذا لم تكن هناك خدمة لغة
     if (fullName != null && fullName!.isNotEmpty) {
       return fullName!;
     }

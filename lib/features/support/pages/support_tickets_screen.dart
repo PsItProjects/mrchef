@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
+import '../../../core/services/toast_service.dart';
 import 'package:mrsheaf/features/support/controllers/support_tickets_controller.dart';
 
 class SupportTicketsScreen extends GetView<SupportTicketsController> {
@@ -441,12 +442,7 @@ class SupportTicketsScreen extends GetView<SupportTicketsController> {
                                   : () async {
                                       final subject = subjectController.text.trim();
                                       if (subject.isEmpty) {
-                                        Get.snackbar(
-                                          'error'.tr,
-                                          'field_required'.tr,
-                                          snackPosition: SnackPosition.BOTTOM,
-                                          backgroundColor: Colors.red.withValues(alpha: 0.2),
-                                        );
+                                        ToastService.showError('field_required'.tr);
                                         return;
                                       }
                                       

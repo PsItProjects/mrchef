@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/services/toast_service.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/shared/widgets/add_review_bottom_sheet.dart';
 
@@ -255,11 +256,7 @@ class OrderReviewPromptDialog extends StatelessWidget {
     final unreviewedItems = items.where((item) => !item.isReviewed).toList();
     
     if (unreviewedItems.isEmpty) {
-      Get.snackbar(
-        'info'.tr,
-        'all_items_reviewed'.tr,
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      ToastService.showInfo('all_items_reviewed'.tr);
       return;
     }
 

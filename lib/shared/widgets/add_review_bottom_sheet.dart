@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:mrsheaf/core/services/toast_service.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/shared/widgets/star_rating_widget.dart';
 
@@ -53,13 +54,7 @@ class AddReviewController extends GetxController {
   /// Pick image from gallery
   Future<void> pickImageFromGallery() async {
     if (selectedImages.length >= maxImages) {
-      Get.snackbar(
-        'limit_reached'.tr,
-        'max_images_message'.trParams({'count': maxImages.toString()}),
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: AppColors.errorColor,
-        colorText: Colors.white,
-      );
+      ToastService.showError('max_images_message'.trParams({'count': maxImages.toString()}));
       return;
     }
 
@@ -84,13 +79,7 @@ class AddReviewController extends GetxController {
   /// Pick image from camera
   Future<void> pickImageFromCamera() async {
     if (selectedImages.length >= maxImages) {
-      Get.snackbar(
-        'limit_reached'.tr,
-        'max_images_message'.trParams({'count': maxImages.toString()}),
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: AppColors.errorColor,
-        colorText: Colors.white,
-      );
+      ToastService.showError('max_images_message'.trParams({'count': maxImages.toString()}));
       return;
     }
 
@@ -148,14 +137,7 @@ class AddReviewController extends GetxController {
       if (success) {
         HapticFeedback.heavyImpact();
         Get.back(result: true);
-        Get.snackbar(
-          'success'.tr,
-          'review_submitted'.tr,
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: AppColors.successColor,
-          colorText: Colors.white,
-          duration: const Duration(seconds: 3),
-        );
+        ToastService.showSuccess('review_submitted'.tr);
       }
     } catch (e) {
       errorMessage.value = e.toString().replaceAll('Exception: ', '');

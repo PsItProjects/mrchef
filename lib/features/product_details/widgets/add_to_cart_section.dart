@@ -76,12 +76,14 @@ class AddToCartSection extends GetView<ProductDetailsController> {
 
                   // Add to Cart button
                   Expanded(
-                    child: GestureDetector(
-                      onTap: controller.addToCart,
+                    child: Obx(() => GestureDetector(
+                      onTap: controller.isAddingToCart.value ? null : controller.addToCart,
                       child: Container(
                         height: 56,
                         decoration: BoxDecoration(
-                          color: AppColors.primaryColor,
+                          color: controller.isAddingToCart.value 
+                              ? AppColors.primaryColor.withOpacity(0.6)
+                              : AppColors.primaryColor,
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(
                             color: AppColors.primaryColor,
@@ -89,18 +91,27 @@ class AddToCartSection extends GetView<ProductDetailsController> {
                           ),
                         ),
                         child: Center(
-                          child: Text(
-                            'add_to_cart'.tr,
-                            style: const TextStyle(
-                              fontFamily: 'Lato',
-                              fontWeight: FontWeight.w700,
-                              fontSize: 18,
-                              color: Color(0xFF592E2C),
-                            ),
-                          ),
+                          child: controller.isAddingToCart.value
+                              ? const SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF592E2C)),
+                                  ),
+                                )
+                              : Text(
+                                  'add_to_cart'.tr,
+                                  style: const TextStyle(
+                                    fontFamily: 'Lato',
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 18,
+                                    color: Color(0xFF592E2C),
+                                  ),
+                                ),
                         ),
                       ),
-                    ),
+                    )),
                   ),
                 ],
               ),

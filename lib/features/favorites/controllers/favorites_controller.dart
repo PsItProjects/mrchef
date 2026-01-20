@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/services/toast_service.dart';
 import 'package:mrsheaf/features/favorites/models/favorite_store_model.dart';
 import 'package:mrsheaf/features/favorites/models/favorite_product_model.dart';
 import 'package:mrsheaf/features/favorites/services/favorites_service.dart';
@@ -27,6 +28,7 @@ class FavoritesController extends GetxController {
   final RxBool isLoading = false.obs;
   final RxBool isLoadingProducts = false.obs;
   final RxBool isLoadingStores = false.obs;
+  final RxBool isAddingToCart = false.obs; // حماية من الضغط المتكرر
 
   // Search
   final RxString searchQuery = ''.obs;
@@ -46,12 +48,7 @@ class FavoritesController extends GetxController {
     } else {
       // Show error if not a customer
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        Get.snackbar(
-          'access_denied'.tr,
-          'customer_only_feature'.tr,
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.red.withValues(alpha: 0.3),
-        );
+        ToastService.showError('customer_only_feature'.tr);
         Get.back();
       });
     }
@@ -107,13 +104,7 @@ class FavoritesController extends GetxController {
         print('❌ FAVORITES CONTROLLER ERROR: $e');
       }
 
-      Get.snackbar(
-        'خطأ',
-        'فشل في تحميل المفضلة',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
+      ToastService.showError('فشل في تحميل المفضلة');
     } finally {
       isLoading.value = false;
     }
@@ -182,25 +173,13 @@ class FavoritesController extends GetxController {
       // Reload favorites to get updated list
       await loadFavorites();
 
-      Get.snackbar(
-        'تمت الإضافة',
-        'تم إضافة المتجر إلى المفضلة',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: const Color(0xFFFACD02),
-        colorText: const Color(0xFF592E2C),
-      );
+      ToastService.showSuccess('تم إضافة المتجر إلى المفضلة');
     } catch (e) {
       if (kDebugMode) {
         print('❌ ADD STORE TO FAVORITES ERROR: $e');
       }
 
-      Get.snackbar(
-        'خطأ',
-        'فشل في إضافة المتجر إلى المفضلة',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
+      ToastService.showError('فشل في إضافة المتجر إلى المفضلة');
     } finally {
       isLoadingStores.value = false;
     }
@@ -220,13 +199,7 @@ class FavoritesController extends GetxController {
       // Remove from local list immediately for better UX
       favoriteStores.removeWhere((store) => store.id == storeId);
 
-      Get.snackbar(
-        'تم الحذف',
-        'تم حذف المتجر من المفضلة',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: const Color(0xFFEB5757),
-        colorText: Colors.white,
-      );
+      ToastService.showSuccess('تم حذف المتجر من المفضلة');
     } catch (e) {
       if (kDebugMode) {
         print('❌ REMOVE STORE FROM FAVORITES ERROR: $e');
@@ -235,13 +208,7 @@ class FavoritesController extends GetxController {
       // Reload favorites in case of error
       await loadFavorites();
 
-      Get.snackbar(
-        'خطأ',
-        'فشل في حذف المتجر من المفضلة',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
+      ToastService.showError('فشل في حذف المتجر من المفضلة');
     } finally {
       isLoadingStores.value = false;
     }
@@ -266,25 +233,13 @@ class FavoritesController extends GetxController {
       // Reload favorites to get updated list
       await loadFavorites();
 
-      Get.snackbar(
-        'تمت الإضافة',
-        'تم إضافة المنتج إلى المفضلة',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: const Color(0xFFFACD02),
-        colorText: const Color(0xFF592E2C),
-      );
+      ToastService.showSuccess('تم إضافة المنتج إلى المفضلة');
     } catch (e) {
       if (kDebugMode) {
         print('❌ ADD PRODUCT TO FAVORITES ERROR: $e');
       }
 
-      Get.snackbar(
-        'خطأ',
-        'فشل في إضافة المنتج إلى المفضلة',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
+      ToastService.showError('فشل في إضافة المنتج إلى المفضلة');
     } finally {
       isLoadingProducts.value = false;
     }
@@ -304,13 +259,7 @@ class FavoritesController extends GetxController {
       // Remove from local list immediately for better UX
       favoriteProducts.removeWhere((product) => product.id == productId);
 
-      Get.snackbar(
-        'تم الحذف',
-        'تم حذف المنتج من المفضلة',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: const Color(0xFFEB5757),
-        colorText: Colors.white,
-      );
+      ToastService.showSuccess('تم حذف المنتج من المفضلة');
     } catch (e) {
       if (kDebugMode) {
         print('❌ REMOVE PRODUCT FROM FAVORITES ERROR: $e');
@@ -319,13 +268,7 @@ class FavoritesController extends GetxController {
       // Reload favorites in case of error
       await loadFavorites();
 
-      Get.snackbar(
-        'خطأ',
-        'فشل في حذف المنتج من المفضلة',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
+      ToastService.showError('فشل في حذف المنتج من المفضلة');
     } finally {
       isLoadingProducts.value = false;
     }
@@ -361,18 +304,20 @@ class FavoritesController extends GetxController {
 
   // Add to cart functionality
   void addToCart(FavoriteProductModel favoriteProduct) {
-    if (!favoriteProduct.isAvailable) {
-      Get.snackbar(
-        'Out of Stock',
-        'This product is currently out of stock',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: const Color(0xFFEB5757),
-        colorText: Colors.white,
-      );
+    // حماية من الضغط المتكرر
+    if (isAddingToCart.value) {
+      ToastService.showWarning('يتم إضافة المنتج للسلة الآن...');
       return;
     }
 
-    final cartController = Get.find<CartController>();
+    if (!favoriteProduct.isAvailable) {
+      ToastService.showError('This product is currently out of stock');
+      return;
+    }
+
+    try {
+      isAddingToCart.value = true;
+      final cartController = Get.find<CartController>();
     
     // Convert FavoriteProductModel to ProductModel
     final product = ProductModel(
@@ -396,6 +341,13 @@ class FavoritesController extends GetxController {
       quantity: 1, // Default quantity
       additionalOptions: [],
     );
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ ADD TO CART ERROR: $e');
+      }
+    } finally {
+      isAddingToCart.value = false;
+    }
   }
 
   // Clear all favorites
@@ -409,25 +361,13 @@ class FavoritesController extends GetxController {
       favoriteStores.clear();
       favoriteProducts.clear();
 
-      Get.snackbar(
-        'تم المسح',
-        'تم مسح جميع المفضلة ($deletedCount عنصر)',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: const Color(0xFFEB5757),
-        colorText: Colors.white,
-      );
+      ToastService.showSuccess('تم مسح جميع المفضلة ($deletedCount عنصر)');
     } catch (e) {
       if (kDebugMode) {
         print('❌ CLEAR ALL FAVORITES ERROR: $e');
       }
 
-      Get.snackbar(
-        'خطأ',
-        'فشل في مسح المفضلة',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
+      ToastService.showError('فشل في مسح المفضلة');
     } finally {
       isLoading.value = false;
     }
@@ -460,12 +400,7 @@ class FavoritesController extends GetxController {
 
   /// Show authentication error and redirect to login
   void _showAuthenticationError() {
-    Get.snackbar(
-      'authentication_required'.tr,
-      'please_login_to_continue'.tr,
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: Colors.orange.withValues(alpha: 0.3),
-    );
+    ToastService.showWarning('please_login_to_continue'.tr);
     Get.offAllNamed('/login');
   }
 }

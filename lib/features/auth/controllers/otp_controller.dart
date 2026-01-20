@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 import 'package:get/get.dart';
 import 'package:mrsheaf/core/routes/app_routes.dart';
+import '../../../core/services/toast_service.dart';
 import '../services/auth_service.dart';
 import '../models/auth_request.dart';
 import '../../merchant/services/merchant_settings_service.dart';
@@ -93,16 +94,54 @@ class OTPController extends GetxController {
     });
   }
 
-  void onOTPChanged(int index, String value) {
-    if (value.isNotEmpty && index < 3) {
-      focusNodes[index + 1].requestFocus();
-    } else if (value.isEmpty && index > 0) {
-      focusNodes[index - 1].requestFocus();
+  /// Convert Arabic numerals (٠-٩) to English numerals (0-9)
+  String _convertArabicToEnglishNumbers(String input) {
+    const arabicNumbers = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+    const englishNumbers = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+    
+    String result = input;
+    for (int i = 0; i < arabicNumbers.length; i++) {
+      result = result.replaceAll(arabicNumbers[i], englishNumbers[i]);
     }
+    return result;
+  }
 
+  void onOTPChanged(int index, String value) {
+    // Convert Arabic numbers to English
+    String convertedValue = _convertArabicToEnglishNumbers(value);
+    
+    // Keep only digits
+    convertedValue = convertedValue.replaceAll(RegExp(r'[^0-9]'), '');
+    
+    // Update the controller with converted value if different
+    if (convertedValue != value) {
+      otpControllers[index].text = convertedValue;
+      otpControllers[index].selection = TextSelection.fromPosition(
+        TextPosition(offset: convertedValue.length),
+      );
+    }
+    
+    // Navigate to next field if value entered
+    if (convertedValue.isNotEmpty && index < 3) {
+      Future.delayed(const Duration(milliseconds: 50), () {
+        focusNodes[index + 1].requestFocus();
+      });
+    }
+    
     // Auto-verify when all fields are filled
     if (_isOTPComplete()) {
-      verifyOTP();
+      Future.delayed(const Duration(milliseconds: 100), () {
+        verifyOTP();
+      });
+    }
+  }
+
+  /// Handle backspace to go to previous field
+  void onKeyPressed(int index, RawKeyEvent event) {
+    if (event.logicalKey.keyLabel == 'Backspace' && 
+        otpControllers[index].text.isEmpty && 
+        index > 0) {
+      focusNodes[index - 1].requestFocus();
     }
   }
 
@@ -111,7 +150,9 @@ class OTPController extends GetxController {
   }
 
   String _getOTPCode() {
-    return otpControllers.map((controller) => controller.text).join();
+    final rawCode = otpControllers.map((controller) => controller.text).join();
+    // Convert any Arabic numbers to English
+    return _convertArabicToEnglishNumbers(rawCode);
   }
 
   Future<void> verifyOTP() async {
@@ -123,23 +164,13 @@ class OTPController extends GetxController {
 
     if (!_isOTPComplete()) {
       print('❌ OTP is not complete');
-      Get.snackbar(
-        'Incomplete OTP',
-        'Please enter the complete OTP code',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.withValues(alpha: 0.3),
-      );
+      ToastService.showError('Please enter the complete OTP code');
       return;
     }
 
     if (phoneNumber == null) {
       print('❌ Phone number is null!');
-      Get.snackbar(
-        'Error',
-        'Phone number not found',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.withValues(alpha: 0.3),
-      );
+      ToastService.showError('Phone number not found');
       return;
     }
 
@@ -161,22 +192,12 @@ class OTPController extends GetxController {
         final response = await _authService.verifyLoginOTP(request);
 
         if (response.isSuccess) {
-          Get.snackbar(
-            'Login Successful',
-            'Welcome back!',
-            snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: Colors.green.withValues(alpha: 0.3),
-          );
+          ToastService.showSuccess('Welcome back!');
 
           // Smart navigation based on user type
           _navigateBasedOnUserType();
         } else {
-          Get.snackbar(
-            'Verification Failed',
-            response.message,
-            snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: Colors.red.withValues(alpha: 0.3),
-          );
+          ToastService.showError(response.message);
           _clearOTP();
         }
       } else {
@@ -184,12 +205,7 @@ class OTPController extends GetxController {
         final response = await _authService.verifyRegistrationOTP(request);
         
         if (response.isSuccess) {
-          Get.snackbar(
-            'Registration Successful',
-            'Your account has been created successfully!',
-            snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: Colors.green.withValues(alpha: 0.3),
-          );
+          ToastService.showSuccess('Your account has been created successfully!');
 
           if (userType == 'merchant') {
             // Navigate to merchant onboarding
@@ -199,22 +215,12 @@ class OTPController extends GetxController {
             Get.offAllNamed(AppRoutes.HOME);
           }
         } else {
-          Get.snackbar(
-            'Verification Failed',
-            response.message,
-            snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: Colors.red.withValues(alpha: 0.3),
-          );
+          ToastService.showError(response.message);
           _clearOTP();
         }
       }
     } catch (e) {
-      Get.snackbar(
-        'error'.tr,
-        _extractBackendMessage(e is Object ? e : Exception(e.toString())),
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.withValues(alpha: 0.3),
-      );
+      ToastService.showError(_extractBackendMessage(e is Object ? e : Exception(e.toString())));
       _clearOTP();
     } finally {
       isLoading.value = false;
@@ -238,32 +244,17 @@ class OTPController extends GetxController {
       final response = await _authService.resendOTP(request);
 
       if (response.isSuccess) {
-        Get.snackbar(
-          'OTP Sent',
-          'A new OTP has been sent to your phone',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.green.withValues(alpha: 0.3),
-        );
+        ToastService.showSuccess('A new OTP has been sent to your phone');
 
         _clearOTP();
         _startCountdown();
       } else {
-        Get.snackbar(
-          'Failed to Resend',
-          response.message,
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.red.withValues(alpha: 0.3),
-        );
+        ToastService.showError(response.message);
       }
     } catch (e) {
-      Get.snackbar(
-        'error'.tr,
-        _extractBackendMessage(
+      ToastService.showError(_extractBackendMessage(
           e is Object ? e : Exception(e.toString()),
-        ),
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.withValues(alpha: 0.3),
-      );
+        ));
     } finally {
       isLoading.value = false;
     }

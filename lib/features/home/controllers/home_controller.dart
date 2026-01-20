@@ -5,6 +5,7 @@ import 'package:mrsheaf/core/routes/app_routes.dart';
 import 'package:mrsheaf/core/network/api_client.dart';
 import 'package:mrsheaf/core/constants/api_constants.dart';
 import 'package:mrsheaf/core/services/language_service.dart';
+import 'package:mrsheaf/core/services/toast_service.dart';
 import 'package:mrsheaf/features/cart/controllers/cart_controller.dart';
 import 'package:mrsheaf/features/product_details/models/product_model.dart';
 import 'package:mrsheaf/features/categories/models/category_model.dart';
@@ -29,6 +30,7 @@ class HomeController extends GetxController {
   // Loading states
   final RxBool isLoadingRestaurants = false.obs;
   final RxBool isLoadingFeatured = false.obs;
+  final RxBool isAddingToCart = false.obs; // حماية من الضغط المتكرر
 
   // Categories for the filter section - now loaded from backend
   final RxList<CategoryModel> categories = <CategoryModel>[].obs;
@@ -381,7 +383,14 @@ class HomeController extends GetxController {
 
   /// Add product to cart with minimum required options (handled by backend)
   Future<void> addToCart(int productId) async {
+    // حماية من الضغط المتكرر
+    if (isAddingToCart.value) {
+      ToastService.showWarning('يتم إضافة المنتج للسلة الآن...');
+      return;
+    }
+
     try {
+      isAddingToCart.value = true;
       // Create a minimal ProductModel for the cart controller
       final product = ProductModel(
         id: productId,
@@ -409,18 +418,13 @@ class HomeController extends GetxController {
         additionalOptions: [], // Empty - backend will choose minimum required
       );
     } catch (e) {
-      Get.snackbar(
-        'خطأ',
-        'فشل في إضافة المنتج إلى السلة',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-        duration: const Duration(seconds: 2),
-      );
+      ToastService.showError('فشل في إضافة المنتج إلى السلة');
 
       if (kDebugMode) {
         print('❌ ADD TO CART ERROR: $e');
       }
+    } finally {
+      isAddingToCart.value = false;
     }
   }
 
@@ -449,23 +453,13 @@ class HomeController extends GetxController {
       Get.toNamed('/all-products', arguments: {'type': 'recently_added'});
     } else {
       // TODO: Navigate to other sections
-      Get.snackbar(
-        'See All',
-        '$section - See all functionality coming soon',
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      ToastService.showInfo('$section - See all functionality coming soon');
     }
   }
 
   void navigateToProductDetails({int? productId}) {
     if (productId == null) {
-      Get.snackbar(
-        'خطأ',
-        'معرف المنتج غير صحيح',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
+      ToastService.showError('معرف المنتج غير صحيح');
       return;
     }
     Get.toNamed(
@@ -498,12 +492,7 @@ class HomeController extends GetxController {
       if (kDebugMode) {
         print('❌ HOME CONTROLLER ERROR: $e');
       }
-      Get.snackbar(
-        'خطأ',
-        'فشل في تحميل المطاعم',
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
+      ToastService.showError('فشل في تحميل المطاعم');
     } finally {
       isLoadingRestaurants.value = false;
     }

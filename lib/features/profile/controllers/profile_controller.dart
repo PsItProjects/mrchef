@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
 import 'package:mrsheaf/features/profile/models/user_profile_model.dart';
 import 'package:mrsheaf/core/routes/app_routes.dart';
 import 'package:mrsheaf/features/profile/pages/edit_profile_screen.dart';
@@ -7,23 +9,30 @@ import 'package:mrsheaf/features/profile/pages/my_orders_screen.dart';
 import 'package:mrsheaf/features/profile/pages/my_reviews_screen.dart';
 import 'package:mrsheaf/features/profile/pages/settings_screen.dart';
 import 'package:mrsheaf/features/profile/pages/shipping_addresses_screen.dart';
+import 'package:mrsheaf/features/profile/pages/privacy_policy_screen.dart';
 import 'package:mrsheaf/features/profile/controllers/my_orders_controller.dart';
 import 'package:mrsheaf/features/profile/services/address_service.dart';
 import 'package:mrsheaf/features/profile/services/order_service.dart';
 import 'package:mrsheaf/core/network/api_client.dart';
+import '../../../core/services/toast_service.dart';
 import '../../auth/services/auth_service.dart';
 
 class ProfileController extends GetxController {
+  // Cache Keys
+  static const String _profileCacheKey = 'cached_user_profile';
+  static const String _orderCountCacheKey = 'cached_order_count';
+  static const String _addressCountCacheKey = 'cached_address_count';
+  
   // Loading state
   final RxBool isLoading = false.obs;
 
-  // User profile data
+  // User profile data - will be loaded from cache or API
   final Rx<UserProfileModel> userProfile = UserProfileModel(
-    id: 1,
-    fullName: 'Sana Ahmad',
-    email: 'sanaahmd@mail.com',
-    phoneNumber: '58 768 8576',
-    countryCode: '+966',
+    id: 0,
+    fullName: '',
+    email: '',
+    phoneNumber: '',
+    countryCode: '',
   ).obs;
 
   // Profile stats
@@ -35,10 +44,45 @@ class ProfileController extends GetxController {
   final AddressService _addressService = AddressService();
   late final OrderService _orderService;
 
+  /// Load cached data from SharedPreferences
+  Future<void> _loadCachedData() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      
+      // Load cached profile
+      final cachedProfile = prefs.getString(_profileCacheKey);
+      if (cachedProfile != null) {
+        final Map<String, dynamic> profileJson = json.decode(cachedProfile);
+        userProfile.value = UserProfileModel.fromJson(profileJson);
+        print('💾 PROFILE: Loaded from cache');
+        print('   - Name: ${userProfile.value.fullName}');
+      }
+      
+      // Load cached order count
+      final cachedOrderCount = prefs.getInt(_orderCountCacheKey);
+      if (cachedOrderCount != null) {
+        orderCount.value = cachedOrderCount;
+        print('💾 PROFILE: Loaded order count from cache: $cachedOrderCount');
+      }
+      
+      // Load cached address count
+      final cachedAddressCount = prefs.getInt(_addressCountCacheKey);
+      if (cachedAddressCount != null) {
+        addressCount.value = cachedAddressCount;
+        print('💾 PROFILE: Loaded address count from cache: $cachedAddressCount');
+      }
+    } catch (e) {
+      print('❌ PROFILE: Error loading cached data - $e');
+    }
+  }
+
   @override
   void onInit() {
     super.onInit();
     _orderService = OrderService(Get.find<ApiClient>());
+    // تحميل البيانات من الـ Cache أولاً
+    _loadCachedData();
+    // ثم تحديث البيانات من الـ API
     _loadUserProfile();
     _loadAddressCount();
     _loadOrderCount();
@@ -48,10 +92,15 @@ class ProfileController extends GetxController {
     try {
       final addresses = await _addressService.getAddresses();
       addressCount.value = addresses.length;
-      print('📍 PROFILE: Loaded ${addressCount.value} addresses');
+      
+      // Save to cache
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setInt(_addressCountCacheKey, addressCount.value);
+      
+      print('📍 PROFILE: Loaded ${addressCount.value} addresses and cached');
     } catch (e) {
       print('❌ PROFILE: Error loading address count - $e');
-      // Keep default value if API fails
+      // Keep cached value if API fails
     }
   }
 
@@ -60,10 +109,15 @@ class ProfileController extends GetxController {
       final response = await _orderService.getOrders(page: 1, perPage: 1);
       final pagination = response['pagination'] as Map<String, dynamic>;
       orderCount.value = pagination['total'] ?? 0;
-      print('📦 PROFILE: Loaded ${orderCount.value} orders');
+      
+      // Save to cache
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setInt(_orderCountCacheKey, orderCount.value);
+      
+      print('📦 PROFILE: Loaded ${orderCount.value} orders and cached');
     } catch (e) {
       print('❌ PROFILE: Error loading order count - $e');
-      // Keep default value if API fails
+      // Keep cached value if API fails
     }
   }
 
@@ -81,10 +135,15 @@ class ProfileController extends GetxController {
           email: user.email ?? '',
           phoneNumber: user.phoneNumber,
           countryCode: user.countryCode,
-          avatar: user.avatarUrl, // ✅ تحميل رابط الصورة
+          avatar: user.avatarUrl,
         );
 
-        print('✅ PROFILE: Loaded user profile');
+        // Save to cache
+        final prefs = await SharedPreferences.getInstance();
+        final profileJson = json.encode(userProfile.value.toJson());
+        await prefs.setString(_profileCacheKey, profileJson);
+
+        print('✅ PROFILE: Loaded and cached user profile');
         print('   - Name: ${user.displayName}');
         print('   - Email: ${user.email}');
         print('   - Avatar: ${user.avatarUrl}');
@@ -93,7 +152,7 @@ class ProfileController extends GetxController {
       }
     } catch (e) {
       print('❌ PROFILE: Error loading user profile - $e');
-      // Keep using sample data if API fails
+      // Keep using cached data if API fails
     }
   }
 
@@ -146,23 +205,32 @@ class ProfileController extends GetxController {
     Get.toNamed('/support/reports');
   }
 
+  /// Open Privacy Policy page in WebView
+  /// Account deletion is handled through: https://mr-shife.com/complaints
+  void openPrivacyPolicy() {
+    Get.to(() => const PrivacyPolicyScreen());
+  }
+
   // Profile actions
-  void updateProfile(UserProfileModel updatedProfile) {
+  Future<void> updateProfile(UserProfileModel updatedProfile) async {
     userProfile.value = updatedProfile;
-    Get.snackbar(
-      'Profile Updated',
-      'Your profile has been updated successfully',
-      snackPosition: SnackPosition.BOTTOM,
-    );
+    
+    // Update cache
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final profileJson = json.encode(updatedProfile.toJson());
+      await prefs.setString(_profileCacheKey, profileJson);
+      print('💾 PROFILE: Updated cache after profile edit');
+    } catch (e) {
+      print('❌ PROFILE: Error updating cache - $e');
+    }
+    
+    ToastService.showSuccess('تم تحديث ملفك الشخصي بنجاح');
   }
 
   void changeProfilePhoto() {
     // TODO: Implement photo picker
-    Get.snackbar(
-      'Change Photo',
-      'Photo picker functionality coming soon',
-      snackPosition: SnackPosition.BOTTOM,
-    );
+    ToastService.showInfo('سيتم إضافة هذه الميزة قريباً');
   }
 
   void logout() {
@@ -228,32 +296,33 @@ class ProfileController extends GetxController {
       final response = await authService.logout();
 
       if (response.isSuccess) {
-        Get.snackbar(
-          'Logged Out',
-          'You have been logged out successfully',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.green.withValues(alpha: 0.3),
-        );
+        // Clear cached profile data
+        await _clearCache();
+        
+        ToastService.showSuccess('تم تسجيل الخروج بنجاح');
 
         // Navigate to login screen
         Get.offAllNamed('/login');
       } else {
-        Get.snackbar(
-          'Logout Failed',
-          response.message,
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.red.withValues(alpha: 0.3),
-        );
+        ToastService.showError(response.message);
       }
     } catch (e) {
-      Get.snackbar(
-        'Error',
-        'An error occurred during logout',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.withValues(alpha: 0.3),
-      );
+      ToastService.showError('An error occurred during logout');
     } finally {
       isLoading.value = false;
+    }
+  }
+
+  /// Clear all cached profile data
+  Future<void> _clearCache() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove(_profileCacheKey);
+      await prefs.remove(_orderCountCacheKey);
+      await prefs.remove(_addressCountCacheKey);
+      print('🗑️ PROFILE: Cache cleared on logout');
+    } catch (e) {
+      print('❌ PROFILE: Error clearing cache - $e');
     }
   }
 

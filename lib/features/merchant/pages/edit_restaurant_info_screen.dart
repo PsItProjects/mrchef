@@ -7,6 +7,7 @@ import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/features/merchant/services/merchant_profile_service.dart';
 import 'package:mrsheaf/features/merchant/pages/image_crop_screen.dart';
 import 'package:mrsheaf/features/merchant/widgets/location_picker_widget.dart';
+import '../../../core/services/toast_service.dart';
 
 class EditRestaurantInfoScreen extends StatefulWidget {
   const EditRestaurantInfoScreen({Key? key}) : super(key: key);
@@ -192,12 +193,7 @@ class _EditRestaurantInfoScreenState extends State<EditRestaurantInfoScreen> {
         setState(() => _selectedLogo = tempFile);
       }
     } catch (e) {
-      Get.snackbar(
-        'error'.tr,
-        'image_upload_failed'.tr,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
+      ToastService.showError('image_upload_failed'.tr);
     }
   }
 
@@ -213,12 +209,7 @@ class _EditRestaurantInfoScreenState extends State<EditRestaurantInfoScreen> {
       await tempFile.writeAsBytes(imageBytes);
       setState(() => _selectedCover = tempFile);
     } catch (e) {
-      Get.snackbar(
-        'error'.tr,
-        'image_upload_failed'.tr,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
+      ToastService.showError('image_upload_failed'.tr);
     }
   }
 
@@ -309,7 +300,7 @@ class _EditRestaurantInfoScreenState extends State<EditRestaurantInfoScreen> {
       if (_selectedLogo != null) {
         final logoSuccess = await _profileService.uploadRestaurantLogo(_selectedLogo!);
         if (!logoSuccess) {
-          Get.snackbar('error'.tr, 'logo_upload_failed'.tr, backgroundColor: Colors.red, colorText: Colors.white);
+          ToastService.showError('logo_upload_failed'.tr);
           setState(() => _isLoading = false);
           return;
         }
@@ -319,7 +310,7 @@ class _EditRestaurantInfoScreenState extends State<EditRestaurantInfoScreen> {
       if (_selectedCover != null) {
         final coverSuccess = await _profileService.uploadRestaurantCover(_selectedCover!);
         if (!coverSuccess) {
-          Get.snackbar('error'.tr, 'cover_upload_failed'.tr, backgroundColor: Colors.red, colorText: Colors.white);
+          ToastService.showError('cover_upload_failed'.tr);
           setState(() => _isLoading = false);
           return;
         }
@@ -345,28 +336,16 @@ class _EditRestaurantInfoScreenState extends State<EditRestaurantInfoScreen> {
       setState(() => _isLoading = false);
 
       if (success) {
-        Get.snackbar(
-          'success'.tr,
-          'restaurant_info_updated_successfully'.tr,
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.green,
-          colorText: Colors.white,
-          duration: const Duration(seconds: 2),
-        );
+        ToastService.showSuccess('restaurant_info_updated_successfully'.tr);
         
         await Future.delayed(const Duration(milliseconds: 500));
         Get.back(result: true);
       } else {
-        Get.snackbar(
-          'error'.tr,
-          'restaurant_info_update_failed'.tr,
-          backgroundColor: Colors.red,
-          colorText: Colors.white,
-        );
+        ToastService.showError('restaurant_info_update_failed'.tr);
       }
     } catch (e) {
       setState(() => _isLoading = false);
-      Get.snackbar('error'.tr, e.toString(), backgroundColor: Colors.red, colorText: Colors.white);
+      ToastService.showError(e.toString());
     }
   }
 

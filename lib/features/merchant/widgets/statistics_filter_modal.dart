@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/features/merchant/controllers/merchant_statistics_controller.dart';
+import '../../../core/services/toast_service.dart';
 
 class StatisticsFilterModal extends StatefulWidget {
   final MerchantStatisticsController controller;
@@ -306,13 +307,7 @@ class _StatisticsFilterModalState extends State<StatisticsFilterModal> {
   void _applyFilter() {
     if (_selectedFilter == StatisticsFilterType.custom) {
       if (_startDate == null || _endDate == null) {
-        Get.snackbar(
-          'error'.tr,
-          'select_date_range'.tr,
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.red,
-          colorText: Colors.white,
-        );
+        ToastService.showError('select_date_range'.tr);
         return;
       }
     }

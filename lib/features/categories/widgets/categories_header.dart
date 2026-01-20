@@ -3,6 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:mrsheaf/core/localization/translation_helper.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
+import '../../../core/services/toast_service.dart';
 import 'package:mrsheaf/features/categories/controllers/categories_controller.dart';
 
 class CategoriesHeader extends GetView<CategoriesController> {
@@ -45,11 +46,7 @@ class CategoriesHeader extends GetView<CategoriesController> {
           // Notification icon
           GestureDetector(
             onTap: () {
-              Get.snackbar(
-                'Notifications',
-                'Notifications functionality coming soon',
-                snackPosition: SnackPosition.BOTTOM,
-              );
+              ToastService.showInfo('Notifications functionality coming soon');
             },
             child: SvgPicture.asset(
               'assets/icons/notification_icon.svg',
