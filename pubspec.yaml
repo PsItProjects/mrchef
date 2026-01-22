@@ -1,6 +1,6 @@
 name: mrsheaf
 description: MrSheaf App
-version: 1.1.0+5
+version: 1.1.1+6
 
 environment:
   sdk: ">=2.19.0 <4.0.0"
