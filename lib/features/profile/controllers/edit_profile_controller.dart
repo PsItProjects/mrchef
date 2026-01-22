@@ -235,10 +235,17 @@ class EditProfileController extends GetxController {
       if (response.isSuccess) {
         ToastService.showSuccess('profile_updated_successfully'.tr);
 
-        // Refresh ProfileController from API to get latest data
+        // Force refresh ProfileController from API to get latest data
+        // ✅ skipLanguageUpdate: true - لمنع تغيير لغة التطبيق بعد التعديل
         final profileController = Get.find<ProfileController>();
-        await profileController.refreshProfile();
+        await profileController.refreshProfile(forceRefresh: true, skipLanguageUpdate: true);
+        
+        print('✅ EDIT PROFILE: Profile refreshed with updated name: ${profileController.userProfile.value.fullName}');
 
+        // Wait for toast to show
+        await Future.delayed(const Duration(milliseconds: 300));
+
+        // Navigate back to Profile screen (main profile page with updated data)
         Get.back();
       } else {
         ToastService.showError(response.message);

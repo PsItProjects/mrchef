@@ -136,22 +136,16 @@ class ShippingAddressesController extends GetxController {
         if (existingIndex != -1) {
           addresses[existingIndex] = updatedAddress;
         }
-        Get.back();
-        await Future.delayed(Duration(seconds: 1));
         ToastService.showSuccess('Address has been updated successfully');
       } else {
         // Add new address
         final newAddress = await _addressService.addAddress(address);
         addresses.add(newAddress);
-        Get.back();
-       await Future.delayed(Duration(seconds: 1));
-
         ToastService.showSuccess('New address has been added successfully');
-
-
       }
 
-      Get.back();
+      // Go back with result to indicate success
+      Get.back(result: true);
     } catch (e) {
       ToastService.showError('Failed to save address: ${e.toString()}');
     }

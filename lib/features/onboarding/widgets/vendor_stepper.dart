@@ -15,7 +15,7 @@ class VendorStepper extends StatelessWidget {
     return EasyStepper(
       activeStep: currentStep,
       lineStyle: LineStyle(
-        lineLength: 50,
+        lineLength: 40,
         lineSpace: 0,
         lineType: LineType.normal,
         defaultLineColor: Color(0xFFD2D2D2),
@@ -26,34 +26,28 @@ class VendorStepper extends StatelessWidget {
       finishedStepTextColor: Color(0xFFDAAD0A),
       internalPadding: 0,
       showLoadingAnimation: false,
-      stepRadius: 16,
+      stepRadius: 14,
       showStepBorder: false,
+      padding: EdgeInsets.symmetric(horizontal: 10, vertical: 20),
       steps: [
         EasyStep(
           customStep: Container(
-            width: 32,
-            height: 32,
+            width: 28,
+            height: 28,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: currentStep >= 0 ? Color(0xFFDAAD0A) : Color(0xFFD2D2D2),
             ),
             child: currentStep >= 0
-                ? Icon(Icons.check, color: Colors.white, size: 20)
+                ? Icon(Icons.check, color: Colors.white, size: 16)
                 : Container(),
           ),
           title: 'user_information'.tr,
-
-          // titleStyle: TextStyle(
-          //   fontFamily: 'Lato',
-          //   fontWeight: FontWeight.w600,
-          //   fontSize: 12,
-          //   color: currentStep >= 0 ? Color(0xFFDAAD0A) : Color(0xFFD2D2D2),
-          // ),
         ),
         EasyStep(
           customStep: Container(
-            width: 32,
-            height: 32,
+            width: 28,
+            height: 28,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: currentStep >= 1
@@ -66,10 +60,10 @@ class VendorStepper extends StatelessWidget {
                   : null,
             ),
             child: currentStep >= 1
-                ? Icon(Icons.check, color: Colors.white, size: 20)
+                ? Icon(Icons.check, color: Colors.white, size: 16)
                 : currentStep == 0
                     ? Container(
-                        margin: EdgeInsets.all(9),
+                        margin: EdgeInsets.all(7),
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           color: Color(0xFFFACD02),
@@ -78,18 +72,11 @@ class VendorStepper extends StatelessWidget {
                     : Container(),
           ),
           title: 'subscription'.tr,
-          // titleStyle: TextStyle(
-          //   fontFamily: 'Lato',
-          //   fontWeight: FontWeight.w600,
-          //   fontSize: 12,
-          //   color: currentStep >= 1 ? Color(0xFFDAAD0A) :
-          //          currentStep == 0 ? Color(0xFFFACD02) : Color(0xFFD2D2D2),
-          // ),
         ),
         EasyStep(
           customStep: Container(
-            width: 32,
-            height: 32,
+            width: 28,
+            height: 28,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: currentStep >= 2
@@ -102,10 +89,10 @@ class VendorStepper extends StatelessWidget {
                   : null,
             ),
             child: currentStep >= 2
-                ? Icon(Icons.check, color: Colors.white, size: 20)
+                ? Icon(Icons.check, color: Colors.white, size: 16)
                 : currentStep == 1
                     ? Container(
-                        margin: EdgeInsets.all(9),
+                        margin: EdgeInsets.all(7),
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           color: Color(0xFFFACD02),
@@ -114,13 +101,6 @@ class VendorStepper extends StatelessWidget {
                     : Container(),
           ),
           title: 'store_information'.tr,
-          // titleStyle: TextStyle(
-          //   fontFamily: 'Lato',
-          //   fontWeight: FontWeight.w600,
-          //   fontSize: 12,
-          //   color: currentStep >= 2 ? Color(0xFFDAAD0A) :
-          //          currentStep == 1 ? Color(0xFFFACD02) : Color(0xFFD2D2D2),
-          // ),
         ),
       ],
     );

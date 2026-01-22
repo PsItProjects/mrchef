@@ -2,11 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mrsheaf/features/profile/models/address_model.dart';
 import 'package:mrsheaf/features/profile/controllers/shipping_addresses_controller.dart';
+import 'package:mrsheaf/features/profile/services/address_service.dart';
+import 'package:mrsheaf/core/services/toast_service.dart';
 
 class AddEditAddressController extends GetxController {
   final AddressModel? existingAddress;
+  final bool fromCheckout;
+  final AddressService _addressService = AddressService();
 
-  AddEditAddressController({this.existingAddress});
+  AddEditAddressController({this.existingAddress, this.fromCheckout = false});
 
   // Form controllers
   final cityController = TextEditingController();
@@ -78,12 +82,36 @@ class AddEditAddressController extends GetxController {
     );
 
     try {
-      final shippingController = Get.find<ShippingAddressesController>();
-      await shippingController.saveAddress(address);
-
-
+      // If coming from checkout, use service directly
+      if (fromCheckout) {
+        if (address.id != null) {
+          await _addressService.updateAddress(address.id!, address);
+          ToastService.showSuccess('address_saved'.tr);
+        } else {
+          await _addressService.addAddress(address);
+          ToastService.showSuccess('address_saved'.tr);
+        }
+        // Go back with result
+        Get.back(result: true);
+      } else {
+        // Coming from profile - use ShippingAddressesController if available
+        if (Get.isRegistered<ShippingAddressesController>()) {
+          final shippingController = Get.find<ShippingAddressesController>();
+          await shippingController.saveAddress(address);
+        } else {
+          // Fallback to direct service
+          if (address.id != null) {
+            await _addressService.updateAddress(address.id!, address);
+            ToastService.showSuccess('address_saved'.tr);
+          } else {
+            await _addressService.addAddress(address);
+            ToastService.showSuccess('address_saved'.tr);
+          }
+          Get.back(result: true);
+        }
+      }
     } catch (e) {
-      // Error is already handled in ShippingAddressesController
+      ToastService.showError('Failed to save address: ${e.toString()}');
     } finally {
       isLoading.value = false;
     }

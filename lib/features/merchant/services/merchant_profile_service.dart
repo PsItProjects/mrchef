@@ -1,6 +1,8 @@
 import 'dart:io';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mrsheaf/core/network/api_client.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/core/localization/translation_helper.dart';
@@ -9,22 +11,75 @@ import '../../../core/services/toast_service.dart';
 
 class MerchantProfileService extends GetxService {
   final ApiClient _apiClient = Get.find<ApiClient>();
+  static const String _cacheKey = 'merchant_profile_cache';
 
-  /// Get merchant profile
-  Future<Map<String, dynamic>?> getProfile() async {
+  /// Get merchant profile (with cache)
+  Future<Map<String, dynamic>?> getProfile({bool forceRefresh = false}) async {
     try {
-      print('📊 Loading merchant profile...');
+      // إذا مش force refresh، جرب تجيب من الكاش أولاً
+      if (!forceRefresh) {
+        final cachedData = await _getProfileFromCache();
+        if (cachedData != null) {
+          print('✅ Profile loaded from cache');
+          return cachedData;
+        }
+      }
+
+      print('📊 Loading merchant profile from API...');
       
       final response = await _apiClient.get('/merchant/profile');
       
       if (response.statusCode == 200) {
-        print('✅ Profile loaded successfully');
-        return response.data['data'];
+        print('✅ Profile loaded successfully from API');
+        final data = response.data['data'];
+        
+        // حفظ في الكاش
+        await _saveProfileToCache(data);
+        
+        return data;
       }
       return null;
     } on dio.DioException catch (e) {
       print('❌ Error loading profile: ${e.message}');
-      return null;
+      // لو فشل الـ API، جرب تجيب من الكاش
+      return await _getProfileFromCache();
+    }
+  }
+
+  /// Save profile to cache
+  Future<void> _saveProfileToCache(Map<String, dynamic> data) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final jsonString = jsonEncode(data);
+      await prefs.setString(_cacheKey, jsonString);
+      print('💾 Profile saved to cache');
+    } catch (e) {
+      print('❌ Error saving to cache: $e');
+    }
+  }
+
+  /// Get profile from cache
+  Future<Map<String, dynamic>?> _getProfileFromCache() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final jsonString = prefs.getString(_cacheKey);
+      if (jsonString != null) {
+        return jsonDecode(jsonString) as Map<String, dynamic>;
+      }
+    } catch (e) {
+      print('❌ Error reading from cache: $e');
+    }
+    return null;
+  }
+
+  /// Clear profile cache
+  Future<void> clearCache() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove(_cacheKey);
+      print('🗑️ Profile cache cleared');
+    } catch (e) {
+      print('❌ Error clearing cache: $e');
     }
   }
 
@@ -77,7 +132,10 @@ class MerchantProfileService extends GetxService {
 
       if (response.statusCode == 200) {
         print('✅ Personal info updated successfully');
-        ToastService.showSuccess('تم تحديث المعلومات الشخصية بنجاح');
+        
+        // تحديث الكاش بعد النجاح
+        await getProfile(forceRefresh: true);
+        
         return true;
       }
       return false;
@@ -129,6 +187,10 @@ class MerchantProfileService extends GetxService {
 
       if (response.statusCode == 200) {
         print('✅ Restaurant info updated successfully');
+        
+        // تحديث الكاش بعد النجاح
+        await getProfile(forceRefresh: true);
+        
         return true;
       }
       return false;
@@ -356,6 +418,9 @@ class MerchantProfileService extends GetxService {
       if (response.statusCode == 200) {
         print('✅ Avatar updated successfully');
 
+        // تحديث الكاش
+        await getProfile(forceRefresh: true);
+
         // Get message from API response
         final message = response.data['message'] ?? TranslationHelper.tr('image_upload_success');
 
@@ -384,6 +449,10 @@ class MerchantProfileService extends GetxService {
 
       if (response.statusCode == 200) {
         print('✅ Avatar deleted successfully');
+        
+        // تحديث الكاش
+        await getProfile(forceRefresh: true);
+        
         ToastService.showSuccess('تم حذف الصورة الشخصية بنجاح');
         return true;
       }
@@ -415,6 +484,9 @@ class MerchantProfileService extends GetxService {
       if (response.statusCode == 200) {
         print('✅ Merchant cover updated successfully');
 
+        // تحديث الكاش
+        await getProfile(forceRefresh: true);
+
         final message = response.data['message'] ?? TranslationHelper.tr('image_upload_success');
 
         ToastService.showSuccess(message);
@@ -441,6 +513,10 @@ class MerchantProfileService extends GetxService {
 
       if (response.statusCode == 200) {
         print('✅ Merchant cover deleted successfully');
+        
+        // تحديث الكاش
+        await getProfile(forceRefresh: true);
+        
         ToastService.showSuccess(TranslationHelper.tr('cover_deleted_successfully'));
         return true;
       }

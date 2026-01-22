@@ -8,13 +8,14 @@ import 'package:mrsheaf/features/profile/widgets/add_edit_address_form.dart';
 
 class AddEditAddressScreen extends StatelessWidget {
   final AddressModel? address;
+  final bool fromCheckout;
 
-  const AddEditAddressScreen({super.key, this.address});
+  const AddEditAddressScreen({super.key, this.address, this.fromCheckout = false});
 
   @override
   Widget build(BuildContext context) {
     // Initialize controller with address data if editing
-    Get.put(AddEditAddressController(existingAddress: address));
+    Get.put(AddEditAddressController(existingAddress: address, fromCheckout: fromCheckout));
     
     return GetBuilder<AddEditAddressController>(
       builder: (controller) => Scaffold(

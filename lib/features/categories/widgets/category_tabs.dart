@@ -48,7 +48,7 @@ class CategoryTabs extends GetView<CategoriesController> {
           // ),
           //
           ,const SizedBox(width: 40),
-          _buildTab('categories'.tr,1)
+          _buildTab('restaurants'.tr,1)
 
           // Kitchens tab
           // Expanded(

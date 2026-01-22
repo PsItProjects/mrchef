@@ -42,6 +42,7 @@ class ApiConstants {
 
   // Order endpoints
   static const String customerOrders = '/customer/shopping/orders';
+  static const String checkout = '/customer/shopping/checkout';
 
   // Product details endpoints
   static String productDetails(int id) => '/customer/shopping/products/$id';

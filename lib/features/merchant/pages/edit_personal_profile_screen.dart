@@ -7,6 +7,7 @@ import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/features/merchant/services/merchant_profile_service.dart';
 import 'package:mrsheaf/core/localization/translation_helper.dart';
 import 'package:mrsheaf/features/merchant/pages/image_crop_screen.dart';
+import 'package:mrsheaf/features/merchant/pages/merchant_settings_screen.dart';
 import '../../../core/services/toast_service.dart';
 
 class EditPersonalProfileScreen extends StatefulWidget {
@@ -57,8 +58,8 @@ class _EditPersonalProfileScreenState extends State<EditPersonalProfileScreen> {
         return;
       }
 
-      // Otherwise, fetch from API
-      final data = await _profileService.getProfile();
+      // Load from cache/API
+      final data = await _profileService.getProfile(forceRefresh: forceRefresh);
       if (data != null) {
         _setProfileData(data);
       } else {
@@ -255,6 +256,7 @@ class _EditPersonalProfileScreenState extends State<EditPersonalProfileScreen> {
       }
 
       // Update personal info
+      print('📝 Saving personal info: nameAr=${_nameArController.text}, nameEn=${_nameEnController.text}, email=${_emailController.text}');
       await _profileService.updatePersonalInfo(
         nameAr: _nameArController.text,
         nameEn: _nameEnController.text,
@@ -262,15 +264,22 @@ class _EditPersonalProfileScreenState extends State<EditPersonalProfileScreen> {
       );
 
       // Reload profile data to get updated avatar and cover URLs (force refresh from API)
+      print('🔄 Reloading profile data after save...');
       await _loadProfileData(forceRefresh: true);
 
       // Show success message
-      ToastService.showSuccess(TranslationHelper.tr('profile_updated_successfully'));
+      ToastService.showSuccess('profile_updated_successfully'.tr);
 
-      // Wait a bit for snackbar to show before closing
-      await Future.delayed(const Duration(milliseconds: 500));
+      // Wait for toast to show
+      await Future.delayed(const Duration(milliseconds: 300));
 
-      Get.back(result: true);
+      // Navigate to Settings screen (replace all previous screens)
+      Get.offUntil(
+        GetPageRoute(
+          page: () => const MerchantSettingsScreen(),
+        ),
+        (route) => route.isFirst,
+      );
     } finally {
       setState(() => _isLoading = false);
     }
@@ -561,13 +570,14 @@ class _EditPersonalProfileScreenState extends State<EditPersonalProfileScreen> {
             // Save button
             SizedBox(
               width: double.infinity,
-              height: 50,
+              height: 56, // زيادة الارتفاع
               child: ElevatedButton(
                 onPressed: _isLoading ? null : _saveChanges,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primaryColor,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   elevation: 2,
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
                 ),
                 child: _isLoading
                     ? const SizedBox(
@@ -578,12 +588,17 @@ class _EditPersonalProfileScreenState extends State<EditPersonalProfileScreen> {
                           strokeWidth: 2,
                         ),
                       )
-                    : Text(
-                        TranslationHelper.tr('save_changes'),
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                    : FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          TranslationHelper.tr('save_changes'),
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.visible,
                         ),
                       ),
               ),

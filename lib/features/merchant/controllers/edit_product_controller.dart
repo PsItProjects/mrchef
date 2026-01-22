@@ -612,8 +612,13 @@ class EditProductController extends GetxController {
           print('⚠️ Could not refresh products controller: $e');
         }
 
-        // Navigate to products list screen
-        Get.offAllNamed('/merchant/products');
+        // Navigate back to products list screen (preserve navigation history)
+        Get.until((route) => route.settings.name == '/merchant/products' || route.settings.name == '/merchant-home' || route.isFirst);
+        
+        // If we're not already on products screen, navigate to it
+        if (Get.currentRoute != '/merchant/products') {
+          Get.toNamed('/merchant/products');
+        }
       } else {
         print('❌ Product update returned null');
         ToastService.showError('error_updating_product'.tr);

@@ -34,19 +34,42 @@ class _MerchantSettingsScreenState extends State<MerchantSettingsScreen> {
     _loadProfile();
   }
 
-  Future<void> _loadProfile() async {
+  Future<void> _loadProfile({bool forceRefresh = false}) async {
     print('🔄 Settings: Loading profile...');
-    setState(() => _isLoading = true);
-    final data = await _profileService.getProfile();
-    print('✅ Settings: Profile loaded');
-    print('   data keys: ${data?.keys.toList()}');
-    if (data != null && data.containsKey('merchant')) {
-      print('   merchant avatar: ${data['merchant']?['avatar']}');
+    
+    if (forceRefresh) {
+      // إذا force refresh، نجلب من الـ API مباشرة
+      setState(() => _isLoading = true);
+      final freshData = await _profileService.getProfile(forceRefresh: true);
+      if (freshData != null && mounted) {
+        setState(() {
+          _profileData = freshData;
+          _isLoading = false;
+        });
+        print('✅ Settings: Profile force refreshed from API');
+      } else {
+        setState(() => _isLoading = false);
+      }
+    } else {
+      // Load from cache first (fast)
+      final cachedData = await _profileService.getProfile(forceRefresh: false);
+      if (cachedData != null) {
+        setState(() {
+          _profileData = cachedData;
+          _isLoading = false;
+        });
+        print('✅ Settings: Profile loaded from cache');
+      }
+      
+      // Then refresh from API in background (accurate)
+      final freshData = await _profileService.getProfile(forceRefresh: true);
+      if (freshData != null && mounted) {
+        setState(() {
+          _profileData = freshData;
+        });
+        print('✅ Settings: Profile refreshed from API');
+      }
     }
-    setState(() {
-      _profileData = data;
-      _isLoading = false;
-    });
   }
 
   @override
@@ -114,11 +137,19 @@ class _MerchantSettingsScreenState extends State<MerchantSettingsScreen> {
   Widget _buildProfileCard() {
     final merchant = _profileData?['merchant'];
 
+    print('🖼️ Settings: Building profile card');
+    print('   merchant data: $merchant');
+    
     // Get merchant name based on current language
     final nameData = merchant?['name'];
+    print('   nameData: $nameData (type: ${nameData.runtimeType})');
+    
     String merchantName;
     if (nameData is Map) {
-      merchantName = _languageService.isArabic
+      final isArabic = _languageService.isArabic;
+      print('   Current language: ${isArabic ? "Arabic" : "English"}');
+      
+      merchantName = isArabic
           ? (nameData['ar'] ??
               nameData['en'] ??
               nameData['current'] ??
@@ -127,8 +158,11 @@ class _MerchantSettingsScreenState extends State<MerchantSettingsScreen> {
               nameData['ar'] ??
               nameData['current'] ??
               'merchant'.tr);
+      
+      print('   Selected name: $merchantName');
     } else {
       merchantName = nameData?.toString() ?? 'merchant'.tr;
+      print('   Name as string: $merchantName');
     }
 
     final email = merchant?['email'] ?? 'merchant@example.com';
@@ -199,7 +233,10 @@ class _MerchantSettingsScreenState extends State<MerchantSettingsScreen> {
             onTap: () async {
               final result =
                   await Get.to(() => const EditPersonalProfileScreen());
-              if (result == true) await _loadProfile();
+              if (result == true) {
+                // إعادة التحميل من الـ API مباشرة
+                await _loadProfile(forceRefresh: true);
+              }
             },
             child: Icon(Icons.edit, color: AppColors.primaryColor),
           ),
@@ -254,7 +291,10 @@ class _MerchantSettingsScreenState extends State<MerchantSettingsScreen> {
           onTap: () async {
             final result =
                 await Get.to(() => const EditPersonalProfileScreen());
-            if (result == true) await _loadProfile();
+            if (result == true) {
+              // إعادة التحميل من الـ API مباشرة
+              await _loadProfile(forceRefresh: true);
+            }
           },
         ),
       ],

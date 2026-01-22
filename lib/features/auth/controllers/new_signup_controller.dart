@@ -108,6 +108,12 @@ class NewSignupController extends GetxController {
         final response = await _authService.registerMerchant(request);
 
         if (response.isSuccess) {
+          // 🔍 Print OTP code for development
+          if (response.data?.verificationCode != null) {
+            print('🔐 OTP CODE: ${response.data!.verificationCode}');
+            print('⏰ Expires at: ${response.data!.expiresAt}');
+          }
+          
           ToastService.showSuccess(response.message);
 
           // Navigate to OTP verification
@@ -140,6 +146,12 @@ class NewSignupController extends GetxController {
         final response = await _authService.registerCustomer(request);
 
         if (response.isSuccess) {
+          // 🔍 Print OTP code for development
+          if (response.data?.verificationCode != null) {
+            print('🔐 OTP CODE: ${response.data!.verificationCode}');
+            print('⏰ Expires at: ${response.data!.expiresAt}');
+          }
+          
           ToastService.showSuccess(response.message);
 
           // Navigate to OTP verification

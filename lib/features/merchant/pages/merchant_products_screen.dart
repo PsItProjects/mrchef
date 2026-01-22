@@ -20,7 +20,14 @@ class MerchantProductsScreen extends GetView<MerchantProductsController> {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: AppColors.textDarkColor),
-          onPressed: () => Get.back(),
+          onPressed: () {
+            // If can't go back (no history), go to merchant settings
+            if (Navigator.of(context).canPop()) {
+              Get.back();
+            } else {
+              Get.offAllNamed('/merchant-home');
+            }
+          },
         ),
         title: Text(
           'my_products'.tr,

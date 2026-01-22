@@ -109,6 +109,15 @@ class AppTranslations extends Translations {
           'register': 'Register',
           'forgot_password': 'Forgot Password?',
           'remember_me': 'Remember Me',
+          
+          // Vendor onboarding
+          'vendor_step1_title': 'Choose Your Plan',
+          'vendor_step1_subtitle': 'Start managing your restaurant today',
+          'already_have_account': 'Already have an account? ',
+          'basic_features': 'Basic Features',
+          'plan_name': 'Plan Name',
+          'enter_store_details': 'Enter your store information below',
+          
           'guest': 'Guest',
           'profile': 'Settings',
           'account': 'Account',
@@ -516,6 +525,25 @@ class AppTranslations extends Translations {
           'no_addresses': 'No addresses added',
           'add_delivery_address':
               'Add your delivery addresses to make ordering easier and faster',
+          
+          // Add Address Modal
+          'enter_city': 'Enter your city',
+          'state_province': 'State/Province (optional)',
+          'enter_state': 'Enter your state',
+          'address_line_1': 'Address Line 1',
+          'address_line_2': 'Address Line 2 (optional)',
+          'enter_address': 'Enter your address',
+          'apartment_suite': 'Apartment, suite, etc.',
+          'make_default': 'Make Default',
+          'save_address': 'Save Address',
+          'city_required': 'City is required',
+          'address_required': 'Address is required',
+          'failed_to_load_addresses': 'Failed to load addresses',
+          'failed_to_save_address': 'Failed to save address',
+          'please_select_address': 'Please select an address',
+          'cart_is_empty': 'Cart is empty',
+          'order_created_success': 'Order created successfully',
+          'failed_to_create_order': 'Failed to create order',
 
           // Payment & Billing
           'payment_methods': 'Payment Methods',
@@ -696,6 +724,34 @@ class AppTranslations extends Translations {
           'store_name_english': 'Store Name - English',
           'store_name_arabic': 'Store Name - Arabic',
           'enter_store_name': 'Enter store name',
+          'enter_store_details': 'Enter your store details and location',
+          
+          // Location
+          'store_location': 'Store Location',
+          'location_required_for_delivery': 'Location is required for delivery services',
+          'get_current_location': 'Get Current Location',
+          'location_fetched': 'Location Fetched Successfully',
+          'location_fetched_successfully': 'Location fetched successfully',
+          'please_get_location': 'Please get your store location',
+          'location_permission_denied': 'Location permission denied',
+          'location_permission_denied_forever': 'Location permission denied forever. Please enable it from settings',
+          'error_getting_location': 'Error getting location',
+          'latitude': 'Latitude',
+          'longitude': 'Longitude',
+          'select_on_map': 'Select on Map',
+          'hide_map': 'Hide Map',
+          'tap_to_select_location': 'Tap on the map to select location or drag the marker',
+          
+          // Address
+          'store_address': 'Store Address',
+          'address_required_note': 'Address is required in both English and Arabic',
+          'address_english': 'Address (English)',
+          'address_arabic': 'Address (Arabic)',
+          'enter_address_english': 'Please enter address in English',
+          'enter_address_arabic': 'Please enter address in Arabic',
+          'enter_address_english_placeholder': 'e.g. 123 Main Street, District, City',
+          'enter_address_arabic_placeholder': 'مثال: 123 شارع الرئيسي، الحي، المدينة',
+          
           'commercial_registration_number': 'Commercial registration number',
           'enter_commercial_registration':
               'Enter your commercial registration number',
@@ -1246,8 +1302,10 @@ class AppTranslations extends Translations {
           'vendor_step_3': 'Vendor Step 3',
           'vendor_step_4': 'Vendor Step 4',
           'no_subscription_plans': 'No subscription plans available',
-          'user_information': 'User information',
-          'subscription': 'Subscription',
+          'user_information': 'User Info',
+          'subscription': 'Plan',
+          'store_information': 'Store Info',
+          'features': 'features',
 
           // Misc
           'camera': 'Camera',
@@ -1317,7 +1375,7 @@ class AppTranslations extends Translations {
           'sort': 'ترتيب',
           'loading': 'جاري التحميل...',
           'error': 'خطأ',
-          'success': 'نجح',
+          'success': 'نجاح',
           'warning': 'تحذير',
           'unexpected_error': 'حدث خطأ غير متوقع',
           'failed_to_load_products': 'فشل في تحميل المنتجات',
@@ -1404,6 +1462,15 @@ class AppTranslations extends Translations {
           'register': 'تسجيل',
           'forgot_password': 'نسيت كلمة المرور؟',
           'remember_me': 'تذكرني',
+          
+          // Vendor onboarding
+          'vendor_step1_title': 'اختر باقتك',
+          'vendor_step1_subtitle': 'ابدأ بإدارة مطعمك اليوم',
+          'already_have_account': 'لديك حساب بالفعل؟ ',
+          'basic_features': 'المميزات الأساسية',
+          'plan_name': 'اسم الباقة',
+          'enter_store_details': 'أدخل معلومات متجرك أدناه',
+          
           'guest': 'ضيف',
           'profile': 'الإعدادات',
           'account': 'الحساب',
@@ -1809,6 +1876,25 @@ class AppTranslations extends Translations {
           'address_deleted': 'تم حذف العنوان بنجاح',
           'no_addresses': 'لا توجد عناوين مضافة',
           'add_delivery_address': 'أضف عناوين التوصيل لجعل الطلب أسهل وأسرع',
+          
+          // Add Address Modal
+          'enter_city': 'أدخل المدينة',
+          'state_province': 'المنطقة/المحافظة (اختياري)',
+          'enter_state': 'أدخل المنطقة',
+          'address_line_1': 'العنوان - السطر الأول',
+          'address_line_2': 'العنوان - السطر الثاني (اختياري)',
+          'enter_address': 'أدخل عنوانك',
+          'apartment_suite': 'الشقة، الجناح، إلخ.',
+          'make_default': 'تعيين كافتراضي',
+          'save_address': 'حفظ العنوان',
+          'city_required': 'المدينة مطلوبة',
+          'address_required': 'العنوان مطلوب',
+          'failed_to_load_addresses': 'فشل تحميل العناوين',
+          'failed_to_save_address': 'فشل حفظ العنوان',
+          'please_select_address': 'الرجاء اختيار عنوان',
+          'cart_is_empty': 'السلة فارغة',
+          'order_created_success': 'تم إنشاء الطلب بنجاح',
+          'failed_to_create_order': 'فشل إنشاء الطلب',
 
           // Payment & Billing
           'payment_methods': 'طرق الدفع',
@@ -1988,6 +2074,34 @@ class AppTranslations extends Translations {
           'store_name_english': 'اسم المتجر - بالإنجليزية',
           'store_name_arabic': 'اسم المتجر - بالعربية',
           'enter_store_name': 'أدخل اسم المتجر',
+          'enter_store_details': 'أدخل تفاصيل متجرك وموقعه',
+          
+          // Location
+          'store_location': 'موقع المتجر',
+          'location_required_for_delivery': 'الموقع مطلوب لخدمات التوصيل',
+          'get_current_location': 'تحديد الموقع الحالي',
+          'location_fetched': 'تم تحديد الموقع بنجاح',
+          'location_fetched_successfully': 'تم تحديد الموقع بنجاح',
+          'please_get_location': 'يرجى تحديد موقع متجرك',
+          'location_permission_denied': 'تم رفض إذن الموقع',
+          'location_permission_denied_forever': 'تم رفض إذن الموقع نهائياً. يرجى تفعيله من الإعدادات',
+          'error_getting_location': 'خطأ في تحديد الموقع',
+          'latitude': 'خط العرض',
+          'longitude': 'خط الطول',
+          'select_on_map': 'اختر على الخريطة',
+          'hide_map': 'إخفاء الخريطة',
+          'tap_to_select_location': 'اضغط على الخريطة لاختيار الموقع أو اسحب المؤشر',
+          
+          // Address
+          'store_address': 'عنوان المتجر',
+          'address_required_note': 'العنوان مطلوب بالإنجليزية والعربية',
+          'address_english': 'العنوان (بالإنجليزية)',
+          'address_arabic': 'العنوان (بالعربية)',
+          'enter_address_english': 'يرجى إدخال العنوان بالإنجليزية',
+          'enter_address_arabic': 'يرجى إدخال العنوان بالعربية',
+          'enter_address_english_placeholder': 'مثال: 123 Main Street, District, City',
+          'enter_address_arabic_placeholder': 'مثال: 123 شارع الرئيسي، الحي، المدينة',
+          
           'commercial_registration_number': 'رقم السجل التجاري',
           'enter_commercial_registration': 'أدخل رقم السجل التجاري',
           'work_permit': 'رخصة العمل',
@@ -2522,8 +2636,10 @@ class AppTranslations extends Translations {
           'vendor_step_3': 'الخطوة 3 للبائع',
           'vendor_step_4': 'الخطوة 4 للبائع',
           'no_subscription_plans': 'لا توجد خطط اشتراك متاحة',
-          'user_information': 'معلومات المستخدم',
-          'subscription': 'الاشتراك',
+          'user_information': 'المستخدم',
+          'subscription': 'الباقة',
+          'store_information': 'المتجر',
+          'features': 'ميزات',
 
           // Misc
           'camera': 'الكاميرا',

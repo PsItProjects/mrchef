@@ -121,11 +121,13 @@ class ProfileController extends GetxController {
     }
   }
 
-  Future<void> _loadUserProfile() async {
+  /// Load user profile from API
+  /// [skipLanguageUpdate] - إذا true، لا يحدث لغة التطبيق (بعد تعديل الملف الشخصي)
+  Future<void> _loadUserProfile({bool skipLanguageUpdate = false}) async {
     try {
-      print('🔄 PROFILE: Loading user profile from API...');
+      print('🔄 PROFILE: Loading user profile from API... (skipLanguageUpdate: $skipLanguageUpdate)');
       final authService = Get.find<AuthService>();
-      final response = await authService.getCustomerProfile();
+      final response = await authService.getCustomerProfile(skipLanguageUpdate: skipLanguageUpdate);
 
       if (response.isSuccess && response.data != null) {
         final user = response.data!;
@@ -157,16 +159,35 @@ class ProfileController extends GetxController {
   }
 
   /// Refresh profile data (call this when returning from edit profile)
-  Future<void> refreshProfile() async {
-    await _loadUserProfile();
+  /// 
+  /// If [forceRefresh] is true, shows loading indicator and loads directly from API
+  /// If [forceRefresh] is false (default), loads from cache first then refreshes in background
+  /// [skipLanguageUpdate] - إذا true، لا يحدث لغة التطبيق (يُستخدم بعد تعديل الملف الشخصي)
+  Future<void> refreshProfile({bool forceRefresh = false, bool skipLanguageUpdate = false}) async {
+    if (forceRefresh) {
+      print('🔄 PROFILE CONTROLLER: Force refreshing from API...');
+      isLoading.value = true;
+      await _loadUserProfile(skipLanguageUpdate: skipLanguageUpdate);
+      isLoading.value = false;
+      print('✅ PROFILE CONTROLLER: Force refresh complete');
+      print('   - Updated Name: ${userProfile.value.fullName}');
+    } else {
+      print('🔄 PROFILE CONTROLLER: Background refresh from API...');
+      await _loadUserProfile(skipLanguageUpdate: skipLanguageUpdate);
+      print('✅ PROFILE CONTROLLER: Background refresh complete');
+    }
   }
 
   // Navigation methods
   void navigateToEditProfile() async {
+    print('🔄 PROFILE CONTROLLER: Navigating to Edit Profile...');
     // Get.toNamed('/profile/edit');
     await Get.to(() => const EditProfileScreen());
-    // Refresh profile when returning from edit screen
-    await refreshProfile();
+    // Force refresh profile when returning from edit screen to ensure latest data is shown
+    // ✅ skipLanguageUpdate: true - لمنع تغيير لغة التطبيق بعد التعديل
+    print('🔄 PROFILE CONTROLLER: Returned from Edit Profile, forcing refresh...');
+    await refreshProfile(forceRefresh: true, skipLanguageUpdate: true);
+    print('✅ PROFILE CONTROLLER: Profile card should now show updated name: ${userProfile.value.fullName}');
   }
 
   void navigateToMyOrders() async {

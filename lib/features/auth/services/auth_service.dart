@@ -49,7 +49,8 @@ class AuthService extends getx.GetxService {
   }
 
   // Save user data to local storage
-  Future<void> _saveUserToStorage(UserModel user, String token) async {
+  // [skipLanguageUpdate] - إذا true، لا يحدث لغة التطبيق (يُستخدم بعد تعديل الملف الشخصي)
+  Future<void> _saveUserToStorage(UserModel user, String token, {bool skipLanguageUpdate = false}) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('auth_token', token);
@@ -58,13 +59,18 @@ class AuthService extends getx.GetxService {
       currentUser.value = user;
       isLoggedIn.value = true;
 
-      // ✅ Update language from user profile (synced with backend)
-      try {
-        final languageService = LanguageService.instance;
-        final userData = user.toJson();
-        await languageService.updateLanguageFromUserProfile(userData);
-      } catch (e) {
-        print('Error updating language from user data: $e');
+      // ✅ Update language from user profile ONLY if not skipped
+      // نتخطى التحديث بعد تعديل الملف الشخصي لمنع تغيير لغة التطبيق
+      if (!skipLanguageUpdate) {
+        try {
+          final languageService = LanguageService.instance;
+          final userData = user.toJson();
+          await languageService.updateLanguageFromUserProfile(userData);
+        } catch (e) {
+          print('Error updating language from user data: $e');
+        }
+      } else {
+        print('⏭️ AUTH: Skipping language update in _saveUserToStorage');
       }
     } catch (e) {
       print('Error saving user to storage: $e');
@@ -573,6 +579,19 @@ class AuthService extends getx.GetxService {
         if (apiResponse.isSuccess && apiResponse.data != null) {
           await _saveUserToStorage(
               apiResponse.data!.user, apiResponse.data!.token);
+
+          // Save user type for new registration
+          await _saveUserType(userType);
+
+          // Associate FCM token with newly registered user
+          try {
+            if (getx.Get.isRegistered<FCMService>()) {
+              await FCMService.instance.associateWithUser();
+              print('✅ FCM token associated with new $userType');
+            }
+          } catch (e) {
+            print('Error associating FCM token after registration: $e');
+          }
         }
 
         return apiResponse;
@@ -756,26 +775,24 @@ class AuthService extends getx.GetxService {
         );
 
         if (apiResponse.isSuccess && apiResponse.data != null) {
-          // ⚠️ مهم: نحفظ اللغة الحالية للمستخدم قبل التحديث
-          final currentLanguage = currentUser.value?.preferredLanguage;
-          print('🌐 PROFILE UPDATE: Current language before update: $currentLanguage');
+          // ⚠️ مهم: نحفظ اللغة الحالية للتطبيق قبل التحديث (من LanguageService وليس من المستخدم)
+          final languageService = LanguageService.instance;
+          final currentAppLanguage = languageService.currentLanguage;
+          print('🌐 PROFILE UPDATE: Current app language before update: $currentAppLanguage');
           print('🌐 PROFILE UPDATE: Backend returned language: ${apiResponse.data?.preferredLanguage}');
           
-          // Update current user data
-          currentUser.value = apiResponse.data;
+          // Update current user data but preserve the app language
+          currentUser.value = apiResponse.data!.copyWith(
+            preferredLanguage: currentAppLanguage,
+          );
+          print('✅ PROFILE UPDATE: Language preserved as: $currentAppLanguage');
           
-          // ✅ نعيد اللغة الأصلية لمنع تغيير لغة التطبيق
-          if (currentLanguage != null && currentUser.value != null) {
-            currentUser.value = currentUser.value!.copyWith(
-              preferredLanguage: currentLanguage,
-            );
-            print('✅ PROFILE UPDATE: Language preserved as: $currentLanguage');
-          }
-          
+          // ✅ skipLanguageUpdate: true - لمنع تغيير لغة التطبيق
           await _saveUserToStorage(
               currentUser.value!,
-              (await SharedPreferences.getInstance()).getString('auth_token') ??
-                  '');
+              (await SharedPreferences.getInstance()).getString('auth_token') ?? '',
+              skipLanguageUpdate: true,
+          );
         }
 
         return apiResponse;
@@ -804,11 +821,12 @@ class AuthService extends getx.GetxService {
   }
 
   // Get customer profile
-  Future<ApiResponse<UserModel>> getCustomerProfile() async {
+  // [skipLanguageUpdate] - إذا true، لا يحدث لغة التطبيق (يُستخدم بعد تعديل الملف الشخصي)
+  Future<ApiResponse<UserModel>> getCustomerProfile({bool skipLanguageUpdate = false}) async {
     try {
       isLoading.value = true;
 
-      print('📋 GET PROFILE REQUEST: /customer/profile');
+      print('📋 GET PROFILE REQUEST: /customer/profile (skipLanguageUpdate: $skipLanguageUpdate)');
 
       final response = await _apiClient.get('/customer/profile');
 
@@ -822,13 +840,18 @@ class AuthService extends getx.GetxService {
         if (apiResponse.isSuccess && apiResponse.data != null) {
           currentUser.value = apiResponse.data;
 
-          // ✅ Update language from user profile (synced with backend)
-          try {
-            final languageService = LanguageService.instance;
-            final userData = response.data['data'] as Map<String, dynamic>;
-            await languageService.updateLanguageFromUserProfile(userData);
-          } catch (e) {
-            print('Error updating language from profile: $e');
+          // ✅ Update language from user profile ONLY if not skipped
+          // نتخطى التحديث بعد تعديل الملف الشخصي لمنع تغيير لغة التطبيق
+          if (!skipLanguageUpdate) {
+            try {
+              final languageService = LanguageService.instance;
+              final userData = response.data['data'] as Map<String, dynamic>;
+              await languageService.updateLanguageFromUserProfile(userData);
+            } catch (e) {
+              print('Error updating language from profile: $e');
+            }
+          } else {
+            print('⏭️ PROFILE: Skipping language update (preserving current app language)');
           }
         }
 
