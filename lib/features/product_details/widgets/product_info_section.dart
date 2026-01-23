@@ -97,6 +97,8 @@ class ProductInfoSection extends GetView<ProductDetailsController> {
           const SizedBox(height: 16),
           
           // Action buttons
+          // Temporarily hidden - Message and Share buttons
+          /* 
           Row(
             children: [
               // Message store
@@ -164,6 +166,7 @@ class ProductInfoSection extends GetView<ProductDetailsController> {
           ),
           
           const SizedBox(height: 16),
+          */
           
           // Product code
           Obx(() => Text(

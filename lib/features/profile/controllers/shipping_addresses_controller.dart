@@ -8,8 +8,13 @@ import '../../../core/services/toast_service.dart';
 class ShippingAddressesController extends GetxController {
   // All addresses
   final RxList<AddressModel> addresses = <AddressModel>[].obs;
+  final RxList<AddressModel> _allAddresses = <AddressModel>[].obs;
   final RxBool isLoading = false.obs;
   final AddressService _addressService = AddressService();
+  
+  // Search functionality
+  final RxString searchQuery = ''.obs;
+  final RxBool isSearching = false.obs;
 
   @override
   void onInit() {
@@ -22,6 +27,7 @@ class ShippingAddressesController extends GetxController {
     try {
       isLoading.value = true;
       final fetchedAddresses = await _addressService.getAddresses();
+      _allAddresses.value = fetchedAddresses;
       addresses.value = fetchedAddresses;
     } catch (e) {
       ToastService.showError('Failed to load addresses: ${e.toString()}');
@@ -42,9 +48,9 @@ class ShippingAddressesController extends GetxController {
   void deleteAddress(AddressModel address) {
     Get.dialog(
       AlertDialog(
-        title: const Text(
-          'Delete Address',
-          style: TextStyle(
+        title: Text(
+          'delete_address'.tr,
+          style: const TextStyle(
             fontFamily: 'Lato',
             fontWeight: FontWeight.w600,
             fontSize: 18,
@@ -52,7 +58,7 @@ class ShippingAddressesController extends GetxController {
           ),
         ),
         content: Text(
-          'Are you sure you want to delete this ${address.typeDisplayName.toLowerCase()} address?',
+          '${'are_you_sure_delete'.tr} ${address.typeDisplayName.toLowerCase()} ${'address'.tr}?',
           style: const TextStyle(
             fontFamily: 'Lato',
             fontWeight: FontWeight.w400,
@@ -63,9 +69,9 @@ class ShippingAddressesController extends GetxController {
         actions: [
           TextButton(
             onPressed: () => Get.back(),
-            child: const Text(
-              'Cancel',
-              style: TextStyle(
+            child: Text(
+              'cancel'.tr,
+              style: const TextStyle(
                 fontFamily: 'Lato',
                 fontWeight: FontWeight.w600,
                 fontSize: 14,
@@ -78,9 +84,9 @@ class ShippingAddressesController extends GetxController {
               Get.back();
               _performDeleteAddress(address);
             },
-            child: const Text(
-              'Delete',
-              style: TextStyle(
+            child: Text(
+              'delete'.tr,
+              style: const TextStyle(
                 fontFamily: 'Lato',
                 fontWeight: FontWeight.w600,
                 fontSize: 14,
@@ -99,7 +105,7 @@ class ShippingAddressesController extends GetxController {
     try {
       await _addressService.deleteAddress(address.id!);
       addresses.removeWhere((a) => a.id == address.id);
-      ToastService.showSuccess('Address has been deleted successfully');
+      ToastService.showSuccess('address_deleted'.tr);
     } catch (e) {
       ToastService.showError('Failed to delete address: ${e.toString()}');
     }
@@ -136,12 +142,12 @@ class ShippingAddressesController extends GetxController {
         if (existingIndex != -1) {
           addresses[existingIndex] = updatedAddress;
         }
-        ToastService.showSuccess('Address has been updated successfully');
+        ToastService.showSuccess('address_updated'.tr);
       } else {
         // Add new address
         final newAddress = await _addressService.addAddress(address);
         addresses.add(newAddress);
-        ToastService.showSuccess('New address has been added successfully');
+        ToastService.showSuccess('address_added'.tr);
       }
 
       // Go back with result to indicate success
@@ -158,4 +164,37 @@ class ShippingAddressesController extends GetxController {
 
   AddressModel? get defaultAddress =>
       addresses.firstWhereOrNull((a) => a.isDefault);
+  
+  // Search functionality
+  void toggleSearch() {
+    isSearching.value = !isSearching.value;
+    if (!isSearching.value) {
+      // Clear search when closing
+      updateSearchQuery('');
+    }
+  }
+
+  void updateSearchQuery(String query) {
+    searchQuery.value = query;
+    _filterAddresses();
+  }
+
+  void _filterAddresses() {
+    if (searchQuery.value.isEmpty) {
+      // Show all addresses
+      addresses.value = List.from(_allAddresses);
+    } else {
+      final query = searchQuery.value.toLowerCase();
+
+      // Filter addresses by type name and address details
+      addresses.value = _allAddresses.where((address) {
+        final typeMatch = address.typeDisplayName.toLowerCase().contains(query);
+        final addressLine1Match = address.addressLine1.toLowerCase().contains(query);
+        final addressLine2Match = address.addressLine2?.toLowerCase().contains(query) ?? false;
+        final cityMatch = address.city.toLowerCase().contains(query);
+
+        return typeMatch || addressLine1Match || addressLine2Match || cityMatch;
+      }).toList();
+    }
+  }
 }

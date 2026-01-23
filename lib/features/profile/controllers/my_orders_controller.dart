@@ -175,7 +175,7 @@ class MyOrdersController extends GetxController {
   }
 
   void reorderItems(OrderModel order) {
-    ToastService.showInfo('Reordering items from ${order.orderCode}');
+    ToastService.showInfo('${'reordering_items'.tr} ${order.orderCode}');
     // TODO: Add items to cart and navigate to cart
   }
 

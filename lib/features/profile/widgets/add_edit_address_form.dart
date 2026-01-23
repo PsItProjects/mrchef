@@ -15,38 +15,38 @@ class AddEditAddressForm extends GetView<AddEditAddressController> {
           children: [
             // City field
             _buildInputField(
-              label: 'City',
+              label: 'city'.tr,
               controller: controller.cityController,
               validator: controller.validateCity,
-              placeholder: 'Dawha',
+              placeholder: 'enter_city'.tr,
             ),
             
             const SizedBox(height: 16),
             
             // State/Province field
             _buildInputField(
-              label: 'State/Province (optional)',
+              label: 'state_province'.tr,
               controller: controller.stateController,
-              placeholder: 'Enter your State',
+              placeholder: 'enter_state'.tr,
             ),
             
             const SizedBox(height: 16),
             
             // Address Line 1 field
             _buildInputField(
-              label: 'Address Line 1',
+              label: 'address_line_1'.tr,
               controller: controller.addressLine1Controller,
               validator: controller.validateAddressLine1,
-              placeholder: 'Enter your address',
+              placeholder: 'enter_address'.tr,
             ),
             
             const SizedBox(height: 16),
             
             // Address Line 2 field
             _buildInputField(
-              label: 'Address Line 2',
+              label: 'address_line_2'.tr,
               controller: controller.addressLine2Controller,
-              placeholder: 'Apartment, suite, etc. (optional)',
+              placeholder: 'apartment_suite'.tr,
             ),
             
             const SizedBox(height: 16),
@@ -138,9 +138,9 @@ class AddEditAddressForm extends GetView<AddEditAddressController> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          const Text(
-            'Make Default',
-            style: TextStyle(
+          Text(
+            'make_default'.tr,
+            style: const TextStyle(
               fontFamily: 'Lato',
               fontWeight: FontWeight.w600,
               fontSize: 16,

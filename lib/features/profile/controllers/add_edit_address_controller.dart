@@ -120,14 +120,14 @@ class AddEditAddressController extends GetxController {
   // Form validation methods
   String? validateCity(String? value) {
     if (value == null || value.trim().isEmpty) {
-      return 'City is required';
+      return 'city_required'.tr;
     }
     return null;
   }
 
   String? validateAddressLine1(String? value) {
     if (value == null || value.trim().isEmpty) {
-      return 'Address Line 1 is required';
+      return 'address_required'.tr;
     }
     return null;
   }
@@ -135,7 +135,7 @@ class AddEditAddressController extends GetxController {
   // Getters for UI
   bool get isEditing => existingAddress != null;
 
-  String get screenTitle => isEditing ? 'Edit Address' : 'Add Address';
+  String get screenTitle => isEditing ? 'edit_address'.tr : 'add_address'.tr;
 
   String get typeDisplayName =>
       selectedType.value.toString().split('.').last.toUpperCase();

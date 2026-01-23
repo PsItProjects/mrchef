@@ -41,7 +41,7 @@ class SettingsHeader extends StatelessWidget {
           GestureDetector(
             onTap: () {
               // TODO: Implement search functionality
-              ToastService.showInfo('Search functionality coming soon');
+              ToastService.showInfo('search_coming_soon'.tr);
             },
             child: Container(
               width: 24,

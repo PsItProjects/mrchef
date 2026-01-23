@@ -164,13 +164,13 @@ class OTPController extends GetxController {
 
     if (!_isOTPComplete()) {
       print('❌ OTP is not complete');
-      ToastService.showError('Please enter the complete OTP code');
+      ToastService.showError('enter_complete_otp'.tr);
       return;
     }
 
     if (phoneNumber == null) {
       print('❌ Phone number is null!');
-      ToastService.showError('Phone number not found');
+      ToastService.showError('phone_not_found'.tr);
       return;
     }
 
@@ -192,7 +192,7 @@ class OTPController extends GetxController {
         final response = await _authService.verifyLoginOTP(request);
 
         if (response.isSuccess) {
-          ToastService.showSuccess('Welcome back!');
+          ToastService.showSuccess('welcome_back'.tr);
 
           // Smart navigation based on user type
           _navigateBasedOnUserType();
@@ -205,7 +205,7 @@ class OTPController extends GetxController {
         final response = await _authService.verifyRegistrationOTP(request);
         
         if (response.isSuccess) {
-          ToastService.showSuccess('Your account has been created successfully!');
+          ToastService.showSuccess('account_created_successfully'.tr);
 
           if (userType == 'merchant') {
             // Navigate to merchant onboarding
@@ -244,7 +244,7 @@ class OTPController extends GetxController {
       final response = await _authService.resendOTP(request);
 
       if (response.isSuccess) {
-        ToastService.showSuccess('A new OTP has been sent to your phone');
+        ToastService.showSuccess('new_otp_sent'.tr);
 
         _clearOTP();
         _startCountdown();

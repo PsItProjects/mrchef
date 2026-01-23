@@ -29,7 +29,7 @@ class SignupController extends GetxController {
   void signup() {
     if (formKey.currentState!.validate() && agreeToTerms.value) {
       // Implement signup functionality
-      ToastService.showInfo('Processing signup...');
+      ToastService.showInfo('processing_signup'.tr);
       
       // Simulate signup success
       Future.delayed(const Duration(seconds: 2), () {
@@ -37,18 +37,18 @@ class SignupController extends GetxController {
         Get.offAllNamed(AppRoutes.LOGIN);
       });
     } else if (!agreeToTerms.value) {
-      ToastService.showError('Please agree to the terms and conditions');
+      ToastService.showError('agree_to_terms'.tr);
     }
   }
 
   void signupWithFacebook() {
     // Implement Facebook signup
-    ToastService.showInfo('Processing Facebook signup...');
+    ToastService.showInfo('processing_facebook_signup'.tr);
   }
 
   void signupWithGoogle() {
     // Implement Google signup
-    ToastService.showInfo('Processing Google signup...');
+    ToastService.showInfo('processing_google_signup'.tr);
   }
 
   @override

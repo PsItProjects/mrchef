@@ -95,8 +95,8 @@ class MerchantLanguageSwitcher extends StatelessWidget {
         );
       }
     } catch (e) {
-      print('Error toggling language: $e');
-      ToastService.showError('Failed to change language');
+      print('Error toggling language: \$e');
+      ToastService.showError('failed_change_language'.tr);
     }
   }
 }
@@ -148,8 +148,8 @@ class MerchantLanguageFAB extends StatelessWidget {
         );
       }
     } catch (e) {
-      print('Error toggling language: $e');
-      ToastService.showError('Failed to change language');
+      print('Error toggling language: \$e');
+      ToastService.showError('failed_change_language'.tr);
     }
   }
 }

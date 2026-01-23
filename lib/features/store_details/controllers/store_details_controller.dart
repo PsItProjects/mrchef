@@ -100,6 +100,9 @@ class StoreDetailsController extends GetxController {
   void onInit() {
     super.onInit();
 
+    // Set loading to true initially
+    isLoading.value = true;
+
     // Get restaurant data from arguments
     final arguments = Get.arguments;
     if (arguments != null) {
@@ -110,10 +113,14 @@ class StoreDetailsController extends GetxController {
       if (arguments['restaurant'] != null) {
         final KitchenModel restaurantData = arguments['restaurant'];
         _setRestaurantData(restaurantData);
+        // Stop loading after setting data from arguments
+        isLoading.value = false;
       } else if (arguments['restaurantData'] != null) {
         // Handle raw restaurant data from home screen
         final Map<String, dynamic> rawData = arguments['restaurantData'];
         _setRawRestaurantData(rawData);
+        // Stop loading after setting data from arguments
+        isLoading.value = false;
       }
     }
 
@@ -125,6 +132,11 @@ class StoreDetailsController extends GetxController {
     // Load products if we have a store ID
     if (storeId.value.isNotEmpty) {
       loadStoreProducts();
+    }
+    
+    // If no store ID, stop loading
+    if (storeId.value.isEmpty) {
+      isLoading.value = false;
     }
   }
 
@@ -545,7 +557,7 @@ class StoreDetailsController extends GetxController {
       if (kDebugMode) {
         print('❌ Error loading restaurant details: $e');
       }
-      ToastService.showError('فشل في تحميل تفاصيل المطعم');
+      ToastService.showError('failed_to_load_store_details'.tr);
     } finally {
       isLoading.value = false;
     }
@@ -773,9 +785,9 @@ class StoreDetailsController extends GetxController {
 
       // Show success message
       if (isFavorite.value) {
-        ToastService.showSuccess('تم إضافة المطعم إلى المفضلة');
+        ToastService.showSuccess('added_to_favorites'.tr);
       } else {
-        ToastService.showInfo('تم إزالة المطعم من المفضلة');
+        ToastService.showInfo('removed_from_favorites'.tr);
       }
 
     } catch (e) {
@@ -783,7 +795,7 @@ class StoreDetailsController extends GetxController {
         print('❌ STORE DETAILS: Error toggling favorite: $e');
       }
 
-      ToastService.showError('فشل في تحديث المفضلة');
+      ToastService.showError('failed_to_update_favorites'.tr);
     }
   }
 
@@ -830,7 +842,7 @@ class StoreDetailsController extends GetxController {
       // Get restaurant ID
       final restaurantId = int.tryParse(storeId.value);
       if (restaurantId == null || restaurantId == 0) {
-        ToastService.showError('لا يمكن فتح المحادثة');
+        ToastService.showError('cannot_open_chat'.tr);
         return;
       }
 
@@ -874,7 +886,7 @@ class StoreDetailsController extends GetxController {
   Future<void> addToCart(int productId) async {
     // حماية من الضغط المتكرر
     if (isAddingToCart.value) {
-      ToastService.showWarning('يتم إضافة المنتج للسلة الآن...');
+      ToastService.showWarning('adding_to_cart'.tr);
       return;
     }
 
@@ -908,7 +920,7 @@ class StoreDetailsController extends GetxController {
       );
 
     } catch (e) {
-      ToastService.showError('فشل في إضافة المنتج إلى السلة');
+      ToastService.showError('failed_to_add_to_cart'.tr);
 
       if (kDebugMode) {
         print('❌ ADD TO CART ERROR: $e');

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mrsheaf/features/profile/controllers/add_edit_address_controller.dart';
-import '../../../core/services/toast_service.dart';
 
 class AddEditAddressHeader extends GetView<AddEditAddressController> {
   const AddEditAddressHeader({super.key});
@@ -38,22 +37,8 @@ class AddEditAddressHeader extends GetView<AddEditAddressController> {
             ),
           ),
           
-          // Search button
-          GestureDetector(
-            onTap: () {
-              // TODO: Implement search functionality
-              ToastService.showInfo('Search functionality coming soon');
-            },
-            child: Container(
-              width: 24,
-              height: 24,
-              child: const Icon(
-                Icons.search,
-                size: 20,
-                color: Color(0xFF262626),
-              ),
-            ),
-          ),
+          // Empty space (removed search button as not needed in add/edit form)
+          const SizedBox(width: 24, height: 24),
         ],
       ),
     );

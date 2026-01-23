@@ -73,7 +73,7 @@ class LoginController extends GetxController {
 
   Future<void> sendLoginOTP() async {
     if (!isPhoneNumberValid.value) {
-      ToastService.showError('Please enter a valid phone number');
+      ToastService.showError('enter_valid_phone'.tr);
       return;
     }
 
@@ -111,12 +111,12 @@ class LoginController extends GetxController {
 
   void loginWithFacebook() {
     // Implement Facebook login
-    ToastService.showInfo('Processing Facebook login...');
+    ToastService.showInfo('processing_facebook_login'.tr);
   }
 
   void loginWithGoogle() {
     // Implement Google login
-    ToastService.showInfo('Processing Google login...');
+    ToastService.showInfo('processing_google_login'.tr);
   }
 
   /// تسجيل الدخول بالبصمة

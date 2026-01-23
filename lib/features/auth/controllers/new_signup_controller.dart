@@ -80,12 +80,12 @@ class NewSignupController extends GetxController {
 
   Future<void> signup() async {
     if (!agreeToTerms.value) {
-      ToastService.showError('Please agree to the terms and conditions');
+      ToastService.showError('agree_to_terms'.tr);
       return;
     }
 
     if (!isPhoneNumberValid.value) {
-      ToastService.showError('Please enter a valid phone number');
+      ToastService.showError('enter_valid_phone'.tr);
       return;
     }
 

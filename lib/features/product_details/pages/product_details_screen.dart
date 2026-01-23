@@ -19,7 +19,9 @@ class ProductDetailsScreen extends GetView<ProductDetailsController> {
       body: Obx(() {
         if (controller.isLoadingProduct.value) {
           return const Center(
-            child: CircularProgressIndicator(),
+            child: CircularProgressIndicator(
+              color: Color(0xFFFACD02),
+            ),
           );
         }
 

@@ -74,7 +74,7 @@ class SettingsController extends GetxController {
     settings.value = settings.value.copyWith(isDarkMode: value);
     _saveSettings();
     
-    ToastService.showInfo(value ? 'Dark mode enabled' : 'Dark mode disabled');
+    ToastService.showInfo(value ? 'dark_mode_enabled'.tr : 'dark_mode_disabled'.tr);
   }
 
   void changeCurrency() {
@@ -147,7 +147,7 @@ class SettingsController extends GetxController {
         _saveSettings();
         Get.back();
 
-        ToastService.showSuccess('Currency changed to $code');
+        ToastService.showSuccess('${'currency_changed_to'.tr} $code');
       },
     );
   }
@@ -212,10 +212,10 @@ class SettingsController extends GetxController {
             : 'Language updated successfully'
         );
       } else {
-        ToastService.showError(result['message'] ?? 'Failed to update language');
+        ToastService.showError(result['message'] ?? 'failed_to_update_language'.tr);
       }
     } catch (e) {
-      ToastService.showError('Network error occurred');
+      ToastService.showError('network_error'.tr);
     } finally {
       // Reset loading state
       isChangingLanguage.value = false;
@@ -248,12 +248,12 @@ class SettingsController extends GetxController {
   }
 
   void openNotificationSettings() {
-    ToastService.showInfo('Opening notification settings...');
+    ToastService.showInfo('opening_notification_settings'.tr);
     // TODO: Navigate to notification settings screen
   }
 
   void openSecuritySettings() {
-    ToastService.showInfo('Opening security settings...');
+    ToastService.showInfo('opening_security_settings'.tr);
     // TODO: Navigate to security settings screen
   }
 
@@ -315,7 +315,7 @@ class SettingsController extends GetxController {
     // Simulate cache clearing
     settings.value = settings.value.copyWith(cacheSize: '0.00 MB');
     
-    ToastService.showSuccess('App cache has been cleared successfully');
+    ToastService.showSuccess('cache_cleared'.tr);
     
     // Reset cache size after a delay (simulation)
     Future.delayed(const Duration(seconds: 3), () {
@@ -324,7 +324,7 @@ class SettingsController extends GetxController {
   }
 
   void rateTheApp() {
-    ToastService.showInfo('Opening app store for rating...');
+    ToastService.showInfo('opening_app_store'.tr);
     // TODO: Open app store for rating
   }
 
@@ -333,12 +333,12 @@ class SettingsController extends GetxController {
   }
 
   void inviteFriends() {
-    ToastService.showInfo('Opening share dialog...');
+    ToastService.showInfo('opening_share_dialog'.tr);
     // TODO: Open share dialog
   }
 
   void navigateToPaymentMethods() {
-    ToastService.showInfo('Opening payment methods...');
+    ToastService.showInfo('opening_payment_methods'.tr);
     // TODO: Navigate to payment methods screen
   }
 
