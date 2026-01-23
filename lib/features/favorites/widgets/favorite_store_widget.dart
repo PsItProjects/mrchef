@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:mrsheaf/features/favorites/models/favorite_store_model.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 
@@ -42,22 +43,43 @@ class FavoriteStoreWidget extends StatelessWidget {
                 topLeft: Radius.circular(25),
                 topRight: Radius.circular(25),
               ),
-              image: DecorationImage(
-                image: AssetImage(store.backgroundImage),
-                fit: BoxFit.cover,
-                onError: (exception, stackTrace) {
-                  // Fallback to a placeholder color
-                },
-              ),
+              color: const Color(0xFFC4C4C4),
             ),
-            child: Container(
-              decoration: BoxDecoration(
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(25),
-                  topRight: Radius.circular(25),
-                ),
-                color: const Color(0xFFC4C4C4), // Fallback color
+            child: ClipRRect(
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(25),
+                topRight: Radius.circular(25),
               ),
+              child: store.backgroundImage.isNotEmpty
+                  ? CachedNetworkImage(
+                      imageUrl: store.backgroundImage,
+                      fit: BoxFit.cover,
+                      width: double.infinity,
+                      placeholder: (context, url) => Container(
+                        color: const Color(0xFFC4C4C4),
+                        child: const Center(
+                          child: CircularProgressIndicator(
+                            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFACD02)),
+                          ),
+                        ),
+                      ),
+                      errorWidget: (context, url, error) => Container(
+                        color: const Color(0xFFC4C4C4),
+                        child: const Icon(
+                          Icons.restaurant,
+                          color: Colors.white,
+                          size: 40,
+                        ),
+                      ),
+                    )
+                  : Container(
+                      color: const Color(0xFFC4C4C4),
+                      child: const Icon(
+                        Icons.restaurant,
+                        color: Colors.white,
+                        size: 40,
+                      ),
+                    ),
             ),
           ),
           
@@ -81,20 +103,37 @@ class FavoriteStoreWidget extends StatelessWidget {
                       ),
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(24),
-                        child: Image.asset(
-                          store.image,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
-                            return Container(
-                              color: const Color(0xFFC4C4C4),
-                              child: const Icon(
-                                Icons.store,
-                                color: Colors.white,
-                                size: 20,
+                        child: store.image.isNotEmpty
+                            ? CachedNetworkImage(
+                                imageUrl: store.image,
+                                fit: BoxFit.cover,
+                                width: 40,
+                                height: 40,
+                                placeholder: (context, url) => Container(
+                                  color: const Color(0xFFC4C4C4),
+                                  child: const Icon(
+                                    Icons.store,
+                                    color: Colors.white,
+                                    size: 20,
+                                  ),
+                                ),
+                                errorWidget: (context, url, error) => Container(
+                                  color: const Color(0xFFC4C4C4),
+                                  child: const Icon(
+                                    Icons.store,
+                                    color: Colors.white,
+                                    size: 20,
+                                  ),
+                                ),
+                              )
+                            : Container(
+                                color: const Color(0xFFC4C4C4),
+                                child: const Icon(
+                                  Icons.store,
+                                  color: Colors.white,
+                                  size: 20,
+                                ),
                               ),
-                            );
-                          },
-                        ),
                       ),
                     ),
                     

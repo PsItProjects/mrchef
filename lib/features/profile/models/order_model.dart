@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/localization/currency_helper.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 
 enum OrderStatus {
@@ -125,7 +126,7 @@ class OrderModel {
 
   String get formattedQuantity => '${'quantity'.tr}: ${quantity.toString().padLeft(2, '0')}';
 
-  String get formattedAmount => '${'total_amount'.tr}: \$${totalAmount.toStringAsFixed(0)}';
+  String get formattedAmount => '${'total_amount'.tr}: ${CurrencyHelper.formatPriceShort(totalAmount)}';
 
   String get statusText {
     switch (status) {

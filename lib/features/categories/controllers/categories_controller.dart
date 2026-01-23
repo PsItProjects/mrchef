@@ -228,11 +228,11 @@ class CategoriesController extends GetxController with GetSingleTickerProviderSt
       FilterModel(
         title: 'Price Range',
         options: [
-          FilterOption(id: 9, name: 'Less 50\$', count: 29, isSelected: true),
-          FilterOption(id: 10, name: '\$50 - \$100', count: 9),
-          FilterOption(id: 11, name: '\$100 - \$250', count: 11),
-          FilterOption(id: 12, name: '\$250 - \$500', count: 5),
-          FilterOption(id: 13, name: 'More than \$500', count: 12),
+          FilterOption(id: 9, name: 'أقل من 50 ر.س', count: 29, isSelected: true),
+          FilterOption(id: 10, name: '50 - 100 ر.س', count: 9),
+          FilterOption(id: 11, name: '100 - 250 ر.س', count: 11),
+          FilterOption(id: 12, name: '250 - 500 ر.س', count: 5),
+          FilterOption(id: 13, name: 'أكثر من 500 ر.س', count: 12),
         ],
       ),
       FilterModel(

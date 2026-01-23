@@ -1,3 +1,5 @@
+import 'package:mrsheaf/core/localization/currency_helper.dart';
+
 class ReviewModel {
   final int id;
   final int? productId;
@@ -122,7 +124,7 @@ class ReviewModel {
   }
 
   // Helper getters
-  String get formattedPrice => '\$ ${productPrice.toStringAsFixed(2)}';
+  String get formattedPrice => CurrencyHelper.formatPrice(productPrice);
 
   String get formattedDate {
     return '${reviewDate.day.toString().padLeft(2, '0')}/${reviewDate.month.toString().padLeft(2, '0')}/${reviewDate.year}';

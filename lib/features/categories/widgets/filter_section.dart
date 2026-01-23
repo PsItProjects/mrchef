@@ -165,7 +165,7 @@ class FilterSection extends GetView<CategoriesController> {
                             ),
                           ),
                           const Text(
-                            '\$',
+                            'ر.س',
                             style: TextStyle(
                               fontFamily: 'Lato',
                               fontWeight: FontWeight.w400,

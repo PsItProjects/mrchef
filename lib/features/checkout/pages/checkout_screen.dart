@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
+import 'package:mrsheaf/core/localization/currency_helper.dart';
 import 'package:mrsheaf/features/cart/controllers/cart_controller.dart';
 import 'package:mrsheaf/features/checkout/controllers/checkout_controller.dart';
 import 'package:mrsheaf/features/profile/models/address_model.dart';
@@ -120,17 +121,17 @@ class CheckoutScreen extends GetView<CheckoutController> {
         children: [
           _buildSummaryRow('quantity'.tr, '${cartController.totalItemsCount}'),
           const Divider(height: 24),
-          _buildSummaryRow('subtotal'.tr, '${cartController.subtotal.toStringAsFixed(2)} ${'currency'.tr}'),
+          _buildSummaryRow('subtotal'.tr, CurrencyHelper.formatPrice(cartController.subtotal)),
           const SizedBox(height: 8),
-          _buildSummaryRow('delivery_fee'.tr, '${cartController.deliveryFee.toStringAsFixed(2)} ${'currency'.tr}'),
+          _buildSummaryRow('delivery_fee'.tr, CurrencyHelper.formatPrice(cartController.deliveryFee)),
           if (cartController.serviceFee > 0) ...[
             const SizedBox(height: 8),
-            _buildSummaryRow('service_fee'.tr, '${cartController.serviceFee.toStringAsFixed(2)} ${'currency'.tr}'),
+            _buildSummaryRow('service_fee'.tr, CurrencyHelper.formatPrice(cartController.serviceFee)),
           ],
           const Divider(height: 24),
           _buildSummaryRow(
             'total'.tr,
-            '${cartController.totalAmount.toStringAsFixed(2)} ${'currency'.tr}',
+            CurrencyHelper.formatPrice(cartController.totalAmount),
             isTotal: true,
           ),
         ],

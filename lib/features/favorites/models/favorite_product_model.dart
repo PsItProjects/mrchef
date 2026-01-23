@@ -19,10 +19,16 @@ class FavoriteProductModel {
   });
 
   factory FavoriteProductModel.fromJson(Map<String, dynamic> json) {
+    // Parse image URL and add base URL if needed
+    String imageUrl = json['primary_image'] ?? json['image'] ?? '';
+    if (imageUrl.isNotEmpty && !imageUrl.startsWith('http')) {
+      imageUrl = 'https://mr-shife.com/storage/$imageUrl';
+    }
+    
     return FavoriteProductModel(
       id: json['id'],
       name: json['name'],
-      image: json['primary_image'] ?? json['image'],
+      image: imageUrl,
       price: _parsePrice(json['price']),
       availability: _parseAvailability(json['is_available'] ?? json['availability']),
     );

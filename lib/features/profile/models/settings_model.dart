@@ -18,7 +18,7 @@ class SettingsModel {
   factory SettingsModel.fromJson(Map<String, dynamic> json) {
     return SettingsModel(
       isDarkMode: json['isDarkMode'] ?? false,
-      currency: json['currency'] ?? 'KWD',
+      currency: json['currency'] ?? 'SAR',
       language: json['language'] ?? 'ar',
       notificationsEnabled: json['notificationsEnabled'] ?? true,
       cacheSize: json['cacheSize'] ?? '7.65 MB',

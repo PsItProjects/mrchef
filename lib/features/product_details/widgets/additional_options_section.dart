@@ -208,8 +208,8 @@ class AdditionalOptionsSection extends GetView<ProductDetailsController> {
                     if (affectsPrice)
                       Text(
                         option.price! > 0 
-                            ? '+${option.price!.toStringAsFixed(1)} ${'currency'.tr}'
-                            : '${option.price!.toStringAsFixed(1)} ${'currency'.tr}',
+                            ? '+${option.price!.toStringAsFixed(1)} ${'sar'.tr}'
+                            : '${option.price!.toStringAsFixed(1)} ${'sar'.tr}',
                         style: TextStyle(
                           fontFamily: 'Lato',
                           fontWeight: FontWeight.w500,

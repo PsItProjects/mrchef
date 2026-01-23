@@ -157,8 +157,8 @@ class SizeSelectionSection extends GetView<ProductDetailsController> {
                             if (sizeData['priceModifier'] != 0)
                               Text(
                                 sizeData['priceModifier'] > 0
-                                    ? '+${sizeData['priceModifier'].toStringAsFixed(1)} ${'currency'.tr}'
-                                    : '${sizeData['priceModifier'].toStringAsFixed(1)} ${'currency'.tr}',
+                                    ? '+${sizeData['priceModifier'].toStringAsFixed(1)} ${'sar'.tr}'
+                                    : '${sizeData['priceModifier'].toStringAsFixed(1)} ${'sar'.tr}',
                                 style: TextStyle(
                                   fontFamily: 'Lato',
                                   fontWeight: FontWeight.w600,

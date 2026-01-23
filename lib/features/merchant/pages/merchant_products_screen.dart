@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
+import 'package:mrsheaf/core/localization/currency_helper.dart';
 import 'package:mrsheaf/features/merchant/controllers/merchant_products_controller.dart';
 import 'package:mrsheaf/features/merchant/models/merchant_product_model.dart';
 import '../../../core/services/toast_service.dart';
@@ -413,7 +414,7 @@ class MerchantProductsScreen extends GetView<MerchantProductsController> {
                           ),
                           const SizedBox(width: 4),
                           Text(
-                            '\$${product.effectivePrice.toStringAsFixed(2)}',
+                            CurrencyHelper.formatPrice(product.effectivePrice),
                             style: const TextStyle(
                               fontSize: 17,
                               fontWeight: FontWeight.bold,
@@ -423,7 +424,7 @@ class MerchantProductsScreen extends GetView<MerchantProductsController> {
                           if (product.hasDiscount) ...[
                             const SizedBox(width: 8),
                             Text(
-                              '\$${product.basePrice.toStringAsFixed(2)}',
+                              CurrencyHelper.formatPrice(product.basePrice),
                               style: const TextStyle(
                                 fontSize: 13,
                                 color: AppColors.textMediumColor,

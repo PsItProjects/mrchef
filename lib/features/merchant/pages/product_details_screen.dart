@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
+import 'package:mrsheaf/core/localization/currency_helper.dart';
 import 'package:mrsheaf/features/merchant/controllers/merchant_products_controller.dart';
 
 class ProductDetailsScreen extends StatefulWidget {
@@ -324,7 +325,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
               Expanded(
                 child: _buildPriceCard(
                   'base_price'.tr,
-                  '\$${product.basePrice.toStringAsFixed(2)}',
+                  CurrencyHelper.formatPrice(product.basePrice),
                   Icons.monetization_on,
                   AppColors.primaryColor,
                 ),
@@ -346,7 +347,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
             const SizedBox(height: 12),
             _buildPriceCard(
               'final_price'.tr,
-              '\$${product.discountedPrice!.toStringAsFixed(2)}',
+              CurrencyHelper.formatPrice(product.discountedPrice!),
               Icons.price_check,
               AppColors.successColor,
             ),

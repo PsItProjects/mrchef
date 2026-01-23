@@ -165,7 +165,7 @@ class AddToCartSection extends GetView<ProductDetailsController> {
                     ),
                   )
                 : Text(
-                    '${controller.totalPrice.toStringAsFixed(1)} ${'currency'.tr}',
+                    '${controller.totalPrice.toStringAsFixed(1)} ${'sar'.tr}',
                     style: const TextStyle(
                       fontFamily: 'Lato',
                       fontWeight: FontWeight.w700,
@@ -192,8 +192,8 @@ class AddToCartSection extends GetView<ProductDetailsController> {
                 ? (controller.selectedSizeDetail['total_price'] as num).toDouble()
                 : 0.0;
             final priceText = totalSizePrice > 0
-                ? '+${totalSizePrice.toStringAsFixed(1)} ${'currency'.tr}'
-                : '0 ${'currency'.tr}';
+                ? '+${totalSizePrice.toStringAsFixed(1)} ${'sar'.tr}'
+                : '0 ${'sar'.tr}';
 
             return Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,

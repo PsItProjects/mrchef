@@ -73,7 +73,7 @@ class VendorStep1Controller extends GetxController {
       SubscriptionPlan(
         id: 4,
         name: 'Premium Annual',
-        price: '\$79.99',
+        price: '299.99 ر.س',
         period: 'Annual',
         durationMonths: 12,
         isRecommended: true,
@@ -94,7 +94,7 @@ class VendorStep1Controller extends GetxController {
       SubscriptionPlan(
         id: 2,
         name: 'Premium Monthly',
-        price: '\$7.99',
+        price: '29.99 ر.س',
         period: 'Monthly',
         durationMonths: 1,
         isRecommended: false,

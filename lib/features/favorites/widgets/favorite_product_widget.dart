@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
+import 'package:mrsheaf/core/localization/currency_helper.dart';
 import 'package:mrsheaf/features/favorites/models/favorite_product_model.dart';
 
 class FavoriteProductWidget extends StatelessWidget {
@@ -51,12 +53,23 @@ class FavoriteProductWidget extends StatelessWidget {
                 // Product image
                 ClipRRect(
                   borderRadius: BorderRadius.circular(10),
-                  child: Image.asset(
-                    product.image,
+                  child: CachedNetworkImage(
+                    imageUrl: product.image,
                     width: 100,
                     height: 100,
                     fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) {
+                    placeholder: (context, url) => Container(
+                      width: 100,
+                      height: 100,
+                      color: const Color(0xFFC4C4C4),
+                      child: const Center(
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      ),
+                    ),
+                    errorWidget: (context, url, error) {
                       return Container(
                         width: 100,
                         height: 100,
@@ -101,7 +114,7 @@ class FavoriteProductWidget extends StatelessWidget {
                       const SizedBox(height: 4),
                       
                       Text(
-                        '\$ ${product.price.toStringAsFixed(2)}',
+                        CurrencyHelper.formatPrice(product.price),
                         style: const TextStyle(
                           fontFamily: 'Lato',
                           fontWeight: FontWeight.w400,

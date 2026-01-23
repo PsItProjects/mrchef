@@ -40,13 +40,54 @@ class FavoriteStoreModel {
       }
     }
 
+    // Parse image URLs properly and add base URL if needed
+    String logoUrl = '';
+    if (json['logo'] != null && json['logo'].toString().isNotEmpty) {
+      String rawUrl = json['logo'].toString();
+      // Add base URL if not already present
+      if (!rawUrl.startsWith('http')) {
+        logoUrl = 'https://mr-shife.com/storage/$rawUrl';
+      } else {
+        logoUrl = rawUrl;
+      }
+    } else if (json['image'] != null && json['image'].toString().isNotEmpty) {
+      String rawUrl = json['image'].toString();
+      if (!rawUrl.startsWith('http')) {
+        logoUrl = 'https://mr-shife.com/storage/$rawUrl';
+      } else {
+        logoUrl = rawUrl;
+      }
+    }
+
+    String coverUrl = '';
+    if (json['cover_image'] != null && json['cover_image'].toString().isNotEmpty) {
+      String rawUrl = json['cover_image'].toString();
+      // Add base URL if not already present
+      if (!rawUrl.startsWith('http')) {
+        coverUrl = 'https://mr-shife.com/storage/$rawUrl';
+      } else {
+        coverUrl = rawUrl;
+      }
+    } else if (json['backgroundImage'] != null && json['backgroundImage'].toString().isNotEmpty) {
+      String rawUrl = json['backgroundImage'].toString();
+      if (!rawUrl.startsWith('http')) {
+        coverUrl = 'https://mr-shife.com/storage/$rawUrl';
+      } else {
+        coverUrl = rawUrl;
+      }
+    }
+
+    print('🤍 DEBUG FAVORITE STORE: ${extractedName}');
+    print('🤍 Logo URL (fixed): $logoUrl');
+    print('🤍 Cover URL (fixed): $coverUrl');
+
     return FavoriteStoreModel(
       id: json['id'] ?? 0,
       name: extractedName,
-      image: json['logo'] ?? json['image'] ?? 'https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=400&h=300&fit=crop',
+      image: logoUrl,
       rating: _parseRating(json['rating']),
-      backgroundImage: json['cover_image'] ?? json['backgroundImage'] ?? '',
-      coverImage: json['cover_image'],
+      backgroundImage: coverUrl,
+      coverImage: coverUrl,
       description: json['description'] is Map<String, dynamic>
           ? _extractTranslatedText(json['description'])
           : json['description']?.toString(),

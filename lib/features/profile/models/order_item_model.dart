@@ -1,3 +1,5 @@
+import 'package:mrsheaf/core/localization/currency_helper.dart';
+
 class OrderItemModel {
   final int id;
   final int orderId;
@@ -44,7 +46,7 @@ class OrderItemModel {
     );
   }
 
-  String get formattedUnitPrice => '${unitPrice.toStringAsFixed(2)} SAR';
-  String get formattedTotalPrice => '${totalPrice.toStringAsFixed(2)} SAR';
+  String get formattedUnitPrice => CurrencyHelper.formatPrice(unitPrice);
+  String get formattedTotalPrice => CurrencyHelper.formatPrice(totalPrice);
 }
 
