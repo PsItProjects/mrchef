@@ -12,6 +12,7 @@ class ApiClient {
   static ApiClient? _instance;
   bool _isHandlingUnauthorized = false; // Flag to prevent multiple redirects
   bool _isBiometricLoginInProgress = false; // Flag to suppress 401 during biometric login
+  DateTime? _suppressUnauthorizedUntil; // Suppress 401 handling during intentional logout
 
   ApiClient._internal() {
     _dio = Dio();
@@ -84,6 +85,13 @@ class ApiClient {
 
           // Handle token expiration (401 Unauthorized)
           if (error.response?.statusCode == 401) {
+            if (_suppressUnauthorizedUntil != null &&
+                DateTime.now().isBefore(_suppressUnauthorizedUntil!)) {
+              print('⚠️ 401 handling suppressed (intentional logout)');
+              handler.next(error);
+              return;
+            }
+
             final uri = error.requestOptions.uri.toString();
 
             // Skip 401 handling for auth-related and device endpoints (guest allowed)
@@ -94,6 +102,9 @@ class ApiClient {
                 uri.contains('/send-login-otp') ||
                 uri.contains('/send-otp') ||
                 uri.contains('/register') ||
+              uri.contains('/logout') ||
+              uri.contains('/customer/logout') ||
+              uri.contains('/merchant/logout') ||
                 uri.contains('/biometric-login') ||
                 uri.contains('/device/'); // Device endpoints (guest allowed)
 
@@ -330,5 +341,12 @@ class ApiClient {
   void setBiometricLoginInProgress(bool value) {
     _isBiometricLoginInProgress = value;
     print('🔐 Biometric login in progress: $value');
+  }
+
+  /// Suppress generic 401/session-expired handling for a short duration.
+  /// Useful during intentional logout flows where tokens are being cleared.
+  void suppressUnauthorizedFor(Duration duration) {
+    _suppressUnauthorizedUntil = DateTime.now().add(duration);
+    print('🛑 Suppressing 401 handling for ${duration.inSeconds}s');
   }
 }

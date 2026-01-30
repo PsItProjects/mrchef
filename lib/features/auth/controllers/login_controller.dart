@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 import 'package:get/get.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mrsheaf/core/routes/app_routes.dart';
 import '../../../core/services/biometric_service.dart';
 import '../../../core/network/api_client.dart';
@@ -32,6 +33,22 @@ class LoginController extends GetxController {
   void onInit() {
     super.onInit();
     _initControllers();
+    _showPendingPostLogoutToast();
+  }
+
+  void _showPendingPostLogoutToast() {
+    Future.microtask(() async {
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        final message = prefs.getString('post_logout_toast');
+        if (message != null && message.trim().isNotEmpty) {
+          await prefs.remove('post_logout_toast');
+          ToastService.showInfo(message.trim());
+        }
+      } catch (_) {
+        // ignore
+      }
+    });
   }
 
   void _initControllers() {

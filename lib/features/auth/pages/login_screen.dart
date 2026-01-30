@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mrsheaf/core/localization/translation_helper.dart';
 import 'package:mrsheaf/core/services/biometric_service.dart';
+import 'package:mrsheaf/core/services/guest_service.dart';
 import 'package:mrsheaf/features/auth/controllers/login_controller.dart';
 import 'package:mrsheaf/core/routes/app_routes.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
@@ -288,33 +289,66 @@ class _LoginScreenState extends State<LoginScreen> {
               Spacer(),
               Spacer(),
               // Bottom section
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+              Column(
                 children: [
-                  Text(
-                    TranslationHelper.tr('dont_have_account'),
-                    style: TextStyle(
-                      fontFamily: 'Lato',
-                      fontWeight: FontWeight.w400,
-                      fontSize: 16,
-                      color: Color(0xFF262626),
-                      height: 1.6,
-                    ),
-                  ),
-                  SizedBox(width: 4),
-                  GestureDetector(
-                    onTap: () => Get.toNamed(AppRoutes.SIGNUP),
-                    child: Text(
-                      TranslationHelper.tr('sign_up'),
-                      style: TextStyle(
-                        fontFamily: 'Lato',
-                        fontWeight: FontWeight.w700,
-                        fontSize: 16,
-                        color: AppColors.primaryColor,
-                        height: 1.6,
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        TranslationHelper.tr('dont_have_account'),
+                        style: TextStyle(
+                          fontFamily: 'Lato',
+                          fontWeight: FontWeight.w400,
+                          fontSize: 16,
+                          color: Color(0xFF262626),
+                          height: 1.6,
+                        ),
                       ),
-                    ),
+                      SizedBox(width: 4),
+                      GestureDetector(
+                        onTap: () => Get.toNamed(AppRoutes.SIGNUP),
+                        child: Text(
+                          TranslationHelper.tr('sign_up'),
+                          style: TextStyle(
+                            fontFamily: 'Lato',
+                            fontWeight: FontWeight.w700,
+                            fontSize: 16,
+                            color: AppColors.primaryColor,
+                            height: 1.6,
+                          ),
+                        ),
+                      ),
+                      SizedBox(width: 8),
+                      Text(
+                        TranslationHelper.tr('or'),
+                        style: TextStyle(
+                          fontFamily: 'Lato',
+                          fontWeight: FontWeight.w400,
+                          fontSize: 16,
+                          color: Color(0xFF262626),
+                          height: 1.6,
+                        ),
+                      ),
+                      SizedBox(width: 8),
+                      GestureDetector(
+                        onTap: () async {
+                          final guestService = Get.find<GuestService>();
+                          await guestService.enterGuestMode();
+                        },
+                        child: Text(
+                          'continue_as_guest'.tr,
+                          style: TextStyle(
+                            fontFamily: 'Lato',
+                            fontWeight: FontWeight.w700,
+                            fontSize: 16,
+                            color: AppColors.primaryColor,
+                            height: 1.6,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
+                  SizedBox(height: 20),
                 ],
               ),
             ],

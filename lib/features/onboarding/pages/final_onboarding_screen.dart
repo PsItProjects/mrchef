@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mrsheaf/core/services/language_service.dart';
+import 'package:mrsheaf/core/services/guest_service.dart';
 import 'package:mrsheaf/core/routes/app_routes.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 
@@ -238,6 +239,22 @@ class FinalOnboardingScreen extends StatelessWidget {
                               style: AppTheme.buttonTextStyle.copyWith(
                                 color: AppColors.primaryColor,
                               ),
+                            ),
+                          ),
+                        ),
+                        SizedBox(height: 24),
+                        // Continue as Guest button
+                        GestureDetector(
+                          onTap: () async {
+                            await GuestService().enterGuestMode();
+                          },
+                          child: Text(
+                            'continue_as_guest'.tr,
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: AppColors.lightGreyTextColor,
+                              decoration: TextDecoration.underline,
+                              decorationColor: AppColors.lightGreyTextColor,
                             ),
                           ),
                         ),

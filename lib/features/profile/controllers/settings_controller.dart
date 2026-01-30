@@ -5,6 +5,7 @@ import 'package:mrsheaf/core/services/language_service.dart';
 import 'package:mrsheaf/features/profile/services/profile_service.dart';
 import 'package:mrsheaf/core/network/api_client.dart';
 import 'package:mrsheaf/features/profile/widgets/about_app_bottom_sheet.dart';
+import 'package:mrsheaf/features/profile/widgets/account_deletion_bottom_sheet.dart';
 import 'package:mrsheaf/core/routes/app_routes.dart';
 import 'package:mrsheaf/features/profile/pages/privacy_policy_screen.dart';
 import '../../../core/services/toast_service.dart';
@@ -255,6 +256,10 @@ class SettingsController extends GetxController {
   void openSecuritySettings() {
     ToastService.showInfo('opening_security_settings'.tr);
     // TODO: Navigate to security settings screen
+  }
+
+  void openAccountDeletion() {
+    AccountDeletionBottomSheet.show();
   }
 
   void clearAppCache() {

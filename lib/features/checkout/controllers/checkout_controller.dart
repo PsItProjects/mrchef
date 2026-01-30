@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mrsheaf/core/network/api_client.dart';
 import 'package:mrsheaf/core/services/toast_service.dart';
+import 'package:mrsheaf/core/services/guest_service.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/features/cart/controllers/cart_controller.dart';
 import 'package:mrsheaf/features/cart/services/cart_service.dart';
@@ -38,7 +39,40 @@ class CheckoutController extends GetxController {
   void onInit() {
     super.onInit();
     cartController = Get.find<CartController>();
+    
+    // Check if user is in guest mode
+    if (_isGuestMode) {
+      // Show modal and go back
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _showGuestModeModal();
+        Get.back();
+      });
+      return;
+    }
+    
     loadAddresses();
+  }
+
+  /// Check if user is in guest mode
+  bool get _isGuestMode {
+    try {
+      final guestService = Get.find<GuestService>();
+      return guestService.isGuestMode;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /// Show guest mode modal
+  void _showGuestModeModal() {
+    try {
+      final guestService = Get.find<GuestService>();
+      guestService.showLoginRequiredModal(
+        message: 'guest_checkout_message'.tr,
+      );
+    } catch (e) {
+      print('❌ CHECKOUT: Error showing guest modal - $e');
+    }
   }
   
   @override

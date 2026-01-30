@@ -113,6 +113,14 @@ class SettingsMenuList extends GetView<SettingsController> {
 
           // Privacy Policy - includes account deletion instructions
           SettingsMenuItem(
+            title: 'delete_account'.tr,
+            hasArrow: true,
+            onTap: controller.openAccountDeletion,
+            showDivider: true,
+            textColor: const Color(0xFFEB5757),
+          ),
+
+          SettingsMenuItem(
             title: 'privacy'.tr,
             hasArrow: true,
             onTap: controller.openPrivacyPolicy,

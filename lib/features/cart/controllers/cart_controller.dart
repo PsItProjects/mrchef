@@ -2,6 +2,7 @@ import 'package:get/get.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:mrsheaf/core/services/toast_service.dart';
+import 'package:mrsheaf/core/services/guest_service.dart';
 import 'package:mrsheaf/features/cart/models/cart_item_model.dart';
 import 'package:mrsheaf/features/cart/services/cart_service.dart';
 import 'package:mrsheaf/features/product_details/models/product_model.dart';
@@ -32,11 +33,41 @@ class CartController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    loadCartItems();
+    // Only load cart if not in guest mode
+    if (!_isGuestMode) {
+      loadCartItems();
+    }
+  }
+
+  /// Check if user is in guest mode
+  bool get _isGuestMode {
+    try {
+      final guestService = Get.find<GuestService>();
+      return guestService.isGuestMode;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /// Show guest mode modal and return true if user is guest
+  bool _checkGuestAndShowModal({String? message}) {
+    try {
+      final guestService = Get.find<GuestService>();
+      return guestService.checkGuestAndShowModal(
+        message: message ?? 'guest_cart_message'.tr,
+      );
+    } catch (e) {
+      return false;
+    }
   }
 
   /// Load cart items from server
   Future<void> loadCartItems() async {
+    if (_isGuestMode) {
+      cartItems.clear();
+      cartSummary.clear();
+      return;
+    }
     try {
       isLoading.value = true;
 
@@ -75,6 +106,11 @@ class CartController extends GetxController {
     List<AdditionalOption> additionalOptions = const [],
     String? specialInstructions,
   }) async {
+    // Check guest mode first
+    if (_checkGuestAndShowModal()) {
+      return;
+    }
+    
     try {
       isUpdating.value = true;
 
@@ -133,6 +169,9 @@ class CartController extends GetxController {
 
   /// Remove item from cart via server
   Future<void> removeFromCart(int cartItemId) async {
+    if (_checkGuestAndShowModal()) {
+      return;
+    }
     try {
       // Set loading for this specific item only
       setItemLoading(cartItemId, true);
@@ -165,6 +204,9 @@ class CartController extends GetxController {
 
   /// Update quantity of cart item via server
   Future<void> updateQuantity(int cartItemId, int newQuantity) async {
+    if (_checkGuestAndShowModal()) {
+      return;
+    }
     if (newQuantity <= 0) {
       await removeFromCart(cartItemId);
       return;
@@ -246,6 +288,9 @@ class CartController extends GetxController {
 
   /// Clear all items from cart via server
   Future<void> clearCart({bool showNotification = true}) async {
+    if (_checkGuestAndShowModal()) {
+      return;
+    }
     try {
       isUpdating.value = true;
 
@@ -337,6 +382,9 @@ class CartController extends GetxController {
   // Proceed to checkout - navigate to checkout screen
   void proceedToCheckout() {
     if (cartItems.isEmpty) return;
+    if (_checkGuestAndShowModal(message: 'guest_checkout_message'.tr)) {
+      return;
+    }
     Get.toNamed(AppRoutes.CHECKOUT);
   }
 
@@ -352,6 +400,9 @@ class CartController extends GetxController {
   }
 
   Future<void> applyPromoCode() async {
+    if (_checkGuestAndShowModal()) {
+      return;
+    }
     final code = promoCodeController.text.trim();
     if (code.isEmpty) {
       ToastService.showWarning(TranslationHelper.tr('please_enter_promo_code'));
@@ -376,6 +427,9 @@ class CartController extends GetxController {
   }
 
   Future<void> removePromoCode() async {
+    if (_checkGuestAndShowModal()) {
+      return;
+    }
     try {
       isCouponUpdating.value = true;
 

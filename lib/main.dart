@@ -15,6 +15,8 @@ import 'package:mrsheaf/core/services/language_service.dart';
 import 'package:mrsheaf/core/services/theme_service.dart';
 import 'package:mrsheaf/core/services/fcm_service.dart';
 import 'package:mrsheaf/core/services/realtime_chat_service.dart';
+import 'package:mrsheaf/core/services/onboarding_service.dart';
+import 'package:mrsheaf/core/services/guest_service.dart';
 import 'package:mrsheaf/core/network/api_client.dart';
 import 'package:mrsheaf/features/favorites/controllers/favorites_controller.dart';
 
@@ -54,6 +56,12 @@ void main() async {
   final languageService = LanguageService();
   await languageService.onInit();
   Get.put(languageService, permanent: true);
+
+  // Initialize OnboardingService
+  await Get.putAsync(() => OnboardingService().init());
+
+  // Initialize GuestService
+  await Get.putAsync(() => GuestService().init());
 
   final appService = AppService();
   await appService.onInit();

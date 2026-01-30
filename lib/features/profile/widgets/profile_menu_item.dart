@@ -8,6 +8,8 @@ class ProfileMenuItem extends StatelessWidget {
   final String? subtitle;
   final VoidCallback? onTap;
   final bool isLogout;
+  final bool isDanger;
+  final IconData? trailingIcon;
   final bool hasToggle;
   final bool? toggleValue;
   final Function(bool)? onToggleChanged;
@@ -19,6 +21,8 @@ class ProfileMenuItem extends StatelessWidget {
     this.subtitle,
     this.onTap,
     this.isLogout = false,
+    this.isDanger = false,
+    this.trailingIcon,
     this.hasToggle = false,
     this.toggleValue,
     this.onToggleChanged,
@@ -65,8 +69,8 @@ class ProfileMenuItem extends StatelessWidget {
                       fontFamily: fontFamily,
                       fontWeight: FontWeight.w600,
                       fontSize: 16,
-                      color: isLogout 
-                          ? const Color(0xFFEB5757) 
+                      color: (isLogout || isDanger)
+                          ? const Color(0xFFEB5757)
                           : const Color(0xFF262626),
                     ),
                   ),
@@ -108,10 +112,10 @@ class ProfileMenuItem extends StatelessWidget {
                 width: 24,
                 height: 24,
                 child: Icon(
-                  isLogout ? Icons.logout : Icons.arrow_forward_ios,
-                  size: isLogout ? 20 : 16,
-                  color: isLogout 
-                      ? const Color(0xFFEB5757) 
+                  trailingIcon ?? (isLogout ? Icons.logout : Icons.arrow_forward_ios),
+                  size: (isLogout || trailingIcon != null) ? 20 : 16,
+                  color: (isLogout || isDanger)
+                      ? const Color(0xFFEB5757)
                       : const Color(0xFF262626),
                 ),
               ),

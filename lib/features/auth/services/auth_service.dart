@@ -1,16 +1,18 @@
 import 'dart:convert';
 import 'dart:io';
+
 import 'package:dio/dio.dart';
 import 'package:get/get.dart' as getx;
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../../core/network/api_client.dart';
+
 import '../../../core/models/api_response.dart';
-import '../../../core/services/language_service.dart';
-import '../../../core/services/fcm_service.dart';
+import '../../../core/network/api_client.dart';
 import '../../../core/services/biometric_service.dart';
-import '../models/user_model.dart';
+import '../../../core/services/fcm_service.dart';
+import '../../../core/services/language_service.dart';
 import '../models/auth_request.dart';
 import '../models/auth_response.dart';
+import '../models/user_model.dart';
 
 class AuthService extends getx.GetxService {
   final ApiClient _apiClient = ApiClient.instance;
@@ -672,9 +674,18 @@ class AuthService extends getx.GetxService {
   }
 
   // Logout
-  Future<ApiResponse<void>> logout() async {
+  Future<ApiResponse<void>> logout({
+    bool suppressUnauthorizedToast = true,
+    String? postLogoutToastMessage,
+  }) async {
     try {
       isLoading.value = true;
+
+      if (suppressUnauthorizedToast) {
+        // Prevent the global 401 handler from showing "please login again"
+        // while we intentionally clear tokens during logout.
+        _apiClient.suppressUnauthorizedFor(const Duration(seconds: 10));
+      }
 
       // Deactivate FCM token before logout
       try {
@@ -703,6 +714,17 @@ class AuthService extends getx.GetxService {
       // Clear local storage regardless of API response
       await _clearUserFromStorage();
 
+      // If we have a post-logout message (e.g., account deletion flow),
+      // store it to show on the login screen after navigation.
+      if (postLogoutToastMessage != null && postLogoutToastMessage.trim().isNotEmpty) {
+        try {
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString('post_logout_toast', postLogoutToastMessage.trim());
+        } catch (_) {
+          // ignore
+        }
+      }
+
       // Also clear ApiClient auth data
       await _apiClient.clearAuthData();
 
@@ -714,6 +736,15 @@ class AuthService extends getx.GetxService {
       print('❌ LOGOUT ERROR: $e');
       // Clear local storage even if API call fails
       await _clearUserFromStorage();
+
+      if (postLogoutToastMessage != null && postLogoutToastMessage.trim().isNotEmpty) {
+        try {
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString('post_logout_toast', postLogoutToastMessage.trim());
+        } catch (_) {
+          // ignore
+        }
+      }
 
       // Also clear ApiClient auth data
       await _apiClient.clearAuthData();

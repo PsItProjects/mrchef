@@ -4,6 +4,7 @@ import 'package:mrsheaf/core/services/biometric_service.dart';
 import 'package:mrsheaf/core/services/toast_service.dart';
 import 'package:mrsheaf/features/auth/services/auth_service.dart';
 import 'package:mrsheaf/features/profile/controllers/profile_controller.dart';
+import 'package:mrsheaf/features/profile/widgets/account_deletion_bottom_sheet.dart';
 import 'package:mrsheaf/features/profile/widgets/profile_menu_item.dart';
 
 class ProfileMenuList extends GetView<ProfileController> {
@@ -66,6 +67,17 @@ class ProfileMenuList extends GetView<ProfileController> {
           title: 'privacy'.tr,
           subtitle: 'privacy_policy_desc'.tr,
           onTap: controller.openPrivacyPolicy,
+        ),
+
+        const SizedBox(height: 16),
+
+        // Delete Account - for both customers and merchants
+        ProfileMenuItem(
+          title: 'delete_account'.tr,
+          subtitle: null,
+          onTap: AccountDeletionBottomSheet.show,
+          isDanger: true,
+          trailingIcon: Icons.delete_outline,
         ),
 
         const SizedBox(height: 16),

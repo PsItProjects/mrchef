@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import 'package:mrsheaf/features/profile/models/user_profile_model.dart';
 import 'package:mrsheaf/core/routes/app_routes.dart';
+import 'package:mrsheaf/core/services/guest_service.dart';
 import 'package:mrsheaf/features/profile/pages/edit_profile_screen.dart';
 import 'package:mrsheaf/features/profile/pages/my_orders_screen.dart';
 import 'package:mrsheaf/features/profile/pages/my_reviews_screen.dart';
@@ -80,12 +81,44 @@ class ProfileController extends GetxController {
   void onInit() {
     super.onInit();
     _orderService = OrderService(Get.find<ApiClient>());
+    
+    // Check if user is in guest mode
+    if (_isGuestMode) {
+      // Show modal for guest mode
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _showGuestModeModal();
+      });
+      return;
+    }
+    
     // تحميل البيانات من الـ Cache أولاً
     _loadCachedData();
     // ثم تحديث البيانات من الـ API
     _loadUserProfile();
     _loadAddressCount();
     _loadOrderCount();
+  }
+
+  /// Check if user is in guest mode
+  bool get _isGuestMode {
+    try {
+      final guestService = Get.find<GuestService>();
+      return guestService.isGuestMode;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /// Show guest mode modal
+  void _showGuestModeModal() {
+    try {
+      final guestService = Get.find<GuestService>();
+      guestService.showLoginRequiredModal(
+        message: 'guest_profile_message'.tr,
+      );
+    } catch (e) {
+      print('❌ PROFILE: Error showing guest modal - $e');
+    }
   }
 
   Future<void> _loadAddressCount() async {

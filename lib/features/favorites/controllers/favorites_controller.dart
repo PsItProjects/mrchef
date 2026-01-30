@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:mrsheaf/core/services/toast_service.dart';
+import 'package:mrsheaf/core/services/guest_service.dart';
 import 'package:mrsheaf/features/favorites/models/favorite_store_model.dart';
 import 'package:mrsheaf/features/favorites/models/favorite_product_model.dart';
 import 'package:mrsheaf/features/favorites/services/favorites_service.dart';
@@ -12,6 +13,7 @@ import 'package:mrsheaf/features/auth/services/auth_service.dart';
 class FavoritesController extends GetxController {
   final FavoritesService _favoritesService = FavoritesService();
   final AuthService _authService = Get.find<AuthService>();
+  final GuestService _guestService = Get.find<GuestService>();
 
   // Tab management
   final RxInt selectedTabIndex = 0.obs;
@@ -37,6 +39,17 @@ class FavoritesController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    
+    // Check if user is in guest mode
+    if (_guestService.isGuestMode) {
+      // Allow opening the screen, but don't call protected APIs.
+      favoriteStores.clear();
+      favoriteProducts.clear();
+      _allStores.clear();
+      _allProducts.clear();
+      return;
+    }
+    
     // Only load favorites if user is authenticated and is a customer
     if (_authService.isAuthenticated && _authService.isCustomer) {
       loadFavorites();
@@ -160,6 +173,13 @@ class FavoritesController extends GetxController {
 
   // Store management
   Future<void> addStoreToFavorites(int storeId) async {
+    // Check guest mode first
+    if (_guestService.checkGuestAndShowModal(
+      message: 'guest_favorites_message'.tr,
+    )) {
+      return;
+    }
+    
     if (!_authService.isAuthenticated || !_authService.isCustomer) {
       _showAuthenticationError();
       return;
@@ -186,6 +206,13 @@ class FavoritesController extends GetxController {
   }
 
   Future<void> removeStoreFromFavorites(int storeId) async {
+    // Check guest mode first
+    if (_guestService.checkGuestAndShowModal(
+      message: 'guest_favorites_message'.tr,
+    )) {
+      return;
+    }
+
     if (!_authService.isAuthenticated || !_authService.isCustomer) {
       _showAuthenticationError();
       return;
@@ -220,6 +247,13 @@ class FavoritesController extends GetxController {
 
   // Product management
   Future<void> addProductToFavorites(int productId) async {
+    // Check guest mode first
+    if (_guestService.checkGuestAndShowModal(
+      message: 'guest_favorites_message'.tr,
+    )) {
+      return;
+    }
+    
     if (!_authService.isAuthenticated || !_authService.isCustomer) {
       _showAuthenticationError();
       return;
@@ -246,6 +280,13 @@ class FavoritesController extends GetxController {
   }
 
   Future<void> removeProductFromFavorites(int productId) async {
+    // Check guest mode first
+    if (_guestService.checkGuestAndShowModal(
+      message: 'guest_favorites_message'.tr,
+    )) {
+      return;
+    }
+
     if (!_authService.isAuthenticated || !_authService.isCustomer) {
       _showAuthenticationError();
       return;
@@ -352,6 +393,13 @@ class FavoritesController extends GetxController {
 
   // Clear all favorites
   Future<void> clearAllFavorites() async {
+    // Check guest mode first
+    if (_guestService.checkGuestAndShowModal(
+      message: 'guest_favorites_message'.tr,
+    )) {
+      return;
+    }
+
     try {
       isLoading.value = true;
 

@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mrsheaf/features/onboarding/models/onboarding_page_model.dart';
 import 'package:mrsheaf/core/routes/app_routes.dart';
+import 'package:mrsheaf/core/services/onboarding_service.dart';
 
 class OnboardingController extends GetxController {
   final PageController pageController = PageController();
   final RxInt currentPage = 0.obs;
+  final OnboardingService _onboardingService = Get.find<OnboardingService>();
 
   final List<OnboardingPageModel> pages = [
     OnboardingPageModel(
@@ -36,6 +38,8 @@ class OnboardingController extends GetxController {
         curve: Curves.easeInOut,
       );
     } else {
+      // Mark onboarding as seen before navigating
+      _onboardingService.setOnboardingAsSeen();
       Get.offAllNamed(AppRoutes.FINAL_ONBOARDING);
     }
   }

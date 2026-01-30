@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:mrsheaf/features/profile/models/address_model.dart';
 import 'package:mrsheaf/features/profile/pages/add_edit_address_screen.dart';
 import 'package:mrsheaf/features/profile/services/address_service.dart';
+import 'package:mrsheaf/core/services/guest_service.dart';
 import '../../../core/services/toast_service.dart';
 
 class ShippingAddressesController extends GetxController {
@@ -19,7 +20,40 @@ class ShippingAddressesController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    
+    // Check if user is in guest mode
+    if (_isGuestMode) {
+      // Show modal and go back
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _showGuestModeModal();
+        Get.back();
+      });
+      return;
+    }
+    
     loadAddresses();
+  }
+
+  /// Check if user is in guest mode
+  bool get _isGuestMode {
+    try {
+      final guestService = Get.find<GuestService>();
+      return guestService.isGuestMode;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /// Show guest mode modal
+  void _showGuestModeModal() {
+    try {
+      final guestService = Get.find<GuestService>();
+      guestService.showLoginRequiredModal(
+        message: 'guest_address_message'.tr,
+      );
+    } catch (e) {
+      print('❌ ADDRESSES: Error showing guest modal - $e');
+    }
   }
 
   /// Load addresses from API

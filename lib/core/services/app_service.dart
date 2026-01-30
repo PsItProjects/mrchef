@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../features/auth/services/auth_service.dart';
 import '../../features/profile/services/profile_service.dart';
 import 'biometric_service.dart';
+import 'onboarding_service.dart';
 
 class AppService extends GetxService {
   final RxBool isInitialized = false.obs;
@@ -69,11 +70,10 @@ class AppService extends GetxService {
           initialRoute.value = '/home';
         }
       } else {
-        // Check if user has seen onboarding
-        final prefs = await SharedPreferences.getInstance();
-        final hasSeenOnboarding = prefs.getBool('has_seen_onboarding') ?? false;
+        // Check if user has seen onboarding using OnboardingService
+        final onboardingService = Get.find<OnboardingService>();
         
-        if (hasSeenOnboarding) {
+        if (onboardingService.hasSeenOnboarding) {
           initialRoute.value = '/login';
         } else {
           initialRoute.value = '/onboarding';
