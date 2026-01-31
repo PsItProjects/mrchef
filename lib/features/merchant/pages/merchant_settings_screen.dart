@@ -9,6 +9,7 @@ import 'package:mrsheaf/features/merchant/pages/working_hours_screen.dart';
 import 'package:mrsheaf/features/merchant/pages/notification_settings_screen.dart';
 import 'package:mrsheaf/features/merchant/pages/edit_personal_profile_screen.dart';
 import 'package:mrsheaf/features/profile/widgets/about_app_bottom_sheet.dart';
+import 'package:mrsheaf/features/profile/widgets/account_deletion_bottom_sheet.dart';
 import 'package:mrsheaf/features/profile/pages/privacy_policy_screen.dart';
 import 'package:mrsheaf/core/routes/app_routes.dart';
 import '../../../core/services/toast_service.dart';
@@ -90,8 +91,6 @@ class _MerchantSettingsScreenState extends State<MerchantSettingsScreen> {
                     _buildRestaurantSection(),
                     const SizedBox(height: 20),
                     _buildAccountSection(),
-                    const SizedBox(height: 20),
-                    _buildNotificationsSection(),
                     const SizedBox(height: 20),
                     _buildAppSection(),
                     const SizedBox(height: 20),
@@ -296,6 +295,13 @@ class _MerchantSettingsScreenState extends State<MerchantSettingsScreen> {
               await _loadProfile(forceRefresh: true);
             }
           },
+        ),
+        _buildSettingsTile(
+          icon: Icons.delete_forever,
+          iconColor: const Color(0xFFEB5757),
+          title: 'delete_account'.tr,
+          subtitle: 'account_deletion_step1_title'.tr,
+          onTap: () => AccountDeletionBottomSheet.show(),
         ),
       ],
     );
