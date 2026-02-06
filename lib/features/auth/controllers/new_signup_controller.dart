@@ -20,7 +20,8 @@ class NewSignupController extends GetxController {
   final arabicFullNameController = TextEditingController();
 
   // Observable variables
-  final RxBool isVendor = false.obs;
+  // In unified model, isVendor is always false - registration is always as customer
+  final RxBool isVendor = false.obs;  // DEPRECATED: Kept for compatibility but always false
   final RxBool agreeToTerms = false.obs;
   final RxBool isPhoneNumberValid = false.obs;
   final RxBool isLoading = false.obs;
@@ -47,8 +48,12 @@ class NewSignupController extends GetxController {
     return 'unexpected_error'.tr;
   }
 
+  // DEPRECATED: This method is no longer used in unified model
+  // Registration is always as customer
   void toggleUserType(bool vendor) {
-    isVendor.value = vendor;
+    // In unified model, always stay as customer
+    // isVendor.value = vendor;
+    isVendor.value = false;  // Always false
   }
 
   void toggleAgreeToTerms(bool? value) {
@@ -92,79 +97,43 @@ class NewSignupController extends GetxController {
     isLoading.value = true;
 
     try {
-      if (isVendor.value) {
-        // Register as merchant
-        final languageService = Get.find<LanguageService>();
-        
-        final request = MerchantRegistrationRequest(
-          englishFullName: englishFullNameController.text.trim(),
-          arabicFullName: arabicFullNameController.text.trim(),
-          phoneNumber: phoneController.text.replaceAll(' ', ''),
-          countryCode: '+966',
-          email: emailController.text.trim(),
-          agreeToTerms: agreeToTerms.value,
-        );
+      // ====== UNIFIED MODEL: Always register as customer ======
+      // Vendor/Merchant activation happens later via Settings → Activate Merchant
+      final languageService = Get.find<LanguageService>();
+      
+      final request = CustomerRegistrationRequest(
+        nameEn: englishFullNameController.text.trim(),
+        nameAr: arabicFullNameController.text.trim(),
+        phoneNumber: phoneController.text.replaceAll(' ', ''),
+        countryCode: '+966',
+        email: emailController.text.trim().isNotEmpty
+            ? emailController.text.trim()
+            : null,
+        preferredLanguage: languageService.currentLanguage,
+        agreeToTerms: agreeToTerms.value,
+      );
 
-        final response = await _authService.registerMerchant(request);
+      final response = await _authService.registerCustomer(request);
 
-        if (response.isSuccess) {
-          // 🔍 Print OTP code for development
-          if (response.data?.verificationCode != null) {
-            print('🔐 OTP CODE: ${response.data!.verificationCode}');
-            print('⏰ Expires at: ${response.data!.expiresAt}');
-          }
-          
-          ToastService.showSuccess(response.message);
-
-          // Navigate to OTP verification
-          Get.toNamed(AppRoutes.OTP_VERIFICATION, arguments: {
-            'phone_number': phoneController.text.replaceAll(' ', ''),
-            'country_code': '+966',
-            'user_type': 'merchant',
-            'purpose': 'registration',
-          });
-        } else {
-          // Handle validation errors from backend
-          _handleRegistrationErrors(response);
+      if (response.isSuccess) {
+        // 🔍 Print OTP code for development
+        if (response.data?.verificationCode != null) {
+          print('🔐 OTP CODE: ${response.data!.verificationCode}');
+          print('⏰ Expires at: ${response.data!.expiresAt}');
         }
+        
+        ToastService.showSuccess(response.message);
+
+        // Navigate to OTP verification - always as customer
+        Get.toNamed(AppRoutes.OTP_VERIFICATION, arguments: {
+          'phone_number': phoneController.text.replaceAll(' ', ''),
+          'country_code': '+966',
+          'user_type': 'customer',  // Always customer in unified model
+          'purpose': 'registration',
+        });
       } else {
-        // Register as customer
-        final languageService = Get.find<LanguageService>();
-        
-        final request = CustomerRegistrationRequest(
-          nameEn: englishFullNameController.text.trim(),
-          nameAr: arabicFullNameController.text.trim(),
-          phoneNumber: phoneController.text.replaceAll(' ', ''),
-          countryCode: '+966',
-          email: emailController.text.trim().isNotEmpty
-              ? emailController.text.trim()
-              : null,
-          preferredLanguage: languageService.currentLanguage, // Use current app language
-          agreeToTerms: agreeToTerms.value,
-        );
-
-        final response = await _authService.registerCustomer(request);
-
-        if (response.isSuccess) {
-          // 🔍 Print OTP code for development
-          if (response.data?.verificationCode != null) {
-            print('🔐 OTP CODE: ${response.data!.verificationCode}');
-            print('⏰ Expires at: ${response.data!.expiresAt}');
-          }
-          
-          ToastService.showSuccess(response.message);
-
-          // Navigate to OTP verification
-          Get.toNamed(AppRoutes.OTP_VERIFICATION, arguments: {
-            'phone_number': phoneController.text.replaceAll(' ', ''),
-            'country_code': '+966',
-            'user_type': 'customer',
-            'purpose': 'registration',
-          });
-        } else {
-          // Handle validation errors from backend
-          _handleRegistrationErrors(response);
-        }
+        // Handle validation errors from backend
+        _handleRegistrationErrors(response);
       }
     } on DioException catch (e) {
       // Handle Dio errors (network, 409, etc.)

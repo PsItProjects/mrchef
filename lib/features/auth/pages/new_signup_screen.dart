@@ -90,9 +90,11 @@ class NewSignupScreen extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 24),
                 child: Column(
                   children: [
-                    // User/Vendor toggle
-                    _buildUserVendorToggle(controller),
-                    SizedBox(height: 20),
+                    // User/Vendor toggle - REMOVED in unified model
+                    // Registration is always as customer
+                    // Users can activate merchant profile from settings
+                    // _buildUserVendorToggle(controller),
+                    // SizedBox(height: 20),
 
                     // Form fields
                     _buildFormFields(controller),
@@ -183,63 +185,34 @@ class NewSignupScreen extends StatelessWidget {
   }
 
   Widget _buildFormFields(NewSignupController controller) {
-    return Obx(() {
-      if (controller.isVendor.value) {
-        return Column(
-          children: [
-            _buildInputFieldWithError(
-              'english_full_name'.tr,
-              'enter_english_full_name'.tr,
-              controller.englishFullNameController,
-              controller.englishNameError,
-            ),
-            SizedBox(height: 20),
-            _buildInputFieldWithError(
-              'arabic_full_name'.tr,
-              'enter_arabic_full_name'.tr,
-              controller.arabicFullNameController,
-              controller.arabicNameError,
-            ),
-            SizedBox(height: 20),
-            _buildInputFieldWithError(
-              'email'.tr,
-              'enter_your_email'.tr,
-              controller.emailController,
-              controller.emailError,
-            ),
-            SizedBox(height: 20),
-            _buildPhoneField(controller),
-          ],
-        );
-      } else {
-        return Column(
-          children: [
-            _buildInputFieldWithError(
-              'english_full_name'.tr,
-              'enter_english_full_name'.tr,
-              controller.englishFullNameController,
-              controller.englishNameError,
-            ),
-            SizedBox(height: 20),
-            _buildInputFieldWithError(
-              'arabic_full_name'.tr,
-              'enter_arabic_full_name'.tr,
-              controller.arabicFullNameController,
-              controller.arabicNameError,
-            ),
-            SizedBox(height: 20),
-            _buildInputFieldWithError(
-              'email'.tr,
-              'enter_your_email'.tr,
-              controller.emailController,
-              controller.emailError,
-            ),
-            SizedBox(height: 20),
-            _buildPhoneField(controller),
-          ],
-        );
-      }
-    });
+    // In unified model, registration is always as customer
+    // Form fields are the same for all users
+    return Column(
+      children: [
+        _buildInputFieldWithError(
+          'english_full_name'.tr,
+          'enter_english_full_name'.tr,
+          controller.englishFullNameController,
+          controller.englishNameError,
+        ),
+        SizedBox(height: 20),
+        _buildInputFieldWithError(
+          'arabic_full_name'.tr,
+          'enter_arabic_full_name'.tr,
+          controller.arabicFullNameController,
+          controller.arabicNameError,
+        ),
+        SizedBox(height: 20),
+        _buildInputFieldWithError(
+          'email'.tr,
+          'enter_your_email'.tr,
+          controller.emailController,
+          controller.emailError,
+        ),
+        SizedBox(height: 20),
+        _buildPhoneField(controller),
+      ],
+    );
   }
 
   Widget _buildInputField(

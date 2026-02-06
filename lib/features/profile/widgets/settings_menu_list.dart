@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mrsheaf/core/services/biometric_service.dart';
+import 'package:mrsheaf/core/services/profile_switch_service.dart';
 import 'package:mrsheaf/core/services/toast_service.dart';
 import 'package:mrsheaf/features/auth/services/auth_service.dart';
 import 'package:mrsheaf/features/profile/controllers/settings_controller.dart';
@@ -15,6 +16,9 @@ class SettingsMenuList extends GetView<SettingsController> {
       margin: const EdgeInsets.symmetric(horizontal: 0),
       child: Column(
         children: [
+          // Profile Switch / Become Merchant
+          _buildProfileSwitchItem(),
+
           // Dark Mode
           Obx(() => SettingsMenuItem(
             title: 'dark_mode'.tr,
@@ -129,6 +133,93 @@ class SettingsMenuList extends GetView<SettingsController> {
         ],
       ),
     );
+  }
+
+  /// بناء زر تبديل الملف الشخصي (عميل ↔ تاجر)
+  Widget _buildProfileSwitchItem() {
+    try {
+      if (!Get.isRegistered<ProfileSwitchService>()) {
+        return const SizedBox.shrink();
+      }
+
+      final profileSwitch = Get.find<ProfileSwitchService>();
+
+      return Obx(() {
+        final status = profileSwitch.accountStatus.value;
+
+        // Still loading or no status yet
+        if (status == null) {
+          // Trigger a fetch if not already loading
+          if (!profileSwitch.isLoadingStatus.value) {
+            profileSwitch.fetchAccountStatus();
+          }
+          return const SizedBox.shrink();
+        }
+
+        // If user already has a merchant profile, show "Switch" button
+        if (status.canSwitchToMerchant) {
+          final targetLabel = status.isMerchantMode
+              ? 'switch_to_customer'.tr
+              : 'switch_to_merchant'.tr;
+
+          return SettingsMenuItem(
+            title: targetLabel,
+            hasArrow: true,
+            onTap: profileSwitch.isSwitching.value ? null : () => _handleSwitch(profileSwitch),
+            showDivider: true,
+            isLoading: profileSwitch.isSwitching.value,
+            textColor: const Color(0xFF27AE60),
+          );
+        }
+
+        // If no merchant profile, show "Become a Merchant"
+        if (status.canActivateMerchant && status.isCustomerMode) {
+          return SettingsMenuItem(
+            title: 'become_merchant'.tr,
+            hasArrow: true,
+            onTap: profileSwitch.isSwitching.value ? null : () => _handleActivateMerchant(profileSwitch),
+            showDivider: true,
+            isLoading: profileSwitch.isSwitching.value,
+            textColor: const Color(0xFFF2994A),
+          );
+        }
+
+        return const SizedBox.shrink();
+      });
+    } catch (e) {
+      return const SizedBox.shrink();
+    }
+  }
+
+  /// Handle switch role action
+  Future<void> _handleSwitch(ProfileSwitchService profileSwitch) async {
+    final success = await profileSwitch.switchRole();
+    if (success) {
+      ToastService.showSuccess('profile_switch_success'.tr);
+      // Navigate to the appropriate home
+      if (profileSwitch.isMerchantMode) {
+        Get.offAllNamed('/merchant-home');
+      } else {
+        Get.offAllNamed('/home');
+      }
+    } else {
+      ToastService.showError('profile_switch_failed'.tr);
+    }
+  }
+
+  /// Handle activate merchant action
+  Future<void> _handleActivateMerchant(ProfileSwitchService profileSwitch) async {
+    final success = await profileSwitch.activateMerchant();
+    if (success) {
+      ToastService.showSuccess('merchant_activated'.tr);
+      // Switch to merchant mode and navigate to merchant onboarding
+      final switched = await profileSwitch.switchRole();
+      if (switched) {
+        Get.offAllNamed('/merchant-home');
+      }
+    } else {
+      ToastService.showError('merchant_activation_failed'.tr);
+    }
   }
 
   /// بناء خيار "تقييماتي" - يظهر فقط للعملاء (Customers)

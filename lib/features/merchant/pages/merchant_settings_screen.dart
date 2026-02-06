@@ -13,6 +13,7 @@ import 'package:mrsheaf/features/profile/widgets/account_deletion_bottom_sheet.d
 import 'package:mrsheaf/features/profile/pages/privacy_policy_screen.dart';
 import 'package:mrsheaf/core/routes/app_routes.dart';
 import '../../../core/services/toast_service.dart';
+import '../../../core/services/profile_switch_service.dart';
 
 class MerchantSettingsScreen extends StatefulWidget {
   const MerchantSettingsScreen({Key? key}) : super(key: key);
@@ -87,6 +88,8 @@ class _MerchantSettingsScreenState extends State<MerchantSettingsScreen> {
                     _buildHeader(),
                     const SizedBox(height: 20),
                     _buildProfileCard(),
+                    const SizedBox(height: 20),
+                    _buildSwitchToCustomerSection(),
                     const SizedBox(height: 20),
                     _buildRestaurantSection(),
                     const SizedBox(height: 20),
@@ -276,6 +279,43 @@ class _MerchantSettingsScreenState extends State<MerchantSettingsScreen> {
         ),
       ],
     );
+  }
+
+  Widget _buildSwitchToCustomerSection() {
+    return _buildSection(
+      title: 'switch_profile'.tr,
+      items: [
+        _buildSettingsTile(
+          icon: Icons.swap_horiz,
+          iconColor: const Color(0xFF4CAF50),
+          title: 'switch_to_customer'.tr,
+          subtitle: 'switch_to_customer_desc'.tr,
+          onTap: _handleSwitchToCustomer,
+        ),
+      ],
+    );
+  }
+
+  Future<void> _handleSwitchToCustomer() async {
+    try {
+      if (!Get.isRegistered<ProfileSwitchService>()) return;
+      final switchService = Get.find<ProfileSwitchService>();
+
+      // Ensure status is loaded
+      if (switchService.accountStatus.value == null) {
+        await switchService.fetchAccountStatus();
+      }
+
+      final success = await switchService.switchRole();
+      if (success) {
+        ToastService.showSuccess('switched_to_customer'.tr);
+        Get.offAllNamed('/home');
+      } else {
+        ToastService.showError('switch_failed'.tr);
+      }
+    } catch (e) {
+      ToastService.showError('switch_failed'.tr);
+    }
   }
 
   Widget _buildAccountSection() {

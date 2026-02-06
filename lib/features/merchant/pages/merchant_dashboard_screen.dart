@@ -5,7 +5,7 @@ import 'package:mrsheaf/features/merchant/controllers/merchant_main_controller.d
 import 'package:mrsheaf/features/merchant/pages/merchant_home_screen.dart';
 import 'package:mrsheaf/features/merchant/pages/merchant_orders_screen.dart';
 import 'package:mrsheaf/features/merchant/pages/merchant_messages_screen.dart';
-import 'package:mrsheaf/features/merchant/pages/merchant_settings_screen.dart';
+import 'package:mrsheaf/features/profile/pages/unified_settings_screen.dart';
 
 class MerchantDashboardScreen extends GetView<MerchantMainController> {
   const MerchantDashboardScreen({super.key});
@@ -17,7 +17,7 @@ class MerchantDashboardScreen extends GetView<MerchantMainController> {
       const MerchantHomeScreen(),
       const MerchantOrdersScreen(),
       const MerchantMessagesScreen(),
-      const MerchantSettingsScreen(),
+      const UnifiedSettingsScreen(),
     ];
 
     // Bottom navigation items with same styling as regular user

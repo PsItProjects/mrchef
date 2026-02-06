@@ -5,6 +5,8 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get/get.dart';
 import 'package:mrsheaf/core/network/api_client.dart';
 import 'package:mrsheaf/core/services/language_service.dart';
+import 'package:mrsheaf/core/services/profile_switch_service.dart';
+import 'package:mrsheaf/features/auth/services/auth_service.dart';
 import 'package:mrsheaf/features/merchant/controllers/merchant_notifications_controller.dart';
 import 'package:mrsheaf/features/notifications/controllers/notifications_controller.dart';
 
@@ -294,8 +296,9 @@ class FCMService extends GetxService {
     }
   }
 
-  /// Navigate based on notification type
-  void _navigateBasedOnType(String type, Map<String, dynamic> data) {
+  /// Navigate based on notification type.
+  /// If recipient_type differs from current role, auto-switch first.
+  void _navigateBasedOnType(String type, Map<String, dynamic> data) async {
     final orderId = data['order_id'];
     final ticketId = data['ticket_id'];
     final reportId = data['report_id'];
@@ -304,6 +307,24 @@ class FCMService extends GetxService {
     
     print('🔔 Merchant Notification tap: type=$type, orderId=$orderId, ticketId=$ticketId, reportId=$reportId');
     
+    // Auto-switch role if notification is for a different role
+    if (recipientType != null && Get.isRegistered<ProfileSwitchService>()) {
+      try {
+        final authService = Get.find<AuthService>();
+        final currentType = authService.storedUserType;
+        if (currentType.isNotEmpty && currentType != recipientType) {
+          print('🔄 FCM: Auto-switching from $currentType to $recipientType for notification');
+          final switchService = Get.find<ProfileSwitchService>();
+          if (switchService.accountStatus.value == null) {
+            await switchService.fetchAccountStatus();
+          }
+          await switchService.switchRole();
+        }
+      } catch (e) {
+        print('⚠️ FCM: Auto-switch failed: $e');
+      }
+    }
+
     // Determine if user is merchant or customer
     final isMerchant = recipientType == 'merchant';
     

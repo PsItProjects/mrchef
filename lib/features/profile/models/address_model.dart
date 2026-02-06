@@ -1,3 +1,5 @@
+import 'package:get/get.dart';
+
 enum AddressType {
   home,
   work,
@@ -7,6 +9,7 @@ enum AddressType {
 class AddressModel {
   final int? id;
   final AddressType type;
+  final String label;
   final String addressLine1;
   final String addressLine2;
   final String city;
@@ -23,6 +26,7 @@ class AddressModel {
   AddressModel({
     this.id,
     required this.type,
+    this.label = '',
     required this.addressLine1,
     this.addressLine2 = '',
     required this.city,
@@ -44,6 +48,7 @@ class AddressModel {
         (e) => e.toString().split('.').last == json['type'],
         orElse: () => AddressType.home,
       ),
+      label: json['label'] ?? '',
       addressLine1: json['address_line_1'] ?? '',
       addressLine2: json['address_line_2'] ?? '',
       city: json['city'] ?? '',
@@ -57,7 +62,9 @@ class AddressModel {
           ? double.tryParse(json['longitude'].toString())
           : null,
       notes: json['notes'] ?? '',
-      isDefault: json['is_default'] ?? false,
+      isDefault: json['is_default'] is bool
+          ? json['is_default']
+          : (json['is_default'] == 1 || json['is_default'] == '1'),
       createdAt: json['created_at'] != null
           ? DateTime.tryParse(json['created_at'])
           : null,
@@ -70,6 +77,7 @@ class AddressModel {
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = {
       'type': type.toString().split('.').last,
+      'label': type == AddressType.other ? label : null,
       'address_line_1': addressLine1,
       'address_line_2': addressLine2,
       'city': city,
@@ -82,7 +90,6 @@ class AddressModel {
       'is_default': isDefault,
     };
 
-    // Only include id if it exists (for updates)
     if (id != null) {
       data['id'] = id;
     }
@@ -93,6 +100,7 @@ class AddressModel {
   AddressModel copyWith({
     int? id,
     AddressType? type,
+    String? label,
     String? addressLine1,
     String? addressLine2,
     String? city,
@@ -109,6 +117,7 @@ class AddressModel {
     return AddressModel(
       id: id ?? this.id,
       type: type ?? this.type,
+      label: label ?? this.label,
       addressLine1: addressLine1 ?? this.addressLine1,
       addressLine2: addressLine2 ?? this.addressLine2,
       city: city ?? this.city,
@@ -124,15 +133,27 @@ class AddressModel {
     );
   }
 
-  // Helper getters
+  /// Returns localized display name for the address type
   String get typeDisplayName {
     switch (type) {
       case AddressType.home:
-        return 'HOME';
+        return 'home_address'.tr;
       case AddressType.work:
-        return 'Work';
+        return 'work_address'.tr;
       case AddressType.other:
-        return 'Other';
+        return label.isNotEmpty ? label : 'other_address'.tr;
+    }
+  }
+
+  /// Icon for the address type
+  String get typeIcon {
+    switch (type) {
+      case AddressType.home:
+        return '🏠';
+      case AddressType.work:
+        return '🏢';
+      case AddressType.other:
+        return '📍';
     }
   }
 
@@ -144,10 +165,6 @@ class AddressModel {
     }
 
     parts.add(city);
-
-    if (postalCode.isNotEmpty) {
-      parts.add(postalCode);
-    }
 
     if (state.isNotEmpty) {
       parts.add(state);

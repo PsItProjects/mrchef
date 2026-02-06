@@ -1,46 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:mrsheaf/core/theme/app_theme.dart';
-import 'package:mrsheaf/features/profile/controllers/profile_controller.dart';
-import 'package:mrsheaf/features/profile/widgets/profile_header.dart';
-import 'package:mrsheaf/features/profile/widgets/profile_user_card.dart';
-import 'package:mrsheaf/features/profile/widgets/profile_menu_list.dart';
+import 'package:mrsheaf/features/profile/pages/unified_settings_screen.dart';
 
-class ProfileScreen extends GetView<ProfileController> {
+/// ProfileScreen now delegates to UnifiedSettingsScreen
+/// Same screen for both customer and merchant roles
+class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF2F2F2),
-      body: SafeArea(
-        child: Column(
-          children: [
-            // Header
-            const ProfileHeader(),
-
-            // Content
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: Column(
-                  children: [
-                    const SizedBox(height: 16),
-
-                    // User profile card
-                    const ProfileUserCard(),
-
-                    const SizedBox(height: 16),
-
-                    // Menu items
-                    const ProfileMenuList(),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
+    return const UnifiedSettingsScreen();
   }
 }

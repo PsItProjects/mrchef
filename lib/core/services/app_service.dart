@@ -4,6 +4,7 @@ import '../../features/auth/services/auth_service.dart';
 import '../../features/profile/services/profile_service.dart';
 import 'biometric_service.dart';
 import 'onboarding_service.dart';
+import 'profile_switch_service.dart';
 
 class AppService extends GetxService {
   final RxBool isInitialized = false.obs;
@@ -42,6 +43,10 @@ class AppService extends GetxService {
       // Initialize profile service
       Get.put<ProfileService>(ProfileService(), permanent: true);
       print('📱 ProfileService registered');
+
+      // Initialize ProfileSwitchService (unified account)
+      await Get.putAsync(() => ProfileSwitchService().init(), permanent: true);
+      print('📱 ProfileSwitchService registered');
       
       // Wait for auth service to load user data
       await Future.delayed(const Duration(milliseconds: 500));
@@ -51,19 +56,18 @@ class AppService extends GetxService {
       print("isuserMarchent oo");
 
       if (authService.isAuthenticated) {
-        // Check if user needs to complete onboarding
+        // Use locally cached active_role from unified account system
+        final prefs = await SharedPreferences.getInstance();
+        final activeRole = prefs.getString('active_role');
         final user = authService.user;
-        final isuserMarchent = user?.isMerchant ?? false;
 
-        print("isuserMarchent $isuserMarchent");
+        print("📱 Active role: $activeRole, userType: ${user?.userType}");
 
-        if (user != null && user.isMerchant) {
-          // For merchants, always check onboarding status via API
-          // Don't rely on local user.registrationStep as it might be outdated
-          print("🔍 MERCHANT DETECTED - Will check onboarding via API after navigation");
+        // Determine route based on active_role (unified) or userType (legacy)
+        final isMerchantMode = activeRole == 'merchant' || (activeRole == null && (user?.isMerchant ?? false));
 
-          // Start with merchant home, but the actual onboarding check will happen
-          // when MerchantSettingsService is initialized and tries to load profile
+        if (isMerchantMode) {
+          print("🔍 MERCHANT MODE - Will check onboarding via API after navigation");
           initialRoute.value = '/merchant-home';
         } else {
           // Customer - go to home

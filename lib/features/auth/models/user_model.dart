@@ -18,6 +18,13 @@ class UserModel {
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
+  // Unified Account fields
+  final String? activeRole;
+  final bool hasMerchantProfile;
+  final bool merchantOnboardingCompleted;
+  final int? linkedMerchantId;
+  final int? linkedCustomerId;
+
   UserModel({
     required this.id,
     this.nameEn,
@@ -34,6 +41,11 @@ class UserModel {
     this.preferredLanguage,
     this.createdAt,
     this.updatedAt,
+    this.activeRole,
+    this.hasMerchantProfile = false,
+    this.merchantOnboardingCompleted = false,
+    this.linkedMerchantId,
+    this.linkedCustomerId,
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
@@ -64,6 +76,12 @@ class UserModel {
       updatedAt: json['updated_at'] != null
           ? DateTime.parse(json['updated_at'])
           : null,
+      // Unified Account fields
+      activeRole: json['active_role'],
+      hasMerchantProfile: json['has_merchant_profile'] ?? false,
+      merchantOnboardingCompleted: json['merchant_onboarding_completed'] ?? false,
+      linkedMerchantId: json['linked_merchant_id'] ?? json['merchant_id'],
+      linkedCustomerId: json['linked_customer_id'] ?? json['customer_id'],
     );
   }
 
@@ -84,6 +102,11 @@ class UserModel {
       'preferred_language': preferredLanguage,
       'created_at': createdAt?.toIso8601String(),
       'updated_at': updatedAt?.toIso8601String(),
+      'active_role': activeRole,
+      'has_merchant_profile': hasMerchantProfile,
+      'merchant_onboarding_completed': merchantOnboardingCompleted,
+      'linked_merchant_id': linkedMerchantId,
+      'linked_customer_id': linkedCustomerId,
     };
   }
 
@@ -145,6 +168,11 @@ class UserModel {
     String? preferredLanguage,
     DateTime? createdAt,
     DateTime? updatedAt,
+    String? activeRole,
+    bool? hasMerchantProfile,
+    bool? merchantOnboardingCompleted,
+    int? linkedMerchantId,
+    int? linkedCustomerId,
   }) {
     return UserModel(
       id: id ?? this.id,
@@ -162,6 +190,11 @@ class UserModel {
       preferredLanguage: preferredLanguage ?? this.preferredLanguage,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      activeRole: activeRole ?? this.activeRole,
+      hasMerchantProfile: hasMerchantProfile ?? this.hasMerchantProfile,
+      merchantOnboardingCompleted: merchantOnboardingCompleted ?? this.merchantOnboardingCompleted,
+      linkedMerchantId: linkedMerchantId ?? this.linkedMerchantId,
+      linkedCustomerId: linkedCustomerId ?? this.linkedCustomerId,
     );
   }
 }

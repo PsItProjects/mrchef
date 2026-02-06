@@ -6,16 +6,36 @@ import 'package:mrsheaf/features/profile/models/address_model.dart';
 import 'package:mrsheaf/features/profile/widgets/add_edit_address_header.dart';
 import 'package:mrsheaf/features/profile/widgets/add_edit_address_form.dart';
 
-class AddEditAddressScreen extends StatelessWidget {
+class AddEditAddressScreen extends StatefulWidget {
   final AddressModel? address;
   final bool fromCheckout;
 
   const AddEditAddressScreen({super.key, this.address, this.fromCheckout = false});
 
   @override
+  State<AddEditAddressScreen> createState() => _AddEditAddressScreenState();
+}
+
+class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Initialize controller once in initState
+    Get.put(AddEditAddressController(
+      existingAddress: widget.address,
+      fromCheckout: widget.fromCheckout,
+    ));
+  }
+
+  @override
+  void dispose() {
+    // Clean up controller when screen is disposed
+    Get.delete<AddEditAddressController>();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    // Initialize controller with address data if editing
-    Get.put(AddEditAddressController(existingAddress: address, fromCheckout: fromCheckout));
     
     return GetBuilder<AddEditAddressController>(
       builder: (controller) => Scaffold(

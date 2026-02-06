@@ -10,6 +10,7 @@ import '../../../core/network/api_client.dart';
 import '../../../core/services/biometric_service.dart';
 import '../../../core/services/fcm_service.dart';
 import '../../../core/services/language_service.dart';
+import '../../../core/services/profile_switch_service.dart';
 import '../models/auth_request.dart';
 import '../models/auth_response.dart';
 import '../models/user_model.dart';
@@ -442,6 +443,15 @@ class AuthService extends getx.GetxService {
           } catch (e) {
             print('Error associating FCM token: $e');
           }
+
+          // Fetch unified account status (for profile switching)
+          try {
+            if (getx.Get.isRegistered<ProfileSwitchService>()) {
+              await getx.Get.find<ProfileSwitchService>().fetchAccountStatus();
+            }
+          } catch (e) {
+            print('Error fetching account status: $e');
+          }
         }
 
         return apiResponse;
@@ -593,6 +603,15 @@ class AuthService extends getx.GetxService {
             }
           } catch (e) {
             print('Error associating FCM token after registration: $e');
+          }
+
+          // Fetch unified account status (for profile switching)
+          try {
+            if (getx.Get.isRegistered<ProfileSwitchService>()) {
+              await getx.Get.find<ProfileSwitchService>().fetchAccountStatus();
+            }
+          } catch (e) {
+            print('Error fetching account status after registration: $e');
           }
         }
 
