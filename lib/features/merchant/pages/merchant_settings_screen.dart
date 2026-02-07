@@ -7,7 +7,7 @@ import 'package:mrsheaf/features/merchant/services/merchant_profile_service.dart
 import 'package:mrsheaf/features/merchant/pages/edit_restaurant_info_screen.dart';
 import 'package:mrsheaf/features/merchant/pages/working_hours_screen.dart';
 import 'package:mrsheaf/features/merchant/pages/notification_settings_screen.dart';
-import 'package:mrsheaf/features/merchant/pages/edit_personal_profile_screen.dart';
+import 'package:mrsheaf/features/profile/pages/edit_profile_screen.dart';
 import 'package:mrsheaf/features/profile/widgets/about_app_bottom_sheet.dart';
 import 'package:mrsheaf/features/profile/widgets/account_deletion_bottom_sheet.dart';
 import 'package:mrsheaf/features/profile/pages/privacy_policy_screen.dart';
@@ -234,7 +234,7 @@ class _MerchantSettingsScreenState extends State<MerchantSettingsScreen> {
           GestureDetector(
             onTap: () async {
               final result =
-                  await Get.to(() => const EditPersonalProfileScreen());
+                  await Get.to(() => const EditProfileScreen());
               if (result == true) {
                 // إعادة التحميل من الـ API مباشرة
                 await _loadProfile(forceRefresh: true);
@@ -329,9 +329,9 @@ class _MerchantSettingsScreenState extends State<MerchantSettingsScreen> {
           subtitle: 'edit_personal_account'.tr,
           onTap: () async {
             final result =
-                await Get.to(() => const EditPersonalProfileScreen());
+                await Get.to(() => const EditProfileScreen());
             if (result == true) {
-              // إعادة التحميل من الـ API مباشرة
+              // إعادة التحميل من الـ API مباشrة
               await _loadProfile(forceRefresh: true);
             }
           },

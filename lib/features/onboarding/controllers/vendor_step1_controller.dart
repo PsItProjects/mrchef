@@ -47,6 +47,30 @@ class VendorStep1Controller extends GetxController {
 
           print('✅ Loaded ${subscriptionPlans.length} plans');
 
+          // Check current step - if already completed step 1, skip to next step
+          final currentStep = data['current_step'] as int? ?? 1;
+          if (currentStep > 1) {
+            print('⏭️ Step 1 already completed, navigating to step $currentStep');
+            isLoadingPlans.value = false;
+            
+            // Navigate to the appropriate step
+            switch (currentStep) {
+              case 2:
+                Get.offNamed(AppRoutes.VENDOR_STEP2);
+                break;
+              case 3:
+                Get.offNamed(AppRoutes.VENDOR_STEP3);
+                break;
+              case 4:
+                Get.offNamed(AppRoutes.VENDOR_STEP4);
+                break;
+              default:
+                // Stay on step 1
+                break;
+            }
+            return;
+          }
+
           // Auto-select the first plan (usually Annual)
           if (subscriptionPlans.isNotEmpty) {
             selectedPlanIndex.value = 0;

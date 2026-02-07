@@ -68,8 +68,6 @@ class EditProfileController extends GetxController {
 
       // Load current avatar URL (use avatarUrl not avatar)
       currentAvatarUrl.value = currentUser.avatarUrl ?? '';
-
-      print('📸 EDIT PROFILE: Loaded avatar URL: ${currentUser.avatarUrl}');
     } else {
       // Fallback to ProfileController if AuthService user is null
       final profileController = Get.find<ProfileController>();
@@ -208,8 +206,7 @@ class EditProfileController extends GetxController {
         // Update currentAvatarUrl after successful upload
         if (avatarResponse.data != null) {
           currentAvatarUrl.value = avatarResponse.data!.avatarUrl ?? '';
-          selectedAvatar.value = null; // Clear selected avatar
-          print('✅ Avatar uploaded successfully: ${currentAvatarUrl.value}');
+          selectedAvatar.value = null;
         }
       }
 
@@ -228,8 +225,6 @@ class EditProfileController extends GetxController {
         preferredLanguage: currentLanguage, // ✅ إرسال اللغة الحالية
       );
       
-      print('📤 EDIT PROFILE: Sending preferred_language: $currentLanguage');
-
       final response = await _authService.updateCustomerProfile(request);
 
       if (response.isSuccess) {
@@ -239,8 +234,6 @@ class EditProfileController extends GetxController {
         // ✅ skipLanguageUpdate: true - لمنع تغيير لغة التطبيق بعد التعديل
         final profileController = Get.find<ProfileController>();
         await profileController.refreshProfile(forceRefresh: true, skipLanguageUpdate: true);
-        
-        print('✅ EDIT PROFILE: Profile refreshed with updated name: ${profileController.userProfile.value.fullName}');
 
         // Wait for toast to show
         await Future.delayed(const Duration(milliseconds: 300));
@@ -260,38 +253,37 @@ class EditProfileController extends GetxController {
   // Form validation methods
   String? validateFullName(String? value) {
     if (value == null || value.trim().isEmpty) {
-      return 'الاسم بالإنجليزية مطلوب';
+      return 'name_required'.tr;
     }
     if (value.trim().length < 2) {
-      return 'الاسم يجب أن يكون حرفين على الأقل';
+      return 'name_too_short'.tr;
     }
     return null;
   }
 
   String? validateArabicName(String? value) {
-    // Arabic name is optional
     if (value != null && value.trim().isNotEmpty && value.trim().length < 2) {
-      return 'الاسم بالعربية يجب أن يكون حرفين على الأقل';
+      return 'name_too_short'.tr;
     }
     return null;
   }
 
   String? validateEmail(String? value) {
     if (value == null || value.trim().isEmpty) {
-      return 'البريد الإلكتروني مطلوب';
+      return 'email_required'.tr;
     }
     if (!GetUtils.isEmail(value.trim())) {
-      return 'الرجاء إدخال بريد إلكتروني صحيح';
+      return 'invalid_email'.tr;
     }
     return null;
   }
 
   String? validatePhone(String? value) {
     if (value == null || value.trim().isEmpty) {
-      return 'رقم الهاتف مطلوب';
+      return 'phone_required'.tr;
     }
     if (value.trim().length < 8) {
-      return 'الرجاء إدخال رقم هاتف صحيح';
+      return 'invalid_phone'.tr;
     }
     return null;
   }

@@ -65,7 +65,8 @@ class UserModel {
       countryCode: json['country_code'] ?? '+966',
       email: json['email'],
       avatar: json['avatar'],
-      avatarUrl: json['avatar_url'],
+      // avatar_url is the primary field; fallback to avatar if missing
+      avatarUrl: json['avatar_url'] ?? json['avatar'],
       status: json['status'] ?? 'pending',
       userType: json['user_type'] ?? 'customer',
       registrationStep: json['registration_step'],

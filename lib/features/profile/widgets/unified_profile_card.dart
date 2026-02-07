@@ -6,7 +6,6 @@ import 'package:mrsheaf/core/services/toast_service.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/features/auth/services/auth_service.dart';
 import 'package:mrsheaf/features/profile/pages/edit_profile_screen.dart';
-import 'package:mrsheaf/features/merchant/pages/edit_personal_profile_screen.dart';
 
 /// بطاقة الملف الشخصي الموحدة مع زر تبديل الحساب (مثل فيسبوك)
 /// تُستخدم لكل من العميل والتاجر
@@ -36,13 +35,8 @@ class UnifiedProfileCard extends StatelessWidget {
           // ─── User Info Row ───
           InkWell(
             onTap: () {
-              // Navigate to appropriate edit profile screen
-              final isMerchant = _isMerchantMode();
-              if (isMerchant) {
-                Get.to(() => const EditPersonalProfileScreen());
-              } else {
-                Get.to(() => const EditProfileScreen());
-              }
+              // الملف الشخصي موحد - نفس الشاشة للجميع
+              Get.to(() => const EditProfileScreen());
             },
             borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
             child: Padding(
@@ -166,14 +160,16 @@ class UnifiedProfileCard extends StatelessWidget {
 
       final switchService = Get.find<ProfileSwitchService>();
 
+      // ✅ Always refresh status when this widget builds
+      if (!switchService.isLoadingStatus.value) {
+        switchService.fetchAccountStatus();
+      }
+
       return Obx(() {
         final status = switchService.accountStatus.value;
         final isSwitching = switchService.isSwitching.value;
 
         if (status == null) {
-          if (!switchService.isLoadingStatus.value) {
-            switchService.fetchAccountStatus();
-          }
           return const SizedBox.shrink();
         }
 
@@ -212,7 +208,7 @@ class UnifiedProfileCard extends StatelessWidget {
           switchLabel = 'complete_merchant_setup'.tr;
           switchIcon = Icons.settings_suggest_rounded;
           switchColor = const Color(0xFF11998E);
-          onSwitch = () => _handleSwitch(switchService, 'merchant');
+          onSwitch = () => _handleContinueOnboarding();
         }
 
         if (switchLabel == null) return const SizedBox.shrink();
@@ -356,5 +352,12 @@ class UnifiedProfileCard extends StatelessWidget {
     } else {
       ToastService.showError('merchant_activation_failed'.tr);
     }
+  }
+
+  /// Navigate to merchant onboarding flow to complete setup
+  void _handleContinueOnboarding() {
+    // Navigate to vendor step 1 (subscription plan selection)
+    // The controller will check the current registration step and skip if already completed
+    Get.toNamed('/vendor-step1');
   }
 }

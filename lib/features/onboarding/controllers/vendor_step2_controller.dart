@@ -4,6 +4,7 @@ import 'package:geocoding/geocoding.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:mrsheaf/core/network/api_client.dart';
 import 'package:mrsheaf/core/localization/translation_helper.dart';
+import 'package:mrsheaf/core/services/profile_switch_service.dart';
 import '../../../core/services/toast_service.dart';
 
 class VendorStep2Controller extends GetxController {
@@ -234,8 +235,22 @@ class VendorStep2Controller extends GetxController {
           // Show success message
           ToastService.showSuccess(TranslationHelper.tr('store_info_saved_redirecting'));
 
+          // ✅ Refresh account status to reflect merchant_onboarding_completed = true
+          try {
+            final switchService = Get.find<ProfileSwitchService>();
+            print('🔄 Refreshing account status...');
+            await switchService.fetchAccountStatus();
+
+            // ✅ Auto-switch to merchant role
+            print('🔄 Switching to merchant role...');
+            await switchService.switchRole();
+            print('✅ Switched to merchant role successfully');
+          } catch (e) {
+            print('⚠️ Could not switch role automatically: $e');
+          }
+
           // Wait a moment for user to see the success message
-          await Future.delayed(const Duration(seconds: 2));
+          await Future.delayed(const Duration(seconds: 1));
 
           // Navigate directly to merchant dashboard (onboarding complete!)
           print('🚀 Redirecting to merchant dashboard...');

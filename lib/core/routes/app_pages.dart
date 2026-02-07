@@ -36,6 +36,7 @@ import 'package:mrsheaf/features/merchant/bindings/add_product_binding.dart';
 import 'package:mrsheaf/features/merchant/bindings/edit_product_binding.dart';
 import 'package:mrsheaf/features/onboarding/bindings/vendor_step1_binding.dart';
 import 'package:mrsheaf/features/onboarding/bindings/vendor_step2_binding.dart';
+import 'package:mrsheaf/features/onboarding/bindings/vendor_step4_binding.dart';
 import 'package:mrsheaf/features/chat/pages/conversations_screen.dart';
 import 'package:mrsheaf/features/chat/pages/chat_screen.dart';
 import 'package:mrsheaf/features/chat/bindings/conversations_binding.dart';
@@ -124,6 +125,7 @@ class AppPages {
     GetPage(
       name: AppRoutes.VENDOR_STEP4,
       page: () => const VendorStep4Screen(),
+      binding: VendorStep4Binding(),
       transition: Transition.rightToLeft,
     ),
     GetPage(

@@ -23,10 +23,20 @@ class AccountStatus {
   });
 
   factory AccountStatus.fromJson(Map<String, dynamic> json) {
+    // Handle both bool and int (0/1) from PHP backend
+    final hasMerchant = json['has_merchant_profile'] == true || json['has_merchant_profile'] == 1;
+    final onboardingDone = json['merchant_onboarding_completed'] == true || json['merchant_onboarding_completed'] == 1;
+
+    print('📦 AccountStatus.fromJson:');
+    print('  raw has_merchant_profile: ${json['has_merchant_profile']} (${json['has_merchant_profile'].runtimeType})');
+    print('  raw merchant_onboarding_completed: ${json['merchant_onboarding_completed']} (${json['merchant_onboarding_completed'].runtimeType})');
+    print('  parsed hasMerchant: $hasMerchant, onboardingDone: $onboardingDone');
+    print('  active_role: ${json['active_role']}');
+
     return AccountStatus(
       activeRole: json['active_role'] ?? 'customer',
-      hasMerchantProfile: json['has_merchant_profile'] ?? false,
-      merchantOnboardingCompleted: json['merchant_onboarding_completed'] ?? false,
+      hasMerchantProfile: hasMerchant,
+      merchantOnboardingCompleted: onboardingDone,
       merchantId: json['merchant_id'],
       customerId: json['customer_id'],
     );
@@ -80,8 +90,11 @@ class ProfileSwitchService extends getx.GetxService {
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('active_role', status.activeRole);
 
-        print('✅ ProfileSwitch: Account status loaded - role: ${status.activeRole}, '
-            'hasMerchant: ${status.hasMerchantProfile}');
+        print('✅ ProfileSwitch: Account status loaded:');
+        print('   role: ${status.activeRole}');
+        print('   hasMerchant: ${status.hasMerchantProfile}');
+        print('   onboardingCompleted: ${status.merchantOnboardingCompleted}');
+        print('   canSwitchToMerchant: ${status.canSwitchToMerchant}');
         return status;
       }
 
@@ -134,17 +147,28 @@ class ProfileSwitchService extends getx.GetxService {
         final newRole = data['active_role'] as String;
         final userData = data['user'] as Map<String, dynamic>;
 
-        // Update AuthService with new role (token stays the same)
+        // ✅ Preserve customer avatar across role switches (unified profile)
         final authService = getx.Get.find<AuthService>();
+        final previousAvatarUrl = authService.currentUser.value?.avatarUrl;
         final user = UserModel.fromJson(userData);
+
+        // If new user data has no avatar, keep the previous one
+        final finalUser = (user.avatarUrl == null || user.avatarUrl!.isEmpty)
+            ? user.copyWith(avatarUrl: previousAvatarUrl)
+            : user;
 
         // Only update user type in preferences, not token
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('user_type', newRole);
         await prefs.setString('active_role', newRole);
 
+        // ✅ Clear role-specific profile caches to prevent stale data
+        await prefs.remove('customer_profile_cache');
+        await prefs.remove('merchant_profile_cache');
+        await prefs.remove('cached_user_profile');
+
         // Update current user in AuthService
-        authService.currentUser.value = user;
+        authService.currentUser.value = finalUser;
         authService.isLoggedIn.value = true;
 
         // Re-associate FCM token with new user_type
