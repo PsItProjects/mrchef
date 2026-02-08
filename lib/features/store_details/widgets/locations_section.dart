@@ -121,6 +121,10 @@ class LocationsSection extends GetView<StoreDetailsController> {
                 myLocationEnabled: true,
                 myLocationButtonEnabled: true,
                 zoomControlsEnabled: true,
+                zoomGesturesEnabled: false, // Disable double-tap zoom
+                scrollGesturesEnabled: true, // Allow drag/pan
+                rotateGesturesEnabled: false, // Disable rotation
+                tiltGesturesEnabled: false, // Disable tilt
                 mapType: MapType.normal,
               ),
             ),

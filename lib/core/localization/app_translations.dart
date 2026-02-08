@@ -847,6 +847,8 @@ class AppTranslations extends Translations {
           'select_on_map': 'Select on Map',
           'hide_map': 'Hide Map',
           'tap_to_select_location': 'Tap on the map to select location or drag the marker',
+          'map_instructions': 'Tap anywhere on the map to mark your restaurant location. Use zoom buttons to adjust view, drag to move around.',
+          'drag_marker_to_adjust': 'Drag the marker to adjust position',
           
           // Address
           'store_address': 'Store Address',
@@ -1172,6 +1174,8 @@ class AppTranslations extends Translations {
           'select_location_on_map': 'Select Location on Map',
           'tap_to_select_location':
               'Tap on the map to select your restaurant location',
+          'map_instructions': 'Tap anywhere on the map to mark your restaurant location. Use zoom buttons to adjust view, drag to move around.',
+          'drag_marker_to_adjust': 'Drag the marker to adjust position',
           'confirm_location': 'Confirm Location',
           'latitude': 'Latitude',
           'longitude': 'Longitude',
@@ -2319,6 +2323,8 @@ class AppTranslations extends Translations {
           'select_on_map': 'اختر على الخريطة',
           'hide_map': 'إخفاء الخريطة',
           'tap_to_select_location': 'اضغط على الخريطة لاختيار الموقع أو اسحب المؤشر',
+          'map_instructions': 'اضغط في أي مكان على الخريطة لتحديد موقع مطعمك. استخدم أزرار التكبير/التصغير، واسحب للتنقل.',
+          'drag_marker_to_adjust': 'اسحب المؤشر لتعديل الموقع',
           
           // Address
           'store_address': 'عنوان المتجر',
@@ -2639,6 +2645,8 @@ class AppTranslations extends Translations {
           'phone_validation_error': 'يجب أن يكون رقم الهاتف 9 أرقام بالضبط',
           'select_location_on_map': 'حدد الموقع على الخريطة',
           'tap_to_select_location': 'اضغط على الخريطة لتحديد موقع مطعمك',
+          'map_instructions': 'اضغط في أي مكان على الخريطة لتحديد موقع مطعمك. استخدم أزرار التكبير/التصغير، واسحب للتنقل.',
+          'drag_marker_to_adjust': 'اسحب المؤشر لتعديل الموقع',
           'confirm_location': 'تأكيد الموقع',
           'latitude': 'خط العرض',
           'longitude': 'خط الطول',

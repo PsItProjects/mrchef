@@ -288,18 +288,65 @@ class VendorStep2Screen extends StatelessWidget {
             myLocationEnabled: true,
             myLocationButtonEnabled: true,
             zoomControlsEnabled: true,
+            zoomGesturesEnabled: false, // Disable double-tap zoom
+            scrollGesturesEnabled: true, // Allow drag/pan
+            rotateGesturesEnabled: false, // Disable rotation
+            tiltGesturesEnabled: false, // Disable tilt
             mapToolbarEnabled: false,
           ),
         )),
-        const SizedBox(height: 8),
-        Text(
-          'tap_to_select_location'.tr,
-          style: const TextStyle(
-            fontFamily: 'Lato',
-            fontSize: 12,
-            color: Color(0xFF999999),
-          ),
-          textAlign: TextAlign.center,
+        const SizedBox(height: 12),
+        
+        // Instructions section
+        Obx(() => !controller.showMarker.value
+            ? Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF5F5F5),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: const Color(0xFFE0E0E0)),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.info_outline,
+                      color: Color(0xFF666666),
+                      size: 20,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        'map_instructions'.tr,
+                        style: const TextStyle(
+                          fontFamily: 'Lato',
+                          fontSize: 12,
+                          color: Color(0xFF666666),
+                          height: 1.4,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            : const SizedBox.shrink(),
+        ),
+        
+        Obx(() => controller.showMarker.value
+            ? const SizedBox(height: 8)
+            : const SizedBox.shrink(),
+        ),
+        
+        Obx(() => controller.showMarker.value
+            ? Text(
+                'drag_marker_to_adjust'.tr,
+                style: const TextStyle(
+                  fontFamily: 'Lato',
+                  fontSize: 12,
+                  color: Color(0xFF999999),
+                ),
+                textAlign: TextAlign.center,
+              )
+            : const SizedBox.shrink(),
         ),
         
         // Show coordinates if fetched

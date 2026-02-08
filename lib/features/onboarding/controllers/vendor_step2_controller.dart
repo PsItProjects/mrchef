@@ -26,6 +26,7 @@ class VendorStep2Controller extends GetxController {
   // Map controller
   GoogleMapController? mapController;
   final markers = <Marker>{}.obs;
+  final RxBool showMarker = false.obs; // Only show marker after location is selected
 
   // Loading states
   final RxBool isLoading = false.obs;
@@ -35,21 +36,26 @@ class VendorStep2Controller extends GetxController {
   void onInit() {
     super.onInit();
     print('🎯 VendorStep2Controller initialized');
-    _updateMarker();
+    // Don't show marker initially - let user select location first
   }
 
   /// Update map marker
   void _updateMarker() {
-    markers.value = {
-      Marker(
-        markerId: const MarkerId('store_location'),
-        position: LatLng(latitude.value, longitude.value),
-        draggable: true,
-        onDragEnd: (newPosition) {
-          _onMapTap(newPosition);
-        },
-      ),
-    };
+    if (showMarker.value) {
+      markers.value = {
+        Marker(
+          markerId: const MarkerId('store_location'),
+          position: LatLng(latitude.value, longitude.value),
+          draggable: true,
+          onDragEnd: (newPosition) {
+            _onMapTap(newPosition);
+          },
+          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
+        ),
+      };
+    } else {
+      markers.clear();
+    }
   }
 
   /// Handle map tap to select location
@@ -57,6 +63,7 @@ class VendorStep2Controller extends GetxController {
     latitude.value = position.latitude;
     longitude.value = position.longitude;
     locationFetched.value = true;
+    showMarker.value = true; // Show marker when location is selected
     _updateMarker();
 
     // Try to get address from coordinates
@@ -125,6 +132,7 @@ class VendorStep2Controller extends GetxController {
       latitude.value = position.latitude;
       longitude.value = position.longitude;
       locationFetched.value = true;
+      showMarker.value = true; // Show marker when location is fetched
       
       _updateMarker();
 
