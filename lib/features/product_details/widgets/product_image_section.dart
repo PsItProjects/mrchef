@@ -2,259 +2,202 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/features/product_details/controllers/product_details_controller.dart';
+import 'package:mrsheaf/features/product_details/widgets/image_viewer_modal.dart';
 
 class ProductImageSection extends GetView<ProductDetailsController> {
   const ProductImageSection({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24.0),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Size selector
-          Obx(() => Column(
-            children: [
-              ...((controller.product.value?.rawSizes ?? []) as List)
-                  .map((sizeObj) {
-                final sizeName = _getSizeName(sizeObj);
-                final sizeData = _getSizeData(sizeObj);
+    return Obx(() {
+      final images = controller.product.value?.images ??
+          ['https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=400&h=300&fit=crop'];
+      final hasMultipleImages = images.length > 1;
 
-                return Obx(() => GestureDetector(
-                  onTap: () => controller.selectSize(sizeName),
-                  child: Container(
-                    width: 40,
-                    height: 40,
-                    margin: const EdgeInsets.only(bottom: 24),
-                    decoration: BoxDecoration(
-                      color: controller.selectedSize.value == sizeName
-                          ? const Color(0xFFFCE167) // Yellow background when selected
-                          : const Color(0xFFF1F6F9).withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(40),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
-                          blurRadius: 4,
-                          offset: const Offset(0, 0),
-                        ),
+      return SizedBox(
+        height: 340,
+        child: Stack(
+          children: [
+            // Full-width image carousel — tap to open viewer
+            PageView.builder(
+              itemCount: images.length,
+              onPageChanged: (index) => controller.changeImage(index),
+              itemBuilder: (context, index) {
+                final imageUrl = images[index];
+                return GestureDetector(
+                  onTap: () {
+                    ImageViewerModal.show(
+                      context,
+                      images: images,
+                      initialIndex: controller.currentImageIndex.value,
+                    );
+                  },
+                  child: _buildImage(imageUrl),
+                );
+              },
+            ),
+
+            // Bottom gradient overlay for smooth transition to content
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: IgnorePointer(
+                child: Container(
+                  height: 80,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.transparent,
+                        Colors.white.withOpacity(0.8),
+                        Colors.white,
                       ],
                     ),
-                    child: Center(
-                      child: Text(
-                        sizeData['letter'],
-                        style: TextStyle(
-                          fontFamily: 'Lato',
-                          fontWeight: FontWeight.w700,
-                          fontSize: 24,
-                          color: controller.selectedSize.value == sizeName
-                              ? const Color(0xFF592E2C)
-                              : const Color(0xFFC2CECD),
-                        ),
-                      ),
+                  ),
+                ),
+              ),
+            ),
+
+            // Tap-to-zoom button (on top of gradient)
+            Positioned(
+              bottom: 36,
+              right: 16,
+              child: GestureDetector(
+                onTap: () {
+                  ImageViewerModal.show(
+                    context,
+                    images: images,
+                    initialIndex: controller.currentImageIndex.value,
+                  );
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withAlpha(140),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: Colors.white.withAlpha(80),
+                      width: 1,
                     ),
                   ),
-                ));
-              }),
-            ],
-          )),
-          
-          const SizedBox(width: 40),
-          
-          // Main product image
-          Expanded(
-            child: Container(
-              height: 220,
-              decoration: BoxDecoration(
-                color: const Color(0xFFF1F6F9).withOpacity(0.1),
-                borderRadius: BorderRadius.circular(32),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    blurRadius: 17,
-                    offset: const Offset(0, -5),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.fullscreen_rounded, color: Colors.white, size: 20),
+                      SizedBox(width: 4),
+                      Icon(Icons.touch_app_rounded, color: Colors.white70, size: 14),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+
+            // Page indicator dots
+            if (hasMultipleImages)
+              Positioned(
+                bottom: 24,
+                left: 0,
+                right: 0,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: List.generate(images.length, (index) {
+                    return AnimatedContainer(
+                      duration: const Duration(milliseconds: 300),
+                      margin: const EdgeInsets.symmetric(horizontal: 3),
+                      width: controller.currentImageIndex.value == index ? 24 : 8,
+                      height: 8,
+                      decoration: BoxDecoration(
+                        color: controller.currentImageIndex.value == index
+                            ? AppColors.primaryColor
+                            : Colors.grey.withOpacity(0.4),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    );
+                  }),
+                ),
+              ),
+
+            // Image counter badge
+            if (hasMultipleImages)
+              Positioned(
+                top: MediaQuery.of(context).padding.top + 60,
+                right: 16,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.5),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Text(
+                    '${controller.currentImageIndex.value + 1}/${images.length}',
+                    style: const TextStyle(
+                      fontFamily: 'Lato',
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
+      );
+    });
+  }
+
+  Widget _buildImage(String imageUrl) {
+    if (imageUrl.startsWith('http')) {
+      return Image.network(
+        imageUrl,
+        fit: BoxFit.cover,
+        width: double.infinity,
+        loadingBuilder: (context, child, loadingProgress) {
+          if (loadingProgress == null) return child;
+          return Container(
+            color: const Color(0xFFF5F5F5),
+            child: Center(
+              child: CircularProgressIndicator(
+                value: loadingProgress.expectedTotalBytes != null
+                    ? loadingProgress.cumulativeBytesLoaded /
+                        loadingProgress.expectedTotalBytes!
+                    : null,
+                color: AppColors.primaryColor,
+                strokeWidth: 2,
+              ),
+            ),
+          );
+        },
+        errorBuilder: (context, error, stackTrace) {
+          return Container(
+            color: const Color(0xFFF5F5F5),
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.restaurant_rounded, size: 48, color: Colors.grey[300]),
+                  const SizedBox(height: 8),
+                  Text(
+                    'image_not_available'.tr,
+                    style: TextStyle(
+                      fontFamily: 'Lato',
+                      fontSize: 12,
+                      color: Colors.grey[400],
+                    ),
                   ),
                 ],
               ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(32),
-                child: Obx(() {
-                  final images = controller.product.value?.images ?? ['https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=400&h=300&fit=crop'];
-                  final currentIndex = controller.currentImageIndex.value;
-                  final imageUrl = images.isNotEmpty && currentIndex < images.length
-                      ? images[currentIndex]
-                      : 'https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=400&h=300&fit=crop';
-
-                  print('🖼️ DISPLAYING IMAGE: $imageUrl');
-                  print('🖼️ IMAGES LIST: $images');
-                  print('🖼️ CURRENT INDEX: $currentIndex');
-
-                  // Check if it's a network image or asset
-                  if (imageUrl.startsWith('http')) {
-                    return Image.network(
-                      imageUrl,
-                      fit: BoxFit.cover,
-                      loadingBuilder: (context, child, loadingProgress) {
-                        if (loadingProgress == null) return child;
-                        return Center(
-                          child: CircularProgressIndicator(
-                            value: loadingProgress.expectedTotalBytes != null
-                                ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
-                                : null,
-                          ),
-                        );
-                      },
-                      errorBuilder: (context, error, stackTrace) {
-                        print('❌ IMAGE LOAD ERROR: $error');
-                        print('❌ FAILED URL: $imageUrl');
-                        return Image.asset(
-                          'assets/images/pizza_main.png',
-                          fit: BoxFit.cover,
-                        );
-                      },
-                    );
-                  } else {
-                    return Image.asset(
-                      imageUrl,
-                      fit: BoxFit.cover,
-                    );
-                  }
-                }),
-              ),
             ),
-          ),
-          
-          const SizedBox(width: 40),
-          
-          // Quantity selector
-          Column(
-            children: [
-              // Plus button
-              GestureDetector(
-                onTap: controller.increaseQuantity,
-                child: Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFCE167), // Yellow background
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 4,
-                        offset: const Offset(0, 0),
-                      ),
-                    ],
-                  ),
-                  child: const Icon(
-                    Icons.add,
-                    color: Color(0xFF262626), // Dark color for yellow background
-                    size: 20,
-                  ),
-                ),
-              ),
-              
-              const SizedBox(height: 24),
-              
-              // Quantity display
-              Obx(() => Text(
-                controller.quantity.value.toString().padLeft(2, '0'),
-                style: const TextStyle(
-                  fontFamily: 'Lato',
-                  fontWeight: FontWeight.w700,
-                  fontSize: 24,
-                  color: Color(0xFF000000),
-                ),
-              )),
-              
-              const SizedBox(height: 24),
-              
-              // Minus button
-              GestureDetector(
-                onTap: controller.decreaseQuantity,
-                child: Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFCE167), // Yellow background
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 4,
-                        offset: const Offset(0, 0),
-                      ),
-                    ],
-                  ),
-                  child: const Icon(
-                    Icons.remove,
-                    color: Color(0xFF262626), // Dark color for yellow background
-                    size: 20,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  /// Extract size name from size object or string
-  String _getSizeName(dynamic sizeObj) {
-    if (sizeObj is Map) {
-      final nameField = sizeObj['name'];
-      if (nameField is Map) {
-        return nameField['current'] ?? nameField['ar'] ?? nameField['en'] ?? nameField.values.first?.toString() ?? '';
-      }
-      return nameField?.toString() ?? '';
-    }
-    return sizeObj.toString();
-  }
-
-  /// Get size data for display
-  Map<String, dynamic> _getSizeData(dynamic sizeObj) {
-    String sizeName;
-    double priceModifier = 0.0;
-
-    if (sizeObj is Map) {
-      final nameField = sizeObj['name'];
-      if (nameField is Map) {
-        sizeName = nameField['current'] ?? nameField['ar'] ?? nameField['en'] ?? nameField.values.first?.toString() ?? '';
-      } else {
-        sizeName = nameField?.toString() ?? '';
-      }
-      priceModifier = (sizeObj['price_modifier'] ?? 0).toDouble();
+          );
+        },
+      );
     } else {
-      sizeName = sizeObj.toString();
+      return Image.asset(
+        imageUrl,
+        fit: BoxFit.cover,
+        width: double.infinity,
+      );
     }
-
-    final nameLower = sizeName.toLowerCase();
-    // Common mappings
-    if (nameLower == 'صغير' || nameLower == 'small' || nameLower == 's') {
-      return {'letter': 'S', 'name': sizeName, 'priceModifier': priceModifier};
-    }
-    if (nameLower == 'متوسط' || nameLower == 'وسط' || nameLower == 'medium' || nameLower == 'm') {
-      return {'letter': 'M', 'name': sizeName, 'priceModifier': priceModifier};
-    }
-    if (nameLower == 'كبير' || nameLower == 'large' || nameLower == 'l') {
-      return {'letter': 'L', 'name': sizeName, 'priceModifier': priceModifier};
-    }
-    if (nameLower == 'عائلي' || nameLower == 'extra_large' || nameLower == 'xl') {
-      return {'letter': 'XL', 'name': sizeName, 'priceModifier': priceModifier};
-    }
-
-    // If it contains a number like "3 قطع" or "5 Pieces", take the first number
-    final numberMatch = RegExp(r"[0-9]+").firstMatch(sizeName);
-    if (numberMatch != null) {
-      return {'letter': numberMatch.group(0)!, 'name': sizeName, 'priceModifier': priceModifier};
-    }
-
-    // Default: first character
-    return {
-      'letter': sizeName.isNotEmpty ? sizeName.characters.first.toUpperCase() : '?',
-      'name': sizeName,
-      'priceModifier': priceModifier,
-    };
   }
 }

@@ -10,8 +10,11 @@ class ProductDetailsService {
 
   // Store raw sizes data for ID mapping
   final List<Map<String, dynamic>> _rawSizes = [];
+  // Store rating summary from reviews API (real breakdown)
+  Map<String, dynamic> _ratingSummary = {};
 
   List<Map<String, dynamic>> get rawSizes => _rawSizes;
+  Map<String, dynamic> get ratingSummary => _ratingSummary;
 
   /// Get product details by ID
   Future<ProductModel> getProductDetails(int productId) async {
@@ -76,6 +79,10 @@ class ProductDetailsService {
 
       if (response.data['success'] == true) {
         final reviewsData = response.data['data']['reviews'] as List;
+        // Store rating summary with REAL breakdown from backend
+        if (response.data['data']['rating_summary'] != null) {
+          _ratingSummary = Map<String, dynamic>.from(response.data['data']['rating_summary']);
+        }
         return reviewsData.map((review) => ReviewModel.fromJson(review)).toList();
       } else {
         throw Exception(response.data['message'] ?? 'Failed to load reviews');

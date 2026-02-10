@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/features/product_details/controllers/product_details_controller.dart';
 import 'package:mrsheaf/features/product_details/widgets/review_item.dart';
-import 'package:mrsheaf/shared/widgets/add_review_bottom_sheet.dart';
 
 class ReviewsBottomSheet extends GetView<ProductDetailsController> {
   const ReviewsBottomSheet({super.key});
@@ -12,171 +10,102 @@ class ReviewsBottomSheet extends GetView<ProductDetailsController> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 562,
+      height: MediaQuery.of(context).size.height * 0.75,
       decoration: const BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(25),
-          topRight: Radius.circular(25),
+          topLeft: Radius.circular(24),
+          topRight: Radius.circular(24),
         ),
         boxShadow: [
           BoxShadow(
             color: Color(0x1A000000),
-            blurRadius: 16,
-            offset: Offset(0, 0),
+            blurRadius: 20,
+            offset: Offset(0, -4),
           ),
         ],
       ),
       child: Column(
         children: [
-          // Handle bar
+          // Drag handle
           Container(
-            width: 428,
-            height: 562,
+            margin: const EdgeInsets.only(top: 12),
+            width: 40,
+            height: 4,
+            decoration: BoxDecoration(
+              color: const Color(0xFFDDDDDD),
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+
+          // Header section
+          Obx(() => Container(
+            padding: const EdgeInsets.fromLTRB(24, 20, 24, 16),
             decoration: const BoxDecoration(
-              color: Color(0xFFF2F2F2),
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(50),
-                topRight: Radius.circular(50),
+              border: Border(
+                bottom: BorderSide(
+                  color: Color(0xFFF0F0F0),
+                  width: 1,
+                ),
               ),
             ),
-            child: Column(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                // White overlay container
-                Container(
-                  width: 428,
-                  height: 562,
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(25),
-                      topRight: Radius.circular(25),
+                // Reviews title + count
+                Row(
+                  children: [
+                    Text(
+                      'reviews'.tr,
+                      style: const TextStyle(
+                        fontFamily: 'Lato',
+                        fontWeight: FontWeight.w700,
+                        fontSize: 20,
+                        color: Color(0xFF1A1A2E),
+                      ),
                     ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Color(0x33000000),
-                        blurRadius: 16,
-                        offset: Offset(0, 1),
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF0F0F0),
+                        borderRadius: BorderRadius.circular(10),
                       ),
-                    ],
+                      child: Text(
+                        '${controller.product.value?.reviewCount ?? 0}',
+                        style: const TextStyle(
+                          fontFamily: 'Lato',
+                          fontWeight: FontWeight.w600,
+                          fontSize: 12,
+                          color: Color(0xFF6B6B80),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+
+                // Rating pill
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFF8E1),
+                    borderRadius: BorderRadius.circular(20),
                   ),
-                  child: Column(
+                  child: Row(
                     children: [
-                      // Header section
-                      Container(
-                        padding: const EdgeInsets.fromLTRB(32, 32, 32, 16),
-                        decoration: const BoxDecoration(
-                          border: Border(
-                            bottom: BorderSide(
-                              color: Color(0xFFE3E3E3),
-                              width: 1,
-                            ),
-                          ),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            // Reviews count
-                            const Text(
-                              '205 Reviews',
-                              style: TextStyle(
-                                fontFamily: 'Lato',
-                                fontWeight: FontWeight.w700,
-                                fontSize: 20,
-                                color: Color(0xFF262626),
-                                letterSpacing: 1.5,
-                              ),
-                            ),
-                            
-                            // Rating display
-                            Row(
-                              children: [
-                                SvgPicture.asset(
-                                  'assets/icons/star_icon.svg',
-                                  width: 24,
-                                  height: 24,
-                                  colorFilter: const ColorFilter.mode(
-                                    AppColors.primaryColor,
-                                    BlendMode.srcIn,
-                                  ),
-                                ),
-                                const SizedBox(width: 4),
-                                const Text(
-                                  '4.8',
-                                  style: TextStyle(
-                                    fontFamily: 'Lato',
-                                    fontWeight: FontWeight.w700,
-                                    fontSize: 18,
-                                    color: Color(0xFF262626),
-                                    letterSpacing: -0.5,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
+                      const Icon(
+                        Icons.star_rounded,
+                        color: Color(0xFFFFB800),
+                        size: 20,
                       ),
-                      
-                      // Reviews list
-                      Expanded(
-                        child: Obx(() => ListView.builder(
-                          itemCount: controller.reviews.length,
-                          itemBuilder: (context, index) {
-                            return ReviewItem(
-                              review: controller.reviews[index],
-                            );
-                          },
-                        )),
-                      ),
-                      
-                      // Add review button
-                      Container(
-                        margin: const EdgeInsets.fromLTRB(24, 0, 24, 32),
-                        child: GestureDetector(
-                          onTap: () {
-                            // Close this bottom sheet first
-                            Get.back();
-                            // Show add review bottom sheet
-                            if (controller.product.value != null) {
-                              AddReviewBottomSheet.show(
-                                productId: controller.product.value!.id,
-                                productName: controller.product.value!.name,
-                                productImage: controller.product.value!.image,
-                                onSubmit: (rating, comment, images) async {
-                                  try {
-                                    await controller.addReview(rating, comment, images: images);
-                                    return true;
-                                  } catch (e) {
-                                    return false;
-                                  }
-                                },
-                              );
-                            }
-                          },
-                          child: Container(
-                            width: double.infinity,
-                            height: 50,
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(10),
-                              border: Border.all(
-                                color: AppColors.primaryColor,
-                                width: 2,
-                              ),
-                            ),
-                            child: Center(
-                              child: Text(
-                                'write_a_review'.tr,
-                                style: const TextStyle(
-                                  fontFamily: 'Lato',
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: 18,
-                                  color: AppColors.primaryColor,
-                                  letterSpacing: -0.5,
-                                ),
-                              ),
-                            ),
-                          ),
+                      const SizedBox(width: 4),
+                      Text(
+                        controller.formattedRating,
+                        style: const TextStyle(
+                          fontFamily: 'Lato',
+                          fontWeight: FontWeight.w700,
+                          fontSize: 16,
+                          color: Color(0xFF1A1A2E),
                         ),
                       ),
                     ],
@@ -184,6 +113,67 @@ class ReviewsBottomSheet extends GetView<ProductDetailsController> {
                 ),
               ],
             ),
+          )),
+
+          // Reviews list
+          Expanded(
+            child: Obx(() {
+              if (controller.isLoadingReviews.value) {
+                return const Center(
+                  child: CircularProgressIndicator(
+                    color: AppColors.primaryColor,
+                    strokeWidth: 2.5,
+                  ),
+                );
+              }
+
+              if (controller.reviews.isEmpty) {
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        width: 64,
+                        height: 64,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF5F5F5),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Icon(Icons.rate_review_outlined, size: 32, color: Colors.grey[350]),
+                      ),
+                      const SizedBox(height: 14),
+                      Text(
+                        'no_reviews_yet'.tr,
+                        style: TextStyle(
+                          fontFamily: 'Lato',
+                          fontWeight: FontWeight.w600,
+                          fontSize: 15,
+                          color: Colors.grey[500],
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'order_to_review'.tr,
+                        style: TextStyle(
+                          fontFamily: 'Lato',
+                          fontWeight: FontWeight.w400,
+                          fontSize: 12,
+                          color: Colors.grey[400],
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }
+
+              return ListView.builder(
+                padding: const EdgeInsets.only(top: 8, bottom: 16),
+                itemCount: controller.reviews.length,
+                itemBuilder: (context, index) {
+                  return ReviewItem(review: controller.reviews[index]);
+                },
+              );
+            }),
           ),
         ],
       ),

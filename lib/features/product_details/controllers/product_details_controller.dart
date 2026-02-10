@@ -6,6 +6,7 @@ import '../../../core/services/toast_service.dart';
 import 'package:mrsheaf/features/product_details/models/review_model.dart';
 import 'package:mrsheaf/features/product_details/widgets/reviews_bottom_sheet.dart';
 import 'package:mrsheaf/features/cart/controllers/cart_controller.dart';
+import 'package:mrsheaf/features/cart/widgets/add_to_cart_success_dialog.dart';
 import 'package:mrsheaf/features/favorites/utils/favorites_helper.dart';
 import 'package:mrsheaf/core/services/language_service.dart';
 import 'package:mrsheaf/features/product_details/services/product_details_service.dart';
@@ -26,6 +27,9 @@ class ProductDetailsController extends GetxController {
   final RxList<AdditionalOption> additionalOptions = <AdditionalOption>[].obs;
   final RxString comment = ''.obs;
   final RxList<ReviewModel> reviews = <ReviewModel>[].obs;
+
+  // Rating summary from API (real breakdown)
+  final RxMap<String, dynamic> ratingSummary = <String, dynamic>{}.obs;
 
   // Price calculation
   final RxDouble calculatedTotalPrice = 0.0.obs;
@@ -173,6 +177,11 @@ class ProductDetailsController extends GetxController {
 
       final reviewsData = await _productDetailsService.getProductReviews(productId);
       reviews.value = reviewsData;
+
+      // Store rating summary (real breakdown from backend)
+      if (_productDetailsService.ratingSummary.isNotEmpty) {
+        ratingSummary.value = _productDetailsService.ratingSummary;
+      }
 
     } catch (e) {
       print('Failed to load reviews: $e');
@@ -329,7 +338,7 @@ class ProductDetailsController extends GetxController {
       isAddingToCart.value = true;
       final cartController = Get.find<CartController>();
 
-      await cartController.addToCart(
+      final productName = await cartController.addToCart(
         product: product.value!,
         size: selectedSize.value,
         quantity: quantity.value,
@@ -337,7 +346,21 @@ class ProductDetailsController extends GetxController {
         specialInstructions: comment.value.isNotEmpty ? comment.value : null,
       );
 
-      // Success message is handled in CartController
+      // Show success dialog if addToCart returned a product name
+      if (productName != null) {
+        AddToCartSuccessDialog.show(
+          productName: productName,
+          onGoToCart: () {
+            Get.back(); // Close dialog
+            Get.back(); // Close product details
+            // Navigate to cart tab in main screen
+            Get.find<CartController>().goToCartPage();
+          },
+          onContinueShopping: () {
+            Get.back(); // Close dialog only
+          },
+        );
+      }
 
       if (kDebugMode) {
         print('✅ ADDED TO CART: ${product.value!.name}');
@@ -507,6 +530,34 @@ class ProductDetailsController extends GetxController {
     return total;
   }
 
-  String get formattedRating => product.value?.rating.toString() ?? '0.0';
-  String get formattedReviewCount => '(${product.value?.reviewCount ?? 0} Reviews)';
+  String get formattedRating {
+    final rating = product.value?.rating ?? 0.0;
+    final count = product.value?.reviewCount ?? 0;
+    // If no reviews exist, rating is meaningless
+    if (count == 0 || rating == 0.0) return 'new'.tr;
+    return rating.toStringAsFixed(1);
+  }
+
+  String get formattedReviewCount {
+    final count = product.value?.reviewCount ?? 0;
+    if (count == 0) return '';
+    return '($count ${'reviews'.tr})';
+  }
+
+  bool get hasReviews => (product.value?.reviewCount ?? 0) > 0;
+
+  /// Get real star breakdown from API rating_summary
+  Map<int, int> get realStarsBreakdown {
+    final breakdown = ratingSummary['rating_breakdown'];
+    if (breakdown is Map) {
+      final result = <int, int>{};
+      breakdown.forEach((key, value) {
+        final star = int.tryParse(key.toString());
+        if (star != null) result[star] = (value is int) ? value : 0;
+      });
+      return result;
+    }
+    // Fallback to product model breakdown
+    return product.value?.starsBreakdown ?? {};
+  }
 }

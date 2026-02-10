@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/features/product_details/controllers/product_details_controller.dart';
+import 'package:mrsheaf/core/localization/currency_helper.dart';
 
 class AddToCartSection extends GetView<ProductDetailsController> {
   const AddToCartSection({super.key});
@@ -13,107 +15,173 @@ class AddToCartSection extends GetView<ProductDetailsController> {
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 15,
-            offset: const Offset(0, -4),
+            color: Colors.black.withAlpha(12),
+            blurRadius: 24,
+            offset: const Offset(0, -6),
           ),
         ],
+        border: const Border(
+          top: BorderSide(color: Color(0xFFF5F5F5), width: 1),
+        ),
       ),
       child: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(24.0, 8.0, 24.0, 24.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
+          padding: const EdgeInsets.fromLTRB(20, 14, 20, 14),
+          child: Row(
             children: [
-              // Divider line
+              // Quantity selector — pill style
               Container(
-                height: 1,
-                color: const Color(0xFFE3E3E3),
-                margin: const EdgeInsets.only(bottom: 8),
-              ),
-
-              // Price section with toppings
-              Obx(() => _buildPriceSection()),
-
-              const SizedBox(height: 12),
-
-              // Two buttons: Store name and Add to Cart
-              Row(
-                children: [
-                  // Store name button
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: controller.goToStore,
-                      child: Container(
-                        height: 56,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                            color: AppColors.primaryColor,
-                            width: 1,
-                          ),
-                        ),
-                        child: Center(
-                          child: Text(
-                            'go_to_store'.tr,
-                            style: const TextStyle(
-                              fontFamily: 'Lato',
-                              fontWeight: FontWeight.w700,
-                              fontSize: 16,
-                              color: Color(0xFF592E2C),
-                            ),
-                            textAlign: TextAlign.center,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ),
+                height: 48,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF5F5F7),
+                  borderRadius: BorderRadius.circular(24),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Minus button
+                    _buildQuantityButton(
+                      icon: Icons.remove_rounded,
+                      onTap: () {
+                        HapticFeedback.lightImpact();
+                        controller.decreaseQuantity();
+                      },
                     ),
-                  ),
-
-                  const SizedBox(width: 16),
-
-                  // Add to Cart button
-                  Expanded(
-                    child: Obx(() => GestureDetector(
-                      onTap: controller.isAddingToCart.value ? null : controller.addToCart,
-                      child: Container(
-                        height: 56,
-                        decoration: BoxDecoration(
-                          color: controller.isAddingToCart.value 
-                              ? AppColors.primaryColor.withOpacity(0.6)
-                              : AppColors.primaryColor,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                            color: AppColors.primaryColor,
-                            width: 1,
+                    // Quantity display
+                    Obx(() => AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 200),
+                      transitionBuilder: (child, animation) {
+                        return ScaleTransition(scale: animation, child: child);
+                      },
+                      child: SizedBox(
+                        key: ValueKey<int>(controller.quantity.value),
+                        width: 32,
+                        child: Text(
+                          controller.quantity.value.toString(),
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            fontFamily: 'Lato',
+                            fontWeight: FontWeight.w800,
+                            fontSize: 17,
+                            color: Color(0xFF1A1A2E),
                           ),
-                        ),
-                        child: Center(
-                          child: controller.isAddingToCart.value
-                              ? const SizedBox(
-                                  width: 20,
-                                  height: 20,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF592E2C)),
-                                  ),
-                                )
-                              : Text(
-                                  'add_to_cart'.tr,
-                                  style: const TextStyle(
-                                    fontFamily: 'Lato',
-                                    fontWeight: FontWeight.w700,
-                                    fontSize: 18,
-                                    color: Color(0xFF592E2C),
-                                  ),
-                                ),
                         ),
                       ),
                     )),
+                    // Plus button
+                    _buildQuantityButton(
+                      icon: Icons.add_rounded,
+                      onTap: () {
+                        HapticFeedback.lightImpact();
+                        controller.increaseQuantity();
+                      },
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(width: 12),
+
+              // Add to Cart button with price
+              Expanded(
+                child: Obx(() => GestureDetector(
+                  onTap: controller.isAddingToCart.value
+                      ? null
+                      : () {
+                          HapticFeedback.mediumImpact();
+                          controller.addToCart();
+                        },
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    height: 52,
+                    decoration: BoxDecoration(
+                      gradient: controller.isAddingToCart.value
+                          ? null
+                          : const LinearGradient(
+                              colors: [
+                                AppColors.primaryColor,
+                                Color(0xFFFFD83D),
+                              ],
+                              begin: Alignment.centerLeft,
+                              end: Alignment.centerRight,
+                            ),
+                      color: controller.isAddingToCart.value
+                          ? AppColors.primaryColor.withAlpha(150)
+                          : null,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: controller.isAddingToCart.value
+                          ? null
+                          : [
+                              BoxShadow(
+                                color: AppColors.primaryColor.withAlpha(80),
+                                blurRadius: 16,
+                                offset: const Offset(0, 6),
+                              ),
+                            ],
+                    ),
+                    child: controller.isAddingToCart.value
+                        ? const Center(
+                            child: SizedBox(
+                              width: 22,
+                              height: 22,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2.5,
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                    Color(0xFF1A1A2E)),
+                              ),
+                            ),
+                          )
+                        : Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(
+                                Icons.shopping_bag_outlined,
+                                color: Color(0xFF1A1A2E),
+                                size: 20,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                'add_to_cart'.tr,
+                                style: const TextStyle(
+                                  fontFamily: 'Lato',
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 15,
+                                  color: Color(0xFF1A1A2E),
+                                ),
+                              ),
+                              // Vertical separator
+                              Container(
+                                margin: const EdgeInsets.symmetric(horizontal: 10),
+                                width: 1,
+                                height: 20,
+                                color: const Color(0xFF1A1A2E).withAlpha(50),
+                              ),
+                              // Price
+                              Obx(() => controller.isCalculatingPrice.value
+                                  ? const SizedBox(
+                                      width: 14,
+                                      height: 14,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 1.5,
+                                        valueColor:
+                                            AlwaysStoppedAnimation<Color>(
+                                                Color(0xFF1A1A2E)),
+                                      ),
+                                    )
+                                  : Text(
+                                      CurrencyHelper.formatPrice(
+                                          controller.totalPrice),
+                                      style: const TextStyle(
+                                        fontFamily: 'Lato',
+                                        fontWeight: FontWeight.w800,
+                                        fontSize: 15,
+                                        color: Color(0xFF1A1A2E),
+                                      ),
+                                    )),
+                            ],
+                          ),
                   ),
-                ],
+                )),
               ),
             ],
           ),
@@ -122,112 +190,24 @@ class AddToCartSection extends GetView<ProductDetailsController> {
     );
   }
 
-  Widget _buildPriceSection() {
-    if (controller.product.value == null) {
-      return const SizedBox.shrink();
-    }
-
-    // Remove unused variable
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceColor,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: AppColors.primaryColor.withOpacity(0.2),
-          width: 1,
+  Widget _buildQuantityButton({
+    required IconData icon,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 40,
+        height: 48,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(24),
         ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Main price label - simplified like the design
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'meal_price_with_toppings'.tr,
-                style: const TextStyle(
-                  fontFamily: 'Lato',
-                  fontWeight: FontWeight.w600,
-                  fontSize: 16,
-                  color: Color(0xFF000000),
-                ),
-              ),
-              Obx(() => controller.isCalculatingPrice.value
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(AppColors.primaryColor),
-                    ),
-                  )
-                : Text(
-                    '${controller.totalPrice.toStringAsFixed(1)} ${'sar'.tr}',
-                    style: const TextStyle(
-                      fontFamily: 'Lato',
-                      fontWeight: FontWeight.w700,
-                      fontSize: 24,
-                      color: Color(0xFFEB5757),
-                    ),
-                  ),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 6),
-
-          // Selected size clarification line
-          Obx(() {
-            final hasSize = controller.selectedSizeDetail.isNotEmpty;
-            if (!hasSize && (controller.selectedSize.value.isEmpty)) {
-              return const SizedBox.shrink();
-            }
-
-            final sizeName = controller.selectedSizeDetail['name']?.toString()
-                ?? controller.selectedSize.value;
-            final totalSizePrice = (controller.selectedSizeDetail['total_price'] is num)
-                ? (controller.selectedSizeDetail['total_price'] as num).toDouble()
-                : 0.0;
-            final priceText = totalSizePrice > 0
-                ? '+${totalSizePrice.toStringAsFixed(1)} ${'sar'.tr}'
-                : '0 ${'sar'.tr}';
-
-            return Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'selected_size_label'.tr,
-                  style: const TextStyle(
-                    fontFamily: 'Lato',
-                    fontWeight: FontWeight.w500,
-                    fontSize: 12,
-                    color: Color(0xFF666666),
-                  ),
-                ),
-                Flexible(
-                  child: Text(
-                    '$sizeName  •  $priceText',
-                    textAlign: TextAlign.end,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontFamily: 'Lato',
-                      fontWeight: FontWeight.w600,
-                      fontSize: 12,
-                      color: Color(0xFF262626),
-                    ),
-                  ),
-                ),
-              ],
-            );
-          }),
-        ],
+        child: Icon(
+          icon,
+          color: const Color(0xFF1A1A2E),
+          size: 20,
+        ),
       ),
     );
   }
-
-
 }

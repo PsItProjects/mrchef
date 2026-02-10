@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
-import 'package:mrsheaf/core/widgets/circular_icon_button.dart';
 import 'package:mrsheaf/features/product_details/controllers/product_details_controller.dart';
 
 class ProductHeader extends GetView<ProductDetailsController> {
@@ -10,43 +9,56 @@ class ProductHeader extends GetView<ProductDetailsController> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24.0),
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // Back button
-          // if is arabic rotate it 180 degrees
-          if (Get.locale == const Locale('ar')) ...[
-            // RotatedBox
-            RotatedBox(
-              quarterTurns: 2,
-              child: CircularIconButton(
-                iconPath: 'assets/icons/arrow_left_icon.svg',
-                onTap: controller.goBack,
-                backgroundColor: AppColors.favoriteButtonColor,
-                iconColor: AppColors.darkTextColor,
-              ),
-            ),
-          ]
-          else ...[
-          CircularIconButton(
-            iconPath: 'assets/icons/arrow_left_icon.svg',
+          // Back button - glassmorphism style
+          _buildCircleButton(
+            icon: Get.locale == const Locale('ar')
+                ? Icons.arrow_forward_ios_rounded
+                : Icons.arrow_back_ios_rounded,
             onTap: controller.goBack,
-            backgroundColor: AppColors.favoriteButtonColor,
-            iconColor: AppColors.darkTextColor,
-          )
-          ],
+          ),
 
           // Favorite button
-          Obx(() => CircularIconButton(
-            iconPath: 'assets/icons/heart_icon.svg',
+          Obx(() => _buildCircleButton(
+            icon: controller.isFavorite.value
+                ? Icons.favorite_rounded
+                : Icons.favorite_border_rounded,
             onTap: controller.toggleFavorite,
-            backgroundColor: AppColors.favoriteButtonColor,
             iconColor: controller.isFavorite.value
                 ? AppColors.errorColor
-                : AppColors.darkTextColor,
+                : Colors.white,
           )),
         ],
+      ),
+    );
+  }
+
+  Widget _buildCircleButton({
+    required IconData icon,
+    required VoidCallback onTap,
+    Color? iconColor,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 44,
+        height: 44,
+        decoration: BoxDecoration(
+          color: Colors.black.withOpacity(0.3),
+          shape: BoxShape.circle,
+          border: Border.all(
+            color: Colors.white.withOpacity(0.2),
+            width: 1,
+          ),
+        ),
+        child: Icon(
+          icon,
+          color: iconColor ?? Colors.white,
+          size: 22,
+        ),
       ),
     );
   }

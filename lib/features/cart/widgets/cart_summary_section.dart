@@ -11,12 +11,20 @@ class CartSummarySection extends GetView<CartController> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
-        color: Color(0xFFF2F2F2), // Background color from Figma
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withAlpha(10),
+            blurRadius: 12,
+            offset: const Offset(0, -4),
+          ),
+        ],
       ),
       child: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(24.0),
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -26,28 +34,47 @@ class CartSummarySection extends GetView<CartController> {
                 final isBusy = controller.isCouponUpdating.value;
 
                 return Container(
-                  width: 380,
-                  height: 52,
-                  padding: const EdgeInsets.only(left: 32),
+                  height: 50,
+                  padding: const EdgeInsets.only(left: 16, right: 4),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFFFFAE6), // Light yellow background
-                    borderRadius: BorderRadius.circular(10),
+                    color: const Color(0xFFFFFBEE),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: const Color(0xFFFFE88D), width: 1),
                   ),
                   child: Row(
                     children: [
+                      Icon(
+                        Icons.local_offer_rounded,
+                        size: 18,
+                        color: hasCoupon
+                            ? const Color(0xFF4CAF50)
+                            : const Color(0xFFBBA850),
+                      ),
+                      const SizedBox(width: 10),
                       Expanded(
                         child: TextField(
                           controller: controller.promoCodeController,
                           enabled: !hasCoupon && !isBusy,
                           decoration: InputDecoration(
                             hintText: TranslationHelper.tr('promo_code'),
-                            hintStyle: AppTheme.searchTextStyle,
+                            hintStyle: const TextStyle(
+                              fontFamily: 'Lato',
+                              fontWeight: FontWeight.w400,
+                              fontSize: 14,
+                              color: Color(0xFFBBA850),
+                            ),
                             border: InputBorder.none,
+                            contentPadding: EdgeInsets.zero,
+                            isDense: true,
                           ),
-                          style: AppTheme.searchTextStyle,
+                          style: const TextStyle(
+                            fontFamily: 'Lato',
+                            fontWeight: FontWeight.w500,
+                            fontSize: 14,
+                            color: Color(0xFF1A1A2E),
+                          ),
                         ),
                       ),
-
                       GestureDetector(
                         onTap: isBusy
                             ? null
@@ -55,28 +82,30 @@ class CartSummarySection extends GetView<CartController> {
                                 ? controller.removePromoCode
                                 : controller.applyPromoCode),
                         child: Container(
-                          width: 52,
-                          height: 52,
+                          width: 42,
+                          height: 42,
                           decoration: BoxDecoration(
-                            color: AppColors.primaryColor,
-                            borderRadius: BorderRadius.circular(26),
+                            color: hasCoupon
+                                ? const Color(0xFFE53935)
+                                : AppColors.primaryColor,
+                            borderRadius: BorderRadius.circular(12),
                           ),
                           child: isBusy
                               ? const Padding(
-                                  padding: EdgeInsets.all(14.0),
+                                  padding: EdgeInsets.all(11.0),
                                   child: CircularProgressIndicator(
-                                    strokeWidth: 2.5,
-                                    valueColor: AlwaysStoppedAnimation<Color>(
-                                      AppColors.searchIconColor,
-                                    ),
+                                    strokeWidth: 2,
+                                    color: Color(0xFF1A1A2E),
                                   ),
                                 )
                               : Icon(
                                   hasCoupon
-                                      ? Icons.close
-                                      : Icons.local_offer_outlined,
-                                  color: AppColors.searchIconColor,
-                                  size: 24,
+                                      ? Icons.close_rounded
+                                      : Icons.arrow_forward_rounded,
+                                  color: hasCoupon
+                                      ? Colors.white
+                                      : const Color(0xFF1A1A2E),
+                                  size: 20,
                                 ),
                         ),
                       ),
@@ -84,95 +113,92 @@ class CartSummarySection extends GetView<CartController> {
                   ),
                 );
               }),
-              
-              const SizedBox(height: 24),
-              
+
+              const SizedBox(height: 16),
+
               // Order summary section
-              Container(
-                width: 380,
-                child: Obx(() => Column(
-                  children: [
-                    // Subtotal - use backend data if available
+              Obx(() => Column(
+                children: [
+                  _buildSummaryRow(
+                    _getLabel('subtotal'),
+                    _getFormattedPrice('subtotal'),
+                  ),
+                  const SizedBox(height: 10),
+                  _buildSummaryRow(
+                    _getLabel('delivery_fee'),
+                    _getFormattedPrice('delivery_fee'),
+                  ),
+                  const SizedBox(height: 10),
+                  _buildSummaryRow(
+                    _getLabel('service_fee'),
+                    _getFormattedPrice('service_fee'),
+                  ),
+                  if (controller.discountAmount > 0) ...[
+                    const SizedBox(height: 10),
                     _buildSummaryRow(
-                      _getLabel('subtotal'),
-                      _getFormattedPrice('subtotal'),
-                    ),
-
-                    const SizedBox(height: 8),
-
-                    // Delivery fee - use backend data if available
-                    _buildSummaryRow(
-                      _getLabel('delivery_fee'),
-                      _getFormattedPrice('delivery_fee'),
-                    ),
-
-                    const SizedBox(height: 8),
-
-                    // Service fee - use backend data if available
-                    _buildSummaryRow(
-                      _getLabel('service_fee'),
-                      _getFormattedPrice('service_fee'),
-                    ),
-
-                    if (controller.discountAmount > 0) ...[
-                      const SizedBox(height: 8),
-                      _buildSummaryRow(
-                        _getLabel('discount_amount'),
-                        '- ${_getFormattedPrice('discount_amount')}',
-                      ),
-                    ],
-
-                    const SizedBox(height: 8),
-
-                    // Divider
-                    Container(
-                      height: 1,
-                      color: const Color(0xFFB0B0B0),
-                    ),
-
-                    const SizedBox(height: 8),
-
-                    // Total - with bold styling as per Figma
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          _getLabel('total'),
-                          style: const TextStyle(
-                            fontFamily: 'Lato',
-                            fontWeight: FontWeight.w700,
-                            fontSize: 18,
-                            color: Color(0xFF262626),
-                            letterSpacing: -0.005,
-                          ),
-                        ),
-                        Text(
-                          _getFormattedPrice('total'),
-                          style: const TextStyle(
-                            fontFamily: 'Lato',
-                            fontWeight: FontWeight.w700,
-                            fontSize: 18,
-                            color: Color(0xFF262626),
-                            letterSpacing: -0.005,
-                          ),
-                        ),
-                      ],
+                      _getLabel('discount_amount'),
+                      '- ${_getFormattedPrice('discount_amount')}',
+                      isDiscount: true,
                     ),
                   ],
-                )),
-              ),
-              
-              const SizedBox(height: 16),
-              
+                  const SizedBox(height: 12),
+                  Container(
+                    height: 1,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFE8E8E8),
+                      borderRadius: BorderRadius.circular(1),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        _getLabel('total'),
+                        style: const TextStyle(
+                          fontFamily: 'Lato',
+                          fontWeight: FontWeight.w700,
+                          fontSize: 18,
+                          color: Color(0xFF1A1A2E),
+                        ),
+                      ),
+                      Text(
+                        _getFormattedPrice('total'),
+                        style: const TextStyle(
+                          fontFamily: 'Lato',
+                          fontWeight: FontWeight.w800,
+                          fontSize: 20,
+                          color: AppColors.primaryColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              )),
+
+              const SizedBox(height: 18),
+
               // Checkout button
-              Container(
+              SizedBox(
+                width: double.infinity,
+                height: 52,
                 child: ElevatedButton(
                   onPressed: controller.proceedToCheckout,
-                  style: AppTheme.primaryButtonStyle,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primaryColor,
+                    foregroundColor: const Color(0xFF1A1A2E),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    elevation: 0,
+                  ),
                   child: Text(
                     TranslationHelper.tr('checkout'),
-                    style: AppTheme.buttonTextStyle.copyWith(
-                      color: AppColors.searchIconColor,
+                    style: const TextStyle(
+                      fontFamily: 'Lato',
+                      fontWeight: FontWeight.w700,
+                      fontSize: 17,
+                      color: Color(0xFF1A1A2E),
                     ),
                   ),
                 ),
@@ -184,7 +210,7 @@ class CartSummarySection extends GetView<CartController> {
     );
   }
 
-  Widget _buildSummaryRow(String label, String value) {
+  Widget _buildSummaryRow(String label, String value, {bool isDiscount = false}) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -194,16 +220,16 @@ class CartSummarySection extends GetView<CartController> {
             fontFamily: 'Lato',
             fontWeight: FontWeight.w400,
             fontSize: 14,
-            color: Color(0xFF4B4B4B),
+            color: Color(0xFF6B6B80),
           ),
         ),
         Text(
           value,
-          style: const TextStyle(
+          style: TextStyle(
             fontFamily: 'Lato',
-            fontWeight: FontWeight.w400,
+            fontWeight: FontWeight.w500,
             fontSize: 14,
-            color: Color(0xFF4B4B4B),
+            color: isDiscount ? const Color(0xFF4CAF50) : const Color(0xFF1A1A2E),
           ),
         ),
       ],
@@ -218,14 +244,13 @@ class CartSummarySection extends GetView<CartController> {
       return controller.cartSummary['labels'][key] as String;
     }
 
-    // Fallback to local translations
     switch (key) {
       case 'subtotal':
         return TranslationHelper.tr('subtotal');
       case 'delivery_fee':
         return TranslationHelper.tr('delivery_fee');
       case 'service_fee':
-        return TranslationHelper.tr('tax'); // Using tax as service fee
+        return TranslationHelper.tr('tax');
       case 'total':
         return TranslationHelper.tr('total');
       case 'discount_amount':
@@ -243,7 +268,6 @@ class CartSummarySection extends GetView<CartController> {
       return controller.cartSummary['formatted'][key] as String;
     }
 
-    // Fallback to local calculations and formatting
     switch (key) {
       case 'subtotal':
         return CurrencyHelper.formatPrice(controller.subtotal);

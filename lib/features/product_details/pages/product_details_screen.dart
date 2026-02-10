@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/features/product_details/controllers/product_details_controller.dart';
 import 'package:mrsheaf/features/product_details/widgets/product_header.dart';
 import 'package:mrsheaf/features/product_details/widgets/product_image_section.dart';
-import 'package:mrsheaf/features/product_details/widgets/product_images_carousel.dart';
 import 'package:mrsheaf/features/product_details/widgets/product_info_section.dart';
+import 'package:mrsheaf/features/product_details/widgets/size_selection_section.dart';
 import 'package:mrsheaf/features/product_details/widgets/additional_options_section.dart';
-import 'package:mrsheaf/features/product_details/widgets/comment_input_section.dart';
 import 'package:mrsheaf/features/product_details/widgets/add_to_cart_section.dart';
+import 'package:mrsheaf/features/product_details/widgets/reviews_preview_section.dart';
 
 class ProductDetailsScreen extends GetView<ProductDetailsController> {
   const ProductDetailsScreen({super.key});
@@ -15,70 +16,141 @@ class ProductDetailsScreen extends GetView<ProductDetailsController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF2F2F2), // Background color from Figma
+      backgroundColor: Colors.white,
       body: Obx(() {
         if (controller.isLoadingProduct.value) {
-          return const Center(
-            child: CircularProgressIndicator(
-              color: Color(0xFFFACD02),
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const CircularProgressIndicator(
+                  color: AppColors.primaryColor,
+                  strokeWidth: 3,
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'loading'.tr,
+                  style: TextStyle(
+                    fontFamily: 'Lato',
+                    fontSize: 14,
+                    color: Colors.grey[500],
+                  ),
+                ),
+              ],
             ),
           );
         }
 
         if (controller.product.value == null) {
           return Center(
-            child: Text('product_not_found'.tr),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.error_outline_rounded, size: 64, color: Colors.grey[300]),
+                const SizedBox(height: 16),
+                Text(
+                  'product_not_found'.tr,
+                  style: TextStyle(
+                    fontFamily: 'Lato',
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.grey[600],
+                  ),
+                ),
+                const SizedBox(height: 24),
+                TextButton(
+                  onPressed: controller.goBack,
+                  child: Text(
+                    'go_back'.tr,
+                    style: const TextStyle(
+                      fontFamily: 'Lato',
+                      fontSize: 14,
+                      color: AppColors.primaryColor,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           );
         }
 
         return Column(
           children: [
-          // Main content
-          Expanded(
-            child: SingleChildScrollView(
-              child: Column(
-                children: [
-                  const SizedBox(height: 60), // Status bar space
-                  
-                  // Header with back and favorite buttons
-                  const ProductHeader(),
-                  
-                  const SizedBox(height: 16),
+            // Scrollable content
+            Expanded(
+              child: CustomScrollView(
+                physics: const BouncingScrollPhysics(),
+                slivers: [
+                  // Hero image with overlaid header
+                  SliverToBoxAdapter(
+                    child: Stack(
+                      children: [
+                        const ProductImageSection(),
+                        Positioned(
+                          top: MediaQuery.of(context).padding.top + 8,
+                          left: 0,
+                          right: 0,
+                          child: const ProductHeader(),
+                        ),
+                      ],
+                    ),
+                  ),
 
-                  // Product image section with size and quantity selectors
-                  const ProductImageSection(),
+                  // Product info
+                  const SliverToBoxAdapter(child: ProductInfoSection()),
 
-                  const SizedBox(height: 16),
+                  // Divider
+                  SliverToBoxAdapter(child: _buildDivider()),
 
-                  // Product images carousel
-                  const ProductImagesCarousel(),
+                  // Size selection
+                  const SliverToBoxAdapter(child: SizeSelectionSection()),
 
-                  const SizedBox(height: 16),
-                  
-                  // Product info section
-                  const ProductInfoSection(),
+                  // Divider (conditional)
+                  SliverToBoxAdapter(
+                    child: Obx(() {
+                      if (controller.product.value?.rawSizes.isEmpty ?? true) {
+                        return const SizedBox.shrink();
+                      }
+                      return _buildDivider();
+                    }),
+                  ),
 
-                  const SizedBox(height: 16),
+                  // Additional options
+                  const SliverToBoxAdapter(child: AdditionalOptionsSection()),
 
-                  // Additional options section
-                  const AdditionalOptionsSection(),
+                  // Divider before reviews
+                  SliverToBoxAdapter(
+                    child: Obx(() {
+                      if (controller.additionalOptions.isEmpty) {
+                        return const SizedBox.shrink();
+                      }
+                      return _buildDivider();
+                    }),
+                  ),
 
-                  const SizedBox(height: 16),
+                  // Reviews preview section
+                  const SliverToBoxAdapter(child: ReviewsPreviewSection()),
 
-                  // Comment input section
-                  const CommentInputSection(),
-
-                  const SizedBox(height: 20), // Space for bottom section
+                  // Bottom padding
+                  const SliverToBoxAdapter(child: SizedBox(height: 24)),
                 ],
               ),
             ),
-          ),
-          
-          // Add to cart section (fixed at bottom)
-          const AddToCartSection(),
+
+            // Fixed bottom bar
+            const AddToCartSection(),
           ],
         );
       }),
+    );
+  }
+
+  Widget _buildDivider() {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 20),
+      height: 1,
+      color: const Color(0xFFF0F0F0),
     );
   }
 }

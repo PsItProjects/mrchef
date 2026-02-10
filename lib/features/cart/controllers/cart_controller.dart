@@ -7,8 +7,8 @@ import 'package:mrsheaf/features/cart/models/cart_item_model.dart';
 import 'package:mrsheaf/features/cart/services/cart_service.dart';
 import 'package:mrsheaf/features/product_details/models/product_model.dart';
 import 'package:mrsheaf/core/routes/app_routes.dart';
-import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/core/localization/translation_helper.dart';
+import 'package:mrsheaf/features/home/controllers/main_controller.dart';
 
 class CartController extends GetxController {
   final CartService _cartService = CartService();
@@ -98,8 +98,8 @@ class CartController extends GetxController {
     }
   }
 
-  /// Add item to cart via server
-  Future<void> addToCart({
+  /// Add item to cart via server — returns the product name on success, null on failure
+  Future<String?> addToCart({
     required ProductModel product,
     required String size,
     required int quantity,
@@ -108,7 +108,7 @@ class CartController extends GetxController {
   }) async {
     // Check guest mode first
     if (_checkGuestAndShowModal()) {
-      return;
+      return null;
     }
     
     try {
@@ -139,13 +139,10 @@ class CartController extends GetxController {
           (item) => item.productId == product.id,
           orElse: () => cartItems.last,
         );
-        productName = addedItem.name; // اسم المنتج الحقيقي من السلة
+        productName = addedItem.name;
       }
 
-      // Show success message with actual product name
-      ToastService.showSuccess(
-        'تمت إضافة "$productName" إلى السلة بنجاح',
-      );
+      return productName;
 
     } catch (e) {
       String errorMessage = e.toString();
@@ -162,6 +159,7 @@ class CartController extends GetxController {
       } else {
         ToastService.showError(errorMessage);
       }
+      return null;
     } finally {
       isUpdating.value = false;
     }
@@ -377,6 +375,17 @@ class CartController extends GetxController {
   // Navigate to home page
   void goToHomePage() {
     Get.offAllNamed(AppRoutes.HOME);
+  }
+
+  // Navigate to cart tab in main screen
+  void goToCartPage() {
+    try {
+      final mainController = Get.find<MainController>();
+      mainController.changeTab(2); // Cart tab index
+    } catch (e) {
+      // Fallback: navigate to home and let user tap cart
+      Get.offAllNamed(AppRoutes.HOME);
+    }
   }
 
   // Proceed to checkout - navigate to checkout screen

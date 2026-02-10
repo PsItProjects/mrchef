@@ -19,6 +19,7 @@ class ProductModel {
   final List<String> images;
   final int? categoryId; // إضافة معرف التصنيف
   final int? restaurantId; // إضافة معرف المطعم
+  final Map<int, int> starsBreakdown; // Star distribution {5: 70, 4: 20, ...}
 
   ProductModel({
     required this.id,
@@ -36,6 +37,7 @@ class ProductModel {
     required this.images,
     this.categoryId, // إضافة معرف التصنيف
     this.restaurantId, // إضافة معرف المطعم
+    this.starsBreakdown = const {},
   });
 
   factory ProductModel.fromJson(Map<String, dynamic> json) {
@@ -52,16 +54,20 @@ class ProductModel {
 
     double getRating(dynamic ratingField) {
       if (ratingField is Map<String, dynamic>) {
-        return (ratingField['average'] ?? 4.5).toDouble();
+        return (ratingField['average'] ?? 0).toDouble();
       }
-      return (ratingField ?? 4.5).toDouble();
+      if (ratingField is num) return ratingField.toDouble();
+      return 0.0;
     }
 
-    int getReviewCount(dynamic reviewField) {
-      if (reviewField is Map<String, dynamic>) {
-        return reviewField['count'] ?? 0;
+    int getReviewCount(dynamic ratingField, dynamic reviewCountField) {
+      // Prefer rating.count (falls back to 0) over reviewCount (falls back to total_orders/205)
+      if (ratingField is Map<String, dynamic>) {
+        final count = ratingField['count'];
+        if (count != null && count is int && count >= 0) return count;
       }
-      return reviewField ?? 0;
+      if (reviewCountField is int) return reviewCountField;
+      return 0;
     }
 
     // Handle image URL properly
@@ -108,7 +114,7 @@ class ProductModel {
       originalPrice: json['originalPrice'] != null ? parsePrice(json['originalPrice']) : null,
       image: getImageUrl(json['primary_image'] ?? json['image']),
       rating: getRating(json['rating']),
-      reviewCount: getReviewCount(json['reviewCount'] ?? json['rating']),
+      reviewCount: getReviewCount(json['rating'], json['reviewCount']),
       productCode: json['productCode'] ?? 'N/A',
       sizes: _extractSizes(json['sizes']),
       rawSizes: _extractRawSizes(json['sizes']),
@@ -116,7 +122,25 @@ class ProductModel {
       images: List<String>.from(json['images'] ?? [json['primary_image'] ?? json['image'] ?? '']),
       categoryId: json['internal_category_id'] ?? json['categoryId'] ?? json['category']?['id'],
       restaurantId: restaurantId,
+      starsBreakdown: _extractStarsBreakdown(json['rating']),
     );
+  }
+
+  /// Extract stars breakdown from rating object
+  static Map<int, int> _extractStarsBreakdown(dynamic ratingField) {
+    if (ratingField is Map<String, dynamic>) {
+      final breakdown = ratingField['stars_breakdown'];
+      if (breakdown is Map) {
+        final result = <int, int>{};
+        breakdown.forEach((key, value) {
+          final star = int.tryParse(key.toString());
+          final count = (value is int) ? value : (value is double ? value.toInt() : 0);
+          if (star != null) result[star] = count;
+        });
+        return result;
+      }
+    }
+    return {};
   }
 
   // Helper methods for extracting data from backend response
@@ -229,6 +253,7 @@ class ProductModel {
       'images': images,
       'categoryId': categoryId, // إضافة معرف التصنيف
       'restaurantId': restaurantId, // إضافة معرف المطعم
+      'starsBreakdown': starsBreakdown,
     };
   }
 }
