@@ -161,6 +161,8 @@ class MerchantProfileService extends GetxService {
     String? area,
     double? latitude,
     double? longitude,
+    double? deliveryFee,
+    double? serviceFee,
   }) async {
     try {
       print('📝 Updating restaurant info...');
@@ -179,6 +181,8 @@ class MerchantProfileService extends GetxService {
       if (area != null) data['area'] = area;
       if (latitude != null) data['latitude'] = latitude;
       if (longitude != null) data['longitude'] = longitude;
+      if (deliveryFee != null) data['delivery_fee'] = deliveryFee;
+      if (serviceFee != null) data['service_fee'] = serviceFee;
 
       final response = await _apiClient.put(
         '/merchant/profile/restaurant-info',

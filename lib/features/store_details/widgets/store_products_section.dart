@@ -91,7 +91,7 @@ class StoreProductsSection extends GetView<StoreDetailsController> {
                 crossAxisCount: 2,
                 crossAxisSpacing: 16,
                 mainAxisSpacing: 16,
-                childAspectRatio: 182 / 248, // Width / Height from Figma
+                childAspectRatio: 0.72,
               ),
               itemCount: controller.storeProducts.length,
               itemBuilder: (context, index) {

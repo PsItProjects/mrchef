@@ -21,9 +21,15 @@ class AddProductController extends GetxController {
   final descriptionArController = TextEditingController();
   final basePriceController = TextEditingController();
   final discountPercentageController = TextEditingController();
+  final discountFixedPriceController = TextEditingController();
   final preparationTimeController = TextEditingController();
   final caloriesController = TextEditingController();
   final ingredientsController = TextEditingController();
+
+  // Discount type: 'percentage' or 'fixed'
+  final discountType = 'percentage'.obs;
+  // Auto-calculated final price after discount
+  final calculatedFinalPrice = 0.0.obs;
 
   // Observable States
   final isLoading = false.obs;
@@ -63,6 +69,38 @@ class AddProductController extends GetxController {
   void onInit() {
     super.onInit();
     _loadCategories();
+    _setupPriceListeners();
+  }
+
+  void _setupPriceListeners() {
+    basePriceController.addListener(_recalculateFinalPrice);
+    discountPercentageController.addListener(_recalculateFinalPrice);
+    discountFixedPriceController.addListener(_recalculateFinalPrice);
+    ever(discountType, (_) => _recalculateFinalPrice());
+  }
+
+  void _recalculateFinalPrice() {
+    final basePrice = double.tryParse(basePriceController.text.trim()) ?? 0;
+    if (basePrice <= 0) {
+      calculatedFinalPrice.value = 0;
+      return;
+    }
+
+    if (discountType.value == 'percentage') {
+      final pct = double.tryParse(discountPercentageController.text.trim()) ?? 0;
+      if (pct > 0 && pct <= 100) {
+        calculatedFinalPrice.value = basePrice - (basePrice * pct / 100);
+      } else {
+        calculatedFinalPrice.value = basePrice;
+      }
+    } else {
+      final fixedPrice = double.tryParse(discountFixedPriceController.text.trim()) ?? 0;
+      if (fixedPrice > 0 && fixedPrice < basePrice) {
+        calculatedFinalPrice.value = fixedPrice;
+      } else {
+        calculatedFinalPrice.value = basePrice;
+      }
+    }
   }
 
   @override
@@ -73,6 +111,7 @@ class AddProductController extends GetxController {
     descriptionArController.dispose();
     basePriceController.dispose();
     discountPercentageController.dispose();
+    discountFixedPriceController.dispose();
     preparationTimeController.dispose();
     caloriesController.dispose();
     ingredientsController.dispose();
@@ -360,23 +399,36 @@ class AddProductController extends GetxController {
     try {
       isLoading.value = true;
 
-      // Calculate price and discount_price
+      // Calculate price and discount
       final basePrice = double.parse(basePriceController.text.trim());
-      final discountPercentage = discountPercentageController.text.trim().isEmpty
-          ? 0.0
-          : double.parse(discountPercentageController.text.trim());
 
       double? discountPrice;
-      if (discountPercentage > 0) {
-        discountPrice = basePrice - (basePrice * discountPercentage / 100);
+      double discountPercentage = 0.0;
+
+      if (discountType.value == 'percentage') {
+        discountPercentage = discountPercentageController.text.trim().isEmpty
+            ? 0.0
+            : double.parse(discountPercentageController.text.trim());
+        if (discountPercentage > 0) {
+          discountPrice = basePrice - (basePrice * discountPercentage / 100);
+        }
+      } else {
+        // Fixed price discount
+        final fixedPrice = discountFixedPriceController.text.trim().isEmpty
+            ? null
+            : double.tryParse(discountFixedPriceController.text.trim());
+        if (fixedPrice != null && fixedPrice > 0 && fixedPrice < basePrice) {
+          discountPrice = fixedPrice;
+          discountPercentage = ((basePrice - fixedPrice) / basePrice) * 100;
+        }
       }
 
       // Prepare product data matching API expectations
       final productData = {
         // Required fields
-        'category_id': selectedCategoryId.value, // ← Fixed: was 'internal_category_id'
+        'category_id': selectedCategoryId.value,
         'name_en': nameEnController.text.trim(),
-        'price': basePrice, // ← Fixed: was 'base_price'
+        'price': basePrice,
 
         // Optional basic info
         'name_ar': nameArController.text.trim().isEmpty
@@ -389,8 +441,10 @@ class AddProductController extends GetxController {
             ? null
             : descriptionArController.text.trim(),
 
-        // Pricing
+        // Pricing / Discount
+        'discount_type': discountType.value,
         'discount_price': discountPrice,
+        'discount_percentage': discountPercentage,
 
         // Other fields
         'preparation_time': int.parse(preparationTimeController.text.trim()),

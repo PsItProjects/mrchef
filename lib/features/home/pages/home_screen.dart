@@ -158,7 +158,7 @@ class HomeScreen extends GetView<HomeController> {
               
               // Best seller horizontal list (filtered)
               SizedBox(
-                height: 240,
+                height: 260,
                 child: Obx(() {
                   // When category is selected, show best rated products from that category
                   // When "Popular" is selected, show best seller products
@@ -192,7 +192,7 @@ class HomeScreen extends GetView<HomeController> {
               
               // Back again horizontal list (filtered)
               SizedBox(
-                height: 240,
+                height: 260,
                 child: Obx(() {
                   // When category is selected, show latest products from that category
                   // When "Popular" is selected, show back again products

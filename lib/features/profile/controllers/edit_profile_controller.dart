@@ -70,6 +70,9 @@ class EditProfileController extends GetxController {
       currentAvatarUrl.value = currentUser.avatarUrl ?? '';
     } else {
       // Fallback to ProfileController if AuthService user is null
+      if (!Get.isRegistered<ProfileController>()) {
+        Get.put(ProfileController());
+      }
       final profileController = Get.find<ProfileController>();
       final currentProfile = profileController.userProfile.value;
 
@@ -232,6 +235,9 @@ class EditProfileController extends GetxController {
 
         // Force refresh ProfileController from API to get latest data
         // ✅ skipLanguageUpdate: true - لمنع تغيير لغة التطبيق بعد التعديل
+        if (!Get.isRegistered<ProfileController>()) {
+          Get.put(ProfileController());
+        }
         final profileController = Get.find<ProfileController>();
         await profileController.refreshProfile(forceRefresh: true, skipLanguageUpdate: true);
 
@@ -241,7 +247,11 @@ class EditProfileController extends GetxController {
         // Navigate back to Profile screen (main profile page with updated data)
         Get.back();
       } else {
-        ToastService.showError(response.message);
+        // Show detailed validation errors from backend (e.g. email taken)
+        final errorMsg = response.hasErrors
+            ? response.validationErrorsString
+            : response.message;
+        ToastService.showError(errorMsg);
       }
     } catch (e) {
       ToastService.showError('profile_update_failed'.tr);

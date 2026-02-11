@@ -17,9 +17,23 @@ class ProductModel {
   final List<Map<String, dynamic>> rawSizes; // Raw size data with IDs and prices
   final List<AdditionalOption> additionalOptions;
   final List<String> images;
-  final int? categoryId; // إضافة معرف التصنيف
-  final int? restaurantId; // إضافة معرف المطعم
+  final int? categoryId;
+  final int? restaurantId;
   final Map<int, int> starsBreakdown; // Star distribution {5: 70, 4: 20, ...}
+
+  // Discount info
+  final String discountType; // 'percentage' or 'fixed'
+  final double discountPercentage;
+  final bool hasDiscount;
+
+  // Nutritional / dietary info
+  final int? calories;
+  final List<String> ingredients;
+  final int preparationTime;
+  final bool isVegetarian;
+  final bool isVegan;
+  final bool isGlutenFree;
+  final bool isSpicy;
 
   ProductModel({
     required this.id,
@@ -35,9 +49,19 @@ class ProductModel {
     required this.rawSizes,
     required this.additionalOptions,
     required this.images,
-    this.categoryId, // إضافة معرف التصنيف
-    this.restaurantId, // إضافة معرف المطعم
+    this.categoryId,
+    this.restaurantId,
     this.starsBreakdown = const {},
+    this.discountType = 'percentage',
+    this.discountPercentage = 0,
+    this.hasDiscount = false,
+    this.calories,
+    this.ingredients = const [],
+    this.preparationTime = 15,
+    this.isVegetarian = false,
+    this.isVegan = false,
+    this.isGlutenFree = false,
+    this.isSpicy = false,
   });
 
   factory ProductModel.fromJson(Map<String, dynamic> json) {
@@ -106,6 +130,13 @@ class ProductModel {
       return 0.0;
     }
 
+    // Parse ingredients — could be list of strings or a single string
+    List<String> parseIngredients(dynamic field) {
+      if (field is List) return List<String>.from(field.map((e) => e.toString()));
+      if (field is String && field.isNotEmpty) return field.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
+      return [];
+    }
+
     return ProductModel(
       id: json['id'],
       name: getName(json['name']),
@@ -123,6 +154,18 @@ class ProductModel {
       categoryId: json['internal_category_id'] ?? json['categoryId'] ?? json['category']?['id'],
       restaurantId: restaurantId,
       starsBreakdown: _extractStarsBreakdown(json['rating']),
+      // Discount
+      discountType: json['discount_type']?.toString() ?? 'percentage',
+      discountPercentage: parsePrice(json['discount_percentage']),
+      hasDiscount: json['has_discount'] == true || (json['originalPrice'] != null && parsePrice(json['originalPrice']) > parsePrice(json['price'])),
+      // Nutritional / dietary
+      calories: json['calories'] is int ? json['calories'] : (json['calories'] != null ? int.tryParse(json['calories'].toString()) : null),
+      ingredients: parseIngredients(json['ingredients']),
+      preparationTime: json['preparation_time'] is int ? json['preparation_time'] : 15,
+      isVegetarian: json['is_vegetarian'] == true,
+      isVegan: json['is_vegan'] == true,
+      isGlutenFree: json['is_gluten_free'] == true,
+      isSpicy: json['is_spicy'] == true,
     );
   }
 
@@ -251,9 +294,19 @@ class ProductModel {
       'rawSizes': rawSizes,
       'additionalOptions': additionalOptions.map((option) => option.toJson()).toList(),
       'images': images,
-      'categoryId': categoryId, // إضافة معرف التصنيف
-      'restaurantId': restaurantId, // إضافة معرف المطعم
+      'categoryId': categoryId,
+      'restaurantId': restaurantId,
       'starsBreakdown': starsBreakdown,
+      'discount_type': discountType,
+      'discount_percentage': discountPercentage,
+      'has_discount': hasDiscount,
+      'calories': calories,
+      'ingredients': ingredients,
+      'preparation_time': preparationTime,
+      'is_vegetarian': isVegetarian,
+      'is_vegan': isVegan,
+      'is_gluten_free': isGlutenFree,
+      'is_spicy': isSpicy,
     };
   }
 }

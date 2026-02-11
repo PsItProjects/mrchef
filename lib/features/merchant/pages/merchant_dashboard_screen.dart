@@ -21,32 +21,31 @@ class MerchantDashboardScreen extends GetView<MerchantMainController> {
     ];
 
     // Bottom navigation items with same styling as regular user
-    return Obx(() {
-      final List<Map<String, dynamic>> navItems = [
-        {
-          'icon': Icons.home,
-          'title': 'merchant_home'.tr,
-        },
-        {
-          'icon': Icons.shopping_cart,
-          'title': 'merchant_orders'.tr,
-        },
-        {
-          'icon': Icons.message,
-          'title': 'merchant_messages'.tr,
-        },
-        {
-          'icon': Icons.settings,
-          'title': 'merchant_settings'.tr,
-        },
-      ];
+    final List<Map<String, dynamic>> navItems = [
+      {
+        'icon': Icons.home,
+        'title': 'merchant_home'.tr,
+      },
+      {
+        'icon': Icons.shopping_cart,
+        'title': 'merchant_orders'.tr,
+      },
+      {
+        'icon': Icons.message,
+        'title': 'merchant_messages'.tr,
+      },
+      {
+        'icon': Icons.settings,
+        'title': 'merchant_settings'.tr,
+      },
+    ];
 
-      return Scaffold(
-        body: IndexedStack(
-          index: controller.currentIndex.value,
-          children: screens,
-        ),
-        bottomNavigationBar: Container(
+    return Scaffold(
+      body: Obx(() => IndexedStack(
+        index: controller.currentIndex.value,
+        children: screens,
+      )),
+      bottomNavigationBar: Container(
           height: 98,
           decoration: BoxDecoration(
             color: Colors.white,
@@ -61,7 +60,7 @@ class MerchantDashboardScreen extends GetView<MerchantMainController> {
           child: SafeArea(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 8),
-              child: Row(
+              child: Obx(() => Row(
                 children: List.generate(navItems.length, (index) {
                   final item = navItems[index];
                   final isSelected = controller.currentIndex.value == index;
@@ -106,11 +105,10 @@ class MerchantDashboardScreen extends GetView<MerchantMainController> {
                     ),
                   );
                 }),
-              ),
+              )),
             ),
           ),
         ),
       );
-    });
   }
 }

@@ -1,6 +1,8 @@
 import 'dart:io';
 import 'dart:typed_data';
+import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
@@ -13,15 +15,17 @@ class EditRestaurantInfoScreen extends StatefulWidget {
   const EditRestaurantInfoScreen({Key? key}) : super(key: key);
 
   @override
-  State<EditRestaurantInfoScreen> createState() => _EditRestaurantInfoScreenState();
+  State<EditRestaurantInfoScreen> createState() =>
+      _EditRestaurantInfoScreenState();
 }
 
-class _EditRestaurantInfoScreenState extends State<EditRestaurantInfoScreen> {
+class _EditRestaurantInfoScreenState extends State<EditRestaurantInfoScreen>
+    with SingleTickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
-  final _profileService = Get.find<MerchantProfileService>();
-  final _imagePicker = ImagePicker();
+  final MerchantProfileService _profileService = MerchantProfileService();
+  final ImagePicker _imagePicker = ImagePicker();
 
-  // Text Controllers
+  // Controllers
   late TextEditingController _businessNameArController;
   late TextEditingController _businessNameEnController;
   late TextEditingController _descriptionArController;
@@ -32,41 +36,48 @@ class _EditRestaurantInfoScreenState extends State<EditRestaurantInfoScreen> {
   late TextEditingController _emailController;
   late TextEditingController _cityController;
   late TextEditingController _areaController;
+  late TextEditingController _deliveryFeeController;
+  late TextEditingController _serviceFeeController;
 
-  // Image files
+  // Image state
   File? _selectedLogo;
   File? _selectedCover;
   String? _currentLogoUrl;
   String? _currentCoverUrl;
 
   // Business type
-  String? _selectedBusinessType;
   final List<String> _businessTypes = [
-    'restaurant',
-    'cafe',
-    'bakery',
-    'fastfood',
-    'pizza',
-    'seafood',
-    'dessert',
-    'juice',
-    'grocery',
-    'pharmacy',
+    'restaurant', 'cafe', 'bakery', 'fastfood', 'pizza',
+    'seafood', 'dessert', 'juice', 'grocery', 'pharmacy',
   ];
+  String? _selectedBusinessType;
+  final String _selectedCountryCode = '+966';
 
-  // Country code
-  String _selectedCountryCode = '+966';
-  final List<String> _countryCodes = ['+966']; // Saudi Arabia only for now
-
-  // Location (latitude & longitude)
+  // Location
   double? _latitude;
   double? _longitude;
 
   bool _isLoading = false;
+  int _activeTab = 0;
+
+  // Tab controller
+  late TabController _tabController;
+  final List<_TabItem> _tabs = [
+    _TabItem(key: 'basic_info', icon: Icons.storefront_rounded),
+    _TabItem(key: 'contact_info', icon: Icons.contact_phone_rounded),
+    _TabItem(key: 'location', icon: Icons.place_rounded),
+    _TabItem(key: 'fees_and_pricing', icon: Icons.payments_rounded),
+  ];
 
   @override
   void initState() {
     super.initState();
+    _tabController = TabController(length: _tabs.length, vsync: this);
+    _tabController.addListener(() {
+      if (!_tabController.indexIsChanging) {
+        setState(() => _activeTab = _tabController.index);
+      }
+    });
     _initializeControllers();
     _loadRestaurantData();
   }
@@ -82,59 +93,57 @@ class _EditRestaurantInfoScreenState extends State<EditRestaurantInfoScreen> {
     _emailController = TextEditingController();
     _cityController = TextEditingController();
     _areaController = TextEditingController();
+    _deliveryFeeController = TextEditingController();
+    _serviceFeeController = TextEditingController();
   }
 
   Future<void> _loadRestaurantData({bool forceRefresh = false}) async {
     try {
-      print('📝 Loading restaurant data...');
       final data = await _profileService.getProfile();
-
       if (data != null) {
         final merchant = data['merchant'];
         final restaurant = merchant?['restaurant'];
-
         if (restaurant != null) {
           setState(() {
-            // Business name - handle both String and Map
             final businessName = restaurant['business_name'];
             if (businessName is Map) {
-              _businessNameArController.text = businessName['ar'] ?? businessName['current'] ?? '';
-              _businessNameEnController.text = businessName['en'] ?? businessName['current'] ?? '';
+              _businessNameArController.text =
+                  businessName['ar'] ?? businessName['current'] ?? '';
+              _businessNameEnController.text =
+                  businessName['en'] ?? businessName['current'] ?? '';
             } else if (businessName is String) {
               _businessNameArController.text = businessName;
               _businessNameEnController.text = businessName;
             }
 
-            // Description - handle both String and Map
             final description = restaurant['description'];
             if (description is Map) {
-              _descriptionArController.text = description['ar'] ?? description['current'] ?? '';
-              _descriptionEnController.text = description['en'] ?? description['current'] ?? '';
+              _descriptionArController.text =
+                  description['ar'] ?? description['current'] ?? '';
+              _descriptionEnController.text =
+                  description['en'] ?? description['current'] ?? '';
             } else if (description is String) {
               _descriptionArController.text = description;
               _descriptionEnController.text = description;
             }
 
-            // Address - handle both String and Map
             final address = restaurant['address'];
             if (address is Map) {
-              _addressArController.text = address['ar'] ?? address['current'] ?? '';
-              _addressEnController.text = address['en'] ?? address['current'] ?? '';
+              _addressArController.text =
+                  address['ar'] ?? address['current'] ?? '';
+              _addressEnController.text =
+                  address['en'] ?? address['current'] ?? '';
             } else if (address is String) {
               _addressArController.text = address;
               _addressEnController.text = address;
             }
 
-            // Contact info
             _phoneController.text = restaurant['phone']?.toString() ?? '';
             _emailController.text = restaurant['email']?.toString() ?? '';
             _cityController.text = restaurant['city']?.toString() ?? '';
             _areaController.text = restaurant['area']?.toString() ?? '';
-
-            // Business type
             _selectedBusinessType = restaurant['type']?.toString();
 
-            // Location
             _latitude = restaurant['latitude'] != null
                 ? double.tryParse(restaurant['latitude'].toString())
                 : null;
@@ -142,16 +151,14 @@ class _EditRestaurantInfoScreenState extends State<EditRestaurantInfoScreen> {
                 ? double.tryParse(restaurant['longitude'].toString())
                 : null;
 
-            // Images
             _currentLogoUrl = restaurant['logo']?.toString();
             _currentCoverUrl = restaurant['cover_image']?.toString();
-          });
 
-          print('✅ Restaurant data loaded successfully');
-          print('   Business Name AR: ${_businessNameArController.text}');
-          print('   Business Name EN: ${_businessNameEnController.text}');
-          print('   Logo: $_currentLogoUrl');
-          print('   Cover: $_currentCoverUrl');
+            _deliveryFeeController.text =
+                restaurant['delivery_fee']?.toString() ?? '';
+            _serviceFeeController.text =
+                restaurant['service_fee']?.toString() ?? '';
+          });
         }
       }
     } catch (e) {
@@ -161,6 +168,7 @@ class _EditRestaurantInfoScreenState extends State<EditRestaurantInfoScreen> {
 
   @override
   void dispose() {
+    _tabController.dispose();
     _businessNameArController.dispose();
     _businessNameEnController.dispose();
     _descriptionArController.dispose();
@@ -171,24 +179,29 @@ class _EditRestaurantInfoScreenState extends State<EditRestaurantInfoScreen> {
     _emailController.dispose();
     _cityController.dispose();
     _areaController.dispose();
+    _deliveryFeeController.dispose();
+    _serviceFeeController.dispose();
     super.dispose();
   }
 
-  /// Pick logo image (circular crop)
+  // ═══════════════════════════════════════════════════════════════
+  //  IMAGE PICKERS
+  // ═══════════════════════════════════════════════════════════════
+
   Future<void> _pickLogo(ImageSource source) async {
     try {
-      final XFile? image = await _imagePicker.pickImage(source: source, imageQuality: 100);
+      final XFile? image =
+          await _imagePicker.pickImage(source: source, imageQuality: 100);
       if (image == null) return;
-
       final Uint8List imageBytes = await image.readAsBytes();
       final Uint8List? croppedImage = await Get.to<Uint8List>(
         () => ImageCropScreen(imageData: imageBytes),
         transition: Transition.cupertino,
       );
-
       if (croppedImage != null) {
         final tempDir = Directory.systemTemp;
-        final tempFile = File('${tempDir.path}/logo_${DateTime.now().millisecondsSinceEpoch}.jpg');
+        final tempFile = File(
+            '${tempDir.path}/logo_${DateTime.now().millisecondsSinceEpoch}.jpg');
         await tempFile.writeAsBytes(croppedImage);
         setState(() => _selectedLogo = tempFile);
       }
@@ -197,15 +210,15 @@ class _EditRestaurantInfoScreenState extends State<EditRestaurantInfoScreen> {
     }
   }
 
-  /// Pick cover image (rectangular)
   Future<void> _pickCover(ImageSource source) async {
     try {
-      final XFile? image = await _imagePicker.pickImage(source: source, imageQuality: 100);
+      final XFile? image =
+          await _imagePicker.pickImage(source: source, imageQuality: 100);
       if (image == null) return;
-
       final Uint8List imageBytes = await image.readAsBytes();
       final tempDir = Directory.systemTemp;
-      final tempFile = File('${tempDir.path}/cover_${DateTime.now().millisecondsSinceEpoch}.jpg');
+      final tempFile = File(
+          '${tempDir.path}/cover_${DateTime.now().millisecondsSinceEpoch}.jpg');
       await tempFile.writeAsBytes(imageBytes);
       setState(() => _selectedCover = tempFile);
     } catch (e) {
@@ -213,29 +226,64 @@ class _EditRestaurantInfoScreenState extends State<EditRestaurantInfoScreen> {
     }
   }
 
-  /// Show logo picker dialog
-  void _showLogoPicker() {
-    Get.dialog(
-      AlertDialog(
-        title: Text('select_image_source'.tr),
-        content: Column(
+  void _showImagePicker({required bool isLogo}) {
+    Get.bottomSheet(
+      Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+        ),
+        padding: const EdgeInsets.fromLTRB(24, 8, 24, 36),
+        child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            ListTile(
-              leading: const Icon(Icons.camera_alt, color: AppColors.primaryColor),
-              title: Text('camera'.tr),
-              onTap: () {
-                Get.back();
-                _pickLogo(ImageSource.camera);
-              },
+            // Handle
+            Container(
+              width: 36,
+              height: 4,
+              margin: const EdgeInsets.only(bottom: 24),
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(2),
+              ),
             ),
-            ListTile(
-              leading: const Icon(Icons.photo_library, color: AppColors.primaryColor),
-              title: Text('gallery'.tr),
-              onTap: () {
-                Get.back();
-                _pickLogo(ImageSource.gallery);
-              },
+            Text(
+              'select_image_source'.tr,
+              style: const TextStyle(
+                fontSize: 17,
+                fontWeight: FontWeight.bold,
+                color: AppColors.textDarkColor,
+              ),
+            ),
+            const SizedBox(height: 24),
+            Row(
+              children: [
+                Expanded(
+                  child: _imageSourceBtn(
+                    icon: Icons.camera_alt_rounded,
+                    label: 'camera'.tr,
+                    onTap: () {
+                      Get.back();
+                      isLogo
+                          ? _pickLogo(ImageSource.camera)
+                          : _pickCover(ImageSource.camera);
+                    },
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: _imageSourceBtn(
+                    icon: Icons.photo_library_rounded,
+                    label: 'gallery'.tr,
+                    onTap: () {
+                      Get.back();
+                      isLogo
+                          ? _pickLogo(ImageSource.gallery)
+                          : _pickCover(ImageSource.gallery);
+                    },
+                  ),
+                ),
+              ],
             ),
           ],
         ),
@@ -243,44 +291,62 @@ class _EditRestaurantInfoScreenState extends State<EditRestaurantInfoScreen> {
     );
   }
 
-  /// Show cover picker dialog
-  void _showCoverPicker() {
-    Get.dialog(
-      AlertDialog(
-        title: Text('select_image_source'.tr),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.camera_alt, color: AppColors.primaryColor),
-              title: Text('camera'.tr),
-              onTap: () {
-                Get.back();
-                _pickCover(ImageSource.camera);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.photo_library, color: AppColors.primaryColor),
-              title: Text('gallery'.tr),
-              onTap: () {
-                Get.back();
-                _pickCover(ImageSource.gallery);
-              },
-            ),
-          ],
+  Widget _imageSourceBtn(
+      {required IconData icon,
+      required String label,
+      required VoidCallback onTap}) {
+    return Material(
+      color: const Color(0xFFF7F8FC),
+      borderRadius: BorderRadius.circular(18),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(18),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 28),
+          child: Column(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(15),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      AppColors.primaryColor.withOpacity(0.25),
+                      AppColors.primaryColor.withOpacity(0.08),
+                    ],
+                  ),
+                  shape: BoxShape.circle,
+                ),
+                child:
+                    Icon(icon, size: 26, color: AppColors.secondaryColor),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textDarkColor,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  /// Open location picker as bottom sheet
+  // ═══════════════════════════════════════════════════════════════
+  //  LOCATION
+  // ═══════════════════════════════════════════════════════════════
+
   Future<void> _openLocationPicker() async {
     final result = await showLocationPickerBottomSheet(
       context: context,
       initialLatitude: _latitude,
       initialLongitude: _longitude,
     );
-
     if (result != null) {
       setState(() {
         _latitude = result['latitude'];
@@ -289,34 +355,33 @@ class _EditRestaurantInfoScreenState extends State<EditRestaurantInfoScreen> {
     }
   }
 
-  /// Save changes
+  // ═══════════════════════════════════════════════════════════════
+  //  SAVE
+  // ═══════════════════════════════════════════════════════════════
+
   Future<void> _saveChanges() async {
     if (!_formKey.currentState!.validate()) return;
-
     setState(() => _isLoading = true);
-
     try {
-      // Upload logo if changed
       if (_selectedLogo != null) {
-        final logoSuccess = await _profileService.uploadRestaurantLogo(_selectedLogo!);
-        if (!logoSuccess) {
+        final ok =
+            await _profileService.uploadRestaurantLogo(_selectedLogo!);
+        if (!ok) {
           ToastService.showError('logo_upload_failed'.tr);
           setState(() => _isLoading = false);
           return;
         }
       }
-
-      // Upload cover if changed
       if (_selectedCover != null) {
-        final coverSuccess = await _profileService.uploadRestaurantCover(_selectedCover!);
-        if (!coverSuccess) {
+        final ok =
+            await _profileService.uploadRestaurantCover(_selectedCover!);
+        if (!ok) {
           ToastService.showError('cover_upload_failed'.tr);
           setState(() => _isLoading = false);
           return;
         }
       }
 
-      // Update restaurant info
       final success = await _profileService.updateRestaurantInfo(
         businessNameEn: _businessNameEnController.text.trim(),
         businessNameAr: _businessNameArController.text.trim(),
@@ -331,13 +396,12 @@ class _EditRestaurantInfoScreenState extends State<EditRestaurantInfoScreen> {
         area: _areaController.text.trim(),
         latitude: _latitude,
         longitude: _longitude,
+        deliveryFee: double.tryParse(_deliveryFeeController.text.trim()),
+        serviceFee: double.tryParse(_serviceFeeController.text.trim()),
       );
-
       setState(() => _isLoading = false);
-
       if (success) {
         ToastService.showSuccess('restaurant_info_updated_successfully'.tr);
-        
         await Future.delayed(const Duration(milliseconds: 500));
         Get.back(result: true);
       } else {
@@ -349,699 +413,946 @@ class _EditRestaurantInfoScreenState extends State<EditRestaurantInfoScreen> {
     }
   }
 
+  // ─── helper: display business name based on locale ───
+  String get _displayName {
+    final isAr = Get.locale?.languageCode == 'ar';
+    final name = isAr
+        ? _businessNameArController.text
+        : _businessNameEnController.text;
+    return name.isNotEmpty ? name : 'restaurant_info'.tr;
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  //  BUILD
+  // ═══════════════════════════════════════════════════════════════
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.surfaceColor,
-      body: Stack(
+      backgroundColor: const Color(0xFFF4F5F9),
+      body: Column(
         children: [
-          CustomScrollView(
-            slivers: [
-              _buildAppBar(),
-              SliverToBoxAdapter(
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    children: [
-                      _buildCoverSection(),
-                      Transform.translate(
-                        offset: const Offset(0, -60),
-                        child: Column(
-                          children: [
-                            _buildLogoSection(),
-                            const SizedBox(height: 24),
-                            _buildBasicInfoSection(),
-                            _buildContactInfoSection(),
-                            _buildLocationSection(),
-                            _buildBusinessDetailsSection(),
-                            const SizedBox(height: 100),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+          // ── IMMERSIVE HEADER (cover + logo + name + tabs) ──
+          _buildHeroHeader(context),
+
+          // ── TAB CONTENT ──
+          Expanded(
+            child: Form(
+              key: _formKey,
+              child: TabBarView(
+                controller: _tabController,
+                children: [
+                  _buildBasicInfoTab(),
+                  _buildContactInfoTab(),
+                  _buildLocationTab(),
+                  _buildFeesTab(),
+                ],
               ),
-            ],
+            ),
           ),
+
+          // ── SAVE BUTTON ──
           _buildSaveButton(),
         ],
       ),
     );
   }
 
-  Widget _buildAppBar() {
-    return SliverAppBar(
-      expandedHeight: 0,
-      floating: false,
-      pinned: true,
-      backgroundColor: AppColors.primaryColor,
-      leading: IconButton(
-        icon: const Icon(Icons.arrow_back, color: AppColors.textDarkColor),
-        onPressed: () => Get.back(),
-      ),
-      title: Text(
-        'restaurant_info'.tr,
-        style: const TextStyle(
-          color: AppColors.textDarkColor,
-          fontSize: 20,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-      centerTitle: true,
-    );
-  }
+  // ═══════════════════════════════════════════════════════════════
+  //  HERO HEADER
+  //  Cover → Logo (centered, overlapping) → Name + Type → Tabs
+  //  Everything inside one white-backed container with smooth curve
+  // ═══════════════════════════════════════════════════════════════
 
-  Widget _buildCoverSection() {
+  Widget _buildHeroHeader(BuildContext context) {
+    final topPad = MediaQuery.of(context).padding.top;
+    const double coverH = 180;
+    const double logoR = 52; // radius
+    const double logoD = logoR * 2; // diameter
+    const double logoOverlap = logoR; // half hangs below cover
+
     return Container(
-      height: 200,
-      width: double.infinity,
       decoration: BoxDecoration(
-        color: AppColors.greyColor,
-        image: _selectedCover != null
-            ? DecorationImage(image: FileImage(_selectedCover!), fit: BoxFit.cover)
-            : _currentCoverUrl != null
-                ? DecorationImage(image: NetworkImage(_currentCoverUrl!), fit: BoxFit.cover)
-                : null,
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.secondaryColor.withOpacity(0.06),
+            blurRadius: 18,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
-      child: Stack(
+      child: Column(
         children: [
-          // Placeholder icon when no cover
-          if (_selectedCover == null && _currentCoverUrl == null)
-            Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.image_outlined,
-                    size: 50,
-                    color: Colors.grey[400],
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'add_cover_photo'.tr,
-                    style: TextStyle(
-                      color: Colors.grey[600],
-                      fontSize: 14,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-          // Edit cover button
-          Positioned(
-            bottom: 16,
-            right: 16,
-            child: Material(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(8),
-              elevation: 2,
-              child: InkWell(
-                onTap: _showCoverPicker,
-                borderRadius: BorderRadius.circular(8),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(Icons.camera_alt, size: 18, color: AppColors.textDarkColor),
-                      const SizedBox(width: 6),
-                      Text(
-                        'edit_cover'.tr,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.textDarkColor,
-                          fontSize: 13,
+          // ── COVER + LOGO STACK ──
+          SizedBox(
+            height: coverH + topPad + logoOverlap + 8,
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                // cover image
+                Positioned(
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  height: coverH + topPad,
+                  child: GestureDetector(
+                    onTap: () => _showImagePicker(isLogo: false),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: AppColors.secondaryColor,
+                        image: _selectedCover != null
+                            ? DecorationImage(
+                                image: FileImage(_selectedCover!),
+                                fit: BoxFit.cover)
+                            : _currentCoverUrl != null
+                                ? DecorationImage(
+                                    image: NetworkImage(_currentCoverUrl!),
+                                    fit: BoxFit.cover)
+                                : null,
+                      ),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            stops: const [0.0, 0.4, 1.0],
+                            colors: [
+                              Colors.black.withOpacity(0.50),
+                              Colors.transparent,
+                              Colors.black.withOpacity(0.40),
+                            ],
+                          ),
                         ),
                       ),
+                    ),
+                  ),
+                ),
+
+                // top bar — back + edit-cover
+                Positioned(
+                  top: topPad + 4,
+                  left: 10,
+                  right: 10,
+                  child: Row(
+                    children: [
+                      _frostedButton(
+                          Icons.arrow_back_rounded, () => Get.back()),
+                      const Spacer(),
+                      _frostedButton(Icons.camera_alt_rounded,
+                          () => _showImagePicker(isLogo: false)),
                     ],
                   ),
                 ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
-  /// Build logo section (overlapping cover)
-  Widget _buildLogoSection() {
-    return Center(
-      child: Stack(
-        clipBehavior: Clip.none,
-        children: [
-          // Logo circle with shadow
-          Container(
-            width: 120,
-            height: 120,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(color: Colors.white, width: 4),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.15),
-                  blurRadius: 15,
-                  offset: const Offset(0, 5),
+                // logo — centred, overlapping
+                Positioned(
+                  top: coverH + topPad - logoR,
+                  left: 0,
+                  right: 0,
+                  child: Center(
+                    child: GestureDetector(
+                      onTap: () => _showImagePicker(isLogo: true),
+                      child: Container(
+                        width: logoD,
+                        height: logoD,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border:
+                              Border.all(color: Colors.white, width: 4),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.secondaryColor
+                                  .withOpacity(0.18),
+                              blurRadius: 20,
+                              spreadRadius: 2,
+                              offset: const Offset(0, 6),
+                            ),
+                          ],
+                        ),
+                        child: Stack(
+                          children: [
+                            CircleAvatar(
+                              radius: logoR,
+                              backgroundColor: const Color(0xFFF4F5F9),
+                              backgroundImage: _selectedLogo != null
+                                  ? FileImage(_selectedLogo!)
+                                      as ImageProvider
+                                  : _currentLogoUrl != null
+                                      ? NetworkImage(_currentLogoUrl!)
+                                          as ImageProvider
+                                      : null,
+                              child: (_selectedLogo == null &&
+                                      _currentLogoUrl == null)
+                                  ? Icon(Icons.restaurant_rounded,
+                                      size: 34,
+                                      color: Colors.grey[350])
+                                  : null,
+                            ),
+                            // camera badge
+                            Positioned(
+                              bottom: 2,
+                              right: 2,
+                              child: Container(
+                                padding: const EdgeInsets.all(6),
+                                decoration: BoxDecoration(
+                                  color: AppColors.primaryColor,
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                      color: Colors.white, width: 2.5),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color:
+                                          Colors.black.withOpacity(0.12),
+                                      blurRadius: 6,
+                                    ),
+                                  ],
+                                ),
+                                child: const Icon(
+                                    Icons.camera_alt_rounded,
+                                    color: AppColors.textDarkColor,
+                                    size: 13),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
               ],
             ),
-            child: CircleAvatar(
-              radius: 58,
-              backgroundColor: AppColors.greyColor,
-              backgroundImage: _selectedLogo != null
-                  ? FileImage(_selectedLogo!) as ImageProvider
-                  : _currentLogoUrl != null
-                      ? NetworkImage(_currentLogoUrl!) as ImageProvider
-                      : null,
-              child: _selectedLogo == null && _currentLogoUrl == null
-                  ? Text(
-                      _businessNameEnController.text.isNotEmpty
-                          ? _businessNameEnController.text[0].toUpperCase()
-                          : '?',
-                      style: const TextStyle(
-                        fontSize: 40,
-                        color: AppColors.textDarkColor,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    )
-                  : null,
-            ),
           ),
 
-          // Edit button (yellow circle with camera icon)
-          Positioned(
-            bottom: 0,
-            right: 0,
-            child: Container(
-              decoration: BoxDecoration(
-                color: AppColors.primaryColor,
-                shape: BoxShape.circle,
-                border: Border.all(color: Colors.white, width: 2),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.2),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
+          // ── RESTAURANT NAME + TYPE ──
+          Padding(
+            padding: const EdgeInsets.fromLTRB(24, 4, 24, 0),
+            child: Column(
+              children: [
+                Text(
+                  _displayName,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 19,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.textDarkColor,
+                    letterSpacing: -0.3,
                   ),
-                ],
-              ),
-              child: Material(
-                color: Colors.transparent,
-                shape: const CircleBorder(),
-                child: InkWell(
-                  onTap: _showLogoPicker,
-                  customBorder: const CircleBorder(),
-                  child: Container(
-                    padding: const EdgeInsets.all(8),
-                    child: const Icon(
-                      Icons.camera_alt,
-                      color: AppColors.textDarkColor,
-                      size: 18,
+                ),
+                if (_selectedBusinessType != null) ...[
+                  const SizedBox(height: 4),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryColor.withOpacity(0.12),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      _getBusinessTypeLabel(_selectedBusinessType!),
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color:
+                            AppColors.secondaryColor.withOpacity(0.75),
+                      ),
                     ),
                   ),
-                ),
-              ),
+                ],
+              ],
             ),
           ),
+
+          const SizedBox(height: 14),
+
+          // ── PILL TAB BAR ──
+          _buildPillTabBar(),
+
+          const SizedBox(height: 2),
         ],
       ),
     );
   }
 
-  Widget _buildBasicInfoSection() {
-    return Container(
-      margin: const EdgeInsets.all(16),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'basic_information'.tr,
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: AppColors.textDarkColor,
-            ),
-          ),
-          const SizedBox(height: 16),
-          _buildTextField(
-            controller: _businessNameEnController,
-            label: 'business_name_en'.tr,
-            hint: 'business_name_en'.tr,
-            icon: Icons.business,
-          ),
-          const SizedBox(height: 12),
-          _buildTextField(
-            controller: _businessNameArController,
-            label: 'business_name_ar'.tr,
-            hint: 'business_name_ar'.tr,
-            icon: Icons.business,
-          ),
-          const SizedBox(height: 12),
-          _buildBusinessTypeDropdown(),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildContactInfoSection() {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'contact_info'.tr,
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: AppColors.textDarkColor,
-            ),
-          ),
-          const SizedBox(height: 16),
-          _buildPhoneField(),
-          const SizedBox(height: 12),
-          _buildTextField(
-            controller: _emailController,
-            label: 'email'.tr,
-            hint: 'email'.tr,
-            icon: Icons.email,
-            keyboardType: TextInputType.emailAddress,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildLocationSection() {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'location'.tr,
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: AppColors.textDarkColor,
-            ),
-          ),
-          const SizedBox(height: 16),
-          _buildTextField(
-            controller: _addressEnController,
-            label: 'address_en'.tr,
-            hint: 'address_en'.tr,
-            icon: Icons.location_on,
-            maxLines: 2,
-          ),
-          const SizedBox(height: 12),
-          _buildTextField(
-            controller: _addressArController,
-            label: 'address_ar'.tr,
-            hint: 'address_ar'.tr,
-            icon: Icons.location_on,
-            maxLines: 2,
-          ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: _buildTextField(
-                  controller: _cityController,
-                  label: 'city'.tr,
-                  hint: 'city'.tr,
-                  icon: Icons.location_city,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _buildTextField(
-                  controller: _areaController,
-                  label: 'area'.tr,
-                  hint: 'area'.tr,
-                  icon: Icons.map,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          // Google Map Location Picker
-          InkWell(
-            onTap: _openLocationPicker,
+  // ── Frosted glass back / camera button ──
+  Widget _frostedButton(IconData icon, VoidCallback onTap) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(12),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: Material(
+          color: Colors.white.withOpacity(0.15),
+          child: InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(12),
             child: Container(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(9),
               decoration: BoxDecoration(
-                color: AppColors.surfaceColor,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: AppColors.greyColor),
+                borderRadius: BorderRadius.circular(12),
+                border:
+                    Border.all(color: Colors.white.withOpacity(0.25)),
+              ),
+              child: Icon(icon, color: Colors.white, size: 21),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  //  PILL TAB BAR
+  //  Horizontally scrollable pills with icon + label
+  // ═══════════════════════════════════════════════════════════════
+
+  Widget _buildPillTabBar() {
+    return SizedBox(
+      height: 42,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        itemCount: _tabs.length,
+        separatorBuilder: (_, __) => const SizedBox(width: 8),
+        itemBuilder: (context, i) {
+          final active = _activeTab == i;
+          return GestureDetector(
+            onTap: () => _tabController.animateTo(i),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 260),
+              curve: Curves.easeInOut,
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
+              decoration: BoxDecoration(
+                color: active
+                    ? AppColors.secondaryColor
+                    : const Color(0xFFF0F1F6),
+                borderRadius: BorderRadius.circular(24),
+                boxShadow: active
+                    ? [
+                        BoxShadow(
+                          color:
+                              AppColors.secondaryColor.withOpacity(0.25),
+                          blurRadius: 10,
+                          offset: const Offset(0, 3),
+                        ),
+                      ]
+                    : [],
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.map, color: AppColors.primaryColor, size: 28),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'select_location_on_map'.tr,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.textDarkColor,
-                          ),
-                        ),
-                        if (_latitude != null && _longitude != null) ...[
-                          const SizedBox(height: 4),
-                          Text(
-                            '${'latitude'.tr}: ${_latitude!.toStringAsFixed(6)}',
-                            style: const TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey,
-                            ),
-                          ),
-                          Text(
-                            '${'longitude'.tr}: ${_longitude!.toStringAsFixed(6)}',
-                            style: const TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey,
-                            ),
-                          ),
-                        ] else ...[
-                          const SizedBox(height: 4),
-                          Text(
-                            'tap_to_select_location'.tr,
-                            style: const TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey,
-                            ),
-                          ),
-                        ],
-                      ],
+                  Icon(
+                    _tabs[i].icon,
+                    size: 16,
+                    color: active
+                        ? AppColors.primaryColor
+                        : Colors.grey[400],
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    _tabs[i].key.tr,
+                    style: TextStyle(
+                      fontSize: 12.5,
+                      fontWeight:
+                          active ? FontWeight.w700 : FontWeight.w500,
+                      color: active ? Colors.white : Colors.grey[500],
                     ),
                   ),
-                  const Icon(Icons.arrow_forward_ios, color: Colors.grey, size: 16),
                 ],
               ),
             ),
-          ),
-        ],
+          );
+        },
       ),
     );
   }
 
-  Widget _buildBusinessDetailsSection() {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'business_details'.tr,
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: AppColors.textDarkColor,
-            ),
-          ),
-          const SizedBox(height: 16),
-          _buildTextField(
-            controller: _descriptionEnController,
-            label: 'description_en'.tr,
-            hint: 'description_en'.tr,
-            icon: Icons.description,
-            maxLines: 3,
-          ),
-          const SizedBox(height: 12),
-          _buildTextField(
-            controller: _descriptionArController,
-            label: 'description_ar'.tr,
-            hint: 'description_ar'.tr,
-            icon: Icons.description,
-            maxLines: 3,
-          ),
-        ],
-      ),
-    );
-  }
+  // ═══════════════════════════════════════════════════════════════
+  //  TAB 1 — BASIC INFO
+  // ═══════════════════════════════════════════════════════════════
 
-
-
-  Widget _buildTextField({
-    required TextEditingController controller,
-    required String label,
-    required String hint,
-    required IconData icon,
-    TextInputType keyboardType = TextInputType.text,
-    int maxLines = 1,
-    String? Function(String?)? validator,
-  }) {
-    return TextFormField(
-      controller: controller,
-      keyboardType: keyboardType,
-      maxLines: maxLines,
-      decoration: InputDecoration(
-        labelText: label,
-        hintText: hint,
-        prefixIcon: Icon(icon, color: AppColors.primaryColor),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: AppColors.greyColor),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: AppColors.greyColor),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: AppColors.primaryColor, width: 2),
-        ),
-      ),
-      validator: validator,
-    );
-  }
-
-  /// Build phone field with country code dropdown
-  Widget _buildPhoneField() {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _buildBasicInfoTab() {
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(16, 20, 16, 24),
       children: [
-        // Country Code (Read-only)
-        SizedBox(
-          width: 90,
-          child: TextFormField(
-            initialValue: _selectedCountryCode,
-            readOnly: true,
-            enabled: false,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              fontSize: 16,
-              color: AppColors.textDarkColor,
-              fontWeight: FontWeight.w500,
-            ),
-            decoration: InputDecoration(
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: const BorderSide(color: AppColors.greyColor),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: const BorderSide(color: AppColors.greyColor),
-              ),
-              disabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: const BorderSide(color: AppColors.greyColor),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: const BorderSide(color: AppColors.primaryColor, width: 2),
-              ),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
-              filled: true,
-              fillColor: AppColors.surfaceColor,
-            ),
-          ),
+        _sectionCard(
+          icon: Icons.storefront_rounded,
+          title: 'basic_information'.tr,
+          children: [
+            _field(
+                controller: _businessNameEnController,
+                label: 'business_name_en'.tr,
+                icon: Icons.badge_outlined),
+            _field(
+                controller: _businessNameArController,
+                label: 'business_name_ar'.tr,
+                icon: Icons.badge_outlined),
+            _buildBusinessTypeDropdown(),
+          ],
         ),
-        const SizedBox(width: 12),
-        // Phone Number TextField
-        Expanded(
-          child: TextFormField(
-            controller: _phoneController,
-            keyboardType: TextInputType.phone,
-            decoration: InputDecoration(
-              labelText: 'phone_number'.tr,
-              hintText: 'enter_phone_number'.tr,
-              prefixIcon: const Icon(Icons.phone, color: AppColors.primaryColor),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: const BorderSide(color: AppColors.greyColor),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: const BorderSide(color: AppColors.greyColor),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: const BorderSide(color: AppColors.primaryColor, width: 2),
-              ),
-              errorBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: const BorderSide(color: Colors.red),
-              ),
-              focusedErrorBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: const BorderSide(color: Colors.red, width: 2),
-              ),
-            ),
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return null; // Optional field
-              }
-              // Remove any spaces or special characters
-              final cleanValue = value.replaceAll(RegExp(r'[^\d]'), '');
-              // Must be exactly 9 digits for Saudi Arabia
-              if (cleanValue.length != 9) {
-                return 'phone_validation_error'.tr;
-              }
-              return null;
-            },
-          ),
+        const SizedBox(height: 14),
+        _sectionCard(
+          icon: Icons.article_rounded,
+          title: 'business_details'.tr,
+          children: [
+            _field(
+                controller: _descriptionEnController,
+                label: 'description_en'.tr,
+                icon: Icons.notes_rounded,
+                maxLines: 3),
+            _field(
+                controller: _descriptionArController,
+                label: 'description_ar'.tr,
+                icon: Icons.notes_rounded,
+                maxLines: 3),
+          ],
         ),
       ],
     );
   }
 
+  // ═══════════════════════════════════════════════════════════════
+  //  TAB 2 — CONTACT
+  // ═══════════════════════════════════════════════════════════════
+
+  Widget _buildContactInfoTab() {
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(16, 20, 16, 24),
+      children: [
+        _sectionCard(
+          icon: Icons.contact_phone_rounded,
+          title: 'contact_info'.tr,
+          children: [
+            _buildPhoneField(),
+            _field(
+                controller: _emailController,
+                label: 'email'.tr,
+                icon: Icons.email_outlined,
+                keyboard: TextInputType.emailAddress),
+          ],
+        ),
+      ],
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  //  TAB 3 — LOCATION
+  // ═══════════════════════════════════════════════════════════════
+
+  Widget _buildLocationTab() {
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(16, 20, 16, 24),
+      children: [
+        _sectionCard(
+          icon: Icons.place_rounded,
+          title: 'location'.tr,
+          children: [
+            _field(
+                controller: _addressEnController,
+                label: 'address_en'.tr,
+                icon: Icons.pin_drop_outlined,
+                maxLines: 2),
+            _field(
+                controller: _addressArController,
+                label: 'address_ar'.tr,
+                icon: Icons.pin_drop_outlined,
+                maxLines: 2),
+            Row(
+              children: [
+                Expanded(
+                    child: _field(
+                        controller: _cityController,
+                        label: 'city'.tr,
+                        icon: Icons.location_city_outlined,
+                        bottomSpacing: false)),
+                const SizedBox(width: 10),
+                Expanded(
+                    child: _field(
+                        controller: _areaController,
+                        label: 'area'.tr,
+                        icon: Icons.map_outlined,
+                        bottomSpacing: false)),
+              ],
+            ),
+            const SizedBox(height: 14),
+            _buildMapPickerTile(),
+          ],
+        ),
+      ],
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  //  TAB 4 — FEES & PRICING
+  // ═══════════════════════════════════════════════════════════════
+
+  Widget _buildFeesTab() {
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(16, 20, 16, 24),
+      children: [
+        _sectionCard(
+          icon: Icons.payments_rounded,
+          title: 'fees_and_pricing'.tr,
+          children: [
+            _feeField(
+                controller: _deliveryFeeController,
+                label: 'delivery_fee'.tr,
+                hint: 'enter_delivery_fee'.tr,
+                icon: Icons.delivery_dining_rounded),
+            _feeField(
+                controller: _serviceFeeController,
+                label: 'service_fee'.tr,
+                hint: 'enter_service_fee'.tr,
+                icon: Icons.miscellaneous_services_rounded),
+            // Tip banner
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    AppColors.primaryColor.withOpacity(0.06),
+                    AppColors.primaryColor.withOpacity(0.02),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(
+                    color: AppColors.primaryColor.withOpacity(0.12)),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    margin: const EdgeInsets.only(top: 2),
+                    padding: const EdgeInsets.all(5),
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryColor.withOpacity(0.18),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(Icons.lightbulb_outline_rounded,
+                        size: 14,
+                        color:
+                            AppColors.secondaryColor.withOpacity(0.7)),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      Get.locale?.languageCode == 'ar'
+                          ? 'هذه الرسوم ستظهر للعميل عند الطلب من متجرك. اتركها فارغة لعدم تطبيق رسوم.'
+                          : 'These fees will be shown to customers when ordering. Leave empty for no fees.',
+                      style: TextStyle(
+                        fontSize: 12.5,
+                        color:
+                            AppColors.secondaryColor.withOpacity(0.60),
+                        height: 1.55,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  //  SECTION CARD
+  // ═══════════════════════════════════════════════════════════════
+
+  Widget _sectionCard({
+    required IconData icon,
+    required String title,
+    required List<Widget> children,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.secondaryColor.withOpacity(0.04),
+            blurRadius: 24,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header row
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        AppColors.secondaryColor.withOpacity(0.10),
+                        AppColors.primaryColor.withOpacity(0.10),
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(icon,
+                      size: 19, color: AppColors.secondaryColor),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textDarkColor,
+                      letterSpacing: -0.2,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // Divider
+          Container(
+            margin: const EdgeInsets.fromLTRB(20, 16, 20, 4),
+            height: 1,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(colors: [
+                Colors.transparent,
+                Colors.grey.withOpacity(0.12),
+                Colors.transparent,
+              ]),
+            ),
+          ),
+          // Children
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 22),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: children,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  //  TEXT FIELD
+  // ═══════════════════════════════════════════════════════════════
+
+  Widget _field({
+    required TextEditingController controller,
+    required String label,
+    required IconData icon,
+    TextInputType keyboard = TextInputType.text,
+    int maxLines = 1,
+    String? Function(String?)? validator,
+    bool bottomSpacing = true,
+  }) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: bottomSpacing ? 12 : 0),
+      child: TextFormField(
+        controller: controller,
+        keyboardType: keyboard,
+        maxLines: maxLines,
+        style: const TextStyle(
+            fontSize: 14.5, color: AppColors.textDarkColor),
+        decoration: _inputDecor(label: label, icon: icon),
+        validator: validator,
+      ),
+    );
+  }
+
+  InputDecoration _inputDecor({
+    required String label,
+    required IconData icon,
+    String? hint,
+    String? suffix,
+  }) {
+    return InputDecoration(
+      labelText: label,
+      hintText: hint,
+      suffixText: suffix,
+      labelStyle: TextStyle(color: Colors.grey[450], fontSize: 13.5),
+      hintStyle: TextStyle(color: Colors.grey[350], fontSize: 13.5),
+      suffixStyle: TextStyle(
+        color: AppColors.secondaryColor.withOpacity(0.5),
+        fontSize: 12.5,
+        fontWeight: FontWeight.w600,
+      ),
+      prefixIcon: Padding(
+        padding: const EdgeInsets.only(left: 14, right: 10),
+        child: Icon(icon,
+            color: AppColors.secondaryColor.withOpacity(0.5),
+            size: 19),
+      ),
+      prefixIconConstraints: const BoxConstraints(minWidth: 46),
+      filled: true,
+      fillColor: const Color(0xFFF7F8FC),
+      contentPadding:
+          const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
+      border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: BorderSide.none),
+      enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: BorderSide.none),
+      focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide:
+              const BorderSide(color: AppColors.primaryColor, width: 2)),
+      errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide:
+              const BorderSide(color: Colors.redAccent, width: 1.5)),
+      focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide:
+              const BorderSide(color: Colors.redAccent, width: 2)),
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  //  FEE FIELD
+  // ═══════════════════════════════════════════════════════════════
+
+  Widget _feeField({
+    required TextEditingController controller,
+    required String label,
+    required String hint,
+    required IconData icon,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: TextFormField(
+        controller: controller,
+        keyboardType:
+            const TextInputType.numberWithOptions(decimal: true),
+        inputFormatters: [
+          FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}'))
+        ],
+        style: const TextStyle(
+          fontSize: 14.5,
+          color: AppColors.textDarkColor,
+          fontWeight: FontWeight.w600,
+        ),
+        decoration:
+            _inputDecor(label: label, hint: hint, icon: icon, suffix: 'sar'.tr),
+      ),
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  //  PHONE FIELD
+  // ═══════════════════════════════════════════════════════════════
+
+  Widget _buildPhoneField() {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 80,
+            height: 52,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: const Color(0xFFF7F8FC),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: const Text(
+              '+966',
+              style: TextStyle(
+                fontSize: 14.5,
+                color: AppColors.textDarkColor,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: TextFormField(
+              controller: _phoneController,
+              keyboardType: TextInputType.phone,
+              style: const TextStyle(
+                  fontSize: 14.5, color: AppColors.textDarkColor),
+              decoration: _inputDecor(
+                label: 'phone_number'.tr,
+                icon: Icons.phone_outlined,
+                hint: 'enter_phone_number'.tr,
+              ),
+              validator: (v) {
+                if (v == null || v.isEmpty) return null;
+                if (v.replaceAll(RegExp(r'[^\d]'), '').length != 9) {
+                  return 'phone_validation_error'.tr;
+                }
+                return null;
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  //  BUSINESS TYPE DROPDOWN
+  // ═══════════════════════════════════════════════════════════════
+
   Widget _buildBusinessTypeDropdown() {
     return DropdownButtonFormField<String>(
       value: _selectedBusinessType,
-      decoration: InputDecoration(
-        labelText: 'business_type'.tr,
-        prefixIcon: const Icon(Icons.category, color: AppColors.primaryColor),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: AppColors.greyColor),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: AppColors.greyColor),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: AppColors.primaryColor, width: 2),
-        ),
-      ),
-      items: _businessTypes.map((type) {
-        return DropdownMenuItem<String>(
-          value: type,
-          child: Text(_getBusinessTypeLabel(type)),
-        );
-      }).toList(),
-      onChanged: (value) {
-        setState(() => _selectedBusinessType = value);
-      },
+      isExpanded: true,
+      style: const TextStyle(
+          fontSize: 14.5, color: AppColors.textDarkColor),
+      decoration:
+          _inputDecor(label: 'business_type'.tr, icon: Icons.category_outlined),
+      items: _businessTypes
+          .map((type) => DropdownMenuItem(
+              value: type, child: Text(_getBusinessTypeLabel(type))))
+          .toList(),
+      onChanged: (v) => setState(() => _selectedBusinessType = v),
     );
   }
 
   String _getBusinessTypeLabel(String type) {
     final labels = {
-      'restaurant': Get.locale?.languageCode == 'ar' ? 'مطعم' : 'Restaurant',
+      'restaurant':
+          Get.locale?.languageCode == 'ar' ? 'مطعم' : 'Restaurant',
       'cafe': Get.locale?.languageCode == 'ar' ? 'مقهى' : 'Cafe',
       'bakery': Get.locale?.languageCode == 'ar' ? 'مخبز' : 'Bakery',
-      'fastfood': Get.locale?.languageCode == 'ar' ? 'وجبات سريعة' : 'Fast Food',
+      'fastfood':
+          Get.locale?.languageCode == 'ar' ? 'وجبات سريعة' : 'Fast Food',
       'pizza': Get.locale?.languageCode == 'ar' ? 'بيتزا' : 'Pizza',
-      'seafood': Get.locale?.languageCode == 'ar' ? 'مأكولات بحرية' : 'Seafood',
-      'dessert': Get.locale?.languageCode == 'ar' ? 'حلويات' : 'Dessert',
+      'seafood':
+          Get.locale?.languageCode == 'ar' ? 'مأكولات بحرية' : 'Seafood',
+      'dessert':
+          Get.locale?.languageCode == 'ar' ? 'حلويات' : 'Dessert',
       'juice': Get.locale?.languageCode == 'ar' ? 'عصائر' : 'Juice',
       'grocery': Get.locale?.languageCode == 'ar' ? 'بقالة' : 'Grocery',
-      'pharmacy': Get.locale?.languageCode == 'ar' ? 'صيدلية' : 'Pharmacy',
+      'pharmacy':
+          Get.locale?.languageCode == 'ar' ? 'صيدلية' : 'Pharmacy',
     };
     return labels[type] ?? type;
   }
 
-  Widget _buildSaveButton() {
-    return Positioned(
-      bottom: 0,
-      left: 0,
-      right: 0,
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 10,
-              offset: const Offset(0, -2),
-            ),
-          ],
+  // ═══════════════════════════════════════════════════════════════
+  //  MAP PICKER TILE
+  // ═══════════════════════════════════════════════════════════════
+
+  Widget _buildMapPickerTile() {
+    final bool has = _latitude != null && _longitude != null;
+    return Material(
+      color: has ? const Color(0xFFF0FAF4) : const Color(0xFFF7F8FC),
+      borderRadius: BorderRadius.circular(14),
+      child: InkWell(
+        onTap: _openLocationPicker,
+        borderRadius: BorderRadius.circular(14),
+        child: Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+                color: has
+                    ? Colors.green.withOpacity(0.25)
+                    : Colors.transparent),
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: has
+                      ? Colors.green.withOpacity(0.12)
+                      : AppColors.primaryColor.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  has
+                      ? Icons.check_circle_rounded
+                      : Icons.add_location_alt_rounded,
+                  color: has ? Colors.green : AppColors.secondaryColor,
+                  size: 21,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'select_location_on_map'.tr,
+                      style: TextStyle(
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.w600,
+                        color: has
+                            ? Colors.green[700]
+                            : AppColors.textDarkColor,
+                      ),
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      has
+                          ? '${_latitude!.toStringAsFixed(5)}, ${_longitude!.toStringAsFixed(5)}'
+                          : 'tap_to_select_location'.tr,
+                      style: TextStyle(
+                          fontSize: 11.5, color: Colors.grey[500]),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(Icons.chevron_right_rounded,
+                  color: Colors.grey[400], size: 22),
+            ],
+          ),
         ),
+      ),
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  //  SAVE BUTTON
+  // ═══════════════════════════════════════════════════════════════
+
+  Widget _buildSaveButton() {
+    final bot = MediaQuery.of(context).padding.bottom;
+    return Container(
+      padding: EdgeInsets.fromLTRB(20, 14, 20, bot + 14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 14,
+            offset: const Offset(0, -4),
+          ),
+        ],
+      ),
+      child: SizedBox(
+        width: double.infinity,
+        height: 56,
         child: ElevatedButton(
           onPressed: _isLoading ? null : _saveChanges,
           style: ElevatedButton.styleFrom(
             backgroundColor: AppColors.primaryColor,
             foregroundColor: AppColors.textDarkColor,
-            padding: const EdgeInsets.symmetric(vertical: 16),
+            elevation: 0,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
+                borderRadius: BorderRadius.circular(16)),
           ),
           child: _isLoading
               ? const SizedBox(
-                  height: 20,
-                  width: 20,
+                  height: 22,
+                  width: 22,
                   child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation<Color>(AppColors.textDarkColor),
+                    strokeWidth: 2.5,
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                        AppColors.textDarkColor),
                   ),
                 )
               : Text(
@@ -1049,11 +1360,22 @@ class _EditRestaurantInfoScreenState extends State<EditRestaurantInfoScreen> {
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
+                    letterSpacing: 0.3,
                   ),
                 ),
         ),
       ),
     );
   }
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  TAB ITEM MODEL
+// ═══════════════════════════════════════════════════════════════
+
+class _TabItem {
+  final String key;
+  final IconData icon;
+  const _TabItem({required this.key, required this.icon});
 }
 

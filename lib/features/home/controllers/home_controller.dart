@@ -233,25 +233,49 @@ class HomeController extends GetxController {
       return 'https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=400&h=300&fit=crop'; // fallback image
     }
 
+    // Parse rating
+    double rating = 0;
+    int reviewCount = 0;
+    if (backendData['rating'] is Map) {
+      rating = double.tryParse(backendData['rating']['average']?.toString() ?? '0') ?? 0;
+      reviewCount = backendData['rating']['count'] ?? backendData['reviewCount'] ?? 0;
+    } else {
+      rating = double.tryParse(backendData['rating']?.toString() ?? '0') ?? 0;
+      reviewCount = backendData['reviewCount'] ?? 0;
+    }
+
+    // Parse prices
+    final double price = double.tryParse(backendData['price']?.toString() ?? '0') ?? 0.0;
+    final double? originalPrice = backendData['originalPrice'] != null
+        ? double.tryParse(backendData['originalPrice'].toString())
+        : null;
+    final bool hasDiscount = backendData['has_discount'] == true ||
+        (originalPrice != null && originalPrice > price);
+
     final converted = {
       'id': backendData['id'],
       'name': getName(backendData['name']),
-      'description': backendData['description'] ?? '',
-      'price': double.tryParse(backendData['price']?.toString() ?? '0') ?? 0.0,
-      'originalPrice':
-          double.tryParse(backendData['originalPrice']?.toString() ?? '0'),
+      'description': getName(backendData['description']),
+      'price': price,
+      'originalPrice': originalPrice,
+      'has_discount': hasDiscount,
+      'discount_percentage': double.tryParse(backendData['discount_percentage']?.toString() ?? '0') ?? 0.0,
+      'discount_type': backendData['discount_type'] ?? 'percentage',
       'primary_image': getImageUrl(backendData['primary_image']),
-      'images':
-          backendData['images'] ?? [getImageUrl(backendData['primary_image'])],
-      'rating': backendData['rating'] is Map
-          ? double.tryParse(
-                  backendData['rating']['average']?.toString() ?? '4.5') ??
-              4.5
-          : double.tryParse(backendData['rating']?.toString() ?? '4.5') ?? 4.5,
-      'reviewCount': backendData['reviewCount'] ?? 0,
+      'images': backendData['images'] ?? [getImageUrl(backendData['primary_image'])],
+      'rating': rating,
+      'reviewCount': reviewCount,
       'productCode': backendData['productCode'] ?? 'PRD-${backendData['id']}',
-      'categoryId': backendData['category_id'], // إضافة categoryId للفلترة
+      'categoryId': backendData['category_id'],
       'isFavorite': false,
+      // Dietary info
+      'is_vegetarian': backendData['is_vegetarian'] == true,
+      'is_vegan': backendData['is_vegan'] == true,
+      'is_gluten_free': backendData['is_gluten_free'] == true,
+      'is_spicy': backendData['is_spicy'] == true,
+      // Extra
+      'preparation_time': backendData['preparation_time'],
+      'calories': backendData['calories'],
     };
     
     print('   ✅ Converted Product ID: ${converted['id']}');

@@ -40,4 +40,21 @@ class ApiResponse<T> {
 
   bool get isSuccess => success;
   bool get hasErrors => errors != null && errors!.isNotEmpty;
+
+  /// Extract all validation error messages as a single string
+  /// e.g. {email: ["Email taken"], name: ["Required"]} → "Email taken\nRequired"
+  String get validationErrorsString {
+    if (errors == null || errors!.isEmpty) return message;
+    final List<String> allErrors = [];
+    for (final entry in errors!.entries) {
+      if (entry.value is List) {
+        for (final msg in entry.value) {
+          allErrors.add(msg.toString());
+        }
+      } else {
+        allErrors.add(entry.value.toString());
+      }
+    }
+    return allErrors.isNotEmpty ? allErrors.join('\n') : message;
+  }
 }

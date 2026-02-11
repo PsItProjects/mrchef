@@ -307,7 +307,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
         children: [
           Row(
             children: [
-              Icon(Icons.attach_money, color: AppColors.primaryColor, size: 24),
+              Icon(Icons.payments_rounded, color: AppColors.primaryColor, size: 24),
               const SizedBox(width: 8),
               Text(
                 'pricing'.tr,
@@ -642,9 +642,9 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                               ),
                             ),
                           ),
-                          if (option.additionalPrice > 0)
+                          if (option.priceModifier > 0)
                             Text(
-                              '+\$${option.additionalPrice.toStringAsFixed(2)}',
+                              '+${option.priceModifier.toStringAsFixed(2)} SAR',
                               style: TextStyle(
                                 fontSize: 13,
                                 color: AppColors.primaryColor,

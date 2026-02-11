@@ -10,6 +10,10 @@ class EditProfileAvatar extends GetView<EditProfileController> {
 
   @override
   Widget build(BuildContext context) {
+    // Ensure ProfileController exists before using it
+    if (!Get.isRegistered<ProfileController>()) {
+      Get.put(ProfileController());
+    }
     final profileController = Get.find<ProfileController>();
 
     return Column(

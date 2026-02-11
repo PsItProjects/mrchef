@@ -55,7 +55,7 @@ class _SearchResultsListState extends State<SearchResultsList> {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2,
-          childAspectRatio: widget.searchType == 'restaurants' ? 0.85 : 0.68,
+          childAspectRatio: widget.searchType == 'restaurants' ? 0.85 : 0.72,
           crossAxisSpacing: 12,
           mainAxisSpacing: 16,
         ),

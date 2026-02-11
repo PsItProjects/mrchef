@@ -139,6 +139,7 @@ class TranslationHelper {
     'my_reports_desc': 'View and track your submitted reports',
     'no_reports': 'No reports found',
     'no_tickets': 'No support tickets found',
+    'no_messages': 'No messages',
     'settings': 'Settings',
   };
 
@@ -278,6 +279,7 @@ class TranslationHelper {
     'my_reports_desc': 'عرض ومتابعة البلاغات المقدمة',
     'no_reports': 'لا توجد بلاغات',
     'no_tickets': 'لا توجد تذاكر دعم',
+    'no_messages': 'لا توجد رسائل',
     'settings': 'الإعدادات',
   };
 

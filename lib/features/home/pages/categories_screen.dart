@@ -73,7 +73,7 @@ class CategoriesScreen extends GetView<CategoriesController> {
                               crossAxisCount: 2,
                               crossAxisSpacing: 16,
                               mainAxisSpacing: 16,
-                              childAspectRatio: 182 / 223,
+                              childAspectRatio: 0.72,
                             ),
                             delegate: SliverChildBuilderDelegate(
                               (context, index) {
@@ -82,8 +82,11 @@ class CategoriesScreen extends GetView<CategoriesController> {
                                   product: {
                                     'id': product.id,
                                     'name': product.name,
+                                    'description': product.description,
                                     'price': product.price,
                                     'originalPrice': product.originalPrice,
+                                    'has_discount': product.hasDiscount,
+                                    'discount_percentage': product.discountPercentage,
                                     'primary_image': product.image,
                                     'rating': product.rating,
                                     'reviewCount': product.reviewCount,

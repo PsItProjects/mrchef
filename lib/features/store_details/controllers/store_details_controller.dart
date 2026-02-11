@@ -227,8 +227,18 @@ class StoreDetailsController extends GetxController {
     storeRating.value = (rawData['average_rating'] ?? 4.5).toDouble();
     phone.value = rawData['phone']?.toString() ?? '';
     email.value = rawData['email']?.toString() ?? '';
-    deliveryFee.value = (rawData['delivery_fee'] ?? 0).toDouble();
-    minimumOrder.value = (rawData['minimum_order'] ?? 0).toDouble();
+    
+    // Parse numeric values (handles both String and num from API)
+    final deliveryFeeValue = rawData['delivery_fee'];
+    deliveryFee.value = deliveryFeeValue is num 
+        ? deliveryFeeValue.toDouble() 
+        : double.tryParse(deliveryFeeValue?.toString() ?? '0') ?? 0.0;
+    
+    final minimumOrderValue = rawData['minimum_order'];
+    minimumOrder.value = minimumOrderValue is num 
+        ? minimumOrderValue.toDouble() 
+        : double.tryParse(minimumOrderValue?.toString() ?? '0') ?? 0.0;
+    
     preparationTime.value = int.tryParse(rawData['preparation_time']?.toString() ?? '30') ?? 30;
 
     // Parse address

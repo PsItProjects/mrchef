@@ -12,6 +12,7 @@ class MerchantProductModel {
   final int? categoryId;
   final String? categoryName;
   final double basePrice;
+  final String discountType;
   final double? discountPercentage;
   final double? discountedPrice;
   final bool isAvailable;
@@ -44,6 +45,7 @@ class MerchantProductModel {
     this.categoryId,
     this.categoryName,
     required this.basePrice,
+    this.discountType = 'percentage',
     this.discountPercentage,
     this.discountedPrice,
     required this.isAvailable,
@@ -81,12 +83,29 @@ class MerchantProductModel {
 
   /// Get effective price (discounted or base)
   double get effectivePrice {
+    if (discountType == 'fixed' && discountedPrice != null && discountedPrice! > 0) {
+      return discountedPrice!;
+    }
+    if (discountType == 'percentage' && discountPercentage != null && discountPercentage! > 0) {
+      return basePrice - (basePrice * discountPercentage! / 100);
+    }
     return discountedPrice ?? basePrice;
   }
 
   /// Check if product has discount
   bool get hasDiscount {
+    if (discountType == 'fixed') {
+      return discountedPrice != null && discountedPrice! > 0 && discountedPrice! < basePrice;
+    }
     return discountPercentage != null && discountPercentage! > 0;
+  }
+
+  /// Get calculated discount percentage (works for both types)
+  double get calculatedDiscountPercentage {
+    if (discountType == 'fixed' && discountedPrice != null && basePrice > 0) {
+      return ((basePrice - discountedPrice!) / basePrice) * 100;
+    }
+    return discountPercentage ?? 0;
   }
 
   /// Factory method to create from JSON
@@ -164,6 +183,7 @@ class MerchantProductModel {
       categoryId: json['internal_category_id'] ?? json['category_id'],
       categoryName: _extractCategoryName(json),
       basePrice: basePrice,
+      discountType: json['discount_type'] ?? 'percentage',
       discountPercentage: _parseDouble(json['discount_percentage']),
       discountedPrice: discountPrice,
       isAvailable: isAvailable,
@@ -197,6 +217,7 @@ class MerchantProductModel {
       'description': {'en': descriptionEn, 'ar': descriptionAr},
       'internal_category_id': categoryId,
       'base_price': basePrice,
+      'discount_type': discountType,
       'discount_percentage': discountPercentage,
       'discounted_price': discountedPrice,
       'is_available': isAvailable,
@@ -246,6 +267,11 @@ class MerchantProductModel {
   static List<String>? _parseStringList(dynamic value) {
     if (value == null) return null;
     if (value is List) return value.map((e) => e.toString()).toList();
+    // API returns ingredients as {en: [...], ar: [...], current: [...]}
+    if (value is Map) {
+      final current = value['current'] ?? value['en'];
+      if (current is List) return current.map((e) => e.toString()).toList();
+    }
     return null;
   }
 
@@ -314,6 +340,7 @@ class MerchantProductModel {
     int? categoryId,
     String? categoryName,
     double? basePrice,
+    String? discountType,
     double? discountPercentage,
     double? discountedPrice,
     bool? isAvailable,
@@ -346,6 +373,7 @@ class MerchantProductModel {
       categoryId: categoryId ?? this.categoryId,
       categoryName: categoryName ?? this.categoryName,
       basePrice: basePrice ?? this.basePrice,
+      discountType: discountType ?? this.discountType,
       discountPercentage: discountPercentage ?? this.discountPercentage,
       discountedPrice: discountedPrice ?? this.discountedPrice,
       isAvailable: isAvailable ?? this.isAvailable,

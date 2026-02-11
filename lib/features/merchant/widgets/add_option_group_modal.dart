@@ -530,7 +530,7 @@ class _AddOptionGroupModalState extends State<AddOptionGroupModal> {
           Row(
             children: [
               Icon(
-                Icons.attach_money,
+                Icons.payments_rounded,
                 size: 18,
                 color: AppColors.textMediumColor,
               ),
@@ -545,6 +545,7 @@ class _AddOptionGroupModalState extends State<AddOptionGroupModal> {
                   decoration: InputDecoration(
                     labelText: 'price_modifier'.tr,
                     hintText: '0.00',
+                    suffixText: 'SAR',
                     helperText: 'price_modifier_hint'.tr,
                     helperMaxLines: 2,
                     border: OutlineInputBorder(

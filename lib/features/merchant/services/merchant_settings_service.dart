@@ -501,6 +501,14 @@ class RestaurantInfo {
   });
   
   factory RestaurantInfo.fromJson(Map<String, dynamic> json) {
+    // Helper to safely parse numeric values (handles both String and num)
+    double? parseDouble(dynamic value) {
+      if (value == null) return null;
+      if (value is num) return value.toDouble();
+      if (value is String) return double.tryParse(value);
+      return null;
+    }
+
     // Handle both direct string values and JSON objects for names
     String? nameEn, nameAr, businessNameEn, businessNameAr, descriptionEn, descriptionAr;
 
@@ -579,8 +587,8 @@ class RestaurantInfo {
       email: json['email'],
       city: json['city'],
       area: json['area'],
-      deliveryFee: json['delivery_fee']?.toDouble(),
-      minimumOrder: json['minimum_order']?.toDouble(),
+      deliveryFee: parseDouble(json['delivery_fee']),
+      minimumOrder: parseDouble(json['minimum_order']),
       deliveryRadius: json['delivery_radius'],
       preparationTime: json['preparation_time'],
       businessHours: businessHours,

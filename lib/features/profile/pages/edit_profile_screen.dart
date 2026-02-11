@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/features/profile/controllers/edit_profile_controller.dart';
+import 'package:mrsheaf/features/profile/controllers/profile_controller.dart';
 import 'package:mrsheaf/features/profile/widgets/edit_profile_avatar.dart';
 import 'package:mrsheaf/features/profile/widgets/edit_profile_form.dart';
 
@@ -20,6 +21,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   @override
   void initState() {
     super.initState();
+    // Ensure ProfileController is registered (needed by avatar & save)
+    if (!Get.isRegistered<ProfileController>()) {
+      Get.put(ProfileController());
+    }
     controller = Get.put(EditProfileController());
   }
 
