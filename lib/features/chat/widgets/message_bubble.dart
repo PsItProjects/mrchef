@@ -1,146 +1,215 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/features/chat/models/conversation_model.dart';
 import 'package:mrsheaf/features/chat/widgets/message_reply_preview.dart';
 import 'package:intl/intl.dart' as intl;
 
+/// WhatsApp / Messenger–style message bubble with clear visual distinction
+/// between customer (right, colored) and merchant (left, white) messages.
 class MessageBubble extends StatelessWidget {
   final MessageModel message;
   final Function(int messageId)? onReplyTap;
+  final String? merchantName;
+
+  // Customer bubble colour palette
+  static const _customerBubbleColor = Color(0xFFDCF8C6); // WhatsApp green-ish
+  static const _merchantBubbleColor = Colors.white;
 
   const MessageBubble({
     super.key,
     required this.message,
     this.onReplyTap,
+    this.merchantName,
   });
 
   @override
   Widget build(BuildContext context) {
     final isFromCustomer = message.isFromCustomer;
-    final isSystemMessage = message.senderType == 'system';
-    final isArabic = Get.locale?.languageCode == 'ar';
+    final isSystem = message.senderType == 'system';
 
-    // System messages (order separators) - centered with special styling
-    if (isSystemMessage) {
-      return Padding(
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        child: Row(
-          children: [
-            Expanded(
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      AppColors.primaryColor.withOpacity(0.1),
-                      AppColors.primaryColor.withOpacity(0.05),
-                      AppColors.primaryColor.withOpacity(0.1),
-                    ],
-                  ),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(
-                    color: AppColors.primaryColor.withOpacity(0.3),
-                    width: 1,
-                  ),
-                ),
-                child: Text(
-                  message.message,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.primaryColor,
-                    letterSpacing: 0.5,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      );
-    }
+    if (isSystem) return _buildSystemBubble();
 
-    // Regular messages (customer/merchant)
+    final bubbleColor =
+        isFromCustomer ? _customerBubbleColor : _merchantBubbleColor;
+
+    // Tail direction depends on sender
+    final borderRadius = isFromCustomer
+        ? const BorderRadius.only(
+            topLeft: Radius.circular(18),
+            topRight: Radius.circular(18),
+            bottomLeft: Radius.circular(18),
+            bottomRight: Radius.circular(4),
+          )
+        : const BorderRadius.only(
+            topLeft: Radius.circular(4),
+            topRight: Radius.circular(18),
+            bottomLeft: Radius.circular(18),
+            bottomRight: Radius.circular(18),
+          );
+
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.only(bottom: 4),
       child: Row(
         mainAxisAlignment:
             isFromCustomer ? MainAxisAlignment.end : MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          // Message bubble
-          Container(
-            constraints: BoxConstraints(
-              maxWidth: MediaQuery.of(context).size.width * 0.7,
-            ),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: BoxDecoration(
-              color: isFromCustomer
-                  ? AppColors.primaryColor
-                  : Colors.white,
-              borderRadius: BorderRadius.only(
-                topLeft: const Radius.circular(16),
-                topRight: const Radius.circular(16),
-                bottomLeft: isFromCustomer
-                    ? const Radius.circular(16)
-                    : const Radius.circular(4),
-                bottomRight: isFromCustomer
-                    ? const Radius.circular(4)
-                    : const Radius.circular(16),
+          // Merchant avatar (left side)
+          if (!isFromCustomer) ...[
+            _merchantAvatar(),
+            const SizedBox(width: 6),
+          ],
+
+          // Bubble
+          Flexible(
+            child: Container(
+              constraints: BoxConstraints(
+                maxWidth: MediaQuery.of(context).size.width * 0.82,
               ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
-                  blurRadius: 4,
-                  offset: const Offset(0, 2),
+              margin: EdgeInsets.only(
+                left: isFromCustomer ? 16 : 0,
+                right: isFromCustomer ? 0 : 16,
+              ),
+              decoration: BoxDecoration(
+                color: bubbleColor,
+                borderRadius: borderRadius,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.06),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: ClipRRect(
+                borderRadius: borderRadius,
+                child: _buildBubbleContent(context, isFromCustomer),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ══════════════════════════════════════════════════════════
+  //  System message (centered pill)
+  // ══════════════════════════════════════════════════════════
+  Widget _buildSystemBubble() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      child: Center(
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          decoration: BoxDecoration(
+            color: const Color(0xFFE2DEDE).withValues(alpha: 0.6),
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Text(
+            message.message,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+              color: Color(0xFF6B6B6B),
+              height: 1.3,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ══════════════════════════════════════════════════════════
+  //  Bubble inner content
+  // ══════════════════════════════════════════════════════════
+  Widget _buildBubbleContent(BuildContext context, bool isFromCustomer) {
+    final hasImage =
+        message.messageType == 'image' && message.attachments != null;
+    final hasText = message.message.isNotEmpty;
+
+    return IntrinsicWidth(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Merchant name label
+          if (!isFromCustomer && merchantName != null && merchantName!.isNotEmpty)
+            Container(
+              padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
+              child: Text(
+                merchantName!,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.secondaryColor,
                 ),
-              ],
+              ),
+            ),
+
+          // Reply preview
+          if (message.repliedToMessage != null)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(8, 6, 8, 0),
+              child: MessageReplyPreview(
+                repliedMessage: message.repliedToMessage!,
+                onTap: () {
+                  if (onReplyTap != null &&
+                      message.repliedToMessageId != null) {
+                    onReplyTap!(message.repliedToMessageId!);
+                  }
+                },
+              ),
+            ),
+
+          // Image
+          if (hasImage) _buildImageContent(context, isFromCustomer),
+
+          // Text + time row
+          Padding(
+            padding: EdgeInsets.fromLTRB(
+              12,
+              hasImage ? 4 : (message.repliedToMessage != null ? 4 : 8),
+              12,
+              8,
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Reply preview (if this message is replying to another)
-                if (message.repliedToMessage != null) ...[
-                  MessageReplyPreview(
-                    repliedMessage: message.repliedToMessage!,
-                    onTap: () {
-                      if (onReplyTap != null && message.repliedToMessageId != null) {
-                        onReplyTap!(message.repliedToMessageId!);
-                      }
-                    },
-                  ),
-                  const SizedBox(height: 8),
-                ],
-
-                // Image attachment (if message type is 'image')
-                if (message.messageType == 'image' && message.attachments != null) ...[
-                  _buildImageContent(context),
-                  if (message.message.isNotEmpty) const SizedBox(height: 8),
-                ],
-
-                // Message text (if not empty)
-                if (message.message.isNotEmpty)
+                if (hasText)
                   Text(
                     message.message,
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: isFromCustomer
-                          ? const Color(0xFF262626)
-                          : const Color(0xFF262626),
+                    style: const TextStyle(
+                      fontSize: 15,
+                      color: Color(0xFF1B1B1B),
+                      height: 1.35,
                     ),
                   ),
-
-                const SizedBox(height: 4),
-
-                // Time
-                Text(
-                  _formatTime(message.createdAt),
-                  style: TextStyle(
-                    fontSize: 10,
-                    color: isFromCustomer
-                        ? const Color(0xFF262626).withOpacity(0.6)
-                        : Colors.grey[500],
-                  ),
+                const SizedBox(height: 3),
+                // Time + read receipt aligned bottom-right
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    const Spacer(),
+                    Text(
+                      _formatTime(message.createdAt),
+                      style: TextStyle(
+                        fontSize: 10.5,
+                        color: Colors.grey.shade500,
+                      ),
+                    ),
+                    if (isFromCustomer) ...[
+                      const SizedBox(width: 3),
+                      Icon(
+                        Icons.done_all_rounded,
+                        size: 14,
+                        color: message.isReadByMerchant == true
+                            ? AppColors.primaryColor
+                            : Colors.grey.shade400,
+                      ),
+                    ],
+                  ],
                 ),
               ],
             ),
@@ -150,61 +219,87 @@ class MessageBubble extends StatelessWidget {
     );
   }
 
-  Widget _buildImageContent(BuildContext context) {
+  // ══════════════════════════════════════════════════════════
+  //  Image content
+  // ══════════════════════════════════════════════════════════
+  Widget _buildImageContent(BuildContext context, bool isFromCustomer) {
     final imageData = message.attachments?['image'];
     if (imageData == null) return const SizedBox.shrink();
-
     final imageUrl = imageData['url'] as String?;
     if (imageUrl == null) return const SizedBox.shrink();
 
     return GestureDetector(
       onTap: () => _showFullScreenImage(context, imageUrl),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(12),
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(
-            maxWidth: 240,
-            maxHeight: 320,
-          ),
-          child: Image.network(
-            imageUrl,
-            fit: BoxFit.cover,
-            loadingBuilder: (context, child, loadingProgress) {
-              if (loadingProgress == null) return child;
-              return Container(
-                width: 200,
-                height: 150,
-                color: Colors.grey[200],
-                child: Center(
-                  child: CircularProgressIndicator(
-                    value: loadingProgress.expectedTotalBytes != null
-                        ? loadingProgress.cumulativeBytesLoaded /
-                            loadingProgress.expectedTotalBytes!
-                        : null,
-                    strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation<Color>(AppColors.primaryColor),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(4, 4, 4, 0),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(14),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 260, maxHeight: 320),
+            child: Image.network(
+              imageUrl,
+              fit: BoxFit.cover,
+              loadingBuilder: (_, child, progress) {
+                if (progress == null) return child;
+                return Container(
+                  width: 220,
+                  height: 160,
+                  color: Colors.grey.shade100,
+                  child: Center(
+                    child: CircularProgressIndicator(
+                      value: progress.expectedTotalBytes != null
+                          ? progress.cumulativeBytesLoaded /
+                              progress.expectedTotalBytes!
+                          : null,
+                      strokeWidth: 2,
+                      color: AppColors.primaryColor,
+                    ),
                   ),
-                ),
-              );
-            },
-            errorBuilder: (context, error, stackTrace) {
-              return Container(
-                width: 200,
-                height: 150,
-                color: Colors.grey[200],
-                child: const Icon(Icons.broken_image, color: Colors.grey, size: 48),
-              );
-            },
+                );
+              },
+              errorBuilder: (_, __, ___) => Container(
+                width: 220,
+                height: 160,
+                color: Colors.grey.shade100,
+                child: const Icon(Icons.broken_image_rounded,
+                    color: Colors.grey, size: 40),
+              ),
+            ),
           ),
         ),
       ),
     );
   }
 
+  // ══════════════════════════════════════════════════════════
+  //  Merchant avatar
+  // ══════════════════════════════════════════════════════════
+  Widget _merchantAvatar() {
+    return Container(
+      width: 28,
+      height: 28,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: AppColors.secondaryColor.withValues(alpha: 0.1),
+        border: Border.all(
+          color: AppColors.secondaryColor.withValues(alpha: 0.2),
+        ),
+      ),
+      child: Icon(
+        Icons.storefront_rounded,
+        size: 14,
+        color: AppColors.secondaryColor,
+      ),
+    );
+  }
+
+  // ══════════════════════════════════════════════════════════
+  //  Full-screen image viewer
+  // ══════════════════════════════════════════════════════════
   void _showFullScreenImage(BuildContext context, String imageUrl) {
     showDialog(
       context: context,
-      builder: (context) => Dialog(
+      builder: (_) => Dialog(
         backgroundColor: Colors.transparent,
         insetPadding: EdgeInsets.zero,
         child: Stack(
@@ -219,15 +314,16 @@ class MessageBubble extends StatelessWidget {
                 child: Image.network(
                   imageUrl,
                   fit: BoxFit.contain,
-                  loadingBuilder: (context, child, loadingProgress) {
-                    if (loadingProgress == null) return child;
+                  loadingBuilder: (_, child, progress) {
+                    if (progress == null) return child;
                     return Center(
                       child: CircularProgressIndicator(
-                        value: loadingProgress.expectedTotalBytes != null
-                            ? loadingProgress.cumulativeBytesLoaded /
-                                loadingProgress.expectedTotalBytes!
+                        value: progress.expectedTotalBytes != null
+                            ? progress.cumulativeBytesLoaded /
+                                progress.expectedTotalBytes!
                             : null,
-                        valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+                        valueColor:
+                            const AlwaysStoppedAnimation<Color>(Colors.white),
                       ),
                     );
                   },
@@ -238,7 +334,8 @@ class MessageBubble extends StatelessWidget {
               top: 40,
               right: 16,
               child: IconButton(
-                icon: const Icon(Icons.close, color: Colors.white, size: 32),
+                icon:
+                    const Icon(Icons.close, color: Colors.white, size: 32),
                 onPressed: () => Navigator.of(context).pop(),
               ),
             ),

@@ -19,206 +19,196 @@ class FavoriteStoreWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
-      child: Container(
-      // width: 380,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(25),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 18,
-            offset: const Offset(0, 0),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 6, 16, 6),
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.06),
+                blurRadius: 10,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
-        ],
-      ),
-      child: Column(
-        children: [
-          // Background image
-          Container(
-            // width: 380,
-            height: 129,
-            decoration: BoxDecoration(
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(25),
-                topRight: Radius.circular(25),
-              ),
-              color: const Color(0xFFC4C4C4),
-            ),
-            child: ClipRRect(
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(25),
-                topRight: Radius.circular(25),
-              ),
-              child: store.backgroundImage.isNotEmpty
-                  ? CachedNetworkImage(
-                      imageUrl: store.backgroundImage,
-                      fit: BoxFit.cover,
-                      width: double.infinity,
-                      placeholder: (context, url) => Container(
-                        color: const Color(0xFFC4C4C4),
+          clipBehavior: Clip.antiAlias,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Background image with heart overlay
+              Stack(
+                children: [
+                  SizedBox(
+                    width: double.infinity,
+                    height: 140,
+                    child: store.backgroundImage.isNotEmpty
+                        ? CachedNetworkImage(
+                            imageUrl: store.backgroundImage,
+                            fit: BoxFit.cover,
+                            placeholder: (_, __) => Container(
+                              color: Colors.grey.shade100,
+                              child: Center(
+                                child: Icon(Icons.restaurant_rounded,
+                                    color: Colors.grey.shade300, size: 32),
+                              ),
+                            ),
+                            errorWidget: (_, __, ___) => Container(
+                              color: Colors.grey.shade100,
+                              child: Center(
+                                child: Icon(Icons.restaurant_rounded,
+                                    color: Colors.grey.shade300, size: 32),
+                              ),
+                            ),
+                          )
+                        : Container(
+                            color: Colors.grey.shade100,
+                            child: Center(
+                              child: Icon(Icons.restaurant_rounded,
+                                  color: Colors.grey.shade300, size: 32),
+                            ),
+                          ),
+                  ),
+                  // Heart button
+                  Positioned(
+                    top: 10,
+                    left: 10,
+                    child: GestureDetector(
+                      onTap: onRemove,
+                      child: Container(
+                        width: 34,
+                        height: 34,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.1),
+                              blurRadius: 6,
+                            ),
+                          ],
+                        ),
                         child: const Center(
-                          child: CircularProgressIndicator(
-                            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFACD02)),
+                          child: Icon(
+                            Icons.favorite_rounded,
+                            size: 18,
+                            color: Colors.red,
                           ),
                         ),
                       ),
-                      errorWidget: (context, url, error) => Container(
-                        color: const Color(0xFFC4C4C4),
-                        child: const Icon(
-                          Icons.restaurant,
-                          color: Colors.white,
-                          size: 40,
-                        ),
-                      ),
-                    )
-                  : Container(
-                      color: const Color(0xFFC4C4C4),
-                      child: const Icon(
-                        Icons.restaurant,
-                        color: Colors.white,
-                        size: 40,
-                      ),
                     ),
-            ),
-          ),
-          
-          // Store info section
-          Container(
-            width: 380,
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                // Store details
-                Row(
+                  ),
+                ],
+              ),
+
+              // Store info row
+              Padding(
+                padding: const EdgeInsets.all(12),
+                child: Row(
                   children: [
                     // Store logo
-                    Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(24),
-                        color: const Color(0xFFC4C4C4),
-                      ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(24),
-                        child: store.image.isNotEmpty
-                            ? CachedNetworkImage(
-                                imageUrl: store.image,
-                                fit: BoxFit.cover,
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: store.image.isNotEmpty
+                          ? CachedNetworkImage(
+                              imageUrl: store.image,
+                              width: 40,
+                              height: 40,
+                              fit: BoxFit.cover,
+                              placeholder: (_, __) => Container(
                                 width: 40,
                                 height: 40,
-                                placeholder: (context, url) => Container(
-                                  color: const Color(0xFFC4C4C4),
-                                  child: const Icon(
-                                    Icons.store,
-                                    color: Colors.white,
-                                    size: 20,
-                                  ),
-                                ),
-                                errorWidget: (context, url, error) => Container(
-                                  color: const Color(0xFFC4C4C4),
-                                  child: const Icon(
-                                    Icons.store,
-                                    color: Colors.white,
-                                    size: 20,
-                                  ),
-                                ),
-                              )
-                            : Container(
-                                color: const Color(0xFFC4C4C4),
-                                child: const Icon(
-                                  Icons.store,
-                                  color: Colors.white,
-                                  size: 20,
-                                ),
+                                color: Colors.grey.shade100,
+                                child: Icon(Icons.store_rounded,
+                                    color: Colors.grey.shade300, size: 18),
                               ),
-                      ),
+                              errorWidget: (_, __, ___) => Container(
+                                width: 40,
+                                height: 40,
+                                color: Colors.grey.shade100,
+                                child: Icon(Icons.store_rounded,
+                                    color: Colors.grey.shade300, size: 18),
+                              ),
+                            )
+                          : Container(
+                              width: 40,
+                              height: 40,
+                              decoration: BoxDecoration(
+                                color: Colors.grey.shade100,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Icon(Icons.store_rounded,
+                                  color: Colors.grey.shade300, size: 18),
+                            ),
                     ),
-                    
-                    const SizedBox(width: 8),
-                    
-                    // Store name
-                    Container(
-                      width: 166,
-                      child: Text(
-                        store.name,
-                        style: const TextStyle(
-                          fontFamily: 'Lato',
-                          fontWeight: FontWeight.w600,
-                          fontSize: 14,
-                          color: Color(0xFF262626),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                
-                // Rating and remove button section
-                Row(
-                  children: [
-                    // Rating section
-                    Container(
-                      width: 54,
-                      height: 26,
-                      child: Row(
+
+                    const SizedBox(width: 10),
+
+                    // Name + rating
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // Star icon
-                          Container(
-                            width: 24,
-                            height: 24,
-                            child: Icon(
-                              Icons.star,
-                              size: 18,
-                              color: AppColors.primaryColor,
+                          Text(
+                            store.name,
+                            style: TextStyle(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 15,
+                              color: AppColors.textDarkColor,
                             ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
-
-                          const SizedBox(width: 4),
-
-                          // Rating text
-                          Container(
-                            width: 26,
-                            height: 26,
-                            child: Text(
-                              store.rating.toString(),
-                              style: const TextStyle(
-                                fontFamily: 'Lato',
-                                fontWeight: FontWeight.w700,
-                                fontSize: 18,
-                                color: Color(0xFF262626),
-                                letterSpacing: -0.005,
+                          const SizedBox(height: 2),
+                          Row(
+                            children: [
+                              Icon(Icons.star_rounded,
+                                  size: 15, color: AppColors.primaryColor),
+                              const SizedBox(width: 3),
+                              Text(
+                                store.rating.toString(),
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 13,
+                                  color: Colors.grey.shade600,
+                                ),
                               ),
-                            ),
+                              if (store.deliveryFee != null) ...[
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 6),
+                                  child: Container(
+                                    width: 3,
+                                    height: 3,
+                                    decoration: BoxDecoration(
+                                      color: Colors.grey.shade400,
+                                      shape: BoxShape.circle,
+                                    ),
+                                  ),
+                                ),
+                                Icon(Icons.delivery_dining_rounded,
+                                    size: 15, color: Colors.grey.shade500),
+                                const SizedBox(width: 3),
+                                Text(
+                                  '${store.deliveryFee?.toStringAsFixed(0)}',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.grey.shade600,
+                                  ),
+                                ),
+                              ],
+                            ],
                           ),
                         ],
                       ),
                     ),
-
-                    const SizedBox(width: 8),
-
-                    // Remove button (heart icon for favorites)
-                    GestureDetector(
-                      onTap: onRemove,
-                      child: Container(
-                        width: 24,
-                        height: 24,
-                        child: const Icon(
-                          Icons.favorite,
-                          size: 20,
-                          color: Colors.red,
-                        ),
-                      ),
-                    ),
                   ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
-    ),
     );
   }
 }

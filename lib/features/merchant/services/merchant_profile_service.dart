@@ -161,6 +161,7 @@ class MerchantProfileService extends GetxService {
     String? area,
     double? latitude,
     double? longitude,
+    String? deliveryFeeType,
     double? deliveryFee,
     double? serviceFee,
   }) async {
@@ -181,6 +182,7 @@ class MerchantProfileService extends GetxService {
       if (area != null) data['area'] = area;
       if (latitude != null) data['latitude'] = latitude;
       if (longitude != null) data['longitude'] = longitude;
+      if (deliveryFeeType != null) data['delivery_fee_type'] = deliveryFeeType;
       if (deliveryFee != null) data['delivery_fee'] = deliveryFee;
       if (serviceFee != null) data['service_fee'] = serviceFee;
 

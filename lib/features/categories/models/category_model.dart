@@ -80,6 +80,7 @@ class KitchenModel {
   final String? coverImage;
   final Map<String, dynamic>? businessHours;
   final double deliveryFee;
+  final String deliveryFeeType;
   final double minimumOrder;
   final int deliveryRadius;
   final int preparationTime;
@@ -115,6 +116,7 @@ class KitchenModel {
     this.coverImage,
     this.businessHours,
     required this.deliveryFee,
+    this.deliveryFeeType = 'negotiable',
     required this.minimumOrder,
     required this.deliveryRadius,
     required this.preparationTime,
@@ -152,6 +154,7 @@ class KitchenModel {
       coverImage: json['cover_image'],
       businessHours: json['business_hours'],
       deliveryFee: double.tryParse(json['delivery_fee']?.toString() ?? '0') ?? 0.0,
+      deliveryFeeType: json['delivery_fee_type']?.toString() ?? 'negotiable',
       minimumOrder: double.tryParse(json['minimum_order']?.toString() ?? '0') ?? 0.0,
       deliveryRadius: json['delivery_radius'] ?? 0,
       preparationTime: json['preparation_time'] ?? 0,
@@ -205,6 +208,7 @@ class KitchenModel {
       'cover_image': coverImage,
       'business_hours': businessHours,
       'delivery_fee': deliveryFee,
+      'delivery_fee_type': deliveryFeeType,
       'minimum_order': minimumOrder,
       'delivery_radius': deliveryRadius,
       'preparation_time': preparationTime,

@@ -35,6 +35,10 @@ class ProductModel {
   final bool isGlutenFree;
   final bool isSpicy;
 
+  // Lookup info
+  final String? foodNationalityName;
+  final String? governorateName;
+
   ProductModel({
     required this.id,
     required this.name,
@@ -62,6 +66,8 @@ class ProductModel {
     this.isVegan = false,
     this.isGlutenFree = false,
     this.isSpicy = false,
+    this.foodNationalityName,
+    this.governorateName,
   });
 
   factory ProductModel.fromJson(Map<String, dynamic> json) {
@@ -130,11 +136,53 @@ class ProductModel {
       return 0.0;
     }
 
-    // Parse ingredients — could be list of strings or a single string
+    // Parse ingredients — handles list, string, Map with main_ingredients, or translatable Map
     List<String> parseIngredients(dynamic field) {
       if (field is List) return List<String>.from(field.map((e) => e.toString()));
       if (field is String && field.isNotEmpty) return field.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
+      if (field is Map) {
+        // Handle { main_ingredients: [...], full_ingredients: "..." }
+        if (field['main_ingredients'] != null) {
+          return parseIngredients(field['main_ingredients']);
+        }
+        // Handle translatable { en: [...], ar: [...], current: [...] }
+        final currentLang = languageService.currentLanguage;
+        final localized = field[currentLang] ?? field['current'] ?? field['en'] ?? field['ar'];
+        if (localized != null) return parseIngredients(localized);
+      }
       return [];
+    }
+
+    // Extract calories — flat or nested under nutrition
+    int? extractCalories() {
+      // Flat key first
+      if (json['calories'] != null) {
+        if (json['calories'] is int) return json['calories'];
+        return int.tryParse(json['calories'].toString());
+      }
+      // Nested under nutrition
+      if (json['nutrition'] is Map) {
+        final cal = json['nutrition']['calories'];
+        if (cal is int) return cal;
+        if (cal != null) return int.tryParse(cal.toString());
+      }
+      return null;
+    }
+
+    // Extract preparation time — flat or nested under availability
+    int extractPrepTime() {
+      if (json['preparation_time'] is int) return json['preparation_time'];
+      if (json['availability'] is Map && json['availability']['preparation_time'] is int) {
+        return json['availability']['preparation_time'];
+      }
+      return 15;
+    }
+
+    // Extract dietary flags — flat or nested under dietary_info
+    bool extractDietaryFlag(String key) {
+      if (json[key] == true) return true;
+      if (json['dietary_info'] is Map && json['dietary_info'][key] == true) return true;
+      return false;
     }
 
     return ProductModel(
@@ -159,14 +207,30 @@ class ProductModel {
       discountPercentage: parsePrice(json['discount_percentage']),
       hasDiscount: json['has_discount'] == true || (json['originalPrice'] != null && parsePrice(json['originalPrice']) > parsePrice(json['price'])),
       // Nutritional / dietary
-      calories: json['calories'] is int ? json['calories'] : (json['calories'] != null ? int.tryParse(json['calories'].toString()) : null),
+      calories: extractCalories(),
       ingredients: parseIngredients(json['ingredients']),
-      preparationTime: json['preparation_time'] is int ? json['preparation_time'] : 15,
-      isVegetarian: json['is_vegetarian'] == true,
-      isVegan: json['is_vegan'] == true,
-      isGlutenFree: json['is_gluten_free'] == true,
-      isSpicy: json['is_spicy'] == true,
+      preparationTime: extractPrepTime(),
+      isVegetarian: extractDietaryFlag('is_vegetarian'),
+      isVegan: extractDietaryFlag('is_vegan'),
+      isGlutenFree: extractDietaryFlag('is_gluten_free'),
+      isSpicy: extractDietaryFlag('is_spicy'),
+      foodNationalityName: _extractLookupName(json['food_nationality']),
+      governorateName: _extractLookupName(json['governorate']),
     );
+  }
+
+  /// Extract localized name from a lookup object (food_nationality, governorate)
+  static String? _extractLookupName(dynamic lookup) {
+    if (lookup == null) return null;
+    if (lookup is Map) {
+      final name = lookup['name'];
+      if (name is Map) {
+        final lang = Get.locale?.languageCode ?? 'en';
+        return name['current'] ?? name[lang] ?? name['en'] ?? name['ar'];
+      }
+      if (name is String) return name;
+    }
+    return null;
   }
 
   /// Extract stars breakdown from rating object
@@ -307,6 +371,8 @@ class ProductModel {
       'is_vegan': isVegan,
       'is_gluten_free': isGlutenFree,
       'is_spicy': isSpicy,
+      'food_nationality_name': foodNationalityName,
+      'governorate_name': governorateName,
     };
   }
 }

@@ -13,45 +13,124 @@ class ConversationsScreen extends GetView<ConversationsController> {
     final isArabic = Get.locale?.languageCode == 'ar';
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF2F2F2),
-      body: SafeArea(
-        child: Column(
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.transparent,
+        elevation: 0,
+        titleSpacing: 0,
+        leading: IconButton(
+          icon: Icon(
+            isArabic ? Icons.arrow_forward_ios_rounded : Icons.arrow_back_ios_rounded,
+            size: 20,
+            color: AppColors.textDarkColor,
+          ),
+          onPressed: () {
+            Get.offAllNamed('/home');
+            Future.delayed(const Duration(milliseconds: 100), () {
+              try {
+                final mainController = Get.find<MainController>();
+                mainController.changeTab(4);
+              } catch (_) {}
+            });
+          },
+        ),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header
-            _buildHeader(isArabic),
+            Text(
+              isArabic ? 'المحادثات' : 'Conversations',
+              style: TextStyle(
+                fontWeight: FontWeight.w700,
+                fontSize: 20,
+                color: AppColors.textDarkColor,
+              ),
+            ),
+            Obx(() {
+              final count = controller.conversations.length;
+              if (count == 0) return const SizedBox.shrink();
+              return Text(
+                '$count ${isArabic ? 'محادثة' : 'chats'}',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey.shade500,
+                ),
+              );
+            }),
+          ],
+        ),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Container(
+            height: 0.5,
+            color: Colors.grey.shade200,
+          ),
+        ),
+      ),
+      body: Column(
+        children: [
+          // Search bar
+          _buildSearchBar(isArabic),
 
-            // Conversations list
-            Expanded(
-              child: Obx(() {
-                if (controller.isLoading.value) {
-                  return Center(
-                    child: CircularProgressIndicator(
-                      color: AppColors.primaryColor,
-                    ),
-                  );
-                }
-
-                if (controller.conversations.isEmpty) {
-                  return _buildEmptyState(isArabic);
-                }
-
-                return RefreshIndicator(
-                  onRefresh: controller.refreshConversations,
-                  color: AppColors.primaryColor,
-                  backgroundColor: Colors.white,
-                  child: ListView.builder(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                    itemCount: controller.conversations.length,
-                    itemBuilder: (context, index) {
-                      final conversation = controller.conversations[index];
-                      return ConversationCard(
-                        conversation: conversation,
-                        onTap: () => controller.openConversation(conversation),
-                      );
-                    },
+          // Conversations list
+          Expanded(
+            child: Obx(() {
+              if (controller.isLoading.value) {
+                return Center(
+                  child: CircularProgressIndicator(
+                    color: AppColors.primaryColor,
                   ),
                 );
-              }),
+              }
+
+              if (controller.conversations.isEmpty) {
+                return _buildEmptyState(isArabic);
+              }
+
+              return RefreshIndicator(
+                onRefresh: controller.refreshConversations,
+                color: AppColors.primaryColor,
+                backgroundColor: Colors.white,
+                child: ListView.builder(
+                  padding: EdgeInsets.zero,
+                  itemCount: controller.conversations.length,
+                  itemBuilder: (context, index) {
+                    final conversation = controller.conversations[index];
+                    return ConversationCard(
+                      conversation: conversation,
+                      onTap: () => controller.openConversation(conversation),
+                    );
+                  },
+                ),
+              );
+            }),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSearchBar(bool isArabic) {
+    return Container(
+      color: Colors.white,
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: Colors.grey.shade100,
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.search_rounded,
+                size: 20, color: Colors.grey.shade500),
+            const SizedBox(width: 8),
+            Text(
+              isArabic ? 'بحث...' : 'Search...',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey.shade500,
+              ),
             ),
           ],
         ),
@@ -59,105 +138,40 @@ class ConversationsScreen extends GetView<ConversationsController> {
     );
   }
 
-  Widget _buildHeader(bool isArabic) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-      color: Colors.white,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          // Back button - ALWAYS goes to profile tab in home
-          GestureDetector(
-            onTap: () {
-              // Always navigate to home and switch to profile tab (index 4)
-              Get.offAllNamed('/home');
-              // Use a small delay to ensure navigation completes before changing tab
-              Future.delayed(const Duration(milliseconds: 100), () {
-                try {
-                  final mainController = Get.find<MainController>();
-                  mainController.changeTab(4); // Profile tab is at index 4
-                } catch (e) {
-                  // Controller not found, ignore
-                }
-              });
-            },
-            child: Icon(
-              isArabic ? Icons.arrow_forward_ios : Icons.arrow_back_ios,
-              size: 20,
-              color: const Color(0xFF262626),
-            ),
-          ),
-
-          // Title
-          Text(
-            isArabic ? 'المحادثات' : 'Conversations',
-            style: const TextStyle(
-              fontFamily: 'Lato',
-              fontWeight: FontWeight.w600,
-              fontSize: 16,
-              color: Color(0xFF262626),
-            ),
-          ),
-
-          // Unread count badge
-          Obx(() {
-            final unreadCount = controller.totalUnreadCount;
-            if (unreadCount == 0) {
-              return const SizedBox(width: 24);
-            }
-
-            return Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: Colors.red,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Text(
-                unreadCount > 99 ? '99+' : unreadCount.toString(),
-                style: const TextStyle(
-                  fontSize: 12,
-                  color: Colors.white,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            );
-          }),
-        ],
-      ),
-    );
-  }
-
   Widget _buildEmptyState(bool isArabic) {
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.chat_bubble_outline,
-            size: 80,
-            color: Colors.grey[400],
-          ),
-          const SizedBox(height: 16),
-          Text(
-            isArabic ? 'لا توجد محادثات' : 'No conversations',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              color: Colors.grey[600],
+      child: Padding(
+        padding: const EdgeInsets.all(40),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.forum_outlined,
+              size: 64,
+              color: Colors.grey.shade300,
             ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            isArabic
-                ? 'ابدأ بطلب منتج من أحد المطاعم'
-                : 'Start by ordering a product from a restaurant',
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey[500],
+            const SizedBox(height: 16),
+            Text(
+              isArabic ? 'لا توجد محادثات بعد' : 'No conversations yet',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textDarkColor,
+              ),
             ),
-            textAlign: TextAlign.center,
-          ),
-        ],
+            const SizedBox(height: 6),
+            Text(
+              isArabic
+                  ? 'ابدأ بطلب منتج من أحد المتاجر'
+                  : 'Start ordering from a store',
+              style: TextStyle(
+                fontSize: 13,
+                color: Colors.grey.shade500,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
       ),
     );
   }

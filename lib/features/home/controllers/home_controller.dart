@@ -276,12 +276,53 @@ class HomeController extends GetxController {
       // Extra
       'preparation_time': backendData['preparation_time'],
       'calories': backendData['calories'],
+      // Lookup fields
+      'food_nationality_name': _extractLookupName(backendData),
+      'governorate_name': _extractGovernName(backendData),
     };
     
     print('   ✅ Converted Product ID: ${converted['id']}');
     print('   ✅ Converted Product Name: ${converted['name']}');
     
     return converted;
+  }
+
+  /// Extract food nationality name from backend data (nested or flat)
+  String _extractLookupName(Map<String, dynamic> data) {
+    // Try flat field first (from getFilteredProducts)
+    if (data['food_nationality_name'] != null && data['food_nationality_name'].toString().isNotEmpty) {
+      return data['food_nationality_name'].toString();
+    }
+    // Try nested object (from MobileProductResource)
+    final fn = data['food_nationality'];
+    if (fn is Map) {
+      final name = fn['name'];
+      if (name is String) return name;
+      if (name is Map) {
+        final lang = Get.locale?.languageCode ?? 'en';
+        return name['current']?.toString() ?? name[lang]?.toString() ?? name['en']?.toString() ?? '';
+      }
+    }
+    return '';
+  }
+
+  /// Extract governorate name from backend data (nested or flat)
+  String _extractGovernName(Map<String, dynamic> data) {
+    // Try flat field first
+    if (data['governorate_name'] != null && data['governorate_name'].toString().isNotEmpty) {
+      return data['governorate_name'].toString();
+    }
+    // Try nested object
+    final gov = data['governorate'];
+    if (gov is Map) {
+      final name = gov['name'];
+      if (name is String) return name;
+      if (name is Map) {
+        final lang = Get.locale?.languageCode ?? 'en';
+        return name['current']?.toString() ?? name[lang]?.toString() ?? name['en']?.toString() ?? '';
+      }
+    }
+    return '';
   }
 
   // Methods

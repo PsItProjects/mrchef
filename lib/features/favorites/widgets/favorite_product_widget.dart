@@ -20,141 +20,146 @@ class FavoriteProductWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
-      child: Container(
-      margin: const EdgeInsets.only(bottom: 1),
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        border: Border(
-          bottom: BorderSide(
-            color: Color(0xFFE3E3E3),
-            width: 1,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 6, 16, 6),
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.06),
+                blurRadius: 10,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
-        ),
-      ),
-      child: Row(
-        children: [
-          // Product image
-          Container(
-            width: 100,
-            height: 100,
-            child: Stack(
-              children: [
-                // Background
-                Container(
-                  width: 100,
-                  height: 100,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10),
-                    color: const Color(0xFFC4C4C4),
-                  ),
-                ),
-                
-                // Product image
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(10),
-                  child: CachedNetworkImage(
-                    imageUrl: product.image,
-                    width: 100,
-                    height: 100,
-                    fit: BoxFit.cover,
-                    placeholder: (context, url) => Container(
-                      width: 100,
-                      height: 100,
-                      color: const Color(0xFFC4C4C4),
-                      child: const Center(
-                        child: CircularProgressIndicator(
-                          color: Colors.white,
-                          strokeWidth: 2,
+          clipBehavior: Clip.antiAlias,
+          child: Row(
+            children: [
+              // Product image (left side)
+              Stack(
+                children: [
+                  ClipRRect(
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(12),
+                      bottomLeft: Radius.circular(12),
+                    ),
+                    child: CachedNetworkImage(
+                      imageUrl: product.image,
+                      width: 110,
+                      height: 110,
+                      fit: BoxFit.cover,
+                      placeholder: (_, __) => Container(
+                        width: 110,
+                        height: 110,
+                        color: Colors.grey.shade100,
+                        child: Center(
+                          child: Icon(Icons.fastfood_rounded,
+                              color: Colors.grey.shade300, size: 28),
+                        ),
+                      ),
+                      errorWidget: (_, __, ___) => Container(
+                        width: 110,
+                        height: 110,
+                        color: Colors.grey.shade100,
+                        child: Center(
+                          child: Icon(Icons.fastfood_rounded,
+                              color: Colors.grey.shade300, size: 28),
                         ),
                       ),
                     ),
-                    errorWidget: (context, url, error) {
-                      return Container(
-                        width: 100,
-                        height: 100,
-                        color: const Color(0xFFC4C4C4),
-                        child: const Icon(
-                          Icons.fastfood,
+                  ),
+                  // Heart button on image
+                  Positioned(
+                    top: 6,
+                    left: 6,
+                    child: GestureDetector(
+                      onTap: onRemove,
+                      child: Container(
+                        width: 30,
+                        height: 30,
+                        decoration: BoxDecoration(
                           color: Colors.white,
-                          size: 40,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.1),
+                              blurRadius: 4,
+                            ),
+                          ],
                         ),
-                      );
-                    },
-                  ),
-                ),
-              ],
-            ),
-          ),
-          
-          const SizedBox(width: 8),
-          
-          // Product details
-          Expanded(
-            child: Container(
-              height: 100,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Product name and price
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        product.name,
-                        style: const TextStyle(
-                          fontFamily: 'Lato',
-                          fontWeight: FontWeight.w600,
-                          fontSize: 16,
-                          color: Color(0xFF262626),
+                        child: const Center(
+                          child: Icon(
+                            Icons.favorite_rounded,
+                            size: 16,
+                            color: Colors.red,
+                          ),
                         ),
                       ),
-                      
-                      const SizedBox(height: 4),
-                      
-                      Text(
-                        CurrencyHelper.formatPrice(product.price),
-                        style: const TextStyle(
-                          fontFamily: 'Lato',
-                          fontWeight: FontWeight.w400,
-                          fontSize: 14,
-                          color: Color(0xFF5E5E5E),
-                        ),
-                      ),
-                    ],
-                  ),
-                  
-                  // Availability status
-                  Text(
-                    product.availabilityText,
-                    style: AppTheme.statusTextStyle.copyWith(
-                      color: product.isAvailable
-                          ? AppColors.successColor
-                          : AppColors.errorColor,
                     ),
                   ),
                 ],
               ),
-            ),
-          ),
-          
-          // Remove button (heart icon for favorites)
-          GestureDetector(
-            onTap: onRemove,
-            child: Container(
-              width: 24,
-              height: 24,
-              child: const Icon(
-                Icons.favorite,
-                size: 20,
-                color: Colors.red,
+
+              // Product details (right side)
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 12, vertical: 10),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        product.name,
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 15,
+                          color: AppColors.textDarkColor,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        CurrencyHelper.formatPrice(product.price),
+                        style: TextStyle(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 15,
+                          color: AppColors.textDarkColor,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      // Availability badge
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: product.isAvailable
+                              ? const Color(0xFFE8F5E9)
+                              : const Color(0xFFFFEBEE),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Text(
+                          product.availabilityText,
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: product.isAvailable
+                                ? const Color(0xFF2E7D32)
+                                : const Color(0xFFC62828),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
-            ),
+            ],
           ),
-        ],
+        ),
       ),
-    ),
     );
   }
 }

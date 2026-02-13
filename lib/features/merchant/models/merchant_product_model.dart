@@ -11,6 +11,10 @@ class MerchantProductModel {
   final String? descriptionAr;
   final int? categoryId;
   final String? categoryName;
+  final int? foodNationalityId;
+  final String? foodNationalityName;
+  final int? governorateId;
+  final String? governorateName;
   final double basePrice;
   final String discountType;
   final double? discountPercentage;
@@ -44,6 +48,10 @@ class MerchantProductModel {
     this.descriptionAr,
     this.categoryId,
     this.categoryName,
+    this.foodNationalityId,
+    this.foodNationalityName,
+    this.governorateId,
+    this.governorateName,
     required this.basePrice,
     this.discountType = 'percentage',
     this.discountPercentage,
@@ -182,6 +190,10 @@ class MerchantProductModel {
       descriptionAr: _extractTranslation(json['description'], 'ar'),
       categoryId: json['internal_category_id'] ?? json['category_id'],
       categoryName: _extractCategoryName(json),
+      foodNationalityId: json['food_nationality_id'],
+      foodNationalityName: _extractLookupName(json['food_nationality']),
+      governorateId: json['governorate_id'],
+      governorateName: _extractLookupName(json['governorate']),
       basePrice: basePrice,
       discountType: json['discount_type'] ?? 'percentage',
       discountPercentage: _parseDouble(json['discount_percentage']),
@@ -216,6 +228,8 @@ class MerchantProductModel {
       'name': {'en': nameEn, 'ar': nameAr},
       'description': {'en': descriptionEn, 'ar': descriptionAr},
       'internal_category_id': categoryId,
+      'food_nationality_id': foodNationalityId,
+      'governorate_id': governorateId,
       'base_price': basePrice,
       'discount_type': discountType,
       'discount_percentage': discountPercentage,
@@ -254,6 +268,18 @@ class MerchantProductModel {
     final category = json['internal_category'] ?? json['category'];
     if (category == null) return null;
     return _extractTranslation(category['name'], Get.locale?.languageCode ?? 'en');
+  }
+
+  static String? _extractLookupName(dynamic lookup) {
+    if (lookup == null) return null;
+    if (lookup is Map) {
+      final name = lookup['name'];
+      if (name is Map) {
+        return name['current'] ?? name[Get.locale?.languageCode ?? 'en'] ?? name['en'] ?? name['ar'];
+      }
+      if (name is String) return name;
+    }
+    return null;
   }
 
   static double _parseDouble(dynamic value) {
@@ -339,6 +365,10 @@ class MerchantProductModel {
     String? descriptionAr,
     int? categoryId,
     String? categoryName,
+    int? foodNationalityId,
+    String? foodNationalityName,
+    int? governorateId,
+    String? governorateName,
     double? basePrice,
     String? discountType,
     double? discountPercentage,
@@ -372,6 +402,10 @@ class MerchantProductModel {
       descriptionAr: descriptionAr ?? this.descriptionAr,
       categoryId: categoryId ?? this.categoryId,
       categoryName: categoryName ?? this.categoryName,
+      foodNationalityId: foodNationalityId ?? this.foodNationalityId,
+      foodNationalityName: foodNationalityName ?? this.foodNationalityName,
+      governorateId: governorateId ?? this.governorateId,
+      governorateName: governorateName ?? this.governorateName,
       basePrice: basePrice ?? this.basePrice,
       discountType: discountType ?? this.discountType,
       discountPercentage: discountPercentage ?? this.discountPercentage,

@@ -77,7 +77,7 @@ class HomeScreen extends GetView<HomeController> {
               
               // Restaurants horizontal list (filtered)
               SizedBox(
-                height: 223,
+                height: 245,
                 child: Obx(() {
                   // Use filtered restaurants if available, otherwise fallback to original data
                   final restaurantsToShow = controller.filteredRestaurants.isNotEmpty
@@ -98,7 +98,6 @@ class HomeScreen extends GetView<HomeController> {
                       if (restaurant['name'] != null) {
                         final name = restaurant['name'];
                         if (name is Map) {
-                          // Get current language from controller or use Arabic as default
                           final currentLang = Get.locale?.languageCode ?? 'ar';
                           restaurantName = name[currentLang]?.toString() ??
                                          name['ar']?.toString() ??
@@ -124,22 +123,40 @@ class HomeScreen extends GetView<HomeController> {
                       String logoUrl = '';
                       if (restaurant['logo'] != null && restaurant['logo'] != 'null') {
                         logoUrl = restaurant['logo'].toString();
-                        // Convert relative path to full URL
                         if (!logoUrl.startsWith('http')) {
                           logoUrl = 'https://mr-shife-backend-main-ygodva.laravel.cloud/storage/$logoUrl';
                         }
                       }
 
-                      // Create restaurant data in kitchen format
-                      final restaurantAsKitchen = {
+                      // Parse cover image URL
+                      String coverUrl = '';
+                      if (restaurant['cover_image'] != null && restaurant['cover_image'] != 'null') {
+                        coverUrl = restaurant['cover_image'].toString();
+                        if (!coverUrl.startsWith('http')) {
+                          coverUrl = 'https://mr-shife-backend-main-ygodva.laravel.cloud/storage/$coverUrl';
+                        }
+                      }
+
+                      // Pass complete restaurant data for the professional card
+                      final restaurantData = {
                         'id': restaurant['id'] ?? index,
                         'name': restaurantName,
-                        'image': logoUrl.isNotEmpty ? logoUrl : 'https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=400&h=300&fit=crop',
-                        'isActive': true,
+                        'image': logoUrl, // kept for backward compat
+                        'logo': logoUrl,
+                        'cover_image': coverUrl,
+                        'is_active': restaurant['is_active'] ?? true,
+                        'is_featured': restaurant['is_featured'] ?? false,
+                        'average_rating': restaurant['average_rating'] ?? 0,
+                        'reviews_count': restaurant['reviews_count'] ?? 0,
+                        'delivery_fee': restaurant['delivery_fee'],
+                        'offers_delivery': restaurant['offers_delivery'] ?? true,
+                        'categories': restaurant['categories'],
+                        'products': restaurant['products'],
+                        'products_count': restaurant['products_count'],
                       };
 
                       return KitchenCard(
-                        kitchen: restaurantAsKitchen,
+                        kitchen: restaurantData,
                       );
                     },
                   );

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/features/store_details/controllers/store_details_controller.dart';
@@ -24,88 +23,82 @@ class _StoreInfoBottomSheetState extends State<StoreInfoBottomSheet> {
       child: Container(
         width: double.infinity,
         height: double.infinity,
-        color: Colors.black.withOpacity(0.5),
+        color: Colors.black.withOpacity(0.45),
         child: GestureDetector(
           onTap: () {}, // Prevent closing when tapping on the sheet
           child: DraggableScrollableSheet(
-            initialChildSize: 0.5,
-            minChildSize: 0.3,
-            maxChildSize: 0.9,
+            initialChildSize: 0.4,
+            minChildSize: 0.25,
+            maxChildSize: 0.75,
             builder: (context, scrollController) {
               return Container(
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(50),
-                    topRight: Radius.circular(50),
+                    topLeft: Radius.circular(24),
+                    topRight: Radius.circular(24),
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 16,
-                      offset: const Offset(0, 0),
+                      color: Colors.black.withOpacity(0.08),
+                      blurRadius: 20,
+                      offset: const Offset(0, -4),
                     ),
                   ],
                 ),
                 child: Column(
                   children: [
-                    // Header section
+                    // Drag handle
                     Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.fromLTRB(24, 32, 24, 16),
+                      margin: const EdgeInsets.only(top: 12, bottom: 8),
+                      width: 40,
+                      height: 4,
                       decoration: BoxDecoration(
-                        color: Colors.white,
-                        border: Border(
-                          bottom: BorderSide(
-                            color: const Color(0xFFE3E3E3),
-                            width: 1,
-                          ),
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.2),
-                            blurRadius: 16,
-                            offset: const Offset(0, 1),
-                          ),
-                        ],
+                        color: Colors.grey.shade300,
+                        borderRadius: BorderRadius.circular(2),
                       ),
+                    ),
+
+                    // Title
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
                       child: Text(
                         'store_information'.tr,
                         style: const TextStyle(
-                          fontFamily: 'Lato',
                           fontWeight: FontWeight.w700,
-                          fontSize: 20,
-                          letterSpacing: 1.5,
-                          color: Color(0xFF262626),
+                          fontSize: 18,
+                          color: AppColors.textDarkColor,
                         ),
                       ),
                     ),
-                    
-                    // Content sections
+
+                    Divider(color: Colors.grey.shade200, height: 1),
+
+                    // Menu items
                     Expanded(
                       child: SingleChildScrollView(
                         controller: scrollController,
                         child: Column(
                           children: [
-                            const SizedBox(height: 16),
-
-                            // Working Hours section
-                            _buildMenuSection(
+                            _buildMenuItem(
+                              icon: Icons.schedule_outlined,
                               title: 'working_hours'.tr,
                               onTap: () => _showWorkingHours(context),
                             ),
 
-                            _buildDivider(),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 24),
+                              child: Divider(
+                                  color: Colors.grey.shade100, height: 1),
+                            ),
 
-                            // Location section
-                            _buildMenuSection(
+                            _buildMenuItem(
+                              icon: Icons.location_on_outlined,
                               title: 'location'.tr,
                               onTap: () => _showLocations(context),
                             ),
 
-                            _buildDivider(),
-
-                            const SizedBox(height: 100), // Bottom padding
+                            const SizedBox(height: 40),
                           ],
                         ),
                       ),
@@ -120,66 +113,57 @@ class _StoreInfoBottomSheetState extends State<StoreInfoBottomSheet> {
     );
   }
 
-  Widget _buildMenuSection({
+  Widget _buildMenuItem({
+    required IconData icon,
     required String title,
     required VoidCallback onTap,
-    Color titleColor = const Color(0xFF262626),
   }) {
     return InkWell(
       onTap: onTap,
-      child: Container(
-        width: double.infinity,
+      child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              title,
-              style: TextStyle(
-                fontFamily: 'Lato',
-                fontWeight: FontWeight.w600,
-                fontSize: 16,
-                color: titleColor,
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: AppColors.primaryColor.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(10),
               ),
+              child: Icon(icon, color: AppColors.primaryColor, size: 20),
             ),
-
-            if (titleColor != const Color(0xFFEB5757))
-              SvgPicture.asset(
-                'assets/icons/arrow_right.svg',
-                width: 24,
-                height: 24,
-                colorFilter: const ColorFilter.mode(
-                  Color(0xFF262626),
-                  BlendMode.srcIn,
+            const SizedBox(width: 14),
+            Expanded(
+              child: Text(
+                title,
+                style: const TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 15,
+                  color: AppColors.textDarkColor,
                 ),
               ),
+            ),
+            Icon(
+              Icons.chevron_right,
+              color: Colors.grey.shade400,
+              size: 22,
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildDivider() {
-    return Container(
-      width: 428,
-      height: 1,
-      color: const Color(0xFFE3E3E3),
-    );
-  }
-
   void _showWorkingHours(BuildContext context) {
-    // Prevent multiple taps
     if (_isNavigating) return;
     setState(() => _isNavigating = true);
 
-    // Navigate immediately
     Get.to(() => const WorkingHoursSection());
 
-    // Load data in background
     final controller = Get.find<StoreDetailsController>();
     controller.loadWorkingHours();
 
-    // Reset flag after navigation
     Future.delayed(const Duration(milliseconds: 500), () {
       if (mounted) {
         setState(() => _isNavigating = false);
@@ -188,23 +172,18 @@ class _StoreInfoBottomSheetState extends State<StoreInfoBottomSheet> {
   }
 
   void _showLocations(BuildContext context) {
-    // Prevent multiple taps
     if (_isNavigating) return;
     setState(() => _isNavigating = true);
 
-    // Navigate immediately
     Get.to(() => const LocationsSection());
 
-    // Load data in background
     final controller = Get.find<StoreDetailsController>();
     controller.loadLocation();
 
-    // Reset flag after navigation
     Future.delayed(const Duration(milliseconds: 500), () {
       if (mounted) {
         setState(() => _isNavigating = false);
       }
     });
   }
-
 }

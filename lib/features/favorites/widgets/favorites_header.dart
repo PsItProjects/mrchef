@@ -8,107 +8,55 @@ class FavoritesHeader extends GetView<FavoritesController> {
 
   @override
   Widget build(BuildContext context) {
-    return Obx(() => Container(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          // Back button
-          GestureDetector(
-            onTap: () => Get.back(),
-            child: const SizedBox(
-              width: 24,
-              height: 24,
-              child: Icon(
-                Icons.arrow_back_ios,
-                size: 20,
-                color: Color(0xFF262626),
-              ),
-            ),
-          ),
+    return Obx(() {
+      if (!controller.isSearching.value) return const SizedBox.shrink();
 
-          // Title or Search Field
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: controller.isSearching.value
-                  ? _buildSearchField()
-                  : Center(
-                      child: Text(
-                        'favorites'.tr,
-                        style: const TextStyle(
-                          fontFamily: 'Lato',
-                          fontWeight: FontWeight.w600,
-                          fontSize: 16,
-                          color: Color(0xFF262626),
-                        ),
-                      ),
+      return Container(
+        color: Colors.white,
+        padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+        child: TextField(
+          controller: controller.searchTextController,
+          autofocus: true,
+          onChanged: controller.updateSearchQuery,
+          decoration: InputDecoration(
+            hintText: 'search_by_name'.tr,
+            hintStyle: TextStyle(
+              fontSize: 14,
+              color: Colors.grey.shade400,
+            ),
+            filled: true,
+            fillColor: Colors.grey.shade100,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: BorderSide.none,
+            ),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 10,
+            ),
+            isDense: true,
+            prefixIcon: Icon(
+              Icons.search,
+              color: Colors.grey.shade400,
+              size: 20,
+            ),
+            suffixIcon: Obx(() => controller.searchQuery.value.isNotEmpty
+                ? IconButton(
+                    icon: Icon(
+                      Icons.clear,
+                      color: Colors.grey.shade400,
+                      size: 18,
                     ),
-            ),
+                    onPressed: () => controller.updateSearchQuery(''),
+                  )
+                : const SizedBox.shrink()),
           ),
-
-          // Search button
-          GestureDetector(
-            onTap: controller.toggleSearch,
-            child: SizedBox(
-              width: 24,
-              height: 24,
-              child: Icon(
-                controller.isSearching.value ? Icons.close : Icons.search,
-                size: 20,
-                color: const Color(0xFF262626),
-              ),
-            ),
+          style: TextStyle(
+            fontSize: 14,
+            color: AppColors.textDarkColor,
           ),
-        ],
-      ),
-    ));
-  }
-
-  /// Build inline search field
-  Widget _buildSearchField() {
-    return TextField(
-      autofocus: true,
-      onChanged: controller.updateSearchQuery,
-      decoration: InputDecoration(
-        hintText: 'search_by_name'.tr,
-        hintStyle: const TextStyle(
-          fontFamily: 'Lato',
-          fontSize: 14,
-          color: Color(0xFFCCCCCC),
         ),
-        filled: true,
-        fillColor: const Color(0xFFF2F2F2),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide.none,
-        ),
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 8,
-        ),
-        isDense: true,
-        prefixIcon: const Icon(
-          Icons.search,
-          color: Color(0xFF999999),
-          size: 20,
-        ),
-        suffixIcon: Obx(() => controller.searchQuery.value.isNotEmpty
-            ? IconButton(
-                icon: const Icon(
-                  Icons.clear,
-                  color: Color(0xFF999999),
-                  size: 20,
-                ),
-                onPressed: () => controller.updateSearchQuery(''),
-              )
-            : const SizedBox.shrink()),
-      ),
-      style: const TextStyle(
-        fontFamily: 'Lato',
-        fontSize: 14,
-        color: Color(0xFF262626),
-      ),
-    );
+      );
+    });
   }
 }

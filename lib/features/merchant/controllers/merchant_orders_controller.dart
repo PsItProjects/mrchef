@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mrsheaf/core/network/api_client.dart';
 import 'package:mrsheaf/core/localization/translation_helper.dart';
+import 'package:mrsheaf/features/merchant/services/order_sync_service.dart';
 import 'package:dio/dio.dart' as dio;
 import '../../../core/services/toast_service.dart';
 
@@ -29,6 +30,7 @@ class MerchantOrdersController extends GetxController {
     'ready',
     'out_for_delivery',
     'delivered',
+    'completed',
     'cancelled',
   ];
 
@@ -41,6 +43,7 @@ class MerchantOrdersController extends GetxController {
     'ready',
     'out_for_delivery',
     'delivered',
+    'completed',
     'cancelled',
   ];
 
@@ -165,6 +168,8 @@ class MerchantOrdersController extends GetxController {
       case 'out_for_delivery':
         return TranslationHelper.isArabic ? 'في الطريق' : 'Out for Delivery';
       case 'delivered':
+        return TranslationHelper.isArabic ? 'بانتظار تأكيد الاستلام' : 'Awaiting Confirmation';
+      case 'completed':
         return TranslationHelper.isArabic ? 'تم التوصيل' : 'Delivered';
       case 'cancelled':
         return TranslationHelper.isArabic ? 'ملغي' : 'Cancelled';
@@ -234,11 +239,14 @@ class MerchantOrdersController extends GetxController {
 
   /// Update order status with optional agreed price
   Future<bool> updateOrderStatus(int orderId, String newStatus,
-      {double? agreedPrice}) async {
+      {double? agreedPrice, double? agreedDeliveryFee}) async {
     try {
       final data = <String, dynamic>{'status': newStatus};
       if (agreedPrice != null) {
         data['agreed_price'] = agreedPrice;
+      }
+      if (agreedDeliveryFee != null) {
+        data['agreed_delivery_fee'] = agreedDeliveryFee;
       }
 
       final response = await _apiClient.patch(
@@ -248,13 +256,19 @@ class MerchantOrdersController extends GetxController {
 
       if (response.statusCode == 200 && response.data['success'] == true) {
         // Update local order
+        final updatedOrder =
+            Map<String, dynamic>.from(response.data['data']['order']);
         final index = orders.indexWhere((o) => o['id'] == orderId);
         if (index != -1) {
-          orders[index] =
-              Map<String, dynamic>.from(response.data['data']['order']);
+          orders[index] = updatedOrder;
           orders.refresh();
         }
         _countPendingOrders();
+
+        // Broadcast to all other controllers for instant cross-page sync
+        OrderSyncService.instance.broadcastOrderUpdate(
+            orderId, updatedOrder,
+            fromController: 'ordersList');
 
         ToastService.showSuccess('order_status_updated'.tr);
         return true;

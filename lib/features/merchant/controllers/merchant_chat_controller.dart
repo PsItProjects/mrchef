@@ -10,6 +10,7 @@ import 'package:mrsheaf/core/services/fcm_service.dart';
 import 'package:mrsheaf/core/services/realtime_chat_service.dart';
 import 'package:mrsheaf/features/chat/models/conversation_model.dart';
 import 'package:mrsheaf/features/merchant/services/merchant_chat_service.dart';
+import 'package:mrsheaf/features/merchant/services/order_sync_service.dart';
 import 'package:mrsheaf/features/support/services/support_service.dart';
 import '../../../core/services/toast_service.dart';
 
@@ -85,6 +86,18 @@ class MerchantChatController extends GetxController {
             conversationId = convData['id'] as int?;
           }
         }
+        // Also try to extract from nested order data
+        if (conversationId == null && args.containsKey('order')) {
+          final orderData = args['order'];
+          if (orderData is Map<String, dynamic>) {
+            final convId = orderData['conversation_id'];
+            if (convId is int) {
+              conversationId = convId;
+            } else if (convId != null) {
+              conversationId = int.tryParse(convId.toString());
+            }
+          }
+        }
       }
     }
 
@@ -94,8 +107,11 @@ class MerchantChatController extends GetxController {
         print('   Parameters: ${Get.parameters}');
         print('   Arguments: ${Get.arguments}');
       }
-      ToastService.showError('Invalid conversation ID');
-      Get.back();
+      // Defer toast and navigation to avoid build-phase errors
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ToastService.showError('Invalid conversation ID');
+        Get.back();
+      });
       return;
     }
 
@@ -339,13 +355,16 @@ class MerchantChatController extends GetxController {
 
   /// Update order status for a specific order
   Future<bool> updateOrderStatusById(int orderId, String newStatus,
-      {double? agreedPrice}) async {
+      {double? agreedPrice, double? agreedDeliveryFee}) async {
     try {
       updatingOrders[orderId] = true;
 
       final data = <String, dynamic>{'status': newStatus};
       if (agreedPrice != null) {
         data['agreed_price'] = agreedPrice;
+      }
+      if (agreedDeliveryFee != null) {
+        data['agreed_delivery_fee'] = agreedDeliveryFee;
       }
 
       final response = await _apiClient.patch(
@@ -364,6 +383,10 @@ class MerchantChatController extends GetxController {
           orderData.value = updatedOrder;
         }
 
+        // Broadcast to all other controllers for instant cross-page sync
+        OrderSyncService.instance
+            .broadcastOrderUpdate(orderId, updatedOrder, fromController: 'chat');
+
         ToastService.showSuccess('order_status_updated'.tr);
         return true;
       } else {
@@ -381,8 +404,9 @@ class MerchantChatController extends GetxController {
   }
 
   /// Fetch order details by ID and store them
-  Future<Map<String, dynamic>?> fetchOrderDetails(int orderId) async {
-    if (ordersData.containsKey(orderId)) {
+  Future<Map<String, dynamic>?> fetchOrderDetails(int orderId,
+      {bool forceRefresh = false}) async {
+    if (!forceRefresh && ordersData.containsKey(orderId)) {
       return ordersData[orderId];
     }
 
@@ -404,11 +428,11 @@ class MerchantChatController extends GetxController {
 
   /// Legacy update order status
   Future<bool> updateOrderStatus(String newStatus,
-      {double? agreedPrice, int? orderId}) async {
+      {double? agreedPrice, double? agreedDeliveryFee, int? orderId}) async {
     final targetOrderId = orderId ?? orderData.value?['id'];
     if (targetOrderId == null) return false;
     return updateOrderStatusById(targetOrderId, newStatus,
-        agreedPrice: agreedPrice);
+        agreedPrice: agreedPrice, agreedDeliveryFee: agreedDeliveryFee);
   }
 
   /// Load messages for this conversation

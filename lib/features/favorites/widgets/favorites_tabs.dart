@@ -9,79 +9,79 @@ class FavoritesTabs extends GetView<FavoritesController> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border(
+          bottom: BorderSide(color: Colors.grey.shade200, width: 0.5),
+        ),
+      ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           // Stores tab
-          Obx(() => GestureDetector(
-            onTap: () => controller.switchTab(0),
-            child: Column(
-              children: [
-                Container(
-                  width: 190,
-                  child: Text(
-                    'restaurants'.tr,
-                    textAlign: TextAlign.center,
-                    style: AppTheme.tabTextStyle.copyWith(
-                      fontWeight: controller.isStoresTabSelected
-                          ? FontWeight.w600
-                          : FontWeight.w400,
-                      color: controller.isStoresTabSelected
-                          ? AppColors.primaryColor
-                          : AppColors.lightGreyTextColor,
+          Expanded(
+            child: Obx(() => GestureDetector(
+                  onTap: () => controller.switchTab(0),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    decoration: BoxDecoration(
+                      border: Border(
+                        bottom: BorderSide(
+                          color: controller.isStoresTabSelected
+                              ? AppColors.textDarkColor
+                              : Colors.transparent,
+                          width: 2,
+                        ),
+                      ),
+                    ),
+                    child: Text(
+                      'restaurants'.tr,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: controller.isStoresTabSelected
+                            ? FontWeight.w700
+                            : FontWeight.w400,
+                        color: controller.isStoresTabSelected
+                            ? AppColors.textDarkColor
+                            : Colors.grey.shade500,
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 4),
-                Container(
-                  width: 8,
-                  height: 8,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: controller.isStoresTabSelected 
-                        ? AppColors.primaryColor 
-                        : Colors.transparent,
-                  ),
-                ),
-              ],
-            ),
-          )),
-          
+                )),
+          ),
+
           // Products tab
-          Obx(() => GestureDetector(
-            onTap: () => controller.switchTab(1),
-            child: Column(
-              children: [
-                Container(
-                  width: 190,
-                  child: Text(
-                    'products'.tr,
-                    textAlign: TextAlign.center,
-                    style: AppTheme.tabTextStyle.copyWith(
-                      fontWeight: controller.isProductsTabSelected
-                          ? FontWeight.w600
-                          : FontWeight.w400,
-                      color: controller.isProductsTabSelected
-                          ? AppColors.primaryColor
-                          : AppColors.lightGreyTextColor,
+          Expanded(
+            child: Obx(() => GestureDetector(
+                  onTap: () => controller.switchTab(1),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    decoration: BoxDecoration(
+                      border: Border(
+                        bottom: BorderSide(
+                          color: controller.isProductsTabSelected
+                              ? AppColors.textDarkColor
+                              : Colors.transparent,
+                          width: 2,
+                        ),
+                      ),
+                    ),
+                    child: Text(
+                      'products'.tr,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: controller.isProductsTabSelected
+                            ? FontWeight.w700
+                            : FontWeight.w400,
+                        color: controller.isProductsTabSelected
+                            ? AppColors.textDarkColor
+                            : Colors.grey.shade500,
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 4),
-                Container(
-                  width: 8,
-                  height: 8,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: controller.isProductsTabSelected
-                        ? AppColors.primaryColor
-                        : AppColors.transparent,
-                  ),
-                ),
-              ],
-            ),
-          )),
+                )),
+          ),
         ],
       ),
     );

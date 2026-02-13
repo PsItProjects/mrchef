@@ -476,11 +476,16 @@ class MerchantOrdersScreen extends GetView<MerchantOrdersController> {
         context: Get.context!,
         orderNumber: _getOrderNumber(order),
         defaultPrice: totalAmount,
-        onConfirm: (agreedPrice) async {
+        deliveryFeeType:
+            order['restaurant']?['delivery_fee_type']?.toString() ??
+                order['delivery_fee_type']?.toString() ??
+                'negotiable',
+        onConfirm: (agreedPrice, agreedDeliveryFee) async {
           final success = await controller.updateOrderStatus(
             orderId,
             'confirmed',
             agreedPrice: agreedPrice,
+            agreedDeliveryFee: agreedDeliveryFee,
           );
           if (success) {
             Get.back();

@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/features/merchant/controllers/add_product_controller.dart';
+import 'package:mrsheaf/features/merchant/widgets/searchable_select_bottom_sheet.dart';
 
 class AddProductScreen extends GetView<AddProductController> {
   const AddProductScreen({super.key});
@@ -29,6 +30,10 @@ class AddProductScreen extends GetView<AddProductController> {
                       _buildPricingSection(),
                       const SizedBox(height: 16),
                       _buildCategorySection(),
+                      const SizedBox(height: 16),
+                      _buildFoodNationalitySection(),
+                      const SizedBox(height: 16),
+                      _buildGovernorateSection(),
                       const SizedBox(height: 16),
                       _buildDetailsSection(),
                       const SizedBox(height: 16),
@@ -515,6 +520,164 @@ class AddProductScreen extends GetView<AddProductController> {
             }).toList(),
             onChanged: (v) => controller.selectedCategoryId.value = v,
           )),
+    );
+  }
+
+  // ─── FOOD NATIONALITY SECTION ─────────────────────────────
+  Widget _buildFoodNationalitySection() {
+    return _SectionCard(
+      icon: Icons.flag_rounded,
+      title: 'food_nationality'.tr,
+      child: Obx(() {
+        final hasError = controller.validationErrors.containsKey('food_nationality_id');
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            GestureDetector(
+              onTap: () async {
+                final result = await showSearchableSelectBottomSheet(
+                  title: 'select_food_nationality'.tr,
+                  searchHint: 'search'.tr,
+                  items: controller.foodNationalities,
+                  selectedId: controller.selectedFoodNationalityId.value,
+                  onSearch: controller.searchFoodNationalities,
+                  icon: Icons.flag_rounded,
+                );
+                if (result != null) {
+                  controller.selectedFoodNationalityId.value = result['id'];
+                  final name = result['name'];
+                  if (name is Map) {
+                    final lang = Get.locale?.languageCode ?? 'en';
+                    controller.selectedFoodNationalityName.value =
+                        name['current'] ?? name[lang] ?? name['en'] ?? name['ar'] ?? '';
+                  } else {
+                    controller.selectedFoodNationalityName.value = name?.toString() ?? '';
+                  }
+                  controller.clearFieldError('food_nationality_id');
+                }
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceColor,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: hasError ? Colors.red : Colors.grey.shade200,
+                    width: hasError ? 1.5 : 1,
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.flag_rounded, color: AppColors.primaryColor, size: 20),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        controller.selectedFoodNationalityName.value.isNotEmpty
+                            ? controller.selectedFoodNationalityName.value
+                            : 'select_food_nationality'.tr,
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: controller.selectedFoodNationalityName.value.isNotEmpty
+                              ? AppColors.textDarkColor
+                              : AppColors.hintTextColor,
+                        ),
+                      ),
+                    ),
+                    Icon(Icons.keyboard_arrow_down_rounded, color: AppColors.textMediumColor, size: 22),
+                  ],
+                ),
+              ),
+            ),
+            if (hasError)
+              Padding(
+                padding: const EdgeInsets.only(top: 6, left: 12),
+                child: Text(
+                  controller.validationErrors['food_nationality_id'] ?? '',
+                  style: const TextStyle(color: Colors.red, fontSize: 12),
+                ),
+              ),
+          ],
+        );
+      }),
+    );
+  }
+
+  // ─── GOVERNORATE SECTION ──────────────────────────────────
+  Widget _buildGovernorateSection() {
+    return _SectionCard(
+      icon: Icons.map_rounded,
+      title: 'governorate'.tr,
+      child: Obx(() {
+        final hasError = controller.validationErrors.containsKey('governorate_id');
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            GestureDetector(
+              onTap: () async {
+                final result = await showSearchableSelectBottomSheet(
+                  title: 'select_governorate'.tr,
+                  searchHint: 'search'.tr,
+                  items: controller.governorates,
+                  selectedId: controller.selectedGovernorateId.value,
+                  onSearch: controller.searchGovernorates,
+                  icon: Icons.map_rounded,
+                );
+                if (result != null) {
+                  controller.selectedGovernorateId.value = result['id'];
+                  final name = result['name'];
+                  if (name is Map) {
+                    final lang = Get.locale?.languageCode ?? 'en';
+                    controller.selectedGovernorateName.value =
+                        name['current'] ?? name[lang] ?? name['en'] ?? name['ar'] ?? '';
+                  } else {
+                    controller.selectedGovernorateName.value = name?.toString() ?? '';
+                  }
+                  controller.clearFieldError('governorate_id');
+                }
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceColor,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: hasError ? Colors.red : Colors.grey.shade200,
+                    width: hasError ? 1.5 : 1,
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.map_rounded, color: AppColors.primaryColor, size: 20),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        controller.selectedGovernorateName.value.isNotEmpty
+                            ? controller.selectedGovernorateName.value
+                            : 'select_governorate'.tr,
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: controller.selectedGovernorateName.value.isNotEmpty
+                              ? AppColors.textDarkColor
+                              : AppColors.hintTextColor,
+                        ),
+                      ),
+                    ),
+                    Icon(Icons.keyboard_arrow_down_rounded, color: AppColors.textMediumColor, size: 22),
+                  ],
+                ),
+              ),
+            ),
+            if (hasError)
+              Padding(
+                padding: const EdgeInsets.only(top: 6, left: 12),
+                child: Text(
+                  controller.validationErrors['governorate_id'] ?? '',
+                  style: const TextStyle(color: Colors.red, fontSize: 12),
+                ),
+              ),
+          ],
+        );
+      }),
     );
   }
 

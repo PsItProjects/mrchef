@@ -9,6 +9,7 @@ import 'package:mrsheaf/features/product_details/widgets/size_selection_section.
 import 'package:mrsheaf/features/product_details/widgets/additional_options_section.dart';
 import 'package:mrsheaf/features/product_details/widgets/add_to_cart_section.dart';
 import 'package:mrsheaf/features/product_details/widgets/reviews_preview_section.dart';
+import 'package:mrsheaf/features/product_details/widgets/product_details_shimmer.dart';
 
 class ProductDetailsScreen extends GetView<ProductDetailsController> {
   const ProductDetailsScreen({super.key});
@@ -19,26 +20,7 @@ class ProductDetailsScreen extends GetView<ProductDetailsController> {
       backgroundColor: Colors.white,
       body: Obx(() {
         if (controller.isLoadingProduct.value) {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const CircularProgressIndicator(
-                  color: AppColors.primaryColor,
-                  strokeWidth: 3,
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'loading'.tr,
-                  style: TextStyle(
-                    fontFamily: 'Lato',
-                    fontSize: 14,
-                    color: Colors.grey[500],
-                  ),
-                ),
-              ],
-            ),
-          );
+          return const ProductDetailsShimmer();
         }
 
         if (controller.product.value == null) {

@@ -9,102 +9,55 @@ class StoreActionsSection extends GetView<StoreDetailsController> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 97), // Centered with proper spacing
+      color: Colors.white,
+      padding: const EdgeInsets.fromLTRB(24, 16, 24, 16),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // Message button
+          // Message button (primary)
           Expanded(
-            child: Container(
-                     
-              height: 44,
-              decoration: BoxDecoration(
-                color: const Color(0xFFFACD02),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(
-                  color: const Color(0xFFFACD02),
-                  width: 1,
+            child: SizedBox(
+              height: 48,
+              child: ElevatedButton.icon(
+                onPressed: () => controller.sendMessage(),
+                icon: const Icon(Icons.chat_bubble_outline, size: 18),
+                label: Text(
+                  'message'.tr,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 15,
+                  ),
                 ),
-              ),
-              child: Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  onTap: () => controller.sendMessage(),
-                  borderRadius: BorderRadius.circular(8),
-                  child: Center(
-                    child: Text(
-                      'message'.tr,
-                      style: const TextStyle(
-                        fontFamily: 'Givonic',
-                        fontWeight: FontWeight.w600,
-                        fontSize: 16,
-                        color: Color(0xFF592E2C),
-                      ),
-                    ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primaryColor,
+                  foregroundColor: AppColors.textDarkColor,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
                   ),
                 ),
               ),
             ),
           ),
-          
-          const SizedBox(width: 8),
-          
-          // More button (three dots)
-          GestureDetector(
-            onTap: () => controller.showStoreInfoBottomSheet(),
-            child: Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                color: const Color(0xFFFACD02),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Center(
-                child: Container(
-                  width: 32,
-                  height: 32,
-                  child: Stack(
-                    children: [
-                      // Three dots
-                      Positioned(
-                        left: 16.02,
-                        top: 9.17,
-                        child: Container(
-                          width: 0,
-                          height: 0.02,
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF592E2C),
-                            borderRadius: BorderRadius.circular(2),
-                          ),
-                        ),
-                      ),
-                      Positioned(
-                        left: 15.16,
-                        top: 15.25,
-                        child: Container(
-                          width: 1.73,
-                          height: 1.73,
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF592E2C),
-                            borderRadius: BorderRadius.circular(1),
-                          ),
-                        ),
-                      ),
-                      Positioned(
-                        left: 15.16,
-                        top: 22.18,
-                        child: Container(
-                          width: 1.73,
-                          height: 1.73,
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF592E2C),
-                            borderRadius: BorderRadius.circular(1),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+
+          const SizedBox(width: 12),
+
+          // More / Info button
+          SizedBox(
+            width: 48,
+            height: 48,
+            child: OutlinedButton(
+              onPressed: () => controller.showStoreInfoBottomSheet(),
+              style: OutlinedButton.styleFrom(
+                padding: EdgeInsets.zero,
+                side: BorderSide(color: Colors.grey.shade300),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
                 ),
+              ),
+              child: Icon(
+                Icons.more_horiz,
+                color: AppColors.textDarkColor,
+                size: 22,
               ),
             ),
           ),

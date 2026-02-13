@@ -35,6 +35,7 @@ class FavoritesController extends GetxController {
   // Search
   final RxString searchQuery = ''.obs;
   final RxBool isSearching = false.obs;
+  final TextEditingController searchTextController = TextEditingController();
 
   @override
   void onInit() {
@@ -142,13 +143,23 @@ class FavoritesController extends GetxController {
     isSearching.value = !isSearching.value;
     if (!isSearching.value) {
       // Clear search when closing
+      searchTextController.clear();
       updateSearchQuery('');
     }
   }
 
   void updateSearchQuery(String query) {
     searchQuery.value = query;
+    if (searchTextController.text != query) {
+      searchTextController.text = query;
+    }
     _filterFavorites();
+  }
+
+  @override
+  void onClose() {
+    searchTextController.dispose();
+    super.onClose();
   }
 
   void _filterFavorites() {

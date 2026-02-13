@@ -43,6 +43,14 @@ class EditProductController extends GetxController {
   final selectedCategoryId = Rxn<int>();
   final categories = <CategoryModel>[].obs;
 
+  // Food Nationality & Governorate
+  final selectedFoodNationalityId = Rxn<int>();
+  final selectedFoodNationalityName = ''.obs;
+  final foodNationalities = <Map<String, dynamic>>[].obs;
+  final selectedGovernorateId = Rxn<int>();
+  final selectedGovernorateName = ''.obs;
+  final governorates = <Map<String, dynamic>>[].obs;
+
   // Boolean Flags
   final isAvailable = true.obs;
   final isFeatured = false.obs;
@@ -75,6 +83,8 @@ class EditProductController extends GetxController {
     super.onInit();
     productId = int.parse(Get.parameters['id'] ?? '0');
     _loadCategories();
+    _loadFoodNationalities();
+    _loadGovernorates();
     _loadProductData();
     _setupPriceListeners();
   }
@@ -171,6 +181,12 @@ class EditProductController extends GetxController {
 
     // Category
     selectedCategoryId.value = product.categoryId;
+
+    // Food Nationality & Governorate
+    selectedFoodNationalityId.value = product.foodNationalityId;
+    selectedFoodNationalityName.value = product.foodNationalityName ?? '';
+    selectedGovernorateId.value = product.governorateId;
+    selectedGovernorateName.value = product.governorateName ?? '';
 
     // Flags
     isAvailable.value = product.isAvailable;
@@ -298,6 +314,36 @@ class EditProductController extends GetxController {
     } catch (e) {
       print('❌ Error loading categories: $e');
     }
+  }
+
+  /// Load food nationalities from API
+  Future<void> _loadFoodNationalities() async {
+    try {
+      final data = await _productsService.getFoodNationalities();
+      foodNationalities.value = data;
+    } catch (e) {
+      print('❌ Error loading food nationalities: $e');
+    }
+  }
+
+  /// Load governorates from API
+  Future<void> _loadGovernorates() async {
+    try {
+      final data = await _productsService.getGovernorates();
+      governorates.value = data;
+    } catch (e) {
+      print('❌ Error loading governorates: $e');
+    }
+  }
+
+  /// Search food nationalities
+  Future<List<Map<String, dynamic>>> searchFoodNationalities(String query) async {
+    return await _productsService.getFoodNationalities(search: query);
+  }
+
+  /// Search governorates
+  Future<List<Map<String, dynamic>>> searchGovernorates(String query) async {
+    return await _productsService.getGovernorates(search: query);
   }
 
   /// Pick images from gallery
@@ -447,6 +493,18 @@ class EditProductController extends GetxController {
       errorFields.add('category_id');
     }
 
+    // Validate food nationality
+    if (selectedFoodNationalityId.value == null) {
+      validationErrors['food_nationality_id'] = 'food_nationality_required'.tr;
+      errorFields.add('food_nationality_id');
+    }
+
+    // Validate governorate
+    if (selectedGovernorateId.value == null) {
+      validationErrors['governorate_id'] = 'governorate_required'.tr;
+      errorFields.add('governorate_id');
+    }
+
     // Validate name
     if (nameEnController.text.trim().isEmpty) {
       validationErrors['name_en'] = 'product_name_required'.tr;
@@ -542,6 +600,8 @@ class EditProductController extends GetxController {
       final productData = {
         // Required fields
         'category_id': selectedCategoryId.value,
+        'food_nationality_id': selectedFoodNationalityId.value,
+        'governorate_id': selectedGovernorateId.value,
         'name_en': nameEnController.text.trim(),
         'price': basePrice,
 

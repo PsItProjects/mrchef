@@ -66,11 +66,13 @@ class MerchantChatScreen extends GetView<MerchantChatController> {
                                     ? controller.isOrderUpdating(orderId)
                                     : false,
                                 onOrderStatusChange: (id, status,
-                                    {double? agreedPrice}) {
+                                    {double? agreedPrice,
+                                    double? agreedDeliveryFee}) {
                                   controller.updateOrderStatusById(
                                     id,
                                     status,
                                     agreedPrice: agreedPrice,
+                                    agreedDeliveryFee: agreedDeliveryFee,
                                   );
                                 },
                               );

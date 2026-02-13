@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/features/store_details/controllers/store_details_controller.dart';
@@ -10,177 +9,154 @@ class StoreInfoSection extends GetView<StoreDetailsController> {
   @override
   Widget build(BuildContext context) {
     return Container(
+      color: Colors.white,
+      width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SizedBox(height: 16),
-          
-          // Store name and location
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Obx(() => Text(
-                controller.storeName.value,
-                style: const TextStyle(
-                  fontFamily: 'Lato',
-                  fontWeight: FontWeight.w700,
-                  fontSize: 24,
-                  letterSpacing: -0.24,
-                  color: Color(0xFF262626),
-                ),
-              )),
-              
-              const SizedBox(height: 4),
-              
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  SvgPicture.asset(
-                    'assets/icons/location.svg',
-                    width: 20,
-                    height: 20,
-                    colorFilter: const ColorFilter.mode(
-                      Color(0xFF5E5E5E),
-                      BlendMode.srcIn,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Obx(() => Text(
-                    controller.storeLocation.value,
-                    style: const TextStyle(
-                      fontFamily: 'Lato',
-                      fontWeight: FontWeight.w400,
-                      fontSize: 12,
-                      color: Color(0xFF5E5E5E),
-                    ),
-                  )),
-                ],
-              ),
-            ],
-          ),
-          
-          const SizedBox(height: 16),
-          
-          // Store description
+          const SizedBox(height: 8),
+
+          // Store name
           Obx(() => Text(
-            controller.storeDescription.value,
+            controller.storeName.value,
+            textAlign: TextAlign.center,
             style: const TextStyle(
-              fontFamily: 'Givonic',
-              fontWeight: FontWeight.w600,
-              fontSize: 12,
-              height: 1.35,
-              color: Color(0xFF282828),
+              fontWeight: FontWeight.w800,
+              fontSize: 22,
+              color: AppColors.textDarkColor,
+              letterSpacing: -0.3,
             ),
           )),
+
+          const SizedBox(height: 6),
+
+          // Location
+          Obx(() => controller.storeLocation.value.isNotEmpty
+              ? Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.location_on_outlined,
+                        size: 16, color: Colors.grey.shade500),
+                    const SizedBox(width: 4),
+                    Flexible(
+                      child: Text(
+                        controller.storeLocation.value,
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: Colors.grey.shade500,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                )
+              : const SizedBox.shrink()),
+
+          const SizedBox(height: 18),
+
+          // Info chips strip
+          _buildInfoStrip(),
 
           const SizedBox(height: 16),
 
-          // Store stats (Rating, Reviews, Products) - HIDDEN as per user request
-          // Obx(() => Row(
-          //   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          //   children: [
-          //     // Rating
-          //     _buildStatItem(
-          //       icon: Icons.star,
-          //       iconColor: Colors.amber,
-          //       value: controller.storeRating.value.toStringAsFixed(1),
-          //       label: 'rating'.tr,
-          //     ),
-
-          //     // Reviews
-          //     _buildStatItem(
-          //       icon: Icons.reviews,
-          //       iconColor: AppColors.primaryColor,
-          //       value: controller.reviewsCount.value.toString(),
-          //       label: 'reviews_count'.tr,
-          //     ),
-
-          //     // Products
-          //     _buildStatItem(
-          //       icon: Icons.restaurant_menu,
-          //       iconColor: AppColors.primaryColor,
-          //       value: controller.totalProducts.value.toString(),
-          //       label: 'total_products'.tr,
-          //     ),
-          //   ],
-          // )),
-
-          // const SizedBox(height: 16),
-
-          // Delivery info
-          Obx(() => Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.grey[50],
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.grey[200]!),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                // Delivery fee
-                _buildDeliveryInfo(
-                  icon: Icons.delivery_dining,
-                  title: 'delivery_fee_label'.tr,
-                  value: '${controller.deliveryFee.value.toStringAsFixed(0)} ر.س',
+          // Description
+          Obx(() {
+            if (controller.storeDescription.value.isEmpty) {
+              return const SizedBox.shrink();
+            }
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 16),
+              child: Text(
+                controller.storeDescription.value,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 13,
+                  color: Colors.grey.shade600,
+                  height: 1.5,
                 ),
+              ),
+            );
+          }),
 
-                // Minimum order
-                _buildDeliveryInfo(
-                  icon: Icons.shopping_cart,
-                  title: 'minimum_order_label'.tr,
-                  value: '${controller.minimumOrder.value.toStringAsFixed(0)} ر.س',
-                ),
-
-                // Preparation time
-                _buildDeliveryInfo(
-                  icon: Icons.timer,
-                  title: 'preparation_time_label'.tr,
-                  value: '${controller.preparationTime.value} ${'minute'.tr}',
-                ),
-              ],
-            ),
-          )),
+          Divider(color: Colors.grey.shade200, height: 1),
         ],
       ),
     );
   }
 
-  // Removed _buildStatItem as ratings section is hidden
+  Widget _buildInfoStrip() {
+    return Obx(() => Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8F8F8),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: _buildInfoItem(
+              icon: Icons.delivery_dining_outlined,
+              value: '${controller.deliveryFee.value.toStringAsFixed(0)} ر.س',
+              label: 'delivery_fee_label'.tr,
+            ),
+          ),
+          _buildVerticalDivider(),
+          Expanded(
+            child: _buildInfoItem(
+              icon: Icons.timer_outlined,
+              value: '${controller.preparationTime.value} ${'minute'.tr}',
+              label: 'preparation_time_label'.tr,
+            ),
+          ),
+          _buildVerticalDivider(),
+          Expanded(
+            child: _buildInfoItem(
+              icon: Icons.shopping_bag_outlined,
+              value: '${controller.minimumOrder.value.toStringAsFixed(0)} ر.س',
+              label: 'minimum_order_label'.tr,
+            ),
+          ),
+        ],
+      ),
+    ));
+  }
 
-  Widget _buildDeliveryInfo({
+  Widget _buildInfoItem({
     required IconData icon,
-    required String title,
     required String value,
+    required String label,
   }) {
     return Column(
       children: [
-        Icon(
-          icon,
-          color: AppColors.primaryColor,
-          size: 20,
-        ),
-        const SizedBox(height: 4),
-        Text(
-          title,
-          style: const TextStyle(
-            fontFamily: 'Lato',
-            fontWeight: FontWeight.w400,
-            fontSize: 10,
-            color: Color(0xFF5E5E5E),
-          ),
-        ),
+        Icon(icon, size: 20, color: AppColors.primaryColor),
+        const SizedBox(height: 6),
         Text(
           value,
           style: const TextStyle(
-            fontFamily: 'Lato',
-            fontWeight: FontWeight.w600,
-            fontSize: 12,
-            color: Color(0xFF262626),
+            fontWeight: FontWeight.w700,
+            fontSize: 13,
+            color: AppColors.textDarkColor,
           ),
         ),
+        const SizedBox(height: 2),
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 10,
+            color: Colors.grey.shade500,
+          ),
+          textAlign: TextAlign.center,
+        ),
       ],
+    );
+  }
+
+  Widget _buildVerticalDivider() {
+    return Container(
+      height: 40,
+      width: 1,
+      color: Colors.grey.shade200,
     );
   }
 }

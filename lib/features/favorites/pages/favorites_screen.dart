@@ -14,40 +14,72 @@ class FavoritesScreen extends GetView<FavoritesController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF2F2F2),
-      body: SafeArea(
-        child: Column(
-          children: [
-            // Header
-            const FavoritesHeader(),
-            
-            // Tabs
-            const FavoritesTabs(),
-            
-            // Content
-            Expanded(
-              child: Obx(() {
-                if (controller.isLoading.value) {
-                  return const Center(
-                    child: CircularProgressIndicator(
-                      valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFACD02)),
-                    ),
-                  );
-                } else if (controller.showEmptyState) {
-                  return const EmptyFavoritesWidget();
-                } else {
-                  return RefreshIndicator(
-                    onRefresh: controller.refreshFavorites,
-                    color: const Color(0xFFFACD02),
-                    child: controller.isStoresTabSelected
-                        ? const FavoriteStoresList()
-                        : const FavoriteProductsList(),
-                  );
-                }
-              }),
-            ),
-          ],
+      backgroundColor: const Color(0xFFF8F8F8),
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.transparent,
+        elevation: 0,
+        centerTitle: true,
+        leading: IconButton(
+          icon: Icon(
+            Get.locale?.languageCode == 'ar'
+                ? Icons.arrow_forward_ios_rounded
+                : Icons.arrow_back_ios_rounded,
+            size: 20,
+            color: AppColors.textDarkColor,
+          ),
+          onPressed: () => Get.back(),
         ),
+        title: Text(
+          'favorites'.tr,
+          style: TextStyle(
+            fontWeight: FontWeight.w700,
+            fontSize: 18,
+            color: AppColors.textDarkColor,
+          ),
+        ),
+        actions: [
+          Obx(() => IconButton(
+                icon: Icon(
+                  controller.isSearching.value ? Icons.close : Icons.search,
+                  size: 22,
+                  color: AppColors.textDarkColor,
+                ),
+                onPressed: controller.toggleSearch,
+              )),
+        ],
+      ),
+      body: Column(
+        children: [
+          // Search bar (conditional)
+          const FavoritesHeader(),
+
+          // Tabs
+          const FavoritesTabs(),
+
+          // Content
+          Expanded(
+            child: Obx(() {
+              if (controller.isLoading.value) {
+                return Center(
+                  child: CircularProgressIndicator(
+                    color: AppColors.primaryColor,
+                  ),
+                );
+              } else if (controller.showEmptyState) {
+                return const EmptyFavoritesWidget();
+              } else {
+                return RefreshIndicator(
+                  onRefresh: controller.refreshFavorites,
+                  color: AppColors.primaryColor,
+                  child: controller.isStoresTabSelected
+                      ? const FavoriteStoresList()
+                      : const FavoriteProductsList(),
+                );
+              }
+            }),
+          ),
+        ],
       ),
     );
   }

@@ -2,38 +2,31 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:mrsheaf/features/merchant/widgets/price_confirmation_modal.dart';
-import 'package:mrsheaf/features/merchant/controllers/merchant_chat_controller.dart';
+import 'package:mrsheaf/features/chat/controllers/chat_controller.dart';
 
-class MerchantProductAttachmentCard extends StatelessWidget {
+/// Professional order card shown in customer chat — mirrors the merchant card
+/// design but with customer-specific actions (confirm delivery).
+class CustomerProductAttachmentCard extends StatelessWidget {
   final Map<String, dynamic> attachments;
   final Map<String, dynamic>? orderData;
-  final bool canApprove;
-  final bool isUpdating;
-  final Function(String status,
-      {double? agreedPrice, double? agreedDeliveryFee})? onStatusChange;
-  final Function(int orderId, String status,
-      {double? agreedPrice, double? agreedDeliveryFee})?
-      onOrderStatusChange;
+  final bool isConfirming;
+  final Function(int orderId)? onConfirmDelivery;
 
-  const MerchantProductAttachmentCard({
+  const CustomerProductAttachmentCard({
     super.key,
     required this.attachments,
     this.orderData,
-    this.canApprove = false,
-    this.isUpdating = false,
-    this.onStatusChange,
-    this.onOrderStatusChange,
+    this.isConfirming = false,
+    this.onConfirmDelivery,
   });
 
-  // ─── HELPERS ───────────────────────────────────────────────
   bool get _isArabic => Get.locale?.languageCode == 'ar';
 
   String _resolveOrderStatus() {
     String status = attachments['status']?.toString() ?? 'pending';
     final orderId = attachments['order_id'];
-    if (orderId != null && Get.isRegistered<MerchantChatController>()) {
-      final controller = Get.find<MerchantChatController>();
+    if (orderId != null && Get.isRegistered<ChatController>()) {
+      final controller = Get.find<ChatController>();
       final stored = controller.getOrderStatus(orderId);
       if (stored != null) status = stored;
     }
@@ -49,11 +42,11 @@ class MerchantProductAttachmentCard extends StatelessWidget {
     return merged;
   }
 
-  bool get _isThisOrderUpdating {
-    if (isUpdating) return true;
+  bool get _isConfirmingThis {
+    if (isConfirming) return true;
     final orderId = attachments['order_id'];
-    if (orderId != null && Get.isRegistered<MerchantChatController>()) {
-      return Get.find<MerchantChatController>().isOrderUpdating(orderId);
+    if (orderId != null && Get.isRegistered<ChatController>()) {
+      return Get.find<ChatController>().isOrderConfirming(orderId);
     }
     return false;
   }
@@ -61,12 +54,11 @@ class MerchantProductAttachmentCard extends StatelessWidget {
   double _parseDouble(dynamic v) =>
       double.tryParse(v?.toString() ?? '0') ?? 0;
 
-  // ─── BUILD ─────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
     final items = attachments['items'] as List<dynamic>? ?? [];
     final orderId = attachments['order_id'];
-    final orderStatus = _resolveOrderStatus();
+    final status = _resolveOrderStatus();
     final order = _mergedOrder;
 
     return Container(
@@ -75,12 +67,12 @@ class MerchantProductAttachmentCard extends StatelessWidget {
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: _statusColor(orderStatus).withOpacity(0.3),
+          color: _statusColor(status).withValues(alpha: 0.3),
           width: 1.5,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
+            color: Colors.black.withValues(alpha: 0.06),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -89,24 +81,13 @@ class MerchantProductAttachmentCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ── Header with status ──
-          _buildHeader(order, orderId, orderStatus),
-
-          // ── Status progress bar ──
-          if (!['rejected', 'cancelled'].contains(orderStatus))
-            _buildStatusProgress(orderStatus),
-
-          // ── Items list ──
+          _buildHeader(order, orderId, status),
+          if (!['rejected', 'cancelled'].contains(status))
+            _buildStatusProgress(status),
           _buildItemsList(items),
-
-          // ── Delivery address ──
           _buildDeliveryAddress(order),
-
-          // ── Pricing breakdown ──
-          _buildPricingSummary(order, orderStatus),
-
-          // ── Actions based on status ──
-          _buildActions(order, orderId, orderStatus),
+          _buildPricingSummary(order, status),
+          _buildActions(order, orderId, status),
         ],
       ),
     );
@@ -126,15 +107,14 @@ class MerchantProductAttachmentCard extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            _statusColor(status).withOpacity(0.12),
-            _statusColor(status).withOpacity(0.04),
+            _statusColor(status).withValues(alpha: 0.12),
+            _statusColor(status).withValues(alpha: 0.04),
           ],
         ),
         borderRadius: const BorderRadius.vertical(top: Radius.circular(14)),
       ),
       child: Row(
         children: [
-          // Icon
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
@@ -145,7 +125,6 @@ class MerchantProductAttachmentCard extends StatelessWidget {
                 size: 18, color: Colors.white),
           ),
           const SizedBox(width: 10),
-          // Title + count
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -190,7 +169,6 @@ class MerchantProductAttachmentCard extends StatelessWidget {
               ],
             ),
           ),
-          // Status badge
           _statusBadge(status),
         ],
       ),
@@ -217,7 +195,6 @@ class MerchantProductAttachmentCard extends StatelessWidget {
       child: Row(
         children: List.generate(stages.length * 2 - 1, (i) {
           if (i.isOdd) {
-            // Connector line
             final stageIdx = i ~/ 2;
             final done = stageIdx < currentIdx;
             return Expanded(
@@ -232,7 +209,6 @@ class MerchantProductAttachmentCard extends StatelessWidget {
               ),
             );
           }
-          // Dot
           final stageIdx = i ~/ 2;
           final done = stageIdx <= currentIdx;
           final isCurrent = stageIdx == currentIdx;
@@ -244,7 +220,7 @@ class MerchantProductAttachmentCard extends StatelessWidget {
               color: done ? _statusColor(current) : Colors.grey.shade200,
               border: isCurrent
                   ? Border.all(
-                      color: _statusColor(current).withOpacity(0.3),
+                      color: _statusColor(current).withValues(alpha: 0.3),
                       width: 3)
                   : null,
             ),
@@ -302,7 +278,7 @@ class MerchantProductAttachmentCard extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Image
+          // Image with qty badge
           Stack(
             children: [
               ClipRRect(
@@ -315,9 +291,9 @@ class MerchantProductAttachmentCard extends StatelessWidget {
                 child: Container(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                  decoration: BoxDecoration(
+                  decoration: const BoxDecoration(
                     color: AppColors.primaryColor,
-                    borderRadius: const BorderRadius.only(
+                    borderRadius: BorderRadius.only(
                       topRight: Radius.circular(10),
                       bottomLeft: Radius.circular(8),
                     ),
@@ -351,7 +327,6 @@ class MerchantProductAttachmentCard extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 4),
-                // Unit price
                 Text(
                   '${_isArabic ? 'سعر الوحدة' : 'Unit'}: $unitPrice ${_isArabic ? 'ر.س' : 'SAR'}',
                   style:
@@ -376,17 +351,16 @@ class MerchantProductAttachmentCard extends StatelessWidget {
                   _miniDetail(Icons.note_alt_outlined, notes, italic: true),
                 ],
                 const SizedBox(height: 6),
-                // Item total
                 Container(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
-                    color: AppColors.primaryColor.withOpacity(0.1),
+                    color: AppColors.primaryColor.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: Text(
                     '${_isArabic ? 'الإجمالي' : 'Total'}: $totalPrice ${_isArabic ? 'ر.س' : 'SAR'}',
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w700,
                       color: AppColors.primaryColor,
@@ -442,7 +416,7 @@ class MerchantProductAttachmentCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
-          color: Colors.blue.shade50.withOpacity(0.5),
+          color: Colors.blue.shade50.withValues(alpha: 0.5),
           borderRadius: BorderRadius.circular(10),
           border: Border.all(color: Colors.blue.shade100),
         ),
@@ -534,21 +508,19 @@ class MerchantProductAttachmentCard extends StatelessWidget {
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              AppColors.primaryColor.withOpacity(0.08),
-              AppColors.primaryColor.withOpacity(0.02),
+              AppColors.primaryColor.withValues(alpha: 0.08),
+              AppColors.primaryColor.withValues(alpha: 0.02),
             ],
           ),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-              color: AppColors.primaryColor.withOpacity(0.15)),
+              color: AppColors.primaryColor.withValues(alpha: 0.15)),
         ),
         child: Column(
           children: [
-            // Subtotal
             if (subtotal != total)
               _priceRow(
                   _isArabic ? 'المجموع الفرعي' : 'Subtotal', subtotal),
-            // Delivery fee display based on type
             if (feeType == 'free')
               _priceRow(
                 _isArabic ? 'التوصيل' : 'Delivery',
@@ -573,31 +545,27 @@ class MerchantProductAttachmentCard extends StatelessWidget {
                 note: _isArabic ? 'بالاتفاق' : 'Negotiable',
                 noteColor: Colors.orange,
               ),
-            // Service fee
             if (serviceFee > 0)
               _priceRow(
                   _isArabic ? 'رسوم الخدمة' : 'Service fee', serviceFee),
-            // Discount
             if (discount > 0)
               _priceRow(
                 _isArabic ? 'خصم' : 'Discount',
                 -discount,
                 noteColor: Colors.green,
               ),
-            // Divider
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 6),
               child: Divider(
-                  color: AppColors.primaryColor.withOpacity(0.15),
+                  color: AppColors.primaryColor.withValues(alpha: 0.15),
                   height: 1),
             ),
-            // Total / Agreed total
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Row(
                   children: [
-                    Icon(Icons.payments_rounded,
+                    const Icon(Icons.payments_rounded,
                         size: 18, color: AppColors.primaryColor),
                     const SizedBox(width: 6),
                     Text(
@@ -664,7 +632,7 @@ class MerchantProductAttachmentCard extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(
                       horizontal: 8, vertical: 2),
                   decoration: BoxDecoration(
-                    color: (noteColor ?? Colors.grey).withOpacity(0.1),
+                    color: (noteColor ?? Colors.grey).withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(4),
                   ),
                   child: Text(
@@ -696,42 +664,99 @@ class MerchantProductAttachmentCard extends StatelessWidget {
   }
 
   // ═══════════════════════════════════════════════════════════
-  //  ACTIONS
+  //  ACTIONS — customer can confirm delivery
   // ═══════════════════════════════════════════════════════════
   Widget _buildActions(
       Map<String, dynamic> order, dynamic orderId, String status) {
-    final updating = _isThisOrderUpdating;
-
-    // Pending → approve / reject
-    if (status == 'pending') {
-      return _pendingActions(order, orderId, updating);
+    // Delivered = awaiting customer confirmation — show confirm button
+    if (status == 'delivered') {
+      final confirming = _isConfirmingThis;
+      return Padding(
+        padding: const EdgeInsets.fromLTRB(14, 10, 14, 12),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: confirming
+                ? null
+                : () => _handleConfirmDelivery(orderId),
+            borderRadius: BorderRadius.circular(12),
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    Colors.green.shade600,
+                    Colors.green.shade500,
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.green.withValues(alpha: 0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  if (confirming)
+                    const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.5,
+                        valueColor:
+                            AlwaysStoppedAnimation<Color>(Colors.white),
+                      ),
+                    )
+                  else
+                    const Icon(Icons.check_circle_rounded,
+                        size: 22, color: Colors.white),
+                  const SizedBox(width: 8),
+                  Text(
+                    _isArabic ? 'تأكيد الاستلام' : 'Confirm Receipt',
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
     }
 
-    // Delivered = awaiting customer confirmation — show info banner
-    if (status == 'delivered') {
+    // Completed — show success banner
+    if (status == 'completed') {
       return Padding(
         padding: const EdgeInsets.fromLTRB(14, 10, 14, 12),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
           decoration: BoxDecoration(
-            color: Colors.amber.shade50,
+            color: Colors.green.shade50,
             borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: Colors.amber.shade200),
+            border: Border.all(color: Colors.green.shade200),
           ),
           child: Row(
             children: [
-              Icon(Icons.hourglass_top_rounded,
-                  size: 20, color: Colors.amber.shade700),
+              Icon(Icons.done_all_rounded,
+                  size: 20, color: Colors.green.shade700),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
                   _isArabic
-                      ? 'بانتظار تأكيد الاستلام من الزبون'
-                      : 'Waiting for customer to confirm receipt',
+                      ? 'تم تأكيد الاستلام بنجاح ✓'
+                      : 'Delivery confirmed successfully ✓',
                   style: TextStyle(
                     fontSize: 12.5,
                     fontWeight: FontWeight.w600,
-                    color: Colors.amber.shade800,
+                    color: Colors.green.shade800,
                   ),
                 ),
               ),
@@ -741,129 +766,79 @@ class MerchantProductAttachmentCard extends StatelessWidget {
       );
     }
 
-    // Completed = final state — no actions
-    if (status == 'completed') {
-      return const SizedBox(height: 10);
-    }
-
-    // Get next available statuses
-    final nextStatus = _nextStatuses(status);
-    if (nextStatus.isEmpty) return const SizedBox(height: 10);
-
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(14, 10, 14, 12),
-      child: Row(
-        children: nextStatus.map((ns) {
-          final isAdvance = _isAdvanceStatus(status, ns);
-          final color = isAdvance ? _statusColor(ns) : Colors.red;
-          final icon = isAdvance ? _statusIcon(ns) : Icons.cancel_rounded;
-          final label = _statusLabel(ns);
-
-          return Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 3),
-              child: _actionButton(
-                label: label,
-                icon: icon,
-                color: color,
-                isLoading: updating,
-                outlined: !isAdvance,
-                onTap: () => _handleStatusChange(orderId, ns),
-              ),
-            ),
-          );
-        }).toList(),
-      ),
-    );
-  }
-
-  Widget _pendingActions(
-      Map<String, dynamic> order, dynamic orderId, bool updating) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(14, 10, 14, 12),
-      child: Row(
-        children: [
-          // Reject
-          Expanded(
-            child: _actionButton(
-              label: _isArabic ? 'رفض' : 'Reject',
-              icon: Icons.close_rounded,
-              color: Colors.red,
-              isLoading: updating,
-              outlined: true,
-              onTap: () => _handleStatusChange(orderId, 'rejected'),
-            ),
-          ),
-          const SizedBox(width: 10),
-          // Approve
-          Expanded(
-            flex: 2,
-            child: _actionButton(
-              label: _isArabic ? 'قبول الطلب' : 'Accept Order',
-              icon: Icons.check_circle_rounded,
-              color: Colors.green,
-              isLoading: updating,
-              onTap: () => _showApproveModal(order, orderId),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _actionButton({
-    required String label,
-    required IconData icon,
-    required Color color,
-    required VoidCallback onTap,
-    bool isLoading = false,
-    bool outlined = false,
-  }) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: isLoading ? null : onTap,
-        borderRadius: BorderRadius.circular(10),
+    // Cancelled/rejected — show info
+    if (status == 'cancelled' || status == 'rejected') {
+      return Padding(
+        padding: const EdgeInsets.fromLTRB(14, 10, 14, 12),
         child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 10),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
           decoration: BoxDecoration(
-            color: outlined ? Colors.transparent : color,
+            color: Colors.red.shade50,
             borderRadius: BorderRadius.circular(10),
-            border: outlined ? Border.all(color: color, width: 1.5) : null,
+            border: Border.all(color: Colors.red.shade200),
           ),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              if (isLoading)
-                SizedBox(
-                  width: 16,
-                  height: 16,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                        outlined ? color : Colors.white),
-                  ),
-                )
-              else
-                Icon(icon,
-                    size: 16, color: outlined ? color : Colors.white),
-              const SizedBox(width: 6),
-              Flexible(
+              Icon(Icons.cancel_rounded,
+                  size: 20, color: Colors.red.shade700),
+              const SizedBox(width: 8),
+              Expanded(
                 child: Text(
-                  label,
+                  _isArabic
+                      ? (status == 'rejected'
+                          ? 'تم رفض الطلب'
+                          : 'تم إلغاء الطلب')
+                      : (status == 'rejected'
+                          ? 'Order rejected'
+                          : 'Order cancelled'),
                   style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                    color: outlined ? color : Colors.white,
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.red.shade800,
                   ),
-                  overflow: TextOverflow.ellipsis,
                 ),
               ),
             ],
           ),
         ),
-      ),
-    );
+      );
+    }
+
+    // For all other statuses — show a subtle status info
+    if (['pending', 'confirmed', 'preparing', 'ready', 'out_for_delivery']
+        .contains(status)) {
+      return Padding(
+        padding: const EdgeInsets.fromLTRB(14, 6, 14, 12),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: BoxDecoration(
+            color: _statusColor(status).withValues(alpha: 0.08),
+            borderRadius: BorderRadius.circular(8),
+            border:
+                Border.all(color: _statusColor(status).withValues(alpha: 0.2)),
+          ),
+          child: Row(
+            children: [
+              Icon(_statusIcon(status),
+                  size: 16, color: _statusColor(status)),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  _statusDescription(status),
+                  style: TextStyle(
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.w500,
+                    color: _statusColor(status),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return const SizedBox(height: 10);
   }
 
   // ═══════════════════════════════════════════════════════════
@@ -882,7 +857,7 @@ class MerchantProductAttachmentCard extends StatelessWidget {
       case 'out_for_delivery':
         return Colors.indigo;
       case 'delivered':
-        return Colors.amber.shade700; // Awaiting customer confirmation
+        return Colors.amber.shade700;
       case 'completed':
         return Colors.green;
       case 'cancelled':
@@ -898,9 +873,9 @@ class MerchantProductAttachmentCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.12),
+        color: color.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withOpacity(0.4)),
+        border: Border.all(color: color.withValues(alpha: 0.4)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -954,6 +929,8 @@ class MerchantProductAttachmentCard extends StatelessWidget {
 
   IconData _statusIcon(String status) {
     switch (status) {
+      case 'pending':
+        return Icons.schedule_rounded;
       case 'confirmed':
         return Icons.check_circle_rounded;
       case 'preparing':
@@ -966,42 +943,34 @@ class MerchantProductAttachmentCard extends StatelessWidget {
         return Icons.hourglass_top_rounded;
       case 'completed':
         return Icons.done_all_rounded;
-      case 'cancelled':
-        return Icons.cancel_rounded;
       default:
-        return Icons.arrow_forward_rounded;
+        return Icons.info_outline_rounded;
     }
   }
 
-  List<String> _nextStatuses(String current) {
-    // Must match backend Order model transition rules exactly
-    switch (current) {
+  String _statusDescription(String status) {
+    switch (status) {
+      case 'pending':
+        return _isArabic
+            ? 'بانتظار موافقة التاجر على طلبك'
+            : 'Waiting for merchant to accept your order';
       case 'confirmed':
-        return ['preparing', 'cancelled']; // canBePreparing + canBeCancelled
+        return _isArabic
+            ? 'تم قبول طلبك من التاجر'
+            : 'Your order has been accepted';
       case 'preparing':
-        return ['ready']; // canBeReady only
+        return _isArabic
+            ? 'طلبك قيد التحضير الآن'
+            : 'Your order is being prepared';
       case 'ready':
-        return ['out_for_delivery', 'delivered']; // canBeOutForDelivery + canBeDelivered
+        return _isArabic ? 'طلبك جاهز للتوصيل' : 'Your order is ready';
       case 'out_for_delivery':
-        return ['delivered']; // canBeDelivered
-      // 'delivered' = awaiting customer confirmation — merchant has no actions
-      // 'completed' = customer confirmed — final state
+        return _isArabic
+            ? 'طلبك في الطريق إليك'
+            : 'Your order is on the way';
       default:
-        return [];
+        return '';
     }
-  }
-
-  bool _isAdvanceStatus(String current, String next) {
-    const order = [
-      'pending',
-      'confirmed',
-      'preparing',
-      'ready',
-      'out_for_delivery',
-      'delivered',
-      'completed'
-    ];
-    return order.indexOf(next) > order.indexOf(current);
   }
 
   String _addressTypeLabel(String type) {
@@ -1016,7 +985,6 @@ class MerchantProductAttachmentCard extends StatelessWidget {
     }
   }
 
-  // ─── Private helpers ───────────────────────────────────────
   Widget _productImage(String? url) {
     if (url != null && url.isNotEmpty) {
       return CachedNetworkImage(
@@ -1066,40 +1034,60 @@ class MerchantProductAttachmentCard extends StatelessWidget {
     );
   }
 
-  void _handleStatusChange(dynamic orderId, String status,
-      {double? agreedPrice, double? agreedDeliveryFee}) {
-    if (orderId != null && onOrderStatusChange != null) {
-      onOrderStatusChange!(
-          orderId is int ? orderId : int.tryParse(orderId.toString()) ?? 0,
-          status,
-          agreedPrice: agreedPrice,
-          agreedDeliveryFee: agreedDeliveryFee);
-    } else if (onStatusChange != null) {
-      onStatusChange!(status,
-          agreedPrice: agreedPrice,
-          agreedDeliveryFee: agreedDeliveryFee);
-    }
-  }
+  void _handleConfirmDelivery(dynamic orderId) {
+    if (orderId == null) return;
+    final id = orderId is int ? orderId : int.tryParse(orderId.toString()) ?? 0;
 
-  void _showApproveModal(Map<String, dynamic> order, dynamic orderId) {
-    final orderNum = order['order_number']?.toString() ?? '#$orderId';
-    final defaultPrice =
-        double.tryParse(order['total_amount']?.toString() ?? '0') ?? 0;
-
-    PriceConfirmationModal.show(
-      context: Get.context!,
-      orderNumber: orderNum,
-      defaultPrice: defaultPrice,
-      deliveryFeeType:
-          order['restaurant']?['delivery_fee_type']?.toString() ??
-              order['delivery_fee_type']?.toString() ??
-              'negotiable',
-      onConfirm: (agreedPrice, agreedDeliveryFee) async {
-        _handleStatusChange(orderId, 'confirmed',
-            agreedPrice: agreedPrice,
-            agreedDeliveryFee: agreedDeliveryFee);
-        Get.back();
-      },
+    // Show confirmation dialog
+    Get.dialog(
+      AlertDialog(
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            Icon(Icons.check_circle_rounded,
+                color: Colors.green.shade600, size: 28),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                _isArabic ? 'تأكيد الاستلام' : 'Confirm Receipt',
+                style: const TextStyle(
+                    fontSize: 18, fontWeight: FontWeight.w700),
+              ),
+            ),
+          ],
+        ),
+        content: Text(
+          _isArabic
+              ? 'هل تؤكد استلام الطلب؟ لا يمكن التراجع بعد التأكيد.'
+              : 'Confirm you received the order? This cannot be undone.',
+          style: TextStyle(fontSize: 14, color: Colors.grey.shade700),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(),
+            child: Text(
+              _isArabic ? 'إلغاء' : 'Cancel',
+              style: TextStyle(color: Colors.grey.shade600),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Get.back();
+              if (onConfirmDelivery != null) {
+                onConfirmDelivery!(id);
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.green,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8)),
+            ),
+            child: Text(_isArabic ? 'تأكيد' : 'Confirm'),
+          ),
+        ],
+      ),
     );
   }
 }

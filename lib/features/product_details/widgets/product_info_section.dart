@@ -226,6 +226,26 @@ class ProductInfoSection extends GetView<ProductDetailsController> {
               ));
             }
 
+            // Food nationality
+            if (p.foodNationalityName != null && p.foodNationalityName!.isNotEmpty) {
+              chips.add(_InfoChip(
+                icon: Icons.public_rounded,
+                label: p.foodNationalityName!,
+                bgColor: Colors.purple.shade50,
+                iconColor: Colors.purple.shade600,
+              ));
+            }
+
+            // Governorate
+            if (p.governorateName != null && p.governorateName!.isNotEmpty) {
+              chips.add(_InfoChip(
+                icon: Icons.location_city_rounded,
+                label: p.governorateName!,
+                bgColor: Colors.indigo.shade50,
+                iconColor: Colors.indigo.shade600,
+              ));
+            }
+
             if (chips.isEmpty) return const SizedBox.shrink();
 
             return Padding(
@@ -238,14 +258,47 @@ class ProductInfoSection extends GetView<ProductDetailsController> {
           Obx(() {
             final description = controller.product.value?.description ?? '';
             if (description.isEmpty) return const SizedBox.shrink();
-            return Text(
-              description,
-              style: const TextStyle(
-                fontFamily: 'Lato',
-                fontWeight: FontWeight.w400,
-                fontSize: 14,
-                color: Color(0xFF6B6B80),
-                height: 1.6,
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 6),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(Icons.subject_rounded, size: 18, color: AppColors.secondaryColor),
+                      const SizedBox(width: 6),
+                      Text(
+                        'product_description'.tr,
+                        style: const TextStyle(
+                          fontFamily: 'Lato',
+                          fontWeight: FontWeight.w700,
+                          fontSize: 15,
+                          color: Color(0xFF1A1A2E),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: AppColors.surfaceColor,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.grey.shade200),
+                    ),
+                    child: Text(
+                      description,
+                      style: const TextStyle(
+                        fontFamily: 'Lato',
+                        fontWeight: FontWeight.w400,
+                        fontSize: 14,
+                        color: Color(0xFF4A4A5A),
+                        height: 1.6,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             );
           }),

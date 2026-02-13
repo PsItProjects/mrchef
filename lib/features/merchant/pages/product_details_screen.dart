@@ -282,6 +282,14 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
             const Divider(height: 24),
             _buildInfoRow('category'.tr, product.categoryName!),
           ],
+          if (product.foodNationalityName != null) ...[
+            const Divider(height: 24),
+            _buildInfoRow('food_nationality'.tr, product.foodNationalityName!),
+          ],
+          if (product.governorateName != null) ...[
+            const Divider(height: 24),
+            _buildInfoRow('governorate'.tr, product.governorateName!),
+          ],
         ],
       ),
     );

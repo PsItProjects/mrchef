@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mrsheaf/core/network/api_client.dart';
 import 'package:mrsheaf/core/localization/translation_helper.dart';
+import 'package:mrsheaf/features/merchant/services/order_sync_service.dart';
 import 'package:dio/dio.dart' as dio;
 import '../../../core/services/toast_service.dart';
 
@@ -66,13 +67,19 @@ class MerchantOrderDetailsController extends GetxController {
 
   /// Update order status
   Future<bool> updateOrderStatus(String newStatus,
-      {String? rejectionReason}) async {
+      {String? rejectionReason, double? agreedPrice, double? agreedDeliveryFee}) async {
     try {
       isUpdatingStatus.value = true;
 
       final data = <String, dynamic>{'status': newStatus};
       if (rejectionReason != null && rejectionReason.isNotEmpty) {
         data['rejection_reason'] = rejectionReason;
+      }
+      if (agreedPrice != null) {
+        data['agreed_price'] = agreedPrice;
+      }
+      if (agreedDeliveryFee != null) {
+        data['agreed_delivery_fee'] = agreedDeliveryFee;
       }
 
       final response = await _apiClient.patch(
@@ -81,7 +88,15 @@ class MerchantOrderDetailsController extends GetxController {
       );
 
       if (response.statusCode == 200 && response.data['success'] == true) {
-        order.value = response.data['data']['order'];
+        final updatedOrder =
+            Map<String, dynamic>.from(response.data['data']['order']);
+        order.value = updatedOrder;
+        order.refresh(); // Force UI rebuild
+
+        // Broadcast to all other controllers for instant cross-page sync
+        OrderSyncService.instance.broadcastOrderUpdate(orderId, updatedOrder,
+            fromController: 'orderDetails');
+
         ToastService.showSuccess('order_status_updated'.tr);
         return true;
       } else {
@@ -94,6 +109,24 @@ class MerchantOrderDetailsController extends GetxController {
       return false;
     } finally {
       isUpdatingStatus.value = false;
+    }
+  }
+
+  /// Get next possible statuses (includes backward options)
+  List<String> getNextStatuses(String currentStatus) {
+    switch (currentStatus.toLowerCase()) {
+      case 'pending':
+        return ['confirmed', 'rejected'];
+      case 'confirmed':
+        return ['pending', 'preparing', 'cancelled'];
+      case 'preparing':
+        return ['confirmed', 'ready', 'cancelled'];
+      case 'ready':
+        return ['preparing', 'out_for_delivery', 'delivered'];
+      case 'out_for_delivery':
+        return ['ready', 'delivered'];
+      default:
+        return [];
     }
   }
 
@@ -111,6 +144,8 @@ class MerchantOrderDetailsController extends GetxController {
       case 'out_for_delivery':
         return TranslationHelper.isArabic ? 'في الطريق' : 'Out for Delivery';
       case 'delivered':
+        return TranslationHelper.isArabic ? 'بانتظار تأكيد الاستلام' : 'Awaiting Confirmation';
+      case 'completed':
         return TranslationHelper.isArabic ? 'تم التوصيل' : 'Delivered';
       case 'cancelled':
         return TranslationHelper.isArabic ? 'ملغي' : 'Cancelled';
@@ -135,6 +170,8 @@ class MerchantOrderDetailsController extends GetxController {
       case 'out_for_delivery':
         return Colors.indigo;
       case 'delivered':
+        return Colors.amber;
+      case 'completed':
         return Colors.green;
       case 'cancelled':
       case 'rejected':
@@ -168,6 +205,8 @@ class MerchantOrderDetailsController extends GetxController {
       Get.toNamed(
         '/merchant/chat/$conversationId',
         arguments: {
+          'conversationId': conversationId,
+          'conversation_id': conversationId,
           'order': orderData,
         },
       );

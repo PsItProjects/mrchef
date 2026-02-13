@@ -423,5 +423,57 @@ class MerchantProductsService extends GetxService {
       rethrow;
     }
   }
+
+  /// Get food nationalities for lookup
+  Future<List<Map<String, dynamic>>> getFoodNationalities({String? search}) async {
+    try {
+      final queryParams = <String, dynamic>{};
+      if (search != null && search.isNotEmpty) queryParams['search'] = search;
+
+      final response = await _apiClient.get(
+        '${ApiConstants.baseUrl}/lookups/food-nationalities',
+        queryParameters: queryParams,
+      );
+
+      if (response.statusCode == 200) {
+        final data = response.data['data'];
+        if (data is List) {
+          return data.map((e) => Map<String, dynamic>.from(e)).toList();
+        }
+      }
+      return [];
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ Error loading food nationalities: $e');
+      }
+      return [];
+    }
+  }
+
+  /// Get governorates for lookup
+  Future<List<Map<String, dynamic>>> getGovernorates({String? search}) async {
+    try {
+      final queryParams = <String, dynamic>{};
+      if (search != null && search.isNotEmpty) queryParams['search'] = search;
+
+      final response = await _apiClient.get(
+        '${ApiConstants.baseUrl}/lookups/governorates',
+        queryParameters: queryParams,
+      );
+
+      if (response.statusCode == 200) {
+        final data = response.data['data'];
+        if (data is List) {
+          return data.map((e) => Map<String, dynamic>.from(e)).toList();
+        }
+      }
+      return [];
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ Error loading governorates: $e');
+      }
+      return [];
+    }
+  }
 }
 

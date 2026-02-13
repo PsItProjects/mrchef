@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/features/favorites/controllers/favorites_controller.dart';
+import 'package:mrsheaf/features/home/controllers/main_controller.dart';
 
 class EmptyFavoritesWidget extends GetView<FavoritesController> {
   const EmptyFavoritesWidget({super.key});
@@ -9,76 +10,66 @@ class EmptyFavoritesWidget extends GetView<FavoritesController> {
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          // Empty favorites illustration
-          Container(
-            width: 428,
-            height: 337.6,
-            child: Image.asset(
-              'assets/images/empty_favorites_illustration.png',
-              fit: BoxFit.contain,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 40),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.favorite_border_rounded,
+              size: 64,
+              color: Colors.grey.shade300,
             ),
-          ),
-          
-          const SizedBox(height: 24),
-          
-          // Empty favorites text
-          Column(
-            children: [
-              Text(
-                'start_favorite'.tr,
-                style: AppTheme.subheadingStyle.copyWith(
-                  color: AppColors.darkTextColor,
-                ),
+
+            const SizedBox(height: 20),
+
+            Text(
+              'start_favorite'.tr,
+              style: TextStyle(
+                fontWeight: FontWeight.w600,
+                fontSize: 17,
+                color: AppColors.textDarkColor,
               ),
-              
-              const SizedBox(height: 8),
-              
-              Container(
-                width: 285,
+            ),
+
+            const SizedBox(height: 8),
+
+            Text(
+              'save_store_and_product_message'.tr,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey.shade500,
+                height: 1.4,
+              ),
+            ),
+
+            const SizedBox(height: 24),
+
+            SizedBox(
+              width: double.infinity,
+              height: 56,
+              child: ElevatedButton(
+                onPressed: () => Get.find<MainController>().changeTab(0),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primaryColor,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  elevation: 0,
+                ),
                 child: Text(
-                  'save_store_and_product_message'.tr,
-                  textAlign: TextAlign.center,
-                  style: AppTheme.searchTextStyle,
-                ),
-              ),
-            ],
-          ),
-          
-          const SizedBox(height: 24),
-          
-          // Checkout button (as per Figma design)
-          Container(
-            width: 380,
-            height: 60,
-            child: ElevatedButton(
-              onPressed: () {
-                // Navigate to home or categories to find favorites
-                Get.offAllNamed('/home');
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primaryColor,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                elevation: 0,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-              ),
-              child: Text(
-                'home'.tr,
-                style: const TextStyle(
-                  fontFamily: 'Lato',
-                  fontWeight: FontWeight.w700,
-                  fontSize: 18,
-                  color: Color(0xFF592E2C),
-                  letterSpacing: -0.005,
+                  'home'.tr,
+                  style: TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 16,
+                    color: AppColors.textDarkColor,
+                  ),
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

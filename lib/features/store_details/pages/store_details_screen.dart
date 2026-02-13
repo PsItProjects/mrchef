@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/features/store_details/controllers/store_details_controller.dart';
@@ -13,52 +14,39 @@ class StoreDetailsScreen extends GetView<StoreDetailsController> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF2F2F2), // Background color from Figma
-      body: Obx(() {
-        // Show loading indicator while data is being fetched
-        if (controller.isLoading.value) {
-          return const Center(
-            child: CircularProgressIndicator(
-              color: Color(0xFFFACD02),
-            ),
-          );
-        }
-
-        return Stack(
-          children: [
-            // Main content
-            SingleChildScrollView(
-              child: Column(
-                children: [
-                  // Store header with image and navigation
-                  const StoreDetailsHeader(),
-                  
-                  // Store information section
-                  const StoreInfoSection(),
-                  
-                  const SizedBox(height: 16),
-                  
-                  // Store actions (Message and More buttons)
-                  const StoreActionsSection(),
-                  
-                  const SizedBox(height: 16),
-                  
-                  // All Products section
-                  const StoreProductsSection(),
-                  
-                  // const SizedBox(height: 100), // Bottom padding for safe area
-                ],
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: SystemUiOverlayStyle.light,
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        body: Obx(() {
+          if (controller.isLoading.value) {
+            return const Center(
+              child: CircularProgressIndicator(
+                color: AppColors.primaryColor,
               ),
-            ),
-            
-            // Bottom sheet overlay
-            Obx(() => controller.isBottomSheetVisible.value
-                ? const StoreInfoBottomSheet()
-                : const SizedBox.shrink()),
-          ],
-        );
-      }),
+            );
+          }
+
+          return Stack(
+            children: [
+              SingleChildScrollView(
+                child: Column(
+                  children: [
+                    const StoreDetailsHeader(),
+                    const StoreInfoSection(),
+                    const StoreActionsSection(),
+                    const StoreProductsSection(),
+                    const SizedBox(height: 32),
+                  ],
+                ),
+              ),
+              Obx(() => controller.isBottomSheetVisible.value
+                  ? const StoreInfoBottomSheet()
+                  : const SizedBox.shrink()),
+            ],
+          );
+        }),
+      ),
     );
   }
 }

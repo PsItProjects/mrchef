@@ -14,171 +14,196 @@ class ConversationCard extends StatelessWidget {
     required this.onTap,
   });
 
+  bool get _isArabic => Get.locale?.languageCode == 'ar';
+
   @override
   Widget build(BuildContext context) {
-    final isArabic = Get.locale?.languageCode == 'ar';
+    final hasUnread = conversation.unreadCount > 0;
 
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            // Restaurant logo
-            _buildRestaurantLogo(),
-
-            const SizedBox(width: 12),
-
-            // Conversation details
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Restaurant name
-                  Text(
-                    conversation.restaurant.businessName,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFF262626),
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-
-                  const SizedBox(height: 4),
-
-                  // Order type badge
-                  if (conversation.conversationType == 'order_chat')
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: AppColors.primaryColor.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Text(
-                        isArabic ? 'طلب' : 'Order',
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.primaryColor,
-                        ),
-                      ),
-                    ),
-
-                  const SizedBox(height: 6),
-
-                  // Last message
-                  if (conversation.lastMessage != null)
-                    Text(
-                      conversation.lastMessage!.message,
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: conversation.unreadCount > 0
-                            ? const Color(0xFF262626)
-                            : Colors.grey[600],
-                        fontWeight: conversation.unreadCount > 0
-                            ? FontWeight.w600
-                            : FontWeight.normal,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                ],
-              ),
-            ),
-
-            const SizedBox(width: 12),
-
-            // Right side: time and unread badge
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
+    return Column(
+      children: [
+        InkWell(
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            child: Row(
               children: [
-                // Time
-                if (conversation.lastMessageAt != null)
-                  Text(
-                    _formatTime(conversation.lastMessageAt!),
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey[500],
-                    ),
-                  ),
+                // Avatar
+                _buildAvatar(hasUnread),
 
-                const SizedBox(height: 8),
+                const SizedBox(width: 12),
 
-                // Unread badge
-                if (conversation.unreadCount > 0)
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.red,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      conversation.unreadCount > 99
-                          ? '99+'
-                          : conversation.unreadCount.toString(),
-                      style: const TextStyle(
-                        fontSize: 10,
-                        color: Colors.white,
-                        fontWeight: FontWeight.w600,
+                // Content
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Name + time row
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              conversation.restaurant.businessName,
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight:
+                                    hasUnread ? FontWeight.w700 : FontWeight.w500,
+                                color: AppColors.textDarkColor,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          if (conversation.lastMessageAt != null)
+                            Text(
+                              _formatTime(conversation.lastMessageAt!),
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight:
+                                    hasUnread ? FontWeight.w600 : FontWeight.w400,
+                                color: hasUnread
+                                    ? AppColors.primaryColor
+                                    : Colors.grey.shade500,
+                              ),
+                            ),
+                        ],
                       ),
-                    ),
+
+                      const SizedBox(height: 4),
+
+                      // Last message + unread badge
+                      Row(
+                        children: [
+                          // Message type icon
+                          if (conversation.lastMessage?.messageType ==
+                              'product_attachment')
+                            Padding(
+                              padding: const EdgeInsets.only(right: 4),
+                              child: Icon(Icons.receipt_rounded,
+                                  size: 15, color: Colors.grey.shade400),
+                            )
+                          else if (conversation.lastMessage?.messageType ==
+                              'image')
+                            Padding(
+                              padding: const EdgeInsets.only(right: 4),
+                              child: Icon(Icons.image_rounded,
+                                  size: 15, color: Colors.grey.shade400),
+                            ),
+
+                          Expanded(
+                            child: Text(
+                              _getDisplayMessage(),
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: hasUnread
+                                    ? AppColors.textDarkColor
+                                    : Colors.grey.shade500,
+                                fontWeight: hasUnread
+                                    ? FontWeight.w500
+                                    : FontWeight.w400,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+
+                          // Unread badge
+                          if (hasUnread)
+                            Container(
+                              margin: const EdgeInsets.only(left: 8),
+                              constraints: const BoxConstraints(
+                                  minWidth: 20, minHeight: 20),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: AppColors.primaryColor,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Center(
+                                child: Text(
+                                  conversation.unreadCount > 99
+                                      ? '99+'
+                                      : conversation.unreadCount.toString(),
+                                  style: const TextStyle(
+                                    fontSize: 11,
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ],
                   ),
+                ),
               ],
             ),
-          ],
+          ),
         ),
-      ),
+        // Divider aligned with text (after avatar)
+        Padding(
+          padding: const EdgeInsets.only(left: 78, right: 16),
+          child: Divider(height: 0.5, thickness: 0.5, color: Colors.grey.shade200),
+        ),
+      ],
     );
   }
 
-  Widget _buildRestaurantLogo() {
-    if (conversation.restaurant.logo != null &&
-        conversation.restaurant.logo!.isNotEmpty) {
-      return ClipRRect(
-        borderRadius: BorderRadius.circular(8),
-        child: Image.network(
-          conversation.restaurant.logo!,
-          width: 56,
-          height: 56,
-          fit: BoxFit.cover,
-          errorBuilder: (context, error, stackTrace) {
-            return _buildPlaceholderLogo();
-          },
-        ),
-      );
-    }
+  Widget _buildAvatar(bool hasUnread) {
+    final logo = conversation.restaurant.logo;
+    final name = conversation.restaurant.businessName;
+    final firstLetter = name.isNotEmpty ? name[0].toUpperCase() : '?';
 
-    return _buildPlaceholderLogo();
-  }
-
-  Widget _buildPlaceholderLogo() {
     return Container(
-      width: 56,
-      height: 56,
+      width: 50,
+      height: 50,
       decoration: BoxDecoration(
-        color: AppColors.primaryColor.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(8),
+        shape: BoxShape.circle,
+        color: Colors.grey.shade100,
       ),
-      child: Icon(
-        Icons.restaurant,
-        size: 28,
-        color: AppColors.primaryColor,
-      ),
+      child: logo != null && logo.isNotEmpty
+          ? ClipOval(
+              child: Image.network(
+                logo,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => Center(
+                  child: Text(
+                    firstLetter,
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.grey.shade600,
+                    ),
+                  ),
+                ),
+              ),
+            )
+          : Center(
+              child: Text(
+                firstLetter,
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.grey.shade600,
+                ),
+              ),
+            ),
     );
+  }
+
+  String _getDisplayMessage() {
+    final lastMsg = conversation.lastMessage;
+    if (lastMsg == null || lastMsg.message.isEmpty) {
+      if (lastMsg?.messageType == 'product_attachment') {
+        return _isArabic ? '📦 طلب جديد' : '📦 New order';
+      }
+      if (lastMsg?.messageType == 'image') {
+        return _isArabic ? '📷 صورة' : '📷 Photo';
+      }
+      return _isArabic ? 'ابدأ المحادثة' : 'Start conversation';
+    }
+    return lastMsg.message;
   }
 
   String _formatTime(DateTime dateTime) {
@@ -186,17 +211,14 @@ class ConversationCard extends StatelessWidget {
     final difference = now.difference(dateTime);
 
     if (difference.inDays == 0) {
-      // Today: show time
       return intl.DateFormat('HH:mm').format(dateTime);
     } else if (difference.inDays == 1) {
-      // Yesterday
-      return Get.locale?.languageCode == 'ar' ? 'أمس' : 'Yesterday';
+      return _isArabic ? 'أمس' : 'Yesterday';
     } else if (difference.inDays < 7) {
-      // This week: show day name
-      return intl.DateFormat('EEEE').format(dateTime);
+      return intl.DateFormat('EEEE', _isArabic ? 'ar' : 'en')
+          .format(dateTime);
     } else {
-      // Older: show date
-      return intl.DateFormat('dd/MM/yyyy').format(dateTime);
+      return intl.DateFormat('dd/MM').format(dateTime);
     }
   }
 }

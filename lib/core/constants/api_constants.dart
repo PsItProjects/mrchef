@@ -35,6 +35,11 @@ class ApiConstants {
   static const String categoriesWithProducts =
       '/customer/shopping/categories-with-products'; // New combined endpoint
   static const String filteredProducts = '/customer/shopping/filtered-products'; // Search and filter products
+  static const String searchSuggestions = '/customer/shopping/search-suggestions'; // Autocomplete suggestions
+
+  // Lookup endpoints
+  static const String foodNationalities = '/lookups/food-nationalities';
+  static const String governorates = '/lookups/governorates';
 
   // Cart endpoints
   static const String cart = '/customer/shopping/cart';

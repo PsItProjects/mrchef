@@ -8,6 +8,7 @@ import 'package:mrsheaf/core/localization/translation_helper.dart';
 import 'package:mrsheaf/core/services/fcm_service.dart';
 import 'package:mrsheaf/core/services/realtime_chat_service.dart';
 import 'package:mrsheaf/core/services/toast_service.dart';
+import 'package:mrsheaf/core/network/api_client.dart';
 import 'package:mrsheaf/features/chat/models/conversation_model.dart';
 import 'package:mrsheaf/features/chat/services/chat_service.dart';
 import 'package:mrsheaf/features/support/services/support_service.dart';
@@ -16,6 +17,7 @@ class ChatController extends GetxController {
   final ChatService _chatService = ChatService();
   final SupportService _supportService = SupportService();
   final ImagePicker _imagePicker = ImagePicker();
+  final ApiClient _apiClient = ApiClient.instance;
 
   // Observable state
   final Rx<ConversationModel?> conversation = Rx<ConversationModel?>(null);
@@ -26,6 +28,11 @@ class ChatController extends GetxController {
   final Rx<File?> selectedImage = Rx<File?>(null);
   final RxInt highlightedMessageId = 0.obs;
   final RxBool isOtherTyping = false.obs;
+
+  // Order data for product attachment cards (orderId -> orderData)
+  final RxMap<int, Map<String, dynamic>> ordersData =
+      <int, Map<String, dynamic>>{}.obs;
+  final RxMap<int, bool> confirmingOrders = <int, bool>{}.obs;
 
   // Text controller for message input
   final TextEditingController messageController = TextEditingController();
@@ -203,6 +210,9 @@ class ChatController extends GetxController {
         if (hasNewMessages) {
           _forceScrollToBottom();
         }
+
+        // Fetch order details for any new product_attachment messages
+        _fetchOrdersFromMessages();
       }
     });
 
@@ -275,6 +285,9 @@ class ChatController extends GetxController {
       for (var message in messages) {
         messageKeys[message.id] = GlobalKey();
       }
+
+      // Fetch order details for product_attachment messages
+      _fetchOrdersFromMessages();
 
       // Scroll to bottom after loading messages (force with multiple attempts)
       _forceScrollToBottom();
@@ -474,6 +487,89 @@ class ChatController extends GetxController {
         ),
       ),
     );
+  }
+
+  /// Fetch order details for all product_attachment messages
+  void _fetchOrdersFromMessages() {
+    for (var message in messages) {
+      if (message.messageType == 'product_attachment' &&
+          message.attachments != null) {
+        final orderId = message.attachments!['order_id'];
+        if (orderId != null && !ordersData.containsKey(orderId)) {
+          fetchOrderDetails(orderId);
+        }
+      }
+    }
+  }
+
+  /// Fetch order details by ID and store them
+  Future<Map<String, dynamic>?> fetchOrderDetails(int orderId) async {
+    if (ordersData.containsKey(orderId)) {
+      return ordersData[orderId];
+    }
+    try {
+      final response = await _apiClient.get('/customer/orders/$orderId');
+      if (response.data['success'] == true) {
+        final orderData =
+            Map<String, dynamic>.from(response.data['data']['order']);
+        ordersData[orderId] = orderData;
+        return orderData;
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error fetching order details: $e');
+      }
+    }
+    return null;
+  }
+
+  /// Get order status by ID
+  String? getOrderStatus(int orderId) {
+    return ordersData[orderId]?['status']?.toString();
+  }
+
+  /// Check if order is being confirmed
+  bool isOrderConfirming(int orderId) {
+    return confirmingOrders[orderId] ?? false;
+  }
+
+  /// Confirm delivery for an order (customer confirms receipt)
+  Future<bool> confirmDelivery(int orderId) async {
+    try {
+      confirmingOrders[orderId] = true;
+
+      final response = await _apiClient.post(
+        '/customer/orders/$orderId/confirm-delivery',
+      );
+
+      if (response.data['success'] == true) {
+        // Update local order data
+        final updatedOrder = response.data['data']?['order'];
+        if (updatedOrder != null) {
+          ordersData[orderId] = Map<String, dynamic>.from(updatedOrder);
+        } else {
+          // Manually update status if API doesn't return full order
+          if (ordersData.containsKey(orderId)) {
+            ordersData[orderId]!['status'] = 'completed';
+            ordersData.refresh();
+          }
+        }
+        ToastService.showSuccess('order_confirmed'.tr);
+        return true;
+      } else {
+        ToastService.showError(
+            response.data['message'] ?? 'error'.tr);
+        return false;
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error confirming delivery: $e');
+      }
+      ToastService.showError('error'.tr);
+      return false;
+    } finally {
+      confirmingOrders[orderId] = false;
+    }
   }
 
   /// Scroll to bottom of messages

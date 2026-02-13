@@ -6,6 +6,7 @@ import 'package:mrsheaf/core/routes/app_routes.dart';
 import 'package:mrsheaf/features/home/controllers/home_controller.dart';
 import 'package:mrsheaf/core/localization/currency_helper.dart';
 import 'package:mrsheaf/core/services/toast_service.dart';
+import 'package:mrsheaf/core/services/language_service.dart';
 
 /// World-class product card inspired by Talabat, HungerStation & UberEats.
 /// Supports horizontal lists (fixed width) and grid layouts (fills parent).
@@ -41,7 +42,10 @@ class ProductCard extends GetView<HomeController> {
   double get _rating => double.tryParse('${product['rating'] ?? 0}') ?? 0;
   int get _reviewCount => int.tryParse('${product['reviewCount'] ?? 0}') ?? 0;
   bool get _hasRating => _rating > 0 && _reviewCount > 0;
-  String get _description => (product['description'] ?? '').toString().trim();
+  String get _description =>
+      LanguageService.instance.getLocalizedText(product['description']).trim();
+  String get _foodNationalityName => (product['food_nationality_name'] ?? '').toString().trim();
+  String get _governorateName => (product['governorate_name'] ?? '').toString().trim();
 
   @override
   Widget build(BuildContext context) {
@@ -108,7 +112,7 @@ class ProductCard extends GetView<HomeController> {
                     // Short description snippet
                     Text(
                       _description.isNotEmpty ? _description : 'delicious_meal'.tr,
-                      maxLines: 2,
+                      maxLines: (_foodNationalityName.isNotEmpty || _governorateName.isNotEmpty) ? 1 : 2,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         fontFamily: 'Lato',
@@ -118,6 +122,79 @@ class ProductCard extends GetView<HomeController> {
                         height: 1.3,
                       ),
                     ),
+
+                    // Food nationality & governorate tags
+                    if (_foodNationalityName.isNotEmpty || _governorateName.isNotEmpty) ...[
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          if (_foodNationalityName.isNotEmpty)
+                            Flexible(
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFF3EDFF),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(Icons.public_rounded, size: 10, color: Colors.purple.shade400),
+                                    const SizedBox(width: 3),
+                                    Flexible(
+                                      child: Text(
+                                        _foodNationalityName,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                          fontFamily: 'Lato',
+                                          fontWeight: FontWeight.w600,
+                                          fontSize: 9.5,
+                                          color: Colors.purple.shade600,
+                                          height: 1.2,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          if (_foodNationalityName.isNotEmpty && _governorateName.isNotEmpty)
+                            const SizedBox(width: 4),
+                          if (_governorateName.isNotEmpty)
+                            Flexible(
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFE8EAF6),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(Icons.location_city_rounded, size: 10, color: Colors.indigo.shade400),
+                                    const SizedBox(width: 3),
+                                    Flexible(
+                                      child: Text(
+                                        _governorateName,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                          fontFamily: 'Lato',
+                                          fontWeight: FontWeight.w600,
+                                          fontSize: 9.5,
+                                          color: Colors.indigo.shade600,
+                                          height: 1.2,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ],
 
                     const Spacer(),
 

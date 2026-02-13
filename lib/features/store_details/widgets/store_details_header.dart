@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/features/store_details/controllers/store_details_controller.dart';
@@ -9,232 +9,162 @@ class StoreDetailsHeader extends GetView<StoreDetailsController> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 333, // Height from Figma design
+    final double topPadding = MediaQuery.of(context).padding.top;
+    final double coverHeight = topPadding + 230;
+    const double profileSize = 88.0;
+    const double profileOverlap = profileSize / 2;
+
+    return SizedBox(
+      height: coverHeight + profileOverlap,
       child: Stack(
         children: [
-          // Background image
-          Obx(() => Container(
-            height: 289,
-            width: double.infinity,
-            decoration: BoxDecoration(
-              borderRadius: const BorderRadius.only(
-                bottomLeft: Radius.circular(24),
-                bottomRight: Radius.circular(24),
-              ),
-              image: controller.storeImage.value.isNotEmpty
-                  ? DecorationImage(
-                      image: NetworkImage(controller.storeImage.value),
-                      fit: BoxFit.cover,
-                      colorFilter: ColorFilter.mode(
-                        Colors.black.withOpacity(0.2),
-                        BlendMode.darken,
-                      ),
-                      onError: (exception, stackTrace) {
-                        // Fallback to default image
-                      },
-                    )
-                  : DecorationImage(
-                      image: AssetImage("assets/images/banner_bg.png"),
-                      fit: BoxFit.cover,
-                      colorFilter: ColorFilter.mode(
-                        Colors.black.withOpacity(0.2),
-                        BlendMode.darken,
-                      ),
-                    ),
-            ),
-          )),
-          
-          // Status bar
+          // Cover image
           Positioned(
             top: 0,
             left: 0,
             right: 0,
-            child: Container(
-              height: 44,
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  // Time
-                  Text(
-                    '9:30',
-                    style: TextStyle(
-                      fontFamily: 'Roboto',
-                      fontWeight: FontWeight.w500,
-                      fontSize: 14,
-                      color: const Color(0xFF592E2C),
-                    ),
-                  ),
-                  
-                  // Right icons (WiFi, Signal, Battery)
-                  Container(
-                    width: 46,
-                    height: 17,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        // WiFi icon
-                        Container(width: 17, height: 17),
-                        // Signal icon  
-                        Container(width: 17, height: 17),
-                        // Battery icon
-                        Container(width: 8, height: 15),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          
-          // Header navigation
-          Positioned(
-            top: 60,
-            left: 24,
-            right: 24,
-            child: Container(
-              height: 40,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  // Back button
-                  GestureDetector(
-                    onTap: () => Get.back(),
-                    child: Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.3),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Center(
-                        child: SvgPicture.asset(
-                          'assets/icons/arrow_left.svg',
-                          width: 24,
-                          height: 24,
-                          color: const Color(0xFF592E2C),
-                          colorFilter: const ColorFilter.mode(
-                            Color(0xFF592E2C),
-                            BlendMode.srcIn,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  
-                  // Store name
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 7),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.3),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Obx(() => Text(
-                      controller.storeName.value,
-                      style: const TextStyle(
-                        fontFamily: 'Lato',
-                        fontWeight: FontWeight.w600,
-                        fontSize: 16,
-                        color: Colors.white,
-                      ),
-                    )),
-                  ),
-                  
-                  // Heart button
-                  Obx(() => GestureDetector(
-                    onTap: controller.toggleFavorite,
-                    child: Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.3),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Center(
-                        child: SvgPicture.asset(
-                          controller.isFavorite.value
-                              ? 'assets/icons/heart_icon.svg'
-                              : 'assets/icons/heart_outline.svg',
-                          width: 24,
-                          height: 24,
-                          colorFilter: ColorFilter.mode(
-                            controller.isFavorite.value
-                                ? AppColors.errorColor
-                                : const Color(0xFF592E2C),
-                            BlendMode.srcIn,
-                          ),
-                        ),
-                      ),
-                    ),
-                  )),
-                ],
-              ),
-            ),
-          ),
-          
-          // Store profile image
-          Positioned(
-            bottom: 0,
-            left: 24,
+            height: coverHeight,
             child: Obx(() => Container(
-              width: 155,
-              height: 155,
               decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: const Color(0xFFFACD02),
-                  width: 4,
-                ),
+                color: Colors.grey.shade300,
+                image: controller.storeImage.value.isNotEmpty
+                    ? DecorationImage(
+                        image: NetworkImage(controller.storeImage.value),
+                        fit: BoxFit.cover,
+                      )
+                    : const DecorationImage(
+                        image: AssetImage("assets/images/banner_bg.png"),
+                        fit: BoxFit.cover,
+                      ),
               ),
               child: Container(
-                width: 150,
-                height: 150,
-                margin: const EdgeInsets.all(3),
                 decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                ),
-                child: ClipOval(
-                  child: controller.storeProfileImage.value.isNotEmpty
-                      ? Image.network(
-                          controller.storeProfileImage.value,
-                          width: 150,
-                          height: 150,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
-                            return Container(
-                              width: 150,
-                              height: 150,
-                              decoration: BoxDecoration(
-                                color: AppColors.primaryColor.withOpacity(0.1),
-                                shape: BoxShape.circle,
-                              ),
-                              child: Icon(
-                                Icons.restaurant,
-                                color: AppColors.primaryColor,
-                                size: 60,
-                              ),
-                            );
-                          },
-                        )
-                      : Container(
-                          width: 150,
-                          height: 150,
-                          decoration: BoxDecoration(
-                            color: AppColors.primaryColor.withOpacity(0.1),
-                            shape: BoxShape.circle,
-                          ),
-                          child: Icon(
-                            Icons.restaurant,
-                            color: AppColors.primaryColor,
-                            size: 60,
-                          ),
-                        ),
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.center,
+                    colors: [
+                      Colors.black.withOpacity(0.4),
+                      Colors.transparent,
+                    ],
+                  ),
                 ),
               ),
             )),
           ),
+
+          // White curved overlay (connects to content below)
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            height: profileOverlap,
+            child: Container(
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(28),
+                  topRight: Radius.circular(28),
+                ),
+              ),
+            ),
+          ),
+
+          // Profile image (centered, overlapping cover and white area)
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: Center(
+              child: _buildProfileImage(),
+            ),
+          ),
+
+          // Floating navigation (back + heart)
+          Positioned(
+            top: topPadding + 10,
+            left: 16,
+            right: 16,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _buildNavButton(
+                  icon: Icons.arrow_back_ios_new,
+                  onTap: () => Get.back(),
+                ),
+                Obx(() => _buildNavButton(
+                  icon: controller.isFavorite.value
+                      ? Icons.favorite
+                      : Icons.favorite_border,
+                  iconColor: controller.isFavorite.value
+                      ? Colors.red
+                      : Colors.white,
+                  onTap: controller.toggleFavorite,
+                )),
+              ],
+            ),
+          ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildProfileImage() {
+    return Obx(() => Container(
+      width: 88,
+      height: 88,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(color: Colors.white, width: 3.5),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.12),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: ClipOval(
+        child: controller.storeProfileImage.value.isNotEmpty
+            ? Image.network(
+                controller.storeProfileImage.value,
+                width: 81,
+                height: 81,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => _defaultProfileIcon(),
+              )
+            : _defaultProfileIcon(),
+      ),
+    ));
+  }
+
+  Widget _defaultProfileIcon() {
+    return Container(
+      width: 81,
+      height: 81,
+      color: AppColors.primaryColor.withOpacity(0.1),
+      child: const Icon(
+        Icons.restaurant,
+        color: AppColors.primaryColor,
+        size: 36,
+      ),
+    );
+  }
+
+  Widget _buildNavButton({
+    required IconData icon,
+    Color iconColor = Colors.white,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 42,
+        height: 42,
+        decoration: BoxDecoration(
+          color: Colors.black.withOpacity(0.28),
+          shape: BoxShape.circle,
+        ),
+        child: Icon(icon, color: iconColor, size: 20),
       ),
     );
   }

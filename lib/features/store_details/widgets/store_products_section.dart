@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/features/store_details/controllers/store_details_controller.dart';
@@ -11,100 +10,90 @@ class StoreProductsSection extends GetView<StoreDetailsController> {
   @override
   Widget build(BuildContext context) {
     return Container(
+      color: Colors.white,
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 0),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border(
-          top: BorderSide(
-            color: const Color(0xFFE3E3E3),
-            width: 1,
-          ),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 16,
-            offset: const Offset(0, 1),
-          ),
-        ],
-      ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header section
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          Divider(color: Colors.grey.shade200, height: 1),
+
+          // Section header
+          Padding(
+            padding: const EdgeInsets.fromLTRB(24, 20, 24, 4),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
                   'all_product'.tr,
                   style: const TextStyle(
-                    fontFamily: 'Lato',
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w800,
                     fontSize: 20,
-                    letterSpacing: 1.5,
-                    color: Color(0xFF262626),
+                    color: AppColors.textDarkColor,
                   ),
                 ),
-
-                // Rating section - HIDDEN as per user request
-                // Container(
-                //   // width: 54,
-                //   // height: 26,
-                //   child: Row(
-                //     children: [
-                //       SvgPicture.asset(
-                //         'assets/icons/star_icon.svg',
-                //         width: 24,
-                //         height: 24,
-                //         colorFilter: const ColorFilter.mode(
-                //           Color(0xFFFACD02),
-                //           BlendMode.srcIn,
-                //         ),
-                //       ),
-                //       const SizedBox(width: 4),
-                //       Obx(() => Text(
-                //         controller.storeRating.value.toString(),
-                //         style: const TextStyle(
-                //           fontFamily: 'Lato',
-                //           fontWeight: FontWeight.w700,
-                //           fontSize: 18,
-                //           letterSpacing: -0.09,
-                //           color: Color(0xFF262626),
-                //         ),
-                //       )),
-                //     ],
-                //   ),
-                // ),
+                const SizedBox(width: 8),
+                Obx(() => Text(
+                  '(${controller.storeProducts.length})',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w500,
+                    fontSize: 14,
+                    color: Colors.grey.shade400,
+                  ),
+                )),
               ],
             ),
           ),
-          
-          // Products grid
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            child: Obx(() => GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                crossAxisSpacing: 16,
-                mainAxisSpacing: 16,
-                childAspectRatio: 0.72,
-              ),
-              itemCount: controller.storeProducts.length,
-              itemBuilder: (context, index) {
-                final product = controller.storeProducts[index];
 
-                return ProductCard(
-                  product: product,
-                  section: 'store',
+          // Products grid
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Obx(() {
+              if (controller.storeProducts.isEmpty) {
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 40),
+                  child: Center(
+                    child: Column(
+                      children: [
+                        Icon(
+                          Icons.restaurant_menu_outlined,
+                          size: 48,
+                          color: Colors.grey.shade300,
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          'no_products'.tr,
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey.shade400,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 );
-              },
-            )),
+              }
+
+              return GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                padding: const EdgeInsets.only(top: 12, bottom: 8),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  crossAxisSpacing: 14,
+                  mainAxisSpacing: 14,
+                  childAspectRatio: 0.72,
+                ),
+                itemCount: controller.storeProducts.length,
+                itemBuilder: (context, index) {
+                  final product = controller.storeProducts[index];
+                  return ProductCard(
+                    product: product,
+                    section: 'store',
+                  );
+                },
+              );
+            }),
           ),
-          
+
           const SizedBox(height: 24),
         ],
       ),

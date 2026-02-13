@@ -39,6 +39,9 @@ class _EditRestaurantInfoScreenState extends State<EditRestaurantInfoScreen>
   late TextEditingController _deliveryFeeController;
   late TextEditingController _serviceFeeController;
 
+  // Delivery fee type
+  String _selectedDeliveryFeeType = 'negotiable';
+
   // Image state
   File? _selectedLogo;
   File? _selectedCover;
@@ -154,6 +157,8 @@ class _EditRestaurantInfoScreenState extends State<EditRestaurantInfoScreen>
             _currentLogoUrl = restaurant['logo']?.toString();
             _currentCoverUrl = restaurant['cover_image']?.toString();
 
+            _selectedDeliveryFeeType =
+                restaurant['delivery_fee_type']?.toString() ?? 'negotiable';
             _deliveryFeeController.text =
                 restaurant['delivery_fee']?.toString() ?? '';
             _serviceFeeController.text =
@@ -396,7 +401,10 @@ class _EditRestaurantInfoScreenState extends State<EditRestaurantInfoScreen>
         area: _areaController.text.trim(),
         latitude: _latitude,
         longitude: _longitude,
-        deliveryFee: double.tryParse(_deliveryFeeController.text.trim()),
+        deliveryFeeType: _selectedDeliveryFeeType,
+        deliveryFee: _selectedDeliveryFeeType == 'fixed'
+            ? double.tryParse(_deliveryFeeController.text.trim())
+            : (_selectedDeliveryFeeType == 'free' ? 0.0 : null),
         serviceFee: double.tryParse(_serviceFeeController.text.trim()),
       );
       setState(() => _isLoading = false);
@@ -890,69 +898,212 @@ class _EditRestaurantInfoScreenState extends State<EditRestaurantInfoScreen>
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 20, 16, 24),
       children: [
+        // ── Delivery Fee Type Section ──
         _sectionCard(
-          icon: Icons.payments_rounded,
-          title: 'fees_and_pricing'.tr,
+          icon: Icons.delivery_dining_rounded,
+          title: 'delivery_fee_type'.tr,
           children: [
-            _feeField(
+            _deliveryFeeTypeOption(
+              value: 'negotiable',
+              label: 'delivery_fee_negotiable'.tr,
+              icon: Icons.handshake_rounded,
+              description: Get.locale?.languageCode == 'ar'
+                  ? 'سيتم الاتفاق على رسوم التوصيل مع العميل عند قبول الطلب'
+                  : 'Delivery fee will be agreed with customer when accepting the order',
+            ),
+            const SizedBox(height: 8),
+            _deliveryFeeTypeOption(
+              value: 'free',
+              label: 'delivery_fee_free'.tr,
+              icon: Icons.card_giftcard_rounded,
+              description: Get.locale?.languageCode == 'ar'
+                  ? 'التوصيل مجاني لجميع الطلبات'
+                  : 'Free delivery for all orders',
+            ),
+            const SizedBox(height: 8),
+            _deliveryFeeTypeOption(
+              value: 'fixed',
+              label: 'delivery_fee_fixed'.tr,
+              icon: Icons.price_check_rounded,
+              description: Get.locale?.languageCode == 'ar'
+                  ? 'مبلغ ثابت يُطبق على جميع الطلبات'
+                  : 'A fixed amount applied to all orders',
+            ),
+            // Fixed fee input — only visible when type is 'fixed'
+            if (_selectedDeliveryFeeType == 'fixed') ...[
+              const SizedBox(height: 14),
+              _feeField(
                 controller: _deliveryFeeController,
                 label: 'delivery_fee'.tr,
                 hint: 'enter_delivery_fee'.tr,
-                icon: Icons.delivery_dining_rounded),
-            _feeField(
-                controller: _serviceFeeController,
-                label: 'service_fee'.tr,
-                hint: 'enter_service_fee'.tr,
-                icon: Icons.miscellaneous_services_rounded),
-            // Tip banner
-            Container(
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    AppColors.primaryColor.withOpacity(0.06),
-                    AppColors.primaryColor.withOpacity(0.02),
-                  ],
-                ),
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(
-                    color: AppColors.primaryColor.withOpacity(0.12)),
+                icon: Icons.delivery_dining_rounded,
               ),
-              child: Row(
+            ],
+          ],
+        ),
+        const SizedBox(height: 16),
+        // ── Service Fee Section ──
+        _sectionCard(
+          icon: Icons.miscellaneous_services_rounded,
+          title: 'service_fee'.tr,
+          children: [
+            _feeField(
+              controller: _serviceFeeController,
+              label: 'service_fee'.tr,
+              hint: 'enter_service_fee'.tr,
+              icon: Icons.miscellaneous_services_rounded,
+            ),
+            // Tip banner
+            _tipBanner(
+              Get.locale?.languageCode == 'ar'
+                  ? 'رسوم الخدمة اختيارية وستظهر للعميل عند الطلب. اتركها فارغة لعدم تطبيق رسوم.'
+                  : 'Service fee is optional and will be shown to customers. Leave empty for no fees.',
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _deliveryFeeTypeOption({
+    required String value,
+    required String label,
+    required IconData icon,
+    required String description,
+  }) {
+    final isSelected = _selectedDeliveryFeeType == value;
+    return GestureDetector(
+      onTap: () => setState(() => _selectedDeliveryFeeType = value),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? AppColors.primaryColor.withOpacity(0.08)
+              : Colors.grey.shade50,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: isSelected
+                ? AppColors.primaryColor
+                : Colors.grey.shade200,
+            width: isSelected ? 1.8 : 1.0,
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: isSelected
+                    ? AppColors.primaryColor.withOpacity(0.15)
+                    : Colors.grey.shade100,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(
+                icon,
+                size: 20,
+                color: isSelected
+                    ? AppColors.secondaryColor
+                    : Colors.grey.shade500,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Container(
-                    margin: const EdgeInsets.only(top: 2),
-                    padding: const EdgeInsets.all(5),
-                    decoration: BoxDecoration(
-                      color: AppColors.primaryColor.withOpacity(0.18),
-                      shape: BoxShape.circle,
+                  Text(
+                    label,
+                    style: TextStyle(
+                      fontSize: 13.5,
+                      fontWeight:
+                          isSelected ? FontWeight.w700 : FontWeight.w600,
+                      color: isSelected
+                          ? AppColors.secondaryColor
+                          : AppColors.textDarkColor,
                     ),
-                    child: Icon(Icons.lightbulb_outline_rounded,
-                        size: 14,
-                        color:
-                            AppColors.secondaryColor.withOpacity(0.7)),
                   ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      Get.locale?.languageCode == 'ar'
-                          ? 'هذه الرسوم ستظهر للعميل عند الطلب من متجرك. اتركها فارغة لعدم تطبيق رسوم.'
-                          : 'These fees will be shown to customers when ordering. Leave empty for no fees.',
-                      style: TextStyle(
-                        fontSize: 12.5,
-                        color:
-                            AppColors.secondaryColor.withOpacity(0.60),
-                        height: 1.55,
-                      ),
+                  const SizedBox(height: 3),
+                  Text(
+                    description,
+                    style: TextStyle(
+                      fontSize: 11.5,
+                      color: Colors.grey.shade500,
+                      height: 1.4,
                     ),
                   ),
                 ],
               ),
             ),
+            const SizedBox(width: 8),
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              width: 22,
+              height: 22,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: isSelected
+                    ? AppColors.primaryColor
+                    : Colors.transparent,
+                border: Border.all(
+                  color: isSelected
+                      ? AppColors.primaryColor
+                      : Colors.grey.shade300,
+                  width: 2,
+                ),
+              ),
+              child: isSelected
+                  ? const Icon(Icons.check, size: 14, color: Colors.white)
+                  : null,
+            ),
           ],
         ),
-      ],
+      ),
+    );
+  }
+
+  Widget _tipBanner(String text) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            AppColors.primaryColor.withOpacity(0.06),
+            AppColors.primaryColor.withOpacity(0.02),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(14),
+        border:
+            Border.all(color: AppColors.primaryColor.withOpacity(0.12)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            margin: const EdgeInsets.only(top: 2),
+            padding: const EdgeInsets.all(5),
+            decoration: BoxDecoration(
+              color: AppColors.primaryColor.withOpacity(0.18),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(Icons.lightbulb_outline_rounded,
+                size: 14,
+                color: AppColors.secondaryColor.withOpacity(0.7)),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              text,
+              style: TextStyle(
+                fontSize: 12.5,
+                color: AppColors.secondaryColor.withOpacity(0.60),
+                height: 1.55,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 

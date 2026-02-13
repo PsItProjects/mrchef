@@ -8,22 +8,17 @@ class FavoriteStoresList extends GetView<FavoritesController> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      child: Obx(() => ListView.builder(
-        padding: const EdgeInsets.symmetric(horizontal: 24),
-        itemCount: controller.favoriteStores.length,
-        itemBuilder: (context, index) {
-          final store = controller.favoriteStores[index];
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 16),
-            child: FavoriteStoreWidget(
+    return Obx(() => ListView.builder(
+          padding: const EdgeInsets.only(top: 6, bottom: 16),
+          itemCount: controller.favoriteStores.length,
+          itemBuilder: (context, index) {
+            final store = controller.favoriteStores[index];
+            return FavoriteStoreWidget(
               store: store,
               onRemove: () => controller.removeStoreFromFavorites(store.id),
               onTap: () => controller.navigateToStoreDetails(store.id),
-            ),
-          );
-        },
-      )),
-    );
+            );
+          },
+        ));
   }
 }
