@@ -873,6 +873,8 @@ class MerchantProductAttachmentCard extends StatelessWidget {
     switch (status) {
       case 'pending':
         return Colors.orange;
+      case 'awaiting_customer_approval':
+        return AppColors.primaryColor;
       case 'confirmed':
         return Colors.blue;
       case 'preparing':
@@ -931,6 +933,8 @@ class MerchantProductAttachmentCard extends StatelessWidget {
     switch (status) {
       case 'pending':
         return _isArabic ? 'قيد الانتظار' : 'Pending';
+      case 'awaiting_customer_approval':
+        return _isArabic ? 'بانتظار موافقة العميل' : 'Awaiting Approval';
       case 'confirmed':
         return _isArabic ? 'مؤكد' : 'Confirmed';
       case 'preparing':
@@ -954,6 +958,8 @@ class MerchantProductAttachmentCard extends StatelessWidget {
 
   IconData _statusIcon(String status) {
     switch (status) {
+      case 'awaiting_customer_approval':
+        return Icons.price_check_rounded;
       case 'confirmed':
         return Icons.check_circle_rounded;
       case 'preparing':
@@ -994,6 +1000,7 @@ class MerchantProductAttachmentCard extends StatelessWidget {
   bool _isAdvanceStatus(String current, String next) {
     const order = [
       'pending',
+      'awaiting_customer_approval',
       'confirmed',
       'preparing',
       'ready',

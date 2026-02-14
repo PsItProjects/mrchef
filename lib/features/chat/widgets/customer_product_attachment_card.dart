@@ -668,6 +668,169 @@ class CustomerProductAttachmentCard extends StatelessWidget {
   // ═══════════════════════════════════════════════════════════
   Widget _buildActions(
       Map<String, dynamic> order, dynamic orderId, String status) {
+    // Awaiting customer approval — show accept/reject price buttons
+    if (status == 'awaiting_customer_approval') {
+      final confirming = _isConfirmingThis;
+      final agreedPrice = _parseDouble(order['agreed_price'] ?? order['total_amount']);
+      final deliveryFee = _parseDouble(order['delivery_fee'] ?? order['agreed_delivery_fee']);
+
+      return Padding(
+        padding: const EdgeInsets.fromLTRB(14, 10, 14, 12),
+        child: Column(
+          children: [
+            // Price summary banner
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppColors.primaryColor.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: AppColors.primaryColor.withValues(alpha: 0.3)),
+              ),
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      Icon(Icons.price_check_rounded, size: 20, color: AppColors.primaryColor),
+                      const SizedBox(width: 8),
+                      Text(
+                        _isArabic ? 'عرض السعر من التاجر' : 'Price Proposal',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.primaryColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        _isArabic ? 'سعر المنتجات' : 'Products Price',
+                        style: TextStyle(fontSize: 13, color: Colors.grey.shade700),
+                      ),
+                      Text(
+                        '$agreedPrice ${_isArabic ? 'ر.س' : 'SAR'}',
+                        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        _isArabic ? 'رسوم التوصيل' : 'Delivery Fee',
+                        style: TextStyle(fontSize: 13, color: Colors.grey.shade700),
+                      ),
+                      Text(
+                        '$deliveryFee ${_isArabic ? 'ر.س' : 'SAR'}',
+                        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 10),
+            // Accept / Reject buttons
+            Row(
+              children: [
+                // Accept button
+                Expanded(
+                  flex: 2,
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: confirming ? null : () => _handleAcceptPrice(orderId),
+                      borderRadius: BorderRadius.circular(12),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [Colors.green.shade600, Colors.green.shade500],
+                          ),
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.green.withValues(alpha: 0.3),
+                              blurRadius: 8,
+                              offset: const Offset(0, 3),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            if (confirming)
+                              const SizedBox(
+                                width: 20, height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2.5,
+                                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                ),
+                              )
+                            else
+                              const Icon(Icons.check_circle_rounded, size: 20, color: Colors.white),
+                            const SizedBox(width: 6),
+                            Text(
+                              _isArabic ? 'قبول السعر' : 'Accept',
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                // Reject button
+                Expanded(
+                  flex: 1,
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: confirming ? null : () => _handleRejectPrice(orderId),
+                      borderRadius: BorderRadius.circular(12),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.red.shade400, width: 1.5),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.close_rounded, size: 20, color: Colors.red.shade600),
+                            const SizedBox(width: 4),
+                            Text(
+                              _isArabic ? 'رفض' : 'Reject',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.red.shade600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      );
+    }
+
     // Delivered = awaiting customer confirmation — show confirm button
     if (status == 'delivered') {
       final confirming = _isConfirmingThis;
@@ -848,6 +1011,8 @@ class CustomerProductAttachmentCard extends StatelessWidget {
     switch (status) {
       case 'pending':
         return Colors.orange;
+      case 'awaiting_customer_approval':
+        return AppColors.primaryColor;
       case 'confirmed':
         return Colors.blue;
       case 'preparing':
@@ -906,6 +1071,8 @@ class CustomerProductAttachmentCard extends StatelessWidget {
     switch (status) {
       case 'pending':
         return _isArabic ? 'قيد الانتظار' : 'Pending';
+      case 'awaiting_customer_approval':
+        return _isArabic ? 'بانتظار موافقة العميل' : 'Awaiting Approval';
       case 'confirmed':
         return _isArabic ? 'مؤكد' : 'Confirmed';
       case 'preparing':
@@ -931,6 +1098,8 @@ class CustomerProductAttachmentCard extends StatelessWidget {
     switch (status) {
       case 'pending':
         return Icons.schedule_rounded;
+      case 'awaiting_customer_approval':
+        return Icons.price_check_rounded;
       case 'confirmed':
         return Icons.check_circle_rounded;
       case 'preparing':
@@ -1031,6 +1200,110 @@ class CustomerProductAttachmentCard extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+
+  void _handleAcceptPrice(dynamic orderId) {
+    if (orderId == null) return;
+    final id = orderId is int ? orderId : int.tryParse(orderId.toString()) ?? 0;
+
+    Get.dialog(
+      AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            Icon(Icons.check_circle_rounded, color: Colors.green.shade600, size: 28),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                _isArabic ? 'قبول السعر' : 'Accept Price',
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+              ),
+            ),
+          ],
+        ),
+        content: Text(
+          _isArabic
+              ? 'هل تؤكد موافقتك على السعر المقترح؟'
+              : 'Do you confirm accepting the proposed price?',
+          style: TextStyle(fontSize: 14, color: Colors.grey.shade700),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(),
+            child: Text(
+              _isArabic ? 'إلغاء' : 'Cancel',
+              style: TextStyle(color: Colors.grey.shade600),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Get.back();
+              if (Get.isRegistered<ChatController>()) {
+                Get.find<ChatController>().acceptPrice(id);
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.green,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+            child: Text(_isArabic ? 'موافق' : 'Accept'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _handleRejectPrice(dynamic orderId) {
+    if (orderId == null) return;
+    final id = orderId is int ? orderId : int.tryParse(orderId.toString()) ?? 0;
+
+    Get.dialog(
+      AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            Icon(Icons.cancel_rounded, color: Colors.red.shade600, size: 28),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                _isArabic ? 'رفض السعر' : 'Reject Price',
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+              ),
+            ),
+          ],
+        ),
+        content: Text(
+          _isArabic
+              ? 'هل تريد رفض السعر المقترح؟ سيتم إعادة الطلب للتفاوض مع التاجر.'
+              : 'Reject the proposed price? The order will be reopened for negotiation.',
+          style: TextStyle(fontSize: 14, color: Colors.grey.shade700),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(),
+            child: Text(
+              _isArabic ? 'إلغاء' : 'Cancel',
+              style: TextStyle(color: Colors.grey.shade600),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Get.back();
+              if (Get.isRegistered<ChatController>()) {
+                Get.find<ChatController>().rejectPrice(id);
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+            child: Text(_isArabic ? 'رفض' : 'Reject'),
+          ),
+        ],
+      ),
     );
   }
 

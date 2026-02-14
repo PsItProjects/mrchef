@@ -241,7 +241,7 @@ class _WorkingHoursScreenState extends State<WorkingHoursScreen> {
   
   Widget _buildWorkingDayItem(String day, WorkingDay workingDay, bool isLast) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
         border: isLast ? null : Border(
           bottom: BorderSide(
@@ -250,79 +250,133 @@ class _WorkingHoursScreenState extends State<WorkingHoursScreen> {
           ),
         ),
       ),
-      child: Row(
+      child: Column(
         children: [
-          // Day name
-          Expanded(
-            flex: 2,
-            child: Text(
-              dayNames[day] ?? day,
-              style: const TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w600,
-                color: AppColors.textDarkColor,
+          Row(
+            children: [
+              // Day name
+              Expanded(
+                flex: 2,
+                child: Text(
+                  dayNames[day] ?? day,
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textDarkColor,
+                  ),
+                ),
               ),
-            ),
+
+              // Time or Closed
+              Expanded(
+                flex: 3,
+                child: workingDay.isOpen
+                    ? (workingDay.is24h
+                        ? Text(
+                            '24_hours'.tr,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.primaryColor,
+                            ),
+                          )
+                        : Row(
+                            children: [
+                              Expanded(
+                                child: _buildTimeButton(
+                                  time: workingDay.openTime,
+                                  onTap: () => _selectTime(day, true),
+                                ),
+                              ),
+                              const Padding(
+                                padding: EdgeInsets.symmetric(horizontal: 8),
+                                child: Text(
+                                  '-',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w500,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                              ),
+                              Expanded(
+                                child: _buildTimeButton(
+                                  time: workingDay.closeTime,
+                                  onTap: () => _selectTime(day, false),
+                                ),
+                              ),
+                            ],
+                          ))
+                    : Text(
+                        'closed'.tr,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.grey,
+                        ),
+                      ),
+              ),
+
+              // Switch
+              const SizedBox(width: 8),
+              Switch(
+                value: workingDay.isOpen,
+                onChanged: (value) {
+                  setState(() {
+                    workingHours[day] = WorkingDay(
+                      isOpen: value,
+                      is24h: workingDay.is24h,
+                      openTime: workingDay.openTime,
+                      closeTime: workingDay.closeTime,
+                    );
+                  });
+                },
+                activeColor: AppColors.primaryColor,
+                activeTrackColor: AppColors.primaryColor.withValues(alpha: 0.5),
+              ),
+            ],
           ),
 
-          // Time or Closed
-          Expanded(
-            flex: 3,
-            child: workingDay.isOpen
-                ? Row(
-                    children: [
-                      Expanded(
-                        child: _buildTimeButton(
-                          time: workingDay.openTime,
-                          onTap: () => _selectTime(day, true),
-                        ),
-                      ),
-                      const Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 8),
-                        child: Text(
-                          '-',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.grey,
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        child: _buildTimeButton(
-                          time: workingDay.closeTime,
-                          onTap: () => _selectTime(day, false),
-                        ),
-                      ),
-                    ],
-                  )
-                : Text(
-                    'closed'.tr,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.grey,
+          // 24h toggle row — only shown when day is open
+          if (workingDay.isOpen)
+            Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: Row(
+                children: [
+                  const SizedBox(width: 4),
+                  Icon(Icons.all_inclusive, size: 16, color: Colors.grey.shade500),
+                  const SizedBox(width: 6),
+                  Text(
+                    '24_hours'.tr,
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: Colors.grey.shade600,
                     ),
                   ),
-          ),
-
-          // Switch
-          const SizedBox(width: 8),
-          Switch(
-            value: workingDay.isOpen,
-            onChanged: (value) {
-              setState(() {
-                workingHours[day] = WorkingDay(
-                  isOpen: value,
-                  openTime: workingDay.openTime,
-                  closeTime: workingDay.closeTime,
-                );
-              });
-            },
-            activeColor: AppColors.primaryColor,
-            activeTrackColor: AppColors.primaryColor.withValues(alpha: 0.5),
-          ),
+                  const Spacer(),
+                  SizedBox(
+                    height: 28,
+                    child: Switch(
+                      value: workingDay.is24h,
+                      onChanged: (value) {
+                        setState(() {
+                          workingHours[day] = WorkingDay(
+                            isOpen: true,
+                            is24h: value,
+                            openTime: workingDay.openTime,
+                            closeTime: workingDay.closeTime,
+                          );
+                        });
+                      },
+                      activeColor: AppColors.primaryColor,
+                      activeTrackColor: AppColors.primaryColor.withValues(alpha: 0.5),
+                    ),
+                  ),
+                ],
+              ),
+            ),
         ],
       ),
     );
@@ -535,12 +589,14 @@ class _WorkingHoursScreenState extends State<WorkingHoursScreen> {
         if (isOpenTime) {
           workingHours[day] = WorkingDay(
             isOpen: workingHours[day]!.isOpen,
+            is24h: false, // If setting specific time, disable 24h
             openTime: timeString,
             closeTime: workingHours[day]!.closeTime,
           );
         } else {
           workingHours[day] = WorkingDay(
             isOpen: workingHours[day]!.isOpen,
+            is24h: false, // If setting specific time, disable 24h
             openTime: workingHours[day]!.openTime,
             closeTime: timeString,
           );
@@ -554,6 +610,7 @@ class _WorkingHoursScreenState extends State<WorkingHoursScreen> {
       workingHours.forEach((day, workingDay) {
         workingHours[day] = WorkingDay(
           isOpen: true,
+          is24h: workingDay.is24h,
           openTime: workingDay.openTime,
           closeTime: workingDay.closeTime,
         );
@@ -566,6 +623,7 @@ class _WorkingHoursScreenState extends State<WorkingHoursScreen> {
       workingHours.forEach((day, workingDay) {
         workingHours[day] = WorkingDay(
           isOpen: false,
+          is24h: workingDay.is24h,
           openTime: workingDay.openTime,
           closeTime: workingDay.closeTime,
         );
@@ -578,6 +636,7 @@ class _WorkingHoursScreenState extends State<WorkingHoursScreen> {
       workingHours.forEach((day, workingDay) {
         workingHours[day] = WorkingDay(
           isOpen: day != 'friday', // Close on Friday by default
+          is24h: false,
           openTime: '09:00',
           closeTime: '22:00',
         );

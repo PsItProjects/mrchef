@@ -6,6 +6,7 @@ import 'package:mrsheaf/core/services/language_service.dart';
 import 'package:mrsheaf/features/merchant/services/merchant_profile_service.dart';
 import 'package:mrsheaf/features/merchant/pages/edit_restaurant_info_screen.dart';
 import 'package:mrsheaf/features/merchant/pages/working_hours_screen.dart';
+import 'package:mrsheaf/features/merchant/pages/merchant_coupons_screen.dart';
 import 'package:mrsheaf/features/merchant/pages/notification_settings_screen.dart';
 import 'package:mrsheaf/features/profile/pages/edit_profile_screen.dart';
 import 'package:mrsheaf/features/profile/widgets/about_app_bottom_sheet.dart';
@@ -276,6 +277,13 @@ class _MerchantSettingsScreenState extends State<MerchantSettingsScreen> {
           title: 'working_hours'.tr,
           subtitle: 'set_opening_closing_hours'.tr,
           onTap: () => Get.to(() => const WorkingHoursScreen()),
+        ),
+        _buildSettingsTile(
+          icon: Icons.discount,
+          iconColor: const Color(0xFFFF6B35),
+          title: 'discount_codes'.tr,
+          subtitle: 'manage_discount_codes'.tr,
+          onTap: () => Get.to(() => const MerchantCouponsScreen()),
         ),
       ],
     );

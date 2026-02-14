@@ -363,14 +363,15 @@ class StoreDetailsController extends GetxController {
         final dayData = businessHours[apiDay];
         if (dayData is Map<String, dynamic>) {
           final isOpen = dayData['is_open'] ?? false;
+          final is24h = dayData['is_24h'] ?? false;
           final openTime = dayData['open']?.toString() ?? '';
           final closeTime = dayData['close']?.toString() ?? '';
 
           // Format times to 12-hour format with AM/PM
-          final formattedOpenTime = isOpen && openTime.isNotEmpty
+          final formattedOpenTime = isOpen && !is24h && openTime.isNotEmpty
               ? _formatTimeTo12Hour(openTime)
               : '';
-          final formattedCloseTime = isOpen && closeTime.isNotEmpty
+          final formattedCloseTime = isOpen && !is24h && closeTime.isNotEmpty
               ? _formatTimeTo12Hour(closeTime)
               : '';
 
@@ -378,7 +379,8 @@ class StoreDetailsController extends GetxController {
             'day': displayDay,
             'startTime': formattedOpenTime,
             'endTime': formattedCloseTime,
-            'isOff': !isOpen || openTime.isEmpty,
+            'isOff': !isOpen,
+            'is24h': is24h,
           });
         }
       } else {
@@ -388,6 +390,7 @@ class StoreDetailsController extends GetxController {
           'startTime': '',
           'endTime': '',
           'isOff': true,
+          'is24h': false,
         });
       }
     });

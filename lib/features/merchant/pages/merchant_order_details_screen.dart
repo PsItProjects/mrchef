@@ -935,6 +935,41 @@ class MerchantOrderDetailsScreen extends StatelessWidget {
 
     return Column(
       children: [
+        // Awaiting customer price approval banner
+        if (status == 'awaiting_customer_approval') ...[
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+            decoration: BoxDecoration(
+              color: const Color(0xFFFACD02).withAlpha(25),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: const Color(0xFFFACD02).withAlpha(80)),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.hourglass_bottom_rounded,
+                    color: Colors.orange[700], size: 20),
+                const SizedBox(width: 8),
+                Flexible(
+                  child: Text(
+                    TranslationHelper.isArabic
+                        ? 'بانتظار موافقة العميل على السعر'
+                        : 'Awaiting customer price approval',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.orange[700],
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+        ],
+
         // Update Status button
         if (!isTerminal) ...[
           SizedBox(
@@ -1310,8 +1345,12 @@ class MerchantOrderDetailsScreen extends StatelessWidget {
                     borderRadius: BorderRadius.circular(10)),
                 onTap: () {
                   Get.back(); // Close bottom sheet
-                  if (status == 'confirmed' && currentStatus == 'pending') {
-                    _showPriceConfirmationForOrder(controller, order);
+                  if (status == 'awaiting_customer_approval' && currentStatus == 'pending') {
+                    // Merchant sets price and awaits customer approval
+                    _showPriceConfirmationForOrder(controller, order, targetStatus: 'awaiting_customer_approval');
+                  } else if (status == 'confirmed' && currentStatus == 'pending') {
+                    // Merchant directly confirms (without customer approval flow)
+                    _showPriceConfirmationForOrder(controller, order, targetStatus: 'confirmed');
                   } else {
                     _showStatusChangeDialog(controller, status);
                   }
@@ -1326,7 +1365,7 @@ class MerchantOrderDetailsScreen extends StatelessWidget {
   }
 
   void _showPriceConfirmationForOrder(
-      MerchantOrderDetailsController controller, Map<String, dynamic> order) {
+      MerchantOrderDetailsController controller, Map<String, dynamic> order, {String targetStatus = 'confirmed'}) {
     final totalAmount =
         _parseDouble(order['total_amount'] ?? order['total']);
 
@@ -1341,9 +1380,9 @@ class MerchantOrderDetailsScreen extends StatelessWidget {
       onConfirm: (agreedPrice, agreedDeliveryFee) async {
         // Close modal immediately
         Get.back();
-        // Then update status
+        // Then update status to the target status
         await controller.updateOrderStatus(
-          'confirmed',
+          targetStatus,
           agreedPrice: agreedPrice,
           agreedDeliveryFee: agreedDeliveryFee,
         );

@@ -25,6 +25,7 @@ class MerchantOrdersController extends GetxController {
   final List<String?> filterStatuses = [
     null, // All
     'pending',
+    'awaiting_customer_approval',
     'confirmed',
     'preparing',
     'ready',
@@ -38,6 +39,7 @@ class MerchantOrdersController extends GetxController {
   final List<String> filterLabels = [
     'all',
     'pending',
+    'awaiting_customer_approval',
     'confirmed',
     'preparing',
     'ready',
@@ -159,6 +161,8 @@ class MerchantOrdersController extends GetxController {
     switch (status.toLowerCase()) {
       case 'pending':
         return TranslationHelper.isArabic ? 'معلق' : 'Pending';
+      case 'awaiting_customer_approval':
+        return TranslationHelper.isArabic ? 'بانتظار موافقة العميل' : 'Awaiting Approval';
       case 'confirmed':
         return TranslationHelper.isArabic ? 'مؤكد' : 'Confirmed';
       case 'preparing':
@@ -185,6 +189,8 @@ class MerchantOrdersController extends GetxController {
     switch (status.toLowerCase()) {
       case 'pending':
         return Colors.orange;
+      case 'awaiting_customer_approval':
+        return const Color(0xFFFACD02);
       case 'confirmed':
         return Colors.blue;
       case 'preparing':
@@ -213,6 +219,8 @@ class MerchantOrdersController extends GetxController {
         return TranslationHelper.isArabic ? 'الكل' : 'All';
       case 'pending':
         return TranslationHelper.isArabic ? 'جديد' : 'New';
+      case 'awaiting_customer_approval':
+        return TranslationHelper.isArabic ? 'بانتظار الموافقة' : 'Awaiting Approval';
       case 'confirmed':
         return TranslationHelper.isArabic ? 'مؤكد' : 'Confirmed';
       case 'preparing':

@@ -45,7 +45,8 @@ class MerchantChatScreen extends GetView<MerchantChatController> {
                     final messageKey = controller.messageKeys[message.id];
 
                     // Check if this is a product attachment message
-                    if (message.messageType == 'product_attachment' &&
+                    if ((message.messageType == 'product_attachment' ||
+                            message.messageType == 'price_proposal') &&
                         message.attachments != null) {
                       return Container(
                         key: messageKey,

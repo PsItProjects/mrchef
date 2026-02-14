@@ -197,7 +197,7 @@ class LocationsSection extends GetView<StoreDetailsController> {
                     // Open in Maps Button
                     SizedBox(
                       width: double.infinity,
-                      height: 50,
+                      height: 56,
                       child: ElevatedButton(
                         onPressed: () => _openInMaps(latitude, longitude),
                         style: ElevatedButton.styleFrom(
@@ -206,6 +206,7 @@ class LocationsSection extends GetView<StoreDetailsController> {
                             borderRadius: BorderRadius.circular(12),
                           ),
                           elevation: 0,
+                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
                         ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,

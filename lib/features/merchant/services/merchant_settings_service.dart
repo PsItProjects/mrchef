@@ -270,12 +270,12 @@ class MerchantSettingsService extends GetxService {
       // Convert working hours to backend format
       final businessHours = <String, dynamic>{};
       workingHours.forEach((day, workingDay) {
-        if (workingDay.isOpen) {
-          businessHours[day.toLowerCase()] = {
-            'open': workingDay.openTime,
-            'close': workingDay.closeTime,
-          };
-        }
+        businessHours[day.toLowerCase()] = {
+          'is_open': workingDay.isOpen,
+          'is_24h': workingDay.is24h,
+          'open': workingDay.isOpen ? workingDay.openTime : null,
+          'close': workingDay.isOpen ? workingDay.closeTime : null,
+        };
       });
       
       final response = await _apiClient.put(
@@ -558,12 +558,15 @@ class RestaurantInfo {
         final dayData = hoursMap[day];
         if (dayData != null && dayData is Map) {
           final dayMap = dayData as Map<String, dynamic>;
+          final isOpen = dayMap['is_open'] ?? true; // Legacy: assume open if data exists
+          final is24h = dayMap['is_24h'] ?? false;
           businessHours[day] = WorkingDay(
-            isOpen: true,
+            isOpen: isOpen,
+            is24h: is24h,
             openTime: dayMap['open'] ?? '09:00',
             closeTime: dayMap['close'] ?? '22:00',
           );
-          print('   ✅ $day: OPEN (${dayMap['open']} - ${dayMap['close']})');
+          print('   ✅ $day: ${isOpen ? (is24h ? "24H" : "OPEN (${dayMap['open']} - ${dayMap['close']})") : "CLOSED"}');
         } else {
           businessHours[day] = WorkingDay(isOpen: false);
           print('   ❌ $day: CLOSED (not in API response)');
@@ -624,11 +627,13 @@ class NotificationSettings {
 
 class WorkingDay {
   final bool isOpen;
+  final bool is24h;
   final String openTime;
   final String closeTime;
   
   WorkingDay({
     this.isOpen = false,
+    this.is24h = false,
     this.openTime = '09:00',
     this.closeTime = '22:00',
   });

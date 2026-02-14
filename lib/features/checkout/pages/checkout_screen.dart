@@ -128,6 +128,55 @@ class CheckoutScreen extends GetView<CheckoutController> {
             const SizedBox(height: 8),
             _buildSummaryRow('service_fee'.tr, CurrencyHelper.formatPrice(cartController.serviceFee)),
           ],
+          if (cartController.discountAmount > 0) ...[
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    Text(
+                      'discount'.tr,
+                      style: const TextStyle(
+                        fontFamily: 'Lato',
+                        fontWeight: FontWeight.w400,
+                        fontSize: 14,
+                        color: Color(0xFF27AE60),
+                      ),
+                    ),
+                    if (cartController.appliedCouponCode.isNotEmpty) ...[
+                      const SizedBox(width: 6),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF27AE60).withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(
+                          cartController.appliedCouponCode,
+                          style: const TextStyle(
+                            fontFamily: 'Lato',
+                            fontWeight: FontWeight.w600,
+                            fontSize: 10,
+                            color: Color(0xFF27AE60),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+                Text(
+                  '- ${CurrencyHelper.formatPrice(cartController.discountAmount)}',
+                  style: const TextStyle(
+                    fontFamily: 'Lato',
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                    color: Color(0xFF27AE60),
+                  ),
+                ),
+              ],
+            ),
+          ],
           const Divider(height: 24),
           _buildSummaryRow(
             'total'.tr,

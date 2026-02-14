@@ -3,6 +3,9 @@ import 'package:get/get.dart';
 import 'package:mrsheaf/core/widgets/language_switcher.dart';
 import 'package:mrsheaf/features/profile/widgets/unified_profile_card.dart';
 import 'package:mrsheaf/features/profile/widgets/unified_menu_list.dart';
+import 'package:mrsheaf/features/auth/services/auth_service.dart';
+import 'package:mrsheaf/core/services/profile_switch_service.dart';
+import 'package:mrsheaf/features/merchant/controllers/merchant_main_controller.dart';
 
 /// شاشة الإعدادات الموحدة - نفس الشاشة للعميل والتاجر
 /// تعرض بطاقة الملف الشخصي مع زر التبديل (مثل فيسبوك)
@@ -59,7 +62,16 @@ class UnifiedSettingsScreen extends StatelessWidget {
         children: [
           // Chat icon
           GestureDetector(
-            onTap: () => Get.toNamed('/conversations'),
+            onTap: () {
+              if (_isMerchantMode()) {
+                // Navigate to merchant messages tab (index 2)
+                if (Get.isRegistered<MerchantMainController>()) {
+                  Get.find<MerchantMainController>().changeTab(2);
+                }
+              } else {
+                Get.toNamed('/conversations');
+              }
+            },
             child: const Icon(
               Icons.chat_bubble_outline_rounded,
               size: 22,
@@ -83,5 +95,20 @@ class UnifiedSettingsScreen extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  bool _isMerchantMode() {
+    try {
+      if (Get.isRegistered<ProfileSwitchService>()) {
+        final ps = Get.find<ProfileSwitchService>();
+        if (ps.accountStatus.value != null) {
+          return ps.accountStatus.value!.isMerchantMode;
+        }
+      }
+      final auth = Get.find<AuthService>();
+      return auth.userType.value == 'merchant';
+    } catch (e) {
+      return false;
+    }
   }
 }

@@ -19,6 +19,7 @@ class MerchantOrderDetailsController extends GetxController {
 
   // Order statuses that merchant can set
   final List<String> availableStatuses = [
+    'awaiting_customer_approval',
     'confirmed',
     'preparing',
     'ready',
@@ -116,9 +117,13 @@ class MerchantOrderDetailsController extends GetxController {
   List<String> getNextStatuses(String currentStatus) {
     switch (currentStatus.toLowerCase()) {
       case 'pending':
-        return ['confirmed', 'rejected'];
+        return ['awaiting_customer_approval', 'confirmed', 'rejected'];
+      case 'awaiting_customer_approval':
+        // Merchant CANNOT advance — must wait for customer to accept/reject
+        // Only cancel is allowed
+        return ['cancelled'];
       case 'confirmed':
-        return ['pending', 'preparing', 'cancelled'];
+        return ['preparing', 'cancelled'];
       case 'preparing':
         return ['confirmed', 'ready', 'cancelled'];
       case 'ready':
@@ -135,6 +140,8 @@ class MerchantOrderDetailsController extends GetxController {
     switch (status.toLowerCase()) {
       case 'pending':
         return TranslationHelper.isArabic ? 'معلق' : 'Pending';
+      case 'awaiting_customer_approval':
+        return TranslationHelper.isArabic ? 'بانتظار موافقة العميل' : 'Awaiting Approval';
       case 'confirmed':
         return TranslationHelper.isArabic ? 'مؤكد' : 'Confirmed';
       case 'preparing':
@@ -161,6 +168,8 @@ class MerchantOrderDetailsController extends GetxController {
     switch (status.toLowerCase()) {
       case 'pending':
         return Colors.orange;
+      case 'awaiting_customer_approval':
+        return const Color(0xFFFACD02);
       case 'confirmed':
         return Colors.blue;
       case 'preparing':

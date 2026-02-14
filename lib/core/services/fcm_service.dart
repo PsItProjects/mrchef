@@ -150,7 +150,10 @@ class FCMService extends GetxService {
     // Check if app was opened from terminated state
     _messaging.getInitialMessage().then((message) {
       if (message != null) {
-        _handleNotificationTap(message);
+        // Delay to ensure app is fully initialized and routes are registered
+        Future.delayed(const Duration(milliseconds: 800), () {
+          _handleNotificationTap(message);
+        });
       }
     });
   }
@@ -188,6 +191,9 @@ class FCMService extends GetxService {
         type == 'promotion' ||
         type == 'new_order' ||
         type == 'order_status_changed' ||
+        type == 'price_proposal' ||
+        type == 'price_accepted' ||
+        type == 'price_rejected' ||
         type == 'support_reply' ||
         type == 'support_status_changed' ||
         type == 'support_closed') {
@@ -297,7 +303,8 @@ class FCMService extends GetxService {
   }
 
   /// Navigate based on notification type.
-  /// If recipient_type differs from current role, auto-switch first.
+  /// If recipient_type differs from current role, auto-switch first,
+  /// then clear the navigation stack so the user lands on the correct home.
   void _navigateBasedOnType(String type, Map<String, dynamic> data) async {
     final orderId = data['order_id'];
     final ticketId = data['ticket_id'];
@@ -305,7 +312,9 @@ class FCMService extends GetxService {
     final conversationId = data['conversation_id'];
     final recipientType = data['recipient_type'];
     
-    print('🔔 Merchant Notification tap: type=$type, orderId=$orderId, ticketId=$ticketId, reportId=$reportId');
+    print('🔔 Notification tap: type=$type, orderId=$orderId, ticketId=$ticketId, reportId=$reportId, recipientType=$recipientType');
+    
+    bool didSwitchRole = false;
     
     // Auto-switch role if notification is for a different role
     if (recipientType != null && Get.isRegistered<ProfileSwitchService>()) {
@@ -318,7 +327,13 @@ class FCMService extends GetxService {
           if (switchService.accountStatus.value == null) {
             await switchService.fetchAccountStatus();
           }
-          await switchService.switchRole();
+          final success = await switchService.switchRole();
+          if (success) {
+            didSwitchRole = true;
+            print('✅ FCM: Role switched to $recipientType');
+          } else {
+            print('⚠️ FCM: Role switch failed, navigating anyway');
+          }
         }
       } catch (e) {
         print('⚠️ FCM: Auto-switch failed: $e');
@@ -326,14 +341,33 @@ class FCMService extends GetxService {
     }
 
     // Determine if user is merchant or customer
-    final isMerchant = recipientType == 'merchant';
+    // Use recipientType from notification first, then fall back to current user type
+    bool isMerchant;
+    if (recipientType != null) {
+      isMerchant = recipientType == 'merchant';
+    } else {
+      try {
+        final authService = Get.find<AuthService>();
+        isMerchant = authService.storedUserType == 'merchant';
+      } catch (_) {
+        isMerchant = false;
+      }
+    }
+    
+    // Determine the correct home route based on role
+    final homeRoute = isMerchant ? '/merchant-home' : '/home';
+    
+    // Build the target route and arguments
+    String? targetRoute;
+    dynamic targetArguments;
     
     switch (type) {
       // Order notifications (both merchant and customer)
       case 'new_order':
         // Merchant receives new order
         if (orderId != null) {
-          Get.toNamed('/merchant/order-details', arguments: {'orderId': int.tryParse(orderId.toString())});
+          targetRoute = '/merchant/order-details';
+          targetArguments = {'orderId': int.tryParse(orderId.toString())};
         }
         break;
       
@@ -350,19 +384,42 @@ class FCMService extends GetxService {
       case 'order_rejected':
         if (orderId != null) {
           // Customer order details
-          Get.toNamed('/orders/${orderId.toString()}');
+          targetRoute = '/orders/${orderId.toString()}';
         }
         break;
       
+      // Price proposal notification → navigate to chat
+      case 'price_proposal':
+        if (conversationId != null) {
+          targetRoute = '/chat';
+          targetArguments = {'conversationId': int.tryParse(conversationId.toString())};
+        } else if (orderId != null) {
+          targetRoute = '/orders/${orderId.toString()}';
+        }
+        break;
+      
+      // Price accepted/rejected → merchant gets notified
+      case 'price_accepted':
+      case 'price_rejected':
+        if (orderId != null) {
+          if (isMerchant) {
+            targetRoute = '/merchant/order-details';
+            targetArguments = {'orderId': int.tryParse(orderId.toString())};
+          } else {
+            targetRoute = '/orders/${orderId.toString()}';
+          }
+        }
+        break;
+
       // Chat notifications
       case 'new_message':
         if (conversationId != null) {
           if (isMerchant) {
-            // Merchant chat screen
-            Get.toNamed('/merchant/chat', arguments: {'conversationId': int.tryParse(conversationId.toString())});
+            targetRoute = '/merchant/chat';
+            targetArguments = {'conversationId': int.tryParse(conversationId.toString())};
           } else {
-            // Customer chat screen
-            Get.toNamed('/chat', arguments: {'conversationId': int.tryParse(conversationId.toString())});
+            targetRoute = '/chat';
+            targetArguments = {'conversationId': int.tryParse(conversationId.toString())};
           }
         }
         break;
@@ -373,7 +430,7 @@ class FCMService extends GetxService {
       case 'support_closed':
       case 'new_ticket':
         if (ticketId != null) {
-          Get.toNamed('/support/tickets/${ticketId.toString()}');
+          targetRoute = '/support/tickets/${ticketId.toString()}';
         }
         break;
       
@@ -383,7 +440,7 @@ class FCMService extends GetxService {
       case 'report_resolved':
       case 'new_report':
         if (reportId != null) {
-          Get.toNamed('/support/reports/${reportId.toString()}');
+          targetRoute = '/support/reports/${reportId.toString()}';
         }
         break;
       
@@ -391,22 +448,37 @@ class FCMService extends GetxService {
       case 'system':
       case 'promotion':
       case 'announcement':
-        // Navigate to appropriate notifications screen
         if (isMerchant) {
-          Get.toNamed('/merchant/notifications');
+          targetRoute = '/merchant/notifications';
         } else {
-          Get.toNamed('/notifications');
+          targetRoute = '/notifications';
         }
         break;
       
       default:
-        // Default navigation based on user type
         if (isMerchant) {
-          Get.toNamed('/merchant/notifications');
+          targetRoute = '/merchant/notifications';
         } else {
-          Get.toNamed('/notifications');
+          targetRoute = '/notifications';
         }
         break;
+    }
+    
+    // If role was switched, clear the entire stack and navigate fresh
+    if (didSwitchRole) {
+      // First go to the correct home, clearing everything
+      Get.offAllNamed(homeRoute);
+      
+      // Then push the target screen on top (with a small delay to let home settle)
+      if (targetRoute != null) {
+        await Future.delayed(const Duration(milliseconds: 300));
+        Get.toNamed(targetRoute, arguments: targetArguments);
+      }
+    } else {
+      // Same role — just push the target screen normally
+      if (targetRoute != null) {
+        Get.toNamed(targetRoute, arguments: targetArguments);
+      }
     }
   }
 

@@ -572,6 +572,86 @@ class ChatController extends GetxController {
     }
   }
 
+  /// Accept price proposal for an order
+  Future<bool> acceptPrice(int orderId) async {
+    try {
+      confirmingOrders[orderId] = true;
+
+      final response = await _apiClient.post(
+        '/customer/orders/$orderId/accept-price',
+      );
+
+      if (response.data['success'] == true) {
+        // Update local order data
+        final updatedOrder = response.data['data']?['order'];
+        if (updatedOrder != null) {
+          ordersData[orderId] = Map<String, dynamic>.from(updatedOrder);
+        } else {
+          if (ordersData.containsKey(orderId)) {
+            ordersData[orderId]!['status'] = 'confirmed';
+            ordersData.refresh();
+          }
+        }
+        ToastService.showSuccess('price_accepted'.tr);
+        // Reload messages to show the updated status
+        await loadMessages();
+        return true;
+      } else {
+        ToastService.showError(
+            response.data['message'] ?? 'error'.tr);
+        return false;
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error accepting price: $e');
+      }
+      ToastService.showError('error'.tr);
+      return false;
+    } finally {
+      confirmingOrders[orderId] = false;
+    }
+  }
+
+  /// Reject price proposal for an order
+  Future<bool> rejectPrice(int orderId) async {
+    try {
+      confirmingOrders[orderId] = true;
+
+      final response = await _apiClient.post(
+        '/customer/orders/$orderId/reject-price',
+      );
+
+      if (response.data['success'] == true) {
+        // Update local order data
+        final updatedOrder = response.data['data']?['order'];
+        if (updatedOrder != null) {
+          ordersData[orderId] = Map<String, dynamic>.from(updatedOrder);
+        } else {
+          if (ordersData.containsKey(orderId)) {
+            ordersData[orderId]!['status'] = 'pending';
+            ordersData.refresh();
+          }
+        }
+        ToastService.showSuccess('price_rejected'.tr);
+        // Reload messages to show the updated status
+        await loadMessages();
+        return true;
+      } else {
+        ToastService.showError(
+            response.data['message'] ?? 'error'.tr);
+        return false;
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error rejecting price: $e');
+      }
+      ToastService.showError('error'.tr);
+      return false;
+    } finally {
+      confirmingOrders[orderId] = false;
+    }
+  }
+
   /// Scroll to bottom of messages
   void _scrollToBottom({bool immediate = false}) {
     if (!scrollController.hasClients) return;

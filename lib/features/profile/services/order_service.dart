@@ -94,5 +94,41 @@ class OrderService {
       rethrow;
     }
   }
+
+  /// Accept price proposal from merchant
+  Future<Map<String, dynamic>> acceptPrice(int orderId) async {
+    try {
+      final response = await _apiClient.post(
+        '${ApiConstants.baseUrl}${ApiConstants.customerOrders}/$orderId/accept-price',
+      );
+
+      if (response.statusCode == 200 && response.data['success'] == true) {
+        return response.data['data'] ?? response.data;
+      } else {
+        throw Exception(response.data['message'] ?? 'Failed to accept price');
+      }
+    } catch (e) {
+      print('❌ ORDER SERVICE: Error accepting price - $e');
+      rethrow;
+    }
+  }
+
+  /// Reject price proposal from merchant
+  Future<Map<String, dynamic>> rejectPrice(int orderId) async {
+    try {
+      final response = await _apiClient.post(
+        '${ApiConstants.baseUrl}${ApiConstants.customerOrders}/$orderId/reject-price',
+      );
+
+      if (response.statusCode == 200 && response.data['success'] == true) {
+        return response.data['data'] ?? response.data;
+      } else {
+        throw Exception(response.data['message'] ?? 'Failed to reject price');
+      }
+    } catch (e) {
+      print('❌ ORDER SERVICE: Error rejecting price - $e');
+      rethrow;
+    }
+  }
 }
 

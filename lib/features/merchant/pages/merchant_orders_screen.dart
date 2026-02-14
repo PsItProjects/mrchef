@@ -457,6 +457,31 @@ class MerchantOrdersScreen extends GetView<MerchantOrdersController> {
                   ),
                 ),
               ],
+              // Show awaiting price approval text for awaiting_customer_approval orders
+              if (status == 'awaiting_customer_approval') ...[
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+                    decoration: BoxDecoration(
+                      color: Colors.orange.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.orange),
+                    ),
+                    child: Text(
+                      TranslationHelper.isArabic
+                          ? 'بانتظار موافقة العميل'
+                          : 'Awaiting Approval',
+                      style: const TextStyle(
+                        color: Colors.orange,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+              ],
             ],
           ),
         ],
@@ -470,7 +495,7 @@ class MerchantOrdersScreen extends GetView<MerchantOrdersController> {
     final totalAmount =
         double.tryParse(order['total_amount']?.toString() ?? '0') ?? 0;
 
-    // If order is pending, show price confirmation modal when approving
+    // If order is pending, show price confirmation modal to set price and await customer approval
     if (currentStatus == 'pending') {
       PriceConfirmationModal.show(
         context: Get.context!,
@@ -483,7 +508,7 @@ class MerchantOrdersScreen extends GetView<MerchantOrdersController> {
         onConfirm: (agreedPrice, agreedDeliveryFee) async {
           final success = await controller.updateOrderStatus(
             orderId,
-            'confirmed',
+            'awaiting_customer_approval',
             agreedPrice: agreedPrice,
             agreedDeliveryFee: agreedDeliveryFee,
           );
@@ -564,7 +589,10 @@ class MerchantOrdersScreen extends GetView<MerchantOrdersController> {
   List<String> _getNextStatuses(String currentStatus) {
     switch (currentStatus) {
       case 'pending':
-        return ['confirmed', 'rejected'];
+        return ['awaiting_customer_approval', 'confirmed', 'rejected'];
+      case 'awaiting_customer_approval':
+        // Merchant CANNOT advance — must wait for customer to accept/reject
+        return ['cancelled'];
       case 'confirmed':
         return ['preparing', 'cancelled'];
       case 'preparing':
@@ -580,6 +608,8 @@ class MerchantOrdersScreen extends GetView<MerchantOrdersController> {
 
   IconData _getStatusIcon(String status) {
     switch (status) {
+      case 'awaiting_customer_approval':
+        return Icons.hourglass_bottom_rounded;
       case 'confirmed':
         return Icons.check_circle_outline;
       case 'preparing':

@@ -138,6 +138,8 @@ class OrderDetailsModel extends OrderModel {
     switch (status?.toLowerCase()) {
       case 'pending':
         return OrderStatus.pending;
+      case 'awaiting_customer_approval':
+        return OrderStatus.awaitingCustomerApproval;
       case 'confirmed':
         return OrderStatus.confirmed;
       case 'preparing':

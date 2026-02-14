@@ -374,7 +374,12 @@ class CartController extends GetxController {
 
   // Navigate to home page
   void goToHomePage() {
-    Get.offAllNamed(AppRoutes.HOME);
+    try {
+      final mainController = Get.find<MainController>();
+      mainController.changeTab(0); // Home tab index
+    } catch (e) {
+      Get.offAllNamed(AppRoutes.HOME);
+    }
   }
 
   // Navigate to cart tab in main screen

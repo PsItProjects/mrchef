@@ -30,6 +30,7 @@ class MyOrdersController extends GetxController {
   List<String> get tabLabels => [
     'all'.tr,
     'pending'.tr,
+    'awaiting_customer_approval'.tr,
     'confirmed'.tr,
     'preparing'.tr,
     'out_for_delivery'.tr,
@@ -93,22 +94,25 @@ class MyOrdersController extends GetxController {
       case 1: // Pending
         tabFiltered = orders.where((order) => order.status == OrderStatus.pending).toList();
         break;
-      case 2: // Confirmed
+      case 2: // Awaiting Customer Approval (price proposal)
+        tabFiltered = orders.where((order) => order.status == OrderStatus.awaitingCustomerApproval).toList();
+        break;
+      case 3: // Confirmed
         tabFiltered = orders.where((order) => order.status == OrderStatus.confirmed).toList();
         break;
-      case 3: // Preparing
+      case 4: // Preparing
         tabFiltered = orders.where((order) => order.status == OrderStatus.preparing).toList();
         break;
-      case 4: // Out for Delivery
+      case 5: // Out for Delivery
         tabFiltered = orders.where((order) => order.status == OrderStatus.outForDelivery).toList();
         break;
-      case 5: // Awaiting Confirmation (delivered)
+      case 6: // Awaiting Confirmation (delivered)
         tabFiltered = orders.where((order) => order.status == OrderStatus.delivered).toList();
         break;
-      case 6: // Completed
+      case 7: // Completed
         tabFiltered = orders.where((order) => order.status == OrderStatus.completed).toList();
         break;
-      case 7: // Cancelled
+      case 8: // Cancelled
         tabFiltered = orders.where((order) => order.status == OrderStatus.cancelled || order.status == OrderStatus.rejected).toList();
         break;
       default:

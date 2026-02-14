@@ -18,7 +18,10 @@ class OrderActionsBar extends StatelessWidget {
     final controller = Get.find<OrderDetailsController>();
     final isCompleted = order.status == OrderStatus.completed;
     final isAwaitingConfirmation = order.status == OrderStatus.delivered;
-    final canCancel = order.status == OrderStatus.pending || order.status == OrderStatus.confirmed;
+    final isAwaitingPriceApproval = order.status == OrderStatus.awaitingCustomerApproval;
+    final canCancel = order.status == OrderStatus.pending || 
+                      order.status == OrderStatus.confirmed ||
+                      order.status == OrderStatus.awaitingCustomerApproval;
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -36,6 +39,97 @@ class OrderActionsBar extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            // Accept/Reject price buttons (only for awaiting_customer_approval orders)
+            if (isAwaitingPriceApproval) ...[
+              // Price summary
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(12),
+                margin: const EdgeInsets.only(bottom: 12),
+                decoration: BoxDecoration(
+                  color: AppColors.primaryColor.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: AppColors.primaryColor.withOpacity(0.3)),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.price_check_rounded, color: AppColors.primaryColor, size: 20),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'price_proposal_pending'.tr,
+                        style: const TextStyle(
+                          fontFamily: 'Lato',
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.darkTextColor,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Row(
+                children: [
+                  // Accept button
+                  Expanded(
+                    flex: 2,
+                    child: SizedBox(
+                      height: 52,
+                      child: ElevatedButton.icon(
+                        onPressed: () => _showAcceptPriceDialog(context, controller),
+                        icon: const Icon(Icons.check_circle_outline, size: 22),
+                        label: Text(
+                          'accept_price'.tr,
+                          style: const TextStyle(
+                            fontFamily: 'Lato',
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.successColor,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          elevation: 0,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  // Reject button
+                  Expanded(
+                    flex: 1,
+                    child: SizedBox(
+                      height: 52,
+                      child: OutlinedButton(
+                        onPressed: () => _showRejectPriceDialog(context, controller),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: AppColors.errorColor,
+                          side: const BorderSide(color: AppColors.errorColor, width: 2),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: Text(
+                          'reject'.tr,
+                          style: const TextStyle(
+                            fontFamily: 'Lato',
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+            ],
             // Confirm Delivery button (only for delivered/awaiting confirmation orders)
             if (isAwaitingConfirmation) ...[
               SizedBox(
@@ -269,6 +363,123 @@ class OrderActionsBar extends StatelessWidget {
     );
   }
 
+  void _showAcceptPriceDialog(BuildContext context, OrderDetailsController controller) {
+    HapticFeedback.lightImpact();
+    
+    Get.dialog(
+      AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        title: Text(
+          'accept_price'.tr,
+          style: const TextStyle(
+            fontFamily: 'Lato',
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        content: Text(
+          'accept_price_confirmation'.tr,
+          style: const TextStyle(
+            fontFamily: 'Lato',
+            fontSize: 16,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(),
+            child: Text(
+              'cancel'.tr,
+              style: TextStyle(
+                color: Colors.grey[600],
+                fontFamily: 'Lato',
+              ),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Get.back();
+              await controller.acceptPrice();
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.successColor,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            child: Text(
+              'confirm'.tr,
+              style: const TextStyle(
+                fontFamily: 'Lato',
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showRejectPriceDialog(BuildContext context, OrderDetailsController controller) {
+    HapticFeedback.lightImpact();
+    
+    Get.dialog(
+      AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        title: Text(
+          'reject_price'.tr,
+          style: const TextStyle(
+            fontFamily: 'Lato',
+            fontWeight: FontWeight.w700,
+            color: AppColors.errorColor,
+          ),
+        ),
+        content: Text(
+          'reject_price_confirmation'.tr,
+          style: const TextStyle(
+            fontFamily: 'Lato',
+            fontSize: 16,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(),
+            child: Text(
+              'cancel'.tr,
+              style: TextStyle(
+                color: Colors.grey[600],
+                fontFamily: 'Lato',
+              ),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Get.back();
+              await controller.rejectPrice();
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.errorColor,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            child: Text(
+              'reject'.tr,
+              style: const TextStyle(
+                fontFamily: 'Lato',
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _showCancelDialog(BuildContext context) {
     final controller = Get.find<OrderDetailsController>();
 
@@ -277,18 +488,18 @@ class OrderActionsBar extends StatelessWidget {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
         ),
-        title: const Text(
-          'Cancel Order',
-          style: TextStyle(
+        title: Text(
+          'cancel_order'.tr,
+          style: const TextStyle(
             fontFamily: 'Lato',
             fontSize: 20,
             fontWeight: FontWeight.w700,
             color: AppColors.darkTextColor,
           ),
         ),
-        content: const Text(
-          'Are you sure you want to cancel this order?',
-          style: TextStyle(
+        content: Text(
+          'cancel_order_confirmation'.tr,
+          style: const TextStyle(
             fontFamily: 'Lato',
             fontSize: 14,
             fontWeight: FontWeight.w400,

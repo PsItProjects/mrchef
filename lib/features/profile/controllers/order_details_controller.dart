@@ -156,6 +156,66 @@ class OrderDetailsController extends GetxController {
     }
   }
 
+  /// Accept price proposal from merchant
+  Future<void> acceptPrice() async {
+    try {
+      if (kDebugMode) {
+        print('✅ ORDER DETAILS: Accepting price for order #$_currentOrderId...');
+      }
+
+      isLoading.value = true;
+
+      await _orderService.acceptPrice(_currentOrderId);
+
+      if (kDebugMode) {
+        print('✅ ORDER DETAILS: Price accepted successfully');
+      }
+
+      // Reload order details to get updated status
+      await loadOrderDetails(_currentOrderId);
+
+      ToastService.showSuccess('price_accepted_successfully'.tr);
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ ORDER DETAILS: Error accepting price - $e');
+      }
+
+      ToastService.showError(e.toString());
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  /// Reject price proposal from merchant
+  Future<void> rejectPrice() async {
+    try {
+      if (kDebugMode) {
+        print('❌ ORDER DETAILS: Rejecting price for order #$_currentOrderId...');
+      }
+
+      isLoading.value = true;
+
+      await _orderService.rejectPrice(_currentOrderId);
+
+      if (kDebugMode) {
+        print('✅ ORDER DETAILS: Price rejected successfully');
+      }
+
+      // Reload order details to get updated status
+      await loadOrderDetails(_currentOrderId);
+
+      ToastService.showSuccess('price_rejected_successfully'.tr);
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ ORDER DETAILS: Error rejecting price - $e');
+      }
+
+      ToastService.showError(e.toString());
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
   /// Navigate to chat with restaurant for this order
   Future<void> openChat() async {
     try {

@@ -5,6 +5,7 @@ import 'package:mrsheaf/core/theme/app_theme.dart';
 
 enum OrderStatus {
   pending,
+  awaitingCustomerApproval,
   confirmed,
   preparing,
   ready,
@@ -96,6 +97,8 @@ class OrderModel {
     switch (status?.toLowerCase()) {
       case 'pending':
         return OrderStatus.pending;
+      case 'awaiting_customer_approval':
+        return OrderStatus.awaitingCustomerApproval;
       case 'confirmed':
         return OrderStatus.confirmed;
       case 'preparing':
@@ -132,6 +135,8 @@ class OrderModel {
     switch (status) {
       case OrderStatus.pending:
         return 'pending'.tr;
+      case OrderStatus.awaitingCustomerApproval:
+        return 'awaiting_customer_approval'.tr;
       case OrderStatus.confirmed:
         return 'confirmed'.tr;
       case OrderStatus.preparing:
@@ -153,6 +158,8 @@ class OrderModel {
 
   Color get statusColor {
     switch (status) {
+      case OrderStatus.awaitingCustomerApproval:
+        return AppColors.primaryColor; // Yellow - awaiting price approval
       case OrderStatus.delivered:
         return AppColors.warningColor; // Yellow - awaiting confirmation
       case OrderStatus.completed:
@@ -175,6 +182,8 @@ class OrderModel {
 
   Color get statusTextColor {
     switch (status) {
+      case OrderStatus.awaitingCustomerApproval:
+        return AppColors.primaryColor; // Yellow - awaiting price approval
       case OrderStatus.delivered:
         return AppColors.warningColor; // Yellow - awaiting confirmation
       case OrderStatus.completed:
@@ -194,6 +203,7 @@ class OrderModel {
   // Check if order is in "processing" state (for tab filtering)
   bool get isProcessing {
     return status == OrderStatus.pending ||
+        status == OrderStatus.awaitingCustomerApproval ||
         status == OrderStatus.confirmed ||
         status == OrderStatus.preparing ||
         status == OrderStatus.ready ||
@@ -218,6 +228,11 @@ class OrderModel {
   // Check if customer can confirm delivery
   bool get canConfirmDelivery {
     return status == OrderStatus.delivered;
+  }
+
+  // Check if customer can accept/reject price
+  bool get canAcceptOrRejectPrice {
+    return status == OrderStatus.awaitingCustomerApproval;
   }
 
   // Check if customer can review this order

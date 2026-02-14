@@ -116,7 +116,9 @@ class WorkingHoursSection extends GetView<StoreDetailsController> {
             flex: 3,
             child: isOff
                 ? _buildOffIndicator()
-                : _buildTimeSlots(daySchedule),
+                : (daySchedule['is24h'] == true
+                    ? _build24hIndicator()
+                    : _buildTimeSlots(daySchedule)),
           ),
         ],
       ),
@@ -181,6 +183,38 @@ class WorkingHoursSection extends GetView<StoreDetailsController> {
           fontSize: 14,
           color: Color(0xFF999999),
         ),
+      ),
+    );
+  }
+
+  Widget _build24hIndicator() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        color: AppColors.primaryColor.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(
+            Icons.all_inclusive,
+            size: 16,
+            color: AppColors.primaryColor,
+          ),
+          const SizedBox(width: 6),
+          Text(
+            '24_hours'.tr,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontFamily: 'Lato',
+              fontWeight: FontWeight.w700,
+              fontSize: 14,
+              color: AppColors.primaryColor,
+            ),
+          ),
+        ],
       ),
     );
   }
