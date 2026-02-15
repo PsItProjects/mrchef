@@ -140,6 +140,7 @@ class TranslationHelper {
     'no_reports': 'No reports found',
     'no_tickets': 'No support tickets found',
     'no_messages': 'No messages',
+    'type_message': 'Type your message',
     'settings': 'Settings',
   };
 
@@ -280,6 +281,7 @@ class TranslationHelper {
     'no_reports': 'لا توجد بلاغات',
     'no_tickets': 'لا توجد تذاكر دعم',
     'no_messages': 'لا توجد رسائل',
+    'type_message': 'اكتب رسالتك',
     'settings': 'الإعدادات',
   };
 

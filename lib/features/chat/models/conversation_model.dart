@@ -238,6 +238,24 @@ class MessageModel {
   bool get isFromCustomer => senderType == 'customer';
   bool get isFromMerchant => senderType == 'merchant';
 
+  /// Create a copy with an overridden message text
+  MessageModel copyWithMessage(String newMessage) {
+    return MessageModel(
+      id: id,
+      conversationId: conversationId,
+      repliedToMessageId: repliedToMessageId,
+      repliedToMessage: repliedToMessage,
+      senderType: senderType,
+      senderId: senderId,
+      message: newMessage,
+      messageType: messageType,
+      attachments: attachments,
+      isReadByCustomer: isReadByCustomer,
+      isReadByMerchant: isReadByMerchant,
+      createdAt: createdAt,
+    );
+  }
+
   /// Parse attachments that may come as a JSON string or a Map
   static Map<String, dynamic>? _parseAttachments(dynamic value) {
     if (value == null) return null;

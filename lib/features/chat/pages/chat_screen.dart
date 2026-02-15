@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/features/chat/controllers/chat_controller.dart';
+import 'package:mrsheaf/features/chat/models/conversation_model.dart';
 import 'package:mrsheaf/features/chat/widgets/message_bubble.dart';
 import 'package:mrsheaf/features/chat/widgets/customer_product_attachment_card.dart';
 import 'package:mrsheaf/features/support/widgets/report_conversation_dialog.dart';
@@ -114,6 +115,8 @@ class ChatScreen extends GetView<ChatController> {
                         );
                       } else {
                         // Regular message bubble
+                        // Strip "من قبل العميل" from system messages on customer side
+                        final displayMessage = _stripCustomerLabel(message);
                         messageWidget = Obx(() => AnimatedContainer(
                               duration:
                                   const Duration(milliseconds: 300),
@@ -128,7 +131,7 @@ class ChatScreen extends GetView<ChatController> {
                                     BorderRadius.circular(12),
                               ),
                               child: MessageBubble(
-                                message: message,
+                                message: displayMessage,
                                 onReplyTap:
                                     controller.scrollToMessage,
                                 merchantName: message.isFromMerchant
@@ -527,6 +530,19 @@ class ChatScreen extends GetView<ChatController> {
         ),
       ],
     );
+  }
+
+  /// Strip "من قبل العميل" from system messages on customer side
+  /// (redundant info for the customer — they already know they did it)
+  MessageModel _stripCustomerLabel(MessageModel msg) {
+    if (msg.messageType != 'system' && msg.messageType != 'order_status') {
+      return msg;
+    }
+    final cleaned = msg.message
+        .replaceAll(' من قبل العميل', '')
+        .replaceAll(' by the customer', '');
+    if (cleaned == msg.message) return msg;
+    return msg.copyWithMessage(cleaned);
   }
 }
 
