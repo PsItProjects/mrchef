@@ -59,12 +59,16 @@ android {
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            ndk {
+                debugSymbolLevel = "NONE"
+            }
         }
     }
     
     packaging {
         jniLibs {
             useLegacyPackaging = true
+            doNotStrip += listOf("**/*.so")
         }
     }
 }
