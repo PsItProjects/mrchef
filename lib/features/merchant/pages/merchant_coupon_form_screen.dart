@@ -1,7 +1,10 @@
 import 'dart:math';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:mrsheaf/core/services/toast_service.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/features/merchant/controllers/merchant_coupon_controller.dart';
 import 'package:mrsheaf/features/merchant/models/merchant_coupon_model.dart';
@@ -161,6 +164,16 @@ class _MerchantCouponFormScreenState extends State<MerchantCouponFormScreen> {
                                 label: 'coupon_code'.tr,
                                 hint: 'enter_coupon_code'.tr,
                                 textCapitalization: TextCapitalization.characters,
+                                inputFormatters: [_UpperCaseTextFormatter()],
+                                onTap: () {
+                                  // Select all text when tapping the code field
+                                  if (_codeController.text.isNotEmpty) {
+                                    _codeController.selection = TextSelection(
+                                      baseOffset: 0,
+                                      extentOffset: _codeController.text.length,
+                                    );
+                                  }
+                                },
                               ),
                             ),
                             const SizedBox(width: 12),
@@ -484,12 +497,16 @@ class _MerchantCouponFormScreenState extends State<MerchantCouponFormScreen> {
     int maxLines = 1,
     String? suffix,
     TextCapitalization textCapitalization = TextCapitalization.none,
+    List<TextInputFormatter>? inputFormatters,
+    VoidCallback? onTap,
   }) {
     return TextFormField(
       controller: controller,
       keyboardType: keyboardType,
       maxLines: maxLines,
       textCapitalization: textCapitalization,
+      inputFormatters: inputFormatters,
+      onTap: onTap,
       style: const TextStyle(
         fontFamily: 'Lato',
         fontSize: 14,
@@ -852,11 +869,20 @@ class _MerchantCouponFormScreenState extends State<MerchantCouponFormScreen> {
   // ===========================
   // SUBMIT
   // ===========================
+  bool _isSubmittingLocal = false;
 
   Future<void> _submit() async {
-    if (!_formKey.currentState!.validate()) return;
+    // Prevent double submission
+    if (_isSubmittingLocal || _controller.isSubmitting.value) return;
+    _isSubmittingLocal = true;
+
+    if (!_formKey.currentState!.validate()) {
+      _isSubmittingLocal = false;
+      return;
+    }
 
     if (_titleArController.text.trim().isEmpty) {
+      _isSubmittingLocal = false;
       Get.snackbar(
         'error'.tr,
         'field_required'.tr,
@@ -868,6 +894,7 @@ class _MerchantCouponFormScreenState extends State<MerchantCouponFormScreen> {
     }
 
     if (_valueController.text.trim().isEmpty) {
+      _isSubmittingLocal = false;
       Get.snackbar(
         'error'.tr,
         'field_required'.tr,
@@ -879,6 +906,7 @@ class _MerchantCouponFormScreenState extends State<MerchantCouponFormScreen> {
     }
 
     if (_appliesTo == 'specific' && _selectedProductIds.isEmpty) {
+      _isSubmittingLocal = false;
       Get.snackbar(
         'error'.tr,
         'select_at_least_one_product'.tr,
@@ -935,15 +963,50 @@ class _MerchantCouponFormScreenState extends State<MerchantCouponFormScreen> {
       data['product_ids'] = _selectedProductIds.toList();
     }
 
-    bool success;
-    if (_isEditing) {
-      success = await _controller.updateCoupon(widget.couponId!, data);
-    } else {
-      success = await _controller.createCoupon(data);
-    }
+    try {
+      bool success;
+      if (_isEditing) {
+        if (kDebugMode) print('📝 Updating coupon ${widget.couponId}...');
+        success = await _controller.updateCoupon(widget.couponId!, data);
+      } else {
+        if (kDebugMode) print('📝 Creating coupon...');
+        success = await _controller.createCoupon(data);
+      }
 
-    if (success) {
-      Get.back(result: true);
+      if (kDebugMode) print('📝 Submit result: success=$success, mounted=$mounted');
+      _isSubmittingLocal = false;
+
+      if (success) {
+        if (kDebugMode) print('📝 Showing toast and navigating back...');
+        ToastService.showSuccess(
+          _isEditing ? 'coupon_updated_successfully'.tr : 'coupon_created_successfully'.tr,
+        );
+        // Use Navigator.pop instead of Get.back for reliable navigation
+        if (mounted) {
+          Navigator.of(context).pop(true);
+        }
+      } else {
+        if (kDebugMode) print('📝 Submit returned false - no navigation');
+      }
+    } catch (e) {
+      _isSubmittingLocal = false;
+      if (kDebugMode) print('❌ _submit error: $e');
+      if (kDebugMode) print('❌ _submit stackTrace: ${StackTrace.current}');
+      ToastService.showError(e.toString().replaceAll('Exception: ', ''));
     }
+  }
+}
+
+/// Forces text to uppercase as the user types
+class _UpperCaseTextFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    return newValue.copyWith(
+      text: newValue.text.toUpperCase(),
+      selection: newValue.selection,
+    );
   }
 }

@@ -104,30 +104,14 @@ class ChatScreen extends GetView<ChatController> {
                                 )),
                           ],
                         );
-                      } else if (message.messageType == 'price_proposal' &&
-                          message.attachments != null) {
-                        // Price proposal from merchant → show price proposal card with accept/reject
-                        final orderId = message.attachments?['order_id'];
-                        messageWidget = Obx(() {
-                          final oData = orderId != null
-                              ? controller.ordersData[orderId]
-                              : null;
-                          final isConfirming = orderId != null
-                              ? controller.isOrderConfirming(orderId)
-                              : false;
-
-                          // Merge attachments with order data to get latest status
-                          final mergedData = <String, dynamic>{...message.attachments!};
-                          if (oData != null) mergedData.addAll(oData);
-
-                          return CustomerProductAttachmentCard(
-                            attachments: mergedData,
-                            orderData: oData,
-                            isConfirming: isConfirming,
-                            onConfirmDelivery: (id) =>
-                                controller.confirmDelivery(id),
-                          );
-                        });
+                      } else if (message.messageType == 'price_proposal') {
+                        // Price proposal is already shown inside the product_attachment card
+                        // Show only the text as a system bubble (no duplicate order card)
+                        messageWidget = MessageBubble(
+                          message: message,
+                          onReplyTap: controller.scrollToMessage,
+                          merchantName: message.isFromMerchant ? merchantName : null,
+                        );
                       } else {
                         // Regular message bubble
                         messageWidget = Obx(() => AnimatedContainer(

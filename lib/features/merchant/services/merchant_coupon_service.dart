@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
+import 'package:dio/dio.dart' as dio;
 import 'package:mrsheaf/core/network/api_client.dart';
 import 'package:mrsheaf/core/constants/api_constants.dart';
 import 'package:mrsheaf/features/merchant/models/merchant_coupon_model.dart';
@@ -69,6 +70,10 @@ class MerchantCouponService extends GetxService {
       }
 
       throw Exception(response.data['message'] ?? 'Failed to create coupon');
+    } on dio.DioException catch (e) {
+      if (kDebugMode) print('❌ MerchantCouponService.createCoupon error: $e');
+      final message = e.response?.data?['message'] ?? 'Failed to create coupon';
+      throw Exception(message);
     } catch (e) {
       if (kDebugMode) print('❌ MerchantCouponService.createCoupon error: $e');
       rethrow;
@@ -85,6 +90,10 @@ class MerchantCouponService extends GetxService {
       }
 
       throw Exception(response.data['message'] ?? 'Failed to update coupon');
+    } on dio.DioException catch (e) {
+      if (kDebugMode) print('❌ MerchantCouponService.updateCoupon error: $e');
+      final message = e.response?.data?['message'] ?? 'Failed to update coupon';
+      throw Exception(message);
     } catch (e) {
       if (kDebugMode) print('❌ MerchantCouponService.updateCoupon error: $e');
       rethrow;

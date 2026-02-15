@@ -67,13 +67,16 @@ class MerchantCouponController extends GetxController {
   Future<bool> createCoupon(Map<String, dynamic> data) async {
     try {
       isSubmitting.value = true;
+      if (kDebugMode) print('📝 Controller.createCoupon called');
       final coupon = await _couponService.createCoupon(data);
+      if (kDebugMode) print('📝 Controller.createCoupon service returned: ${coupon != null}');
       if (coupon != null) {
         coupons.insert(0, coupon);
         _applyFilter();
-        ToastService.showSuccess('coupon_created_successfully'.tr);
+        if (kDebugMode) print('📝 Controller.createCoupon returning TRUE');
         return true;
       }
+      if (kDebugMode) print('📝 Controller.createCoupon returning FALSE (null coupon)');
       return false;
     } catch (e) {
       if (kDebugMode) print('❌ createCoupon error: $e');
@@ -89,16 +92,19 @@ class MerchantCouponController extends GetxController {
   Future<bool> updateCoupon(int id, Map<String, dynamic> data) async {
     try {
       isSubmitting.value = true;
+      if (kDebugMode) print('📝 Controller.updateCoupon called for id=$id');
       final updated = await _couponService.updateCoupon(id, data);
+      if (kDebugMode) print('📝 Controller.updateCoupon service returned: ${updated != null}');
       if (updated != null) {
         final index = coupons.indexWhere((c) => c.id == id);
         if (index != -1) {
           coupons[index] = updated;
           _applyFilter();
         }
-        ToastService.showSuccess('coupon_updated_successfully'.tr);
+        if (kDebugMode) print('📝 Controller.updateCoupon returning TRUE');
         return true;
       }
+      if (kDebugMode) print('📝 Controller.updateCoupon returning FALSE (null updated)');
       return false;
     } catch (e) {
       if (kDebugMode) print('❌ updateCoupon error: $e');

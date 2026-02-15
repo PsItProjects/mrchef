@@ -252,6 +252,12 @@ class MerchantChatController extends GetxController {
 
         // Fetch order details for any new product_attachment messages
         _fetchOrdersFromMessages();
+
+        // Refresh cached order data when new messages arrive
+        // This ensures status updates (customer accept/reject price) are reflected
+        if (hasNewMessages) {
+          _refreshCachedOrders();
+        }
       }
     });
 
@@ -387,6 +393,9 @@ class MerchantChatController extends GetxController {
         OrderSyncService.instance
             .broadcastOrderUpdate(orderId, updatedOrder, fromController: 'chat');
 
+        // Reload messages to show price_proposal / status change messages
+        await loadMessages();
+
         ToastService.showSuccess('order_status_updated'.tr);
         return true;
       } else {
@@ -496,6 +505,21 @@ class MerchantChatController extends GetxController {
         final orderId = message.attachments!['order_id'];
         if (orderId != null && !ordersData.containsKey(orderId)) {
           fetchOrderDetails(orderId);
+        }
+      }
+    }
+  }
+
+  /// Refresh all cached order data to get latest status
+  /// Called when new messages arrive (e.g. customer accept/reject price)
+  Future<void> _refreshCachedOrders() async {
+    final orderIds = ordersData.keys.toList();
+    for (final orderId in orderIds) {
+      try {
+        await fetchOrderDetails(orderId, forceRefresh: true);
+      } catch (e) {
+        if (kDebugMode) {
+          print('Error refreshing order $orderId: $e');
         }
       }
     }

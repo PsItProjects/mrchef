@@ -4,15 +4,14 @@ import 'package:get/get.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/features/merchant/controllers/merchant_coupon_controller.dart';
 import 'package:mrsheaf/features/merchant/models/merchant_coupon_model.dart';
-import 'package:mrsheaf/features/merchant/services/merchant_coupon_service.dart';
 import 'package:mrsheaf/features/merchant/pages/merchant_coupon_form_screen.dart';
+import 'package:mrsheaf/features/merchant/services/merchant_coupon_service.dart';
 
 class MerchantCouponsScreen extends StatelessWidget {
   const MerchantCouponsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // Register service and controller if not already registered
     if (!Get.isRegistered<MerchantCouponService>()) {
       Get.put(MerchantCouponService());
     }
@@ -24,24 +23,6 @@ class MerchantCouponsScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: AppColors.surfaceColor,
-      appBar: AppBar(
-        title: Text(
-          'discount_codes'.tr,
-          style: const TextStyle(
-            fontFamily: 'Lato',
-            fontWeight: FontWeight.w700,
-            fontSize: 18,
-            color: AppColors.textDarkColor,
-          ),
-        ),
-        centerTitle: true,
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: AppColors.textDarkColor),
-          onPressed: () => Get.back(),
-        ),
-      ),
       body: Obx(() {
         if (controller.isLoading.value) {
           return const Center(
@@ -54,29 +35,28 @@ class MerchantCouponsScreen extends StatelessWidget {
         return RefreshIndicator(
           onRefresh: controller.loadCoupons,
           color: AppColors.primaryColor,
-          child: Column(
-            children: [
-              // Stats bar
-              _buildStatsBar(controller),
-
-              // Filter chips
-              _buildFilterChips(controller),
-
-              // Coupons list
-              Expanded(
-                child: controller.filteredCoupons.isEmpty
-                    ? _buildEmptyState(controller)
-                    : ListView.builder(
-                        padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
-                        itemCount: controller.filteredCoupons.length,
-                        itemBuilder: (context, index) {
-                          return _buildCouponCard(
-                            controller.filteredCoupons[index],
-                            controller,
-                          );
-                        },
+          child: CustomScrollView(
+            slivers: [
+              SliverToBoxAdapter(child: _buildHeader(controller)),
+              SliverToBoxAdapter(child: _buildFilterChips(controller)),
+              if (controller.filteredCoupons.isEmpty)
+                SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: _buildEmptyState(controller),
+                )
+              else
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(16, 4, 16, 100),
+                  sliver: SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) => _buildCouponCard(
+                        coupon: controller.filteredCoupons[index],
+                        controller: controller,
                       ),
-              ),
+                      childCount: controller.filteredCoupons.length,
+                    ),
+                  ),
+                ),
             ],
           ),
         );
@@ -89,12 +69,13 @@ class MerchantCouponsScreen extends StatelessWidget {
           }
         },
         backgroundColor: AppColors.secondaryColor,
-        icon: const Icon(Icons.add, color: Colors.white),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        icon: const Icon(Icons.add_rounded, color: Colors.white),
         label: Text(
           'add_coupon'.tr,
           style: const TextStyle(
             fontFamily: 'Lato',
-            fontWeight: FontWeight.w600,
+            fontWeight: FontWeight.w700,
             color: Colors.white,
           ),
         ),
@@ -102,151 +83,69 @@ class MerchantCouponsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildStatsBar(MerchantCouponController controller) {
+  Widget _buildHeader(MerchantCouponController controller) {
     return Container(
-      color: Colors.white,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      child: Row(
-        children: [
-          _buildStatItem(
-            'total'.tr,
-            '${controller.totalCoupons}',
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
             AppColors.secondaryColor,
-          ),
-          _buildStatDivider(),
-          _buildStatItem(
-            'active'.tr,
-            '${controller.activeCoupons}',
-            AppColors.successColor,
-          ),
-          _buildStatDivider(),
-          _buildStatItem(
-            'expired'.tr,
-            '${controller.expiredCoupons}',
-            AppColors.errorColor,
-          ),
-        ],
+            Color(0xFF4A2B8A),
+          ],
+        ),
       ),
-    );
-  }
-
-  Widget _buildStatItem(String label, String value, Color color) {
-    return Expanded(
-      child: Column(
-        children: [
-          Text(
-            value,
-            style: TextStyle(
-              fontFamily: 'Lato',
-              fontWeight: FontWeight.w700,
-              fontSize: 20,
-              color: color,
-            ),
-          ),
-          const SizedBox(height: 2),
-          Text(
-            label,
-            style: const TextStyle(
-              fontFamily: 'Lato',
-              fontSize: 12,
-              color: AppColors.textMediumColor,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStatDivider() {
-    return Container(
-      width: 1,
-      height: 30,
-      color: AppColors.borderColor,
-    );
-  }
-
-  Widget _buildFilterChips(MerchantCouponController controller) {
-    final filters = [
-      {'key': 'all', 'label': 'all'.tr},
-      {'key': 'active', 'label': 'active'.tr},
-      {'key': 'inactive', 'label': 'inactive'.tr},
-      {'key': 'expired', 'label': 'expired'.tr},
-    ];
-
-    return Container(
-      color: Colors.white,
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Obx(() => Row(
-              children: filters.map((f) {
-                final isSelected = controller.filterType.value == f['key'];
-                return Padding(
-                  padding: const EdgeInsetsDirectional.only(end: 8),
-                  child: ChoiceChip(
-                    label: Text(f['label']!),
-                    selected: isSelected,
-                    selectedColor: AppColors.secondaryColor,
-                    backgroundColor: AppColors.surfaceColor,
-                    labelStyle: TextStyle(
-                      fontFamily: 'Lato',
-                      fontWeight: FontWeight.w600,
-                      fontSize: 13,
-                      color: isSelected ? Colors.white : AppColors.textMediumColor,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    onSelected: (_) => controller.setFilter(f['key']!),
-                  ),
-                );
-              }).toList(),
-            )),
-      ),
-    );
-  }
-
-  Widget _buildEmptyState(MerchantCouponController controller) {
-    return Center(
-      child: SingleChildScrollView(
-        physics: const AlwaysScrollableScrollPhysics(),
+      child: SafeArea(
+        bottom: false,
         child: Padding(
-          padding: const EdgeInsets.all(32),
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 20),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Container(
-                width: 100,
-                height: 100,
-                decoration: BoxDecoration(
-                  color: AppColors.primaryColor.withOpacity(0.1),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.discount_outlined,
-                  size: 48,
-                  color: AppColors.primaryColor,
-                ),
+              Row(
+                children: [
+                  IconButton(
+                    onPressed: () => Get.back(),
+                    icon: const Icon(Icons.arrow_back_ios_rounded, color: Colors.white),
+                  ),
+                  Expanded(
+                    child: Text(
+                      'discount_codes'.tr,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontFamily: 'Lato',
+                        fontWeight: FontWeight.w700,
+                        fontSize: 18,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 48),
+                ],
               ),
-              const SizedBox(height: 24),
-              Text(
-                'no_coupons_yet'.tr,
-                style: const TextStyle(
-                  fontFamily: 'Lato',
-                  fontWeight: FontWeight.w700,
-                  fontSize: 18,
-                  color: AppColors.textDarkColor,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'no_coupons_description'.tr,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontFamily: 'Lato',
-                  fontSize: 14,
-                  color: AppColors.textMediumColor,
-                ),
+              const SizedBox(height: 6),
+              Row(
+                children: [
+                  _buildStatCard(
+                    icon: Icons.confirmation_number_outlined,
+                    value: '${controller.totalCoupons}',
+                    label: 'total'.tr,
+                    valueColor: Colors.white,
+                  ),
+                  const SizedBox(width: 10),
+                  _buildStatCard(
+                    icon: Icons.check_circle_outline,
+                    value: '${controller.activeCoupons}',
+                    label: 'active'.tr,
+                    valueColor: const Color(0xFF7CFFB3),
+                  ),
+                  const SizedBox(width: 10),
+                  _buildStatCard(
+                    icon: Icons.timer_off_outlined,
+                    value: '${controller.expiredCoupons}',
+                    label: 'expired'.tr,
+                    valueColor: const Color(0xFFFFB3B3),
+                  ),
+                ],
               ),
             ],
           ),
@@ -255,12 +154,189 @@ class MerchantCouponsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildCouponCard(MerchantCouponModel coupon, MerchantCouponController controller) {
+  Widget _buildStatCard({
+    required IconData icon,
+    required String value,
+    required String label,
+    required Color valueColor,
+  }) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.12),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.white.withOpacity(0.18)),
+        ),
+        child: Column(
+          children: [
+            Icon(icon, color: Colors.white, size: 20),
+            const SizedBox(height: 4),
+            Text(
+              value,
+              style: TextStyle(
+                fontFamily: 'Tajawal',
+                fontWeight: FontWeight.w700,
+                fontSize: 20,
+                color: valueColor,
+              ),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              label,
+              style: TextStyle(
+                fontFamily: 'Lato',
+                fontSize: 11,
+                color: Colors.white.withOpacity(0.85),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFilterChips(MerchantCouponController controller) {
+    final filters = [
+      {'key': 'all', 'label': 'all'.tr, 'icon': Icons.grid_view_rounded},
+      {'key': 'active', 'label': 'active'.tr, 'icon': Icons.check_circle_outline},
+      {'key': 'inactive', 'label': 'inactive'.tr, 'icon': Icons.pause_circle_outline},
+      {'key': 'expired', 'label': 'expired'.tr, 'icon': Icons.history_rounded},
+    ];
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Obx(
+          () => Row(
+            children: filters.map((filter) {
+              final key = filter['key'] as String;
+              final isSelected = controller.filterType.value == key;
+              return Padding(
+                padding: const EdgeInsetsDirectional.only(end: 8),
+                child: GestureDetector(
+                  onTap: () => controller.setFilter(key),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: isSelected ? AppColors.secondaryColor : Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: isSelected ? AppColors.secondaryColor : AppColors.borderColor,
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          filter['icon'] as IconData,
+                          size: 16,
+                          color: isSelected ? Colors.white : AppColors.textMediumColor,
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          filter['label'] as String,
+                          style: TextStyle(
+                            fontFamily: 'Lato',
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: isSelected ? Colors.white : AppColors.textMediumColor,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEmptyState(MerchantCouponController controller) {
+    return Padding(
+      padding: const EdgeInsets.all(32),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            width: 100,
+            height: 100,
+            decoration: BoxDecoration(
+              color: AppColors.primaryColor.withOpacity(0.12),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.local_offer_outlined,
+              size: 48,
+              color: AppColors.secondaryColor,
+            ),
+          ),
+          const SizedBox(height: 24),
+          Text(
+            'no_coupons_yet'.tr,
+            style: const TextStyle(
+              fontFamily: 'Lato',
+              fontWeight: FontWeight.w700,
+              fontSize: 19,
+              color: AppColors.textDarkColor,
+            ),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            'no_coupons_description'.tr,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontFamily: 'Lato',
+              fontSize: 14,
+              color: AppColors.textMediumColor,
+            ),
+          ),
+          const SizedBox(height: 24),
+          SizedBox(
+            height: 46,
+            child: ElevatedButton.icon(
+              onPressed: () async {
+                final result = await Get.to(() => const MerchantCouponFormScreen());
+                if (result == true) {
+                  controller.loadCoupons();
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.secondaryColor,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              icon: const Icon(Icons.add_rounded, color: Colors.white),
+              label: Text(
+                'add_coupon'.tr,
+                style: const TextStyle(
+                  fontFamily: 'Lato',
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCouponCard({
+    required MerchantCouponModel coupon,
+    required MerchantCouponController controller,
+  }) {
+    final status = _statusMeta(coupon.status);
+
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: 14),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
@@ -269,175 +345,203 @@ class MerchantCouponsScreen extends StatelessWidget {
           ),
         ],
       ),
-      child: Column(
-        children: [
-          // Top section with code and status
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    // Discount badge
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: AppColors.secondaryColor,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        coupon.displayValue,
-                        style: const TextStyle(
-                          fontFamily: 'Tajawal',
-                          fontWeight: FontWeight.w700,
-                          fontSize: 16,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-
-                    // Title and code
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            coupon.localizedTitle,
-                            style: const TextStyle(
-                              fontFamily: 'Lato',
-                              fontWeight: FontWeight.w700,
-                              fontSize: 15,
-                              color: AppColors.textDarkColor,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          const SizedBox(height: 2),
-                          GestureDetector(
-                            onTap: () {
-                              Clipboard.setData(ClipboardData(text: coupon.code));
-                              Get.snackbar(
-                                'copied'.tr,
-                                coupon.code,
-                                snackPosition: SnackPosition.BOTTOM,
-                                duration: const Duration(seconds: 1),
-                                backgroundColor: AppColors.secondaryColor,
-                                colorText: Colors.white,
-                              );
-                            },
-                            child: Row(
-                              children: [
-                                Text(
-                                  coupon.code,
-                                  style: const TextStyle(
-                                    fontFamily: 'Lato',
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 13,
-                                    color: AppColors.primaryColor,
-                                    letterSpacing: 1.5,
-                                  ),
-                                ),
-                                const SizedBox(width: 4),
-                                const Icon(Icons.copy, size: 14, color: AppColors.primaryColor),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    // Status badge
-                    _buildStatusBadge(coupon.status),
-                  ],
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: Column(
+          children: [
+            Container(
+              height: 4,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [status.color, status.color.withOpacity(0.4)],
                 ),
-
-                const SizedBox(height: 12),
-
-                // Info row
-                Row(
-                  children: [
-                    _buildInfoChip(
-                      Icons.category_outlined,
-                      coupon.appliesTo == 'all'
-                          ? 'all_products'.tr
-                          : '${'specific_products'.tr} (${coupon.productsCount})',
-                    ),
-                    const SizedBox(width: 8),
-                    _buildInfoChip(
-                      Icons.people_outline,
-                      '${'used'.tr}: ${coupon.usageText}',
-                    ),
-                  ],
-                ),
-
-                if (coupon.startsAt != null || coupon.expiresAt != null) ...[
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      Icon(Icons.schedule, size: 14, color: AppColors.textMediumColor),
-                      const SizedBox(width: 4),
-                      Text(
-                        _formatDateRange(coupon.startsAt, coupon.expiresAt),
-                        style: const TextStyle(
-                          fontFamily: 'Lato',
-                          fontSize: 12,
-                          color: AppColors.textMediumColor,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ],
-            ),
-          ),
-
-          // Bottom actions
-          Container(
-            decoration: BoxDecoration(
-              border: Border(
-                top: BorderSide(color: AppColors.borderColor),
               ),
             ),
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            child: Row(
-              children: [
-                // Toggle switch
-                Obx(() {
-                  final current = controller.coupons.firstWhereOrNull((c) => c.id == coupon.id);
-                  return Switch(
-                    value: current?.isActive ?? coupon.isActive,
-                    onChanged: (_) => controller.toggleActive(coupon.id),
-                    activeColor: AppColors.successColor,
-                  );
-                }),
-
-                const Spacer(),
-
-                // Edit button
-                IconButton(
-                  onPressed: () async {
-                    final result = await Get.to(
-                      () => MerchantCouponFormScreen(couponId: coupon.id),
-                    );
-                    if (result == true) {
-                      controller.loadCoupons();
-                    }
-                  },
-                  icon: const Icon(Icons.edit_outlined, size: 20),
-                  color: AppColors.secondaryColor,
-                  tooltip: 'edit'.tr,
-                ),
-
-                // Delete button
-                IconButton(
-                  onPressed: () => _confirmDelete(coupon, controller),
-                  icon: const Icon(Icons.delete_outline, size: 20),
-                  color: AppColors.errorColor,
-                  tooltip: 'delete'.tr,
+            IntrinsicHeight(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _buildDiscountSide(coupon),
+                  Container(width: 1, color: AppColors.borderColor),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                coupon.localizedTitle,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  fontFamily: 'Lato',
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 15,
+                                  color: AppColors.textDarkColor,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            _buildStatusBadge(status),
+                          ],
+                        ),
+                        const SizedBox(height: 7),
+                        _buildCodeChip(coupon.code),
+                        const SizedBox(height: 10),
+                        Wrap(
+                          spacing: 6,
+                          runSpacing: 6,
+                          children: [
+                            _buildInfoChip(
+                              icon: coupon.appliesTo == 'all'
+                                  ? Icons.storefront_outlined
+                                  : Icons.category_outlined,
+                              text: coupon.appliesTo == 'all'
+                                  ? 'all_products'.tr
+                                  : '${'specific_products'.tr} (${coupon.productsCount})',
+                            ),
+                            _buildInfoChip(
+                              icon: Icons.people_alt_outlined,
+                              text: '${'used'.tr}: ${coupon.usageText}',
+                            ),
+                          ],
+                        ),
+                        if (coupon.startsAt != null || coupon.expiresAt != null) ...[
+                          const SizedBox(height: 8),
+                          Row(
+                            children: [
+                              const Icon(Icons.calendar_today_rounded,
+                                  size: 13, color: AppColors.textMediumColor),
+                              const SizedBox(width: 4),
+                              Expanded(
+                                child: Text(
+                                  _formatDateRange(coupon.startsAt, coupon.expiresAt),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    fontFamily: 'Lato',
+                                    fontSize: 11,
+                                    color: AppColors.textMediumColor,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                        if ((coupon.maxUsesTotal ?? 0) > 0) ...[
+                          const SizedBox(height: 8),
+                          _buildUsageProgress(coupon),
+                        ],
+                      ],
+                    ),
+                  ),
                 ),
               ],
+            ),
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                color: AppColors.surfaceColor.withOpacity(0.5),
+                border: Border(
+                  top: BorderSide(color: AppColors.borderColor.withOpacity(0.7)),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Obx(() {
+                    final current = controller.coupons.firstWhereOrNull((c) => c.id == coupon.id);
+                    final isActive = current?.isActive ?? coupon.isActive;
+                    return Row(
+                      children: [
+                        SizedBox(
+                          height: 26,
+                          child: FittedBox(
+                            child: Switch(
+                              value: isActive,
+                              onChanged: (_) => controller.toggleActive(coupon.id),
+                              activeColor: AppColors.successColor,
+                            ),
+                          ),
+                        ),
+                        Text(
+                          isActive ? 'active'.tr : 'inactive'.tr,
+                          style: TextStyle(
+                            fontFamily: 'Lato',
+                            fontWeight: FontWeight.w600,
+                            fontSize: 11,
+                            color: isActive ? AppColors.successColor : AppColors.textMediumColor,
+                          ),
+                        ),
+                      ],
+                    );
+                  }),
+                  const Spacer(),
+                  _actionButton(
+                    icon: Icons.edit_outlined,
+                    color: AppColors.secondaryColor,
+                    tooltip: 'edit'.tr,
+                    onTap: () async {
+                      final result = await Get.to(() => MerchantCouponFormScreen(couponId: coupon.id));
+                      if (result == true) {
+                        controller.loadCoupons();
+                      }
+                    },
+                  ),
+                  const SizedBox(width: 6),
+                  _actionButton(
+                    icon: Icons.delete_outline_rounded,
+                    color: AppColors.errorColor,
+                    tooltip: 'delete'.tr,
+                    onTap: () => _confirmDelete(coupon, controller),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDiscountSide(MerchantCouponModel coupon) {
+    final isPercentage = coupon.type == 'percentage';
+    return Container(
+      width: 80,
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 6),
+      color: AppColors.secondaryColor.withOpacity(0.05),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            coupon.value.toStringAsFixed(0),
+            style: const TextStyle(
+              fontFamily: 'Tajawal',
+              fontWeight: FontWeight.w700,
+              fontSize: 24,
+              color: AppColors.secondaryColor,
+              height: 1,
+            ),
+          ),
+          Text(
+            isPercentage ? '%' : 'SAR',
+            style: const TextStyle(
+              fontFamily: 'Lato',
+              fontWeight: FontWeight.w700,
+              fontSize: 10,
+              color: AppColors.secondaryColor,
+            ),
+          ),
+          Text(
+            'discount_off'.tr,
+            style: const TextStyle(
+              fontFamily: 'Lato',
+              fontWeight: FontWeight.w600,
+              fontSize: 10,
+              color: AppColors.textMediumColor,
             ),
           ),
         ],
@@ -445,62 +549,48 @@ class MerchantCouponsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildStatusBadge(String status) {
-    Color bgColor;
-    Color textColor;
-    String label;
-
-    switch (status) {
-      case 'active':
-        bgColor = AppColors.successColor.withOpacity(0.1);
-        textColor = AppColors.successColor;
-        label = 'active'.tr;
-        break;
-      case 'inactive':
-        bgColor = AppColors.textMediumColor.withOpacity(0.1);
-        textColor = AppColors.textMediumColor;
-        label = 'inactive'.tr;
-        break;
-      case 'scheduled':
-        bgColor = Colors.blue.withOpacity(0.1);
-        textColor = Colors.blue;
-        label = 'scheduled'.tr;
-        break;
-      case 'expired':
-        bgColor = AppColors.errorColor.withOpacity(0.1);
-        textColor = AppColors.errorColor;
-        label = 'expired'.tr;
-        break;
-      case 'exhausted':
-        bgColor = Colors.orange.withOpacity(0.1);
-        textColor = Colors.orange;
-        label = 'exhausted'.tr;
-        break;
-      default:
-        bgColor = AppColors.textMediumColor.withOpacity(0.1);
-        textColor = AppColors.textMediumColor;
-        label = status;
-    }
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
-        color: bgColor,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          fontFamily: 'Lato',
-          fontWeight: FontWeight.w600,
-          fontSize: 11,
-          color: textColor,
+  Widget _buildCodeChip(String code) {
+    return GestureDetector(
+      onTap: () {
+        Clipboard.setData(ClipboardData(text: code));
+        Get.snackbar(
+          'copied'.tr,
+          code,
+          snackPosition: SnackPosition.BOTTOM,
+          duration: const Duration(seconds: 1),
+          backgroundColor: AppColors.secondaryColor,
+          colorText: Colors.white,
+        );
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          color: AppColors.primaryColor.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(6),
+          border: Border.all(color: AppColors.primaryColor.withOpacity(0.3)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              code,
+              style: const TextStyle(
+                fontFamily: 'Lato',
+                fontWeight: FontWeight.w700,
+                fontSize: 12,
+                letterSpacing: 1.6,
+                color: AppColors.secondaryColor,
+              ),
+            ),
+            const SizedBox(width: 4),
+            const Icon(Icons.copy_rounded, size: 13, color: AppColors.secondaryColor),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildInfoChip(IconData icon, String text) {
+  Widget _buildInfoChip({required IconData icon, required String text}) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
@@ -510,7 +600,7 @@ class MerchantCouponsScreen extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 14, color: AppColors.textMediumColor),
+          Icon(icon, size: 13, color: AppColors.textMediumColor),
           const SizedBox(width: 4),
           Text(
             text,
@@ -521,6 +611,105 @@ class MerchantCouponsScreen extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildUsageProgress(MerchantCouponModel coupon) {
+    final total = coupon.maxUsesTotal ?? 1;
+    final used = coupon.usedCount;
+    final progress = (used / total).clamp(0.0, 1.0);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          '${'used'.tr}: $used / $total',
+          style: const TextStyle(
+            fontFamily: 'Lato',
+            fontSize: 10,
+            color: AppColors.textMediumColor,
+          ),
+        ),
+        const SizedBox(height: 4),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(4),
+          child: LinearProgressIndicator(
+            value: progress,
+            minHeight: 5,
+            backgroundColor: AppColors.borderColor,
+            valueColor: AlwaysStoppedAnimation<Color>(
+              progress > 0.85 ? AppColors.errorColor : AppColors.secondaryColor,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStatusBadge(_StatusMeta status) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: status.color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(status.icon, size: 12, color: status.color),
+          const SizedBox(width: 3),
+          Text(
+            status.label,
+            style: TextStyle(
+              fontFamily: 'Lato',
+              fontWeight: FontWeight.w600,
+              fontSize: 10,
+              color: status.color,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  _StatusMeta _statusMeta(String status) {
+    switch (status) {
+      case 'active':
+        return _StatusMeta(AppColors.successColor, Icons.check_circle_rounded, 'active'.tr);
+      case 'inactive':
+        return _StatusMeta(AppColors.textMediumColor, Icons.pause_circle_rounded, 'inactive'.tr);
+      case 'scheduled':
+        return _StatusMeta(Colors.blue, Icons.schedule_rounded, 'scheduled'.tr);
+      case 'expired':
+        return _StatusMeta(AppColors.errorColor, Icons.cancel_rounded, 'expired'.tr);
+      case 'exhausted':
+        return _StatusMeta(Colors.orange, Icons.do_not_disturb_on_rounded, 'exhausted'.tr);
+      default:
+        return _StatusMeta(AppColors.textMediumColor, Icons.info_outline_rounded, status);
+    }
+  }
+
+  Widget _actionButton({
+    required IconData icon,
+    required Color color,
+    required String tooltip,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Tooltip(
+        message: tooltip,
+        child: Container(
+          width: 34,
+          height: 34,
+          decoration: BoxDecoration(
+            color: color.withOpacity(0.08),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(icon, size: 18, color: color),
+        ),
       ),
     );
   }
@@ -563,9 +752,7 @@ class MerchantCouponsScreen extends StatelessWidget {
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.errorColor,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
             ),
             child: Text(
               'delete'.tr,
@@ -576,4 +763,12 @@ class MerchantCouponsScreen extends StatelessWidget {
       ),
     );
   }
+}
+
+class _StatusMeta {
+  final Color color;
+  final IconData icon;
+  final String label;
+
+  _StatusMeta(this.color, this.icon, this.label);
 }

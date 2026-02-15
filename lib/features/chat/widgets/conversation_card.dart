@@ -215,8 +215,26 @@ class ConversationCard extends StatelessWidget {
     } else if (difference.inDays == 1) {
       return _isArabic ? 'أمس' : 'Yesterday';
     } else if (difference.inDays < 7) {
-      return intl.DateFormat('EEEE', _isArabic ? 'ar' : 'en')
-          .format(dateTime);
+      const arabicDays = [
+        'الاثنين',
+        'الثلاثاء',
+        'الأربعاء',
+        'الخميس',
+        'الجمعة',
+        'السبت',
+        'الأحد',
+      ];
+      const englishDays = [
+        'Monday',
+        'Tuesday',
+        'Wednesday',
+        'Thursday',
+        'Friday',
+        'Saturday',
+        'Sunday',
+      ];
+      final dayIndex = dateTime.weekday - 1;
+      return _isArabic ? arabicDays[dayIndex] : englishDays[dayIndex];
     } else {
       return intl.DateFormat('dd/MM').format(dateTime);
     }

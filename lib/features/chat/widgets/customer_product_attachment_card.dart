@@ -181,6 +181,7 @@ class CustomerProductAttachmentCard extends StatelessWidget {
   Widget _buildStatusProgress(String current) {
     const stages = [
       'pending',
+      'awaiting_customer_approval',
       'confirmed',
       'preparing',
       'ready',

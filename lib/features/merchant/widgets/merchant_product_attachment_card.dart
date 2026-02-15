@@ -203,6 +203,7 @@ class MerchantProductAttachmentCard extends StatelessWidget {
   Widget _buildStatusProgress(String current) {
     const stages = [
       'pending',
+      'awaiting_customer_approval',
       'confirmed',
       'preparing',
       'ready',
@@ -707,6 +708,70 @@ class MerchantProductAttachmentCard extends StatelessWidget {
       return _pendingActions(order, orderId, updating);
     }
 
+    // Awaiting customer approval — show waiting banner + cancel option
+    if (status == 'awaiting_customer_approval') {
+      return Padding(
+        padding: const EdgeInsets.fromLTRB(14, 10, 14, 12),
+        child: Column(
+          children: [
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              decoration: BoxDecoration(
+                color: Colors.orange.shade50,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: Colors.orange.shade200),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.hourglass_top_rounded,
+                      size: 22, color: Colors.orange.shade700),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          _isArabic
+                              ? 'بانتظار موافقة العميل على السعر'
+                              : 'Waiting for customer to approve the price',
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.orange.shade800,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          _isArabic
+                              ? 'سيتم إشعارك فور موافقة العميل أو رفضه'
+                              : 'You will be notified when customer responds',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Colors.orange.shade600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 8),
+            // Cancel button
+            _actionButton(
+              label: _isArabic ? 'إلغاء الطلب' : 'Cancel Order',
+              icon: Icons.cancel_rounded,
+              color: Colors.red,
+              isLoading: updating,
+              outlined: true,
+              onTap: () => _handleStatusChange(orderId, 'cancelled'),
+            ),
+          ],
+        ),
+      );
+    }
+
     // Delivered = awaiting customer confirmation — show info banner
     if (status == 'delivered') {
       return Padding(
@@ -982,6 +1047,8 @@ class MerchantProductAttachmentCard extends StatelessWidget {
   List<String> _nextStatuses(String current) {
     // Must match backend Order model transition rules exactly
     switch (current) {
+      case 'awaiting_customer_approval':
+        return ['cancelled']; // merchant can cancel while waiting
       case 'confirmed':
         return ['preparing', 'cancelled']; // canBePreparing + canBeCancelled
       case 'preparing':

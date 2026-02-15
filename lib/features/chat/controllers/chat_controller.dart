@@ -213,6 +213,12 @@ class ChatController extends GetxController {
 
         // Fetch order details for any new product_attachment messages
         _fetchOrdersFromMessages();
+
+        // Refresh cached order data when new messages arrive
+        // This ensures status updates (price_proposal, accept/reject) are reflected
+        if (hasNewMessages) {
+          _refreshCachedOrders();
+        }
       }
     });
 
@@ -502,13 +508,28 @@ class ChatController extends GetxController {
     }
   }
 
+  /// Refresh all cached order data to get latest status
+  /// Called when new messages arrive (e.g. price_proposal, system messages)
+  Future<void> _refreshCachedOrders() async {
+    final orderIds = ordersData.keys.toList();
+    for (final orderId in orderIds) {
+      try {
+        await fetchOrderDetails(orderId, forceRefresh: true);
+      } catch (e) {
+        if (kDebugMode) {
+          print('Error refreshing order $orderId: $e');
+        }
+      }
+    }
+  }
+
   /// Fetch order details by ID and store them
-  Future<Map<String, dynamic>?> fetchOrderDetails(int orderId) async {
-    if (ordersData.containsKey(orderId)) {
+  Future<Map<String, dynamic>?> fetchOrderDetails(int orderId, {bool forceRefresh = false}) async {
+    if (!forceRefresh && ordersData.containsKey(orderId)) {
       return ordersData[orderId];
     }
     try {
-      final response = await _apiClient.get('/customer/orders/$orderId');
+      final response = await _apiClient.get('/customer/shopping/orders/$orderId');
       if (response.data['success'] == true) {
         final orderData =
             Map<String, dynamic>.from(response.data['data']['order']);
@@ -520,7 +541,7 @@ class ChatController extends GetxController {
         print('Error fetching order details: $e');
       }
     }
-    return null;
+    return ordersData[orderId];
   }
 
   /// Get order status by ID
@@ -539,7 +560,7 @@ class ChatController extends GetxController {
       confirmingOrders[orderId] = true;
 
       final response = await _apiClient.post(
-        '/customer/orders/$orderId/confirm-delivery',
+        '/customer/shopping/orders/$orderId/confirm-delivery',
       );
 
       if (response.data['success'] == true) {
@@ -578,7 +599,7 @@ class ChatController extends GetxController {
       confirmingOrders[orderId] = true;
 
       final response = await _apiClient.post(
-        '/customer/orders/$orderId/accept-price',
+        '/customer/shopping/orders/$orderId/accept-price',
       );
 
       if (response.data['success'] == true) {
@@ -618,7 +639,7 @@ class ChatController extends GetxController {
       confirmingOrders[orderId] = true;
 
       final response = await _apiClient.post(
-        '/customer/orders/$orderId/reject-price',
+        '/customer/shopping/orders/$orderId/reject-price',
       );
 
       if (response.data['success'] == true) {

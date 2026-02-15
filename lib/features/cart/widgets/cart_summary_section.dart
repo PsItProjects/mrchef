@@ -32,49 +32,70 @@ class CartSummarySection extends GetView<CartController> {
               Obx(() {
                 final hasCoupon = controller.appliedCouponCode.isNotEmpty;
                 final isBusy = controller.isCouponUpdating.value;
+                final isFocused = controller.isPromoFocused.value;
 
-                return Container(
-                  height: 50,
-                  padding: const EdgeInsets.only(left: 16, right: 4),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFFFBEE),
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: const Color(0xFFFFE88D), width: 1),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.local_offer_rounded,
-                        size: 18,
-                        color: hasCoupon
-                            ? const Color(0xFF4CAF50)
-                            : const Color(0xFFBBA850),
+                return GestureDetector(
+                  onTap: (!hasCoupon && !isBusy)
+                      ? () => controller.promoCodeFocusNode.requestFocus()
+                      : null,
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    height: 50,
+                    padding: const EdgeInsets.only(left: 16, right: 4),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFFBEE),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(
+                        color: isFocused
+                            ? AppColors.primaryColor
+                            : const Color(0xFFFFE88D),
+                        width: isFocused ? 2 : 1,
                       ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: TextField(
-                          controller: controller.promoCodeController,
-                          enabled: !hasCoupon && !isBusy,
-                          decoration: InputDecoration(
-                            hintText: TranslationHelper.tr('promo_code'),
-                            hintStyle: const TextStyle(
-                              fontFamily: 'Lato',
-                              fontWeight: FontWeight.w400,
-                              fontSize: 14,
-                              color: Color(0xFFBBA850),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.local_offer_rounded,
+                          size: 18,
+                          color: hasCoupon
+                              ? const Color(0xFF4CAF50)
+                              : const Color(0xFFBBA850),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: TextField(
+                            controller: controller.promoCodeController,
+                            focusNode: controller.promoCodeFocusNode,
+                            enabled: !hasCoupon && !isBusy,
+                            enableInteractiveSelection: false,
+                            showCursor: false,
+                            cursorColor: Colors.transparent,
+                            cursorWidth: 0,
+                            decoration: InputDecoration(
+                              hintText: TranslationHelper.tr('promo_code'),
+                              hintStyle: const TextStyle(
+                                fontFamily: 'Lato',
+                                fontWeight: FontWeight.w400,
+                                fontSize: 14,
+                                color: Color(0xFFBBA850),
+                              ),
+                              border: InputBorder.none,
+                              enabledBorder: InputBorder.none,
+                              focusedBorder: InputBorder.none,
+                              disabledBorder: InputBorder.none,
+                              errorBorder: InputBorder.none,
+                              focusedErrorBorder: InputBorder.none,
+                              contentPadding: EdgeInsets.zero,
+                              isDense: true,
                             ),
-                            border: InputBorder.none,
-                            contentPadding: EdgeInsets.zero,
-                            isDense: true,
-                          ),
-                          style: const TextStyle(
-                            fontFamily: 'Lato',
-                            fontWeight: FontWeight.w500,
-                            fontSize: 14,
-                            color: Color(0xFF1A1A2E),
+                            style: const TextStyle(
+                              fontFamily: 'Lato',
+                              fontWeight: FontWeight.w500,
+                              fontSize: 14,
+                              color: Color(0xFF1A1A2E),
+                            ),
                           ),
                         ),
-                      ),
                       GestureDetector(
                         onTap: isBusy
                             ? null
@@ -109,7 +130,8 @@ class CartSummarySection extends GetView<CartController> {
                                 ),
                         ),
                       ),
-                    ],
+                      ],
+                    ),
                   ),
                 );
               }),

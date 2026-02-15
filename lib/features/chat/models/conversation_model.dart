@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 class ConversationModel {
   final int id;
   final CustomerInfo customer;
@@ -185,7 +187,7 @@ class MessageModel {
       senderId: json['sender_id'] ?? 0,
       message: json['message'] ?? '',
       messageType: json['message_type'] ?? 'text',
-      attachments: json['attachments'],
+      attachments: _parseAttachments(json['attachments']),
       isReadByCustomer: json['is_read_by_customer'] ?? false,
       isReadByMerchant: json['is_read_by_merchant'] ?? false,
       createdAt: json['created_at'] != null
@@ -208,7 +210,7 @@ class MessageModel {
       senderId: data['sender_id'] ?? 0,
       message: data['message'] ?? '',
       messageType: data['message_type'] ?? 'text',
-      attachments: data['attachments'],
+      attachments: _parseAttachments(data['attachments']),
       isReadByCustomer: data['is_read_by_customer'] ?? false,
       isReadByMerchant: data['is_read_by_merchant'] ?? false,
       createdAt: data['created_at'] != null
@@ -235,6 +237,20 @@ class MessageModel {
 
   bool get isFromCustomer => senderType == 'customer';
   bool get isFromMerchant => senderType == 'merchant';
+
+  /// Parse attachments that may come as a JSON string or a Map
+  static Map<String, dynamic>? _parseAttachments(dynamic value) {
+    if (value == null) return null;
+    if (value is Map<String, dynamic>) return value;
+    if (value is Map) return Map<String, dynamic>.from(value);
+    if (value is String) {
+      try {
+        final decoded = jsonDecode(value);
+        if (decoded is Map) return Map<String, dynamic>.from(decoded);
+      } catch (_) {}
+    }
+    return null;
+  }
 }
 
 class RepliedMessageModel {
@@ -259,7 +275,7 @@ class RepliedMessageModel {
       id: json['id'] ?? 0,
       message: json['message'] ?? '',
       messageType: json['message_type'] ?? 'text',
-      attachments: json['attachments'],
+      attachments: MessageModel._parseAttachments(json['attachments']),
       senderType: json['sender_type'] ?? 'customer',
       createdAt: json['created_at'] != null
           ? DateTime.tryParse(json['created_at'])

@@ -45,8 +45,7 @@ class MerchantChatScreen extends GetView<MerchantChatController> {
                     final messageKey = controller.messageKeys[message.id];
 
                     // Check if this is a product attachment message
-                    if ((message.messageType == 'product_attachment' ||
-                            message.messageType == 'price_proposal') &&
+                    if (message.messageType == 'product_attachment' &&
                         message.attachments != null) {
                       return Container(
                         key: messageKey,
@@ -98,6 +97,12 @@ class MerchantChatScreen extends GetView<MerchantChatController> {
                           ],
                         ),
                       );
+                    }
+
+                    // Hide price_proposal on merchant side — merchant already sees
+                    // the "awaiting customer approval" banner on the order card
+                    if (message.messageType == 'price_proposal') {
+                      return const SizedBox.shrink();
                     }
 
                     // Regular message

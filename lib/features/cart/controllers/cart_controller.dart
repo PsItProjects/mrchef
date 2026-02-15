@@ -15,6 +15,8 @@ class CartController extends GetxController {
 
   // Promo code controller
   final TextEditingController promoCodeController = TextEditingController();
+  final FocusNode promoCodeFocusNode = FocusNode();
+  final RxBool isPromoFocused = false.obs;
   final RxBool isCouponUpdating = false.obs;
 
   // Observable cart items
@@ -33,6 +35,9 @@ class CartController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    promoCodeFocusNode.addListener(() {
+      isPromoFocused.value = promoCodeFocusNode.hasFocus;
+    });
     // Only load cart if not in guest mode
     if (!_isGuestMode) {
       loadCartItems();
@@ -463,6 +468,7 @@ class CartController extends GetxController {
 
   @override
   void onClose() {
+    promoCodeFocusNode.dispose();
     promoCodeController.dispose();
     super.onClose();
   }
