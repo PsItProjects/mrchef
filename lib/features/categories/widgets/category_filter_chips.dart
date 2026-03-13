@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
@@ -85,12 +86,7 @@ class CategoryFilterChips extends GetView<CategoriesController> {
                           ],
                         ),
                         child: ClipOval(
-                          child: Image.asset(
-                            'assets/images/pizza_main.png', // Using existing pizza image
-                            width: 40,
-                            height: 40,
-                            fit: BoxFit.cover,
-                          ),
+                          child: _buildCategoryIcon(chip.icon),
                         ),
                       ),
 
@@ -118,6 +114,35 @@ class CategoryFilterChips extends GetView<CategoriesController> {
           );
         });
       }),
+    );
+  }
+
+  Widget _buildCategoryIcon(String? iconUrl) {
+    if (iconUrl != null && iconUrl.isNotEmpty && iconUrl.startsWith('http')) {
+      return CachedNetworkImage(
+        imageUrl: iconUrl,
+        width: 40,
+        height: 40,
+        fit: BoxFit.contain,
+        placeholder: (context, url) => Image.asset(
+          'assets/images/pizza_main.png',
+          width: 40,
+          height: 40,
+          fit: BoxFit.contain,
+        ),
+        errorWidget: (context, url, error) => Image.asset(
+          'assets/images/pizza_main.png',
+          width: 40,
+          height: 40,
+          fit: BoxFit.contain,
+        ),
+      );
+    }
+    return Image.asset(
+      'assets/images/pizza_main.png',
+      width: 40,
+      height: 40,
+      fit: BoxFit.contain,
     );
   }
 }
