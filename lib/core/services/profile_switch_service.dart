@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:get/get.dart' as getx;
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -66,6 +67,12 @@ class ProfileSwitchService extends getx.GetxService {
   /// Whether we are loading account status.
   final getx.RxBool isLoadingStatus = false.obs;
 
+  /// Last switch error details (for UI to react)
+  final getx.RxnString lastSwitchError = getx.RxnString();
+  final getx.RxnString lastSwitchAction = getx.RxnString();
+  final getx.RxnString lastMerchantStatus = getx.RxnString();
+  final getx.RxnString lastRegistrationStep = getx.RxnString();
+
   // ─── Initialization ───
 
   Future<ProfileSwitchService> init() async {
@@ -127,11 +134,6 @@ class ProfileSwitchService extends getx.GetxService {
 
     final targetRole = status.isMerchantMode ? 'customer' : 'merchant';
 
-    if (targetRole == 'merchant' && !status.canSwitchToMerchant) {
-      print('❌ ProfileSwitch: Cannot switch to merchant - not activated');
-      return false;
-    }
-
     try {
       isSwitching.value = true;
       print('🔄 ProfileSwitch: Switching to $targetRole...');
@@ -188,8 +190,29 @@ class ProfileSwitchService extends getx.GetxService {
       }
 
       print('❌ ProfileSwitch: Switch failed - ${response.data['message']}');
+      lastSwitchError.value = response.data['message'] ?? 'switch_failed';
+      return false;
+    } on DioException catch (e) {
+      final data = e.response?.data;
+      if (data is Map<String, dynamic>) {
+        // Backend puts extra data in 'errors' key (not 'data') for error responses
+        final errors = data['errors'];
+        final action = (errors is Map<String, dynamic>) ? errors['action'] as String? : null;
+        final merchantStatus = (errors is Map<String, dynamic>) ? errors['merchant_status'] as String? : null;
+        final registrationStep = (errors is Map<String, dynamic>) ? errors['registration_step'] : null;
+        final message = data['message'] as String?;
+        lastSwitchError.value = message ?? 'switch_failed';
+        lastSwitchAction.value = action;
+        lastMerchantStatus.value = merchantStatus;
+        lastRegistrationStep.value = registrationStep?.toString();
+        print('❌ ProfileSwitch: Switch failed - action: $action, status: $merchantStatus, step: $registrationStep, message: $message');
+      } else {
+        lastSwitchError.value = 'switch_failed';
+        print('❌ ProfileSwitch: Error switching role: $e');
+      }
       return false;
     } catch (e) {
+      lastSwitchError.value = 'switch_failed';
       print('❌ ProfileSwitch: Error switching role: $e');
       return false;
     } finally {
@@ -216,7 +239,8 @@ class ProfileSwitchService extends getx.GetxService {
 
       final response = await _apiClient.post('/account/activate-merchant');
 
-      if (response.statusCode == 200 && response.data['data'] != null) {
+      final statusCode = response.statusCode ?? 0;
+      if ((statusCode == 200 || statusCode == 201) && response.data['success'] == true) {
         // Refresh account status to see the new merchant
         await fetchAccountStatus();
 

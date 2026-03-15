@@ -6,6 +6,7 @@ import '../constants/api_constants.dart';
 import '../services/language_service.dart';
 import '../services/toast_service.dart';
 import '../localization/translation_helper.dart';
+import '../../features/auth/services/auth_service.dart';
 
 class ApiClient {
   late Dio _dio;
@@ -152,6 +153,14 @@ class ApiClient {
       await prefs.remove('auth_token');
       await prefs.remove('user_data');
       await prefs.remove('user_type');
+
+      // Also reset AuthService reactive state so GuestMiddleware allows /login
+      if (getx.Get.isRegistered<AuthService>()) {
+        final authService = getx.Get.find<AuthService>();
+        authService.currentUser.value = null;
+        authService.isLoggedIn.value = false;
+        authService.userType.value = '';
+      }
 
       // Use WidgetsBinding to ensure navigation happens after current frame
       WidgetsBinding.instance.addPostFrameCallback((_) {

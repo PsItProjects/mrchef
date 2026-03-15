@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/routes/app_routes.dart';
 import 'package:mrsheaf/core/services/language_service.dart';
 import 'package:mrsheaf/core/services/profile_switch_service.dart';
 import 'package:mrsheaf/core/services/toast_service.dart';
@@ -73,7 +74,7 @@ class ProfileSwitchCard extends StatelessWidget {
             iconBgColor: const Color(0xFF3DD68C),
             isLoading: isSwitching,
             isArabic: isArabic,
-            onTap: () => _handleSwitchToMerchant(switchService),
+            onTap: () => _handleContinueOnboarding(),
           );
         }
 
@@ -196,24 +197,42 @@ class ProfileSwitchCard extends StatelessWidget {
 
   Future<void> _handleSwitchToMerchant(
       ProfileSwitchService switchService) async {
+    // Clear previous error state
+    switchService.lastSwitchAction.value = null;
+    switchService.lastMerchantStatus.value = null;
+    switchService.lastSwitchError.value = null;
+
     final success = await switchService.switchRole();
     if (success) {
       ToastService.showSuccess('switched_to_merchant'.tr);
       Get.offAllNamed('/merchant-home');
     } else {
-      ToastService.showError('switch_failed'.tr);
+      final action = switchService.lastSwitchAction.value;
+      final errorMsg = switchService.lastSwitchError.value;
+
+      if (action == 'complete_onboarding') {
+        // Navigate to onboarding steps
+        ToastService.showInfo('complete_merchant_setup'.tr);
+        Get.toNamed(AppRoutes.VENDOR_STEP1);
+      } else if (action == 'merchant_blocked') {
+        // Merchant is suspended or rejected
+        ToastService.showError(errorMsg ?? 'switch_failed'.tr);
+      } else {
+        ToastService.showError(errorMsg ?? 'switch_failed'.tr);
+      }
     }
+  }
+
+  void _handleContinueOnboarding() {
+    Get.toNamed(AppRoutes.VENDOR_STEP1);
   }
 
   Future<void> _handleBecomeMerchant(
       ProfileSwitchService switchService) async {
     final success = await switchService.activateMerchant();
     if (success) {
-      final switched = await switchService.switchRole();
-      if (switched) {
-        ToastService.showSuccess('merchant_activated'.tr);
-        Get.offAllNamed('/merchant-home');
-      }
+      ToastService.showSuccess('merchant_activated'.tr);
+      Get.toNamed(AppRoutes.VENDOR_STEP1);
     } else {
       ToastService.showError('merchant_activation_failed'.tr);
     }

@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:mrsheaf/core/services/language_service.dart';
 import 'package:mrsheaf/core/services/profile_switch_service.dart';
 import 'package:mrsheaf/core/services/toast_service.dart';
+import 'package:mrsheaf/core/routes/app_routes.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/features/auth/services/auth_service.dart';
 import 'package:mrsheaf/features/profile/pages/edit_profile_screen.dart';
@@ -327,6 +328,10 @@ class UnifiedProfileCard extends StatelessWidget {
 
   Future<void> _handleSwitch(
       ProfileSwitchService service, String target) async {
+    service.lastSwitchAction.value = null;
+    service.lastSwitchError.value = null;
+    service.lastRegistrationStep.value = null;
+
     final success = await service.switchRole();
     if (success) {
       if (target == 'merchant') {
@@ -337,18 +342,21 @@ class UnifiedProfileCard extends StatelessWidget {
         Get.offAllNamed('/home');
       }
     } else {
-      ToastService.showError('switch_failed'.tr);
+      final action = service.lastSwitchAction.value;
+      if (action == 'complete_onboarding') {
+        ToastService.showInfo('complete_merchant_setup'.tr);
+        Get.toNamed('/vendor-step1');
+      } else {
+        ToastService.showError(service.lastSwitchError.value ?? 'switch_failed'.tr);
+      }
     }
   }
 
   Future<void> _handleActivate(ProfileSwitchService service) async {
     final success = await service.activateMerchant();
     if (success) {
-      final switched = await service.switchRole();
-      if (switched) {
-        ToastService.showSuccess('merchant_activated'.tr);
-        Get.offAllNamed('/merchant-home');
-      }
+      ToastService.showSuccess('merchant_activated'.tr);
+      Get.toNamed(AppRoutes.VENDOR_STEP1);
     } else {
       ToastService.showError('merchant_activation_failed'.tr);
     }

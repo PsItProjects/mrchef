@@ -2,6 +2,7 @@ import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../features/auth/services/auth_service.dart';
 import '../../features/profile/services/profile_service.dart';
+import '../network/api_client.dart';
 import 'biometric_service.dart';
 import 'onboarding_service.dart';
 import 'profile_switch_service.dart';
@@ -56,22 +57,30 @@ class AppService extends GetxService {
       print("isuserMarchent oo");
 
       if (authService.isAuthenticated) {
-        // Use locally cached active_role from unified account system
-        final prefs = await SharedPreferences.getInstance();
-        final activeRole = prefs.getString('active_role');
-        final user = authService.user;
-
-        print("📱 Active role: $activeRole, userType: ${user?.userType}");
-
-        // Determine route based on active_role (unified) or userType (legacy)
-        final isMerchantMode = activeRole == 'merchant' || (activeRole == null && (user?.isMerchant ?? false));
-
-        if (isMerchantMode) {
-          print("🔍 MERCHANT MODE - Will check onboarding via API after navigation");
-          initialRoute.value = '/merchant-home';
+        // Validate token with server before routing to home
+        final tokenValid = await _validateTokenWithServer(authService);
+        if (!tokenValid) {
+          print('🔒 Token invalid at startup, routing to login');
+          final onboardingService = Get.find<OnboardingService>();
+          initialRoute.value = onboardingService.hasSeenOnboarding ? '/login' : '/onboarding';
         } else {
-          // Customer - go to home
-          initialRoute.value = '/home';
+          // Use locally cached active_role from unified account system
+          final prefs = await SharedPreferences.getInstance();
+          final activeRole = prefs.getString('active_role');
+          final user = authService.user;
+
+          print("📱 Active role: $activeRole, userType: ${user?.userType}");
+
+          // Determine route based on active_role (unified) or userType (legacy)
+          final isMerchantMode = activeRole == 'merchant' || (activeRole == null && (user?.isMerchant ?? false));
+
+          if (isMerchantMode) {
+            print("🔍 MERCHANT MODE - Will check onboarding via API after navigation");
+            initialRoute.value = '/merchant-home';
+          } else {
+            // Customer - go to home
+            initialRoute.value = '/home';
+          }
         }
       } else {
         // Check if user has seen onboarding using OnboardingService
@@ -102,6 +111,50 @@ class AppService extends GetxService {
     } catch (e) {
       print('Error marking onboarding complete: $e');
     }
+  }
+
+  /// Validate the stored token with the server at startup.
+  /// Returns true if valid, false if expired/invalid.
+  Future<bool> _validateTokenWithServer(AuthService authService) async {
+    try {
+      final apiClient = ApiClient.instance;
+      // Suppress 401 handler - we handle it ourselves here
+      apiClient.suppressUnauthorizedFor(const Duration(seconds: 10));
+
+      final userType = authService.storedUserType;
+      final endpoint = userType == 'merchant'
+          ? '/merchant/profile'
+          : '/customer/profile';
+
+      print('🔍 Validating token at startup via $endpoint...');
+
+      final response = await apiClient.get(endpoint);
+
+      if (response.statusCode == 200 && response.data['data'] != null) {
+        print('✅ Token valid at startup');
+        return true;
+      }
+
+      print('❌ Token validation failed: unexpected response');
+      await _clearAuthState(authService);
+      return false;
+    } catch (e) {
+      print('❌ Token validation failed: $e');
+      await _clearAuthState(authService);
+      return false;
+    }
+  }
+
+  /// Clear auth state from both SharedPreferences and AuthService reactive state
+  Future<void> _clearAuthState(AuthService authService) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('auth_token');
+    await prefs.remove('user_data');
+    await prefs.remove('user_type');
+    await prefs.remove('active_role');
+    authService.currentUser.value = null;
+    authService.isLoggedIn.value = false;
+    authService.userType.value = '';
   }
 
   Future<void> clearAppData() async {

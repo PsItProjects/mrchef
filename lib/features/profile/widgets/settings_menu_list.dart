@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:mrsheaf/core/services/biometric_service.dart';
 import 'package:mrsheaf/core/services/profile_switch_service.dart';
 import 'package:mrsheaf/core/services/toast_service.dart';
+import 'package:mrsheaf/core/routes/app_routes.dart';
 import 'package:mrsheaf/features/auth/services/auth_service.dart';
 import 'package:mrsheaf/features/profile/controllers/settings_controller.dart';
 import 'package:mrsheaf/features/profile/widgets/settings_menu_item.dart';
@@ -193,6 +194,10 @@ class SettingsMenuList extends GetView<SettingsController> {
 
   /// Handle switch role action
   Future<void> _handleSwitch(ProfileSwitchService profileSwitch) async {
+    profileSwitch.lastSwitchAction.value = null;
+    profileSwitch.lastSwitchError.value = null;
+    profileSwitch.lastRegistrationStep.value = null;
+
     final success = await profileSwitch.switchRole();
     if (success) {
       ToastService.showSuccess('profile_switch_success'.tr);
@@ -203,7 +208,13 @@ class SettingsMenuList extends GetView<SettingsController> {
         Get.offAllNamed('/home');
       }
     } else {
-      ToastService.showError('profile_switch_failed'.tr);
+      final action = profileSwitch.lastSwitchAction.value;
+      if (action == 'complete_onboarding') {
+        ToastService.showInfo('complete_merchant_setup'.tr);
+        Get.toNamed('/vendor-step1');
+      } else {
+        ToastService.showError(profileSwitch.lastSwitchError.value ?? 'profile_switch_failed'.tr);
+      }
     }
   }
 
@@ -212,11 +223,7 @@ class SettingsMenuList extends GetView<SettingsController> {
     final success = await profileSwitch.activateMerchant();
     if (success) {
       ToastService.showSuccess('merchant_activated'.tr);
-      // Switch to merchant mode and navigate to merchant onboarding
-      final switched = await profileSwitch.switchRole();
-      if (switched) {
-        Get.offAllNamed('/merchant-home');
-      }
+      Get.toNamed(AppRoutes.VENDOR_STEP1);
     } else {
       ToastService.showError('merchant_activation_failed'.tr);
     }
