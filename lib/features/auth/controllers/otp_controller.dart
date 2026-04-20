@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 import 'package:get/get.dart';
 import 'package:mrsheaf/core/routes/app_routes.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/services/toast_service.dart';
 import '../services/auth_service.dart';
 import '../models/auth_request.dart';
@@ -274,6 +275,21 @@ class OTPController extends GetxController {
 
     if (kDebugMode) {
       print('🎯 SMART NAVIGATION: Detected user type: $detectedUserType');
+    }
+
+    // Persist the active role so every subsequent screen (Home, Settings,
+    // bottom nav, etc.) reads the SAME source of truth. Without this, the
+    // app can land on /home but the settings tab asks the backend which
+    // may return a different role, causing the two halves of the UI to
+    // disagree about the user's current role.
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(
+        'active_role',
+        detectedUserType == 'merchant' ? 'merchant' : 'customer',
+      );
+    } catch (_) {
+      // Non-fatal – fall through to normal navigation.
     }
 
     if (detectedUserType == 'merchant') {

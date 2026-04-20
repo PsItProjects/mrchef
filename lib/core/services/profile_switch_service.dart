@@ -84,6 +84,14 @@ class ProfileSwitchService extends getx.GetxService {
 
   /// Fetch account status from the API.
   /// Call after login and when settings screen opens.
+  ///
+  /// IMPORTANT: This method does NOT overwrite the local `active_role` that
+  /// the user has previously chosen. The backend may default `active_role`
+  /// to 'customer' for users that have both profiles, but that is the
+  /// backend's default, not the user's actual UI preference. The user's
+  /// UI preference lives in SharedPreferences and is only modified when
+  /// the user EXPLICITLY switches role (via [switchRole]) or on first
+  /// bootstrap (when no local preference exists yet).
   Future<AccountStatus?> fetchAccountStatus() async {
     try {
       isLoadingStatus.value = true;
@@ -91,19 +99,48 @@ class ProfileSwitchService extends getx.GetxService {
       final response = await _apiClient.get('/account/status');
 
       if (response.statusCode == 200 && response.data['data'] != null) {
-        final status = AccountStatus.fromJson(response.data['data']);
-        accountStatus.value = status;
+        final backendStatus = AccountStatus.fromJson(response.data['data']);
 
-        // Persist active role locally
+        // Read the user's locally-chosen active role. This is the source of
+        // truth for the UI. We only fall back to the backend value if there
+        // is no local preference yet (first-time bootstrap).
         final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('active_role', status.activeRole);
+        final localRole = prefs.getString('active_role');
+
+        // Validate local role against backend capabilities:
+        //   - If user locally chose 'merchant' but backend says they no longer
+        //     have a merchant profile, fall back to 'customer'.
+        //   - Otherwise, honour the user's local choice.
+        String effectiveRole;
+        if (localRole == 'merchant' && !backendStatus.hasMerchantProfile) {
+          effectiveRole = 'customer';
+          await prefs.setString('active_role', 'customer');
+        } else if (localRole != null) {
+          effectiveRole = localRole;
+        } else {
+          // Bootstrap: no local preference yet, seed from backend.
+          effectiveRole = backendStatus.activeRole;
+          await prefs.setString('active_role', effectiveRole);
+        }
+
+        // Publish the merged status so UI observers see the correct role.
+        final mergedStatus = AccountStatus(
+          activeRole: effectiveRole,
+          hasMerchantProfile: backendStatus.hasMerchantProfile,
+          merchantOnboardingCompleted:
+              backendStatus.merchantOnboardingCompleted,
+          merchantId: backendStatus.merchantId,
+          customerId: backendStatus.customerId,
+        );
+        accountStatus.value = mergedStatus;
 
         print('✅ ProfileSwitch: Account status loaded:');
-        print('   role: ${status.activeRole}');
-        print('   hasMerchant: ${status.hasMerchantProfile}');
-        print('   onboardingCompleted: ${status.merchantOnboardingCompleted}');
-        print('   canSwitchToMerchant: ${status.canSwitchToMerchant}');
-        return status;
+        print('   backend role: ${backendStatus.activeRole}');
+        print('   local role  : $localRole');
+        print('   effective   : $effectiveRole');
+        print('   hasMerchant : ${backendStatus.hasMerchantProfile}');
+        print('   onboarding  : ${backendStatus.merchantOnboardingCompleted}');
+        return mergedStatus;
       }
 
       print('⚠️ ProfileSwitch: Failed to fetch account status');

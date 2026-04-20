@@ -3,7 +3,6 @@ import 'package:get/get.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/features/chat/controllers/conversations_controller.dart';
 import 'package:mrsheaf/features/chat/widgets/conversation_card.dart';
-import 'package:mrsheaf/features/home/controllers/main_controller.dart';
 
 class ConversationsScreen extends GetView<ConversationsController> {
   const ConversationsScreen({super.key});
@@ -25,15 +24,7 @@ class ConversationsScreen extends GetView<ConversationsController> {
             size: 20,
             color: AppColors.textDarkColor,
           ),
-          onPressed: () {
-            Get.offAllNamed('/home');
-            Future.delayed(const Duration(milliseconds: 100), () {
-              try {
-                final mainController = Get.find<MainController>();
-                mainController.changeTab(4);
-              } catch (_) {}
-            });
-          },
+          onPressed: () => Get.back(),
         ),
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

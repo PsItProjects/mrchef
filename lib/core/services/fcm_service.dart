@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -28,6 +29,12 @@ class FCMService extends GetxService {
 
   // Track current conversation for real-time messaging
   int? _currentConversationId;
+
+  // Stream subscriptions (must be cancelled in [onClose] to avoid leaks
+  // that can trigger duplicate callbacks and nested GetX rebuilds).
+  StreamSubscription<String>? _tokenRefreshSub;
+  StreamSubscription<RemoteMessage>? _onMessageSub;
+  StreamSubscription<RemoteMessage>? _onOpenedAppSub;
 
   /// Initialize FCM Service
   Future<FCMService> init() async {
@@ -93,8 +100,10 @@ class FCMService extends GetxService {
         await _registerTokenWithBackend();
       }
 
-      // Listen for token refresh
-      _messaging.onTokenRefresh.listen((newToken) {
+      // Listen for token refresh. Keep the subscription so we can cancel it
+      // in [onClose] and avoid duplicated listeners across service restarts.
+      _tokenRefreshSub?.cancel();
+      _tokenRefreshSub = _messaging.onTokenRefresh.listen((newToken) {
         _deviceToken = newToken;
         _registerTokenWithBackend();
       });
@@ -141,11 +150,17 @@ class FCMService extends GetxService {
 
   /// Setup message handlers
   void _setupMessageHandlers() {
+    // Cancel any previous subscriptions before re-registering to avoid
+    // accumulating listeners (hot-reload, service re-init, etc.).
+    _onMessageSub?.cancel();
+    _onOpenedAppSub?.cancel();
+
     // Foreground messages
-    FirebaseMessaging.onMessage.listen(_handleForegroundMessage);
+    _onMessageSub = FirebaseMessaging.onMessage.listen(_handleForegroundMessage);
 
     // When app is opened from notification
-    FirebaseMessaging.onMessageOpenedApp.listen(_handleNotificationTap);
+    _onOpenedAppSub = FirebaseMessaging.onMessageOpenedApp
+        .listen(_handleNotificationTap);
 
     // Check if app was opened from terminated state
     _messaging.getInitialMessage().then((message) {
@@ -554,5 +569,19 @@ class FCMService extends GetxService {
     } catch (e) {
       print('❌ Error deactivating token: $e');
     }
+  }
+
+  @override
+  void onClose() {
+    // Cancel all FCM stream subscriptions to avoid leaked listeners
+    // that accumulate across service re-initialisations and trigger
+    // duplicate callbacks (a known cause of UI rebuild cascades).
+    _tokenRefreshSub?.cancel();
+    _onMessageSub?.cancel();
+    _onOpenedAppSub?.cancel();
+    _tokenRefreshSub = null;
+    _onMessageSub = null;
+    _onOpenedAppSub = null;
+    super.onClose();
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
+import 'package:mrsheaf/features/home/controllers/main_controller.dart';
 import 'package:mrsheaf/features/profile/models/order_model.dart';
 import 'package:mrsheaf/features/profile/services/order_service.dart';
 import 'package:mrsheaf/core/network/api_client.dart';
@@ -204,7 +205,11 @@ class MyOrdersController extends GetxController {
 
   // Navigation
   void goToHomePage() {
-    Get.offAllNamed('/home');
+    Get.back(); // Pop MyOrders screen
+    try {
+      final mainController = Get.find<MainController>();
+      mainController.changeTab(0); // Switch to Home tab
+    } catch (_) {}
   }
 
   // Refresh orders
