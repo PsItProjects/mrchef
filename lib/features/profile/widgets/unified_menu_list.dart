@@ -200,14 +200,22 @@ class UnifiedMenuList extends StatelessWidget {
 
   bool _isMerchantMode(AuthService authService) {
     try {
+      // Source of truth: the unified-account ProfileSwitchService.
+      // We only consider a user to be in merchant mode when the backend
+      // explicitly tells us so via /account/status. Anything else
+      // (status not loaded yet, brand-new registration, etc.) defaults to
+      // CUSTOMER mode — which is the correct default for every new account.
       if (Get.isRegistered<ProfileSwitchService>()) {
         final ps = Get.find<ProfileSwitchService>();
-        if (ps.accountStatus.value != null) {
-          return ps.accountStatus.value!.isMerchantMode;
+        final status = ps.accountStatus.value;
+        if (status != null) {
+          return status.isMerchantMode;
         }
       }
-      // Fallback
-      return authService.userType.value == 'merchant';
+      // No status known yet → assume customer (safe default).
+      // Do NOT fall back to authService.userType: that field reflects which
+      // backend table the token belongs to, not which UI the user wants.
+      return false;
     } catch (e) {
       return false;
     }
@@ -379,11 +387,22 @@ class UnifiedMenuList extends StatelessWidget {
             final user = auth.currentUser.value;
             final userType = auth.userType.value;
             if (token == null || user == null) return;
+
+            // Capture the role the user is currently using so biometric
+            // login restores them to the same screen later.
+            String? activeRole;
+            if (Get.isRegistered<ProfileSwitchService>()) {
+              activeRole =
+                  Get.find<ProfileSwitchService>().accountStatus.value?.activeRole;
+            }
+            activeRole ??= userType;
+
             final ok = await bio.enableBiometricLogin(
               token: token,
               userType: userType,
               userId: user.id.toString(),
               phoneNumber: user.phoneNumber ?? '',
+              activeRole: activeRole,
             );
             if (ok) {
               ToastService.showSuccess('biometric_enable_success'.tr);

@@ -55,6 +55,8 @@
 		<string>This app needs access to your photo library to allow you to upload images for your restaurant, menu items, and profile.</string>
 		<key>NSCameraUsageDescription</key>
 		<string>This app needs access to your camera to take photos for your profile picture, menu items, and support tickets.</string>
+		<key>NSFaceIDUsageDescription</key>
+		<string>Mr. Chef uses Face ID to let you sign in quickly and securely without entering your password each time.</string>
 		<key>UIBackgroundModes</key>
 		<array>
 			<string>fetch</string>

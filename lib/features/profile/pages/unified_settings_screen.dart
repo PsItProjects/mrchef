@@ -27,13 +27,23 @@ class UnifiedSettingsScreen extends StatelessWidget {
               child: SingleChildScrollView(
                 physics: const BouncingScrollPhysics(),
                 child: Column(
-                  children: const [
-                    SizedBox(height: 16),
+                  children: [
+                    const SizedBox(height: 16),
                     // Profile Card with Switch
-                    UnifiedProfileCard(),
-                    SizedBox(height: 20),
-                    // Unified Menu
-                    UnifiedMenuList(),
+                    const UnifiedProfileCard(),
+                    const SizedBox(height: 20),
+                    // Unified Menu (rebuilds when active role changes so a
+                    // brand-new customer never momentarily sees merchant items)
+                    Obx(() {
+                      // Touch reactive sources so this Obx rebuilds whenever
+                      // either the unified-account status or auth user-type
+                      // changes.
+                      if (Get.isRegistered<ProfileSwitchService>()) {
+                        Get.find<ProfileSwitchService>().accountStatus.value;
+                      }
+                      Get.find<AuthService>().userType.value;
+                      return const UnifiedMenuList();
+                    }),
                   ],
                 ),
               ),
@@ -101,12 +111,14 @@ class UnifiedSettingsScreen extends StatelessWidget {
     try {
       if (Get.isRegistered<ProfileSwitchService>()) {
         final ps = Get.find<ProfileSwitchService>();
-        if (ps.accountStatus.value != null) {
-          return ps.accountStatus.value!.isMerchantMode;
+        final status = ps.accountStatus.value;
+        if (status != null) {
+          return status.isMerchantMode;
         }
       }
-      final auth = Get.find<AuthService>();
-      return auth.userType.value == 'merchant';
+      // Default to customer when status hasn't loaded yet — never silently
+      // promote a brand-new customer to merchant mode.
+      return false;
     } catch (e) {
       return false;
     }

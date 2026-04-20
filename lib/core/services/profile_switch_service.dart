@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../features/auth/models/user_model.dart';
 import '../../features/auth/services/auth_service.dart';
 import '../network/api_client.dart';
+import 'biometric_service.dart';
 import 'fcm_service.dart';
 
 /// Unified Account status model returned from GET /api/account/status
@@ -180,6 +181,16 @@ class ProfileSwitchService extends getx.GetxService {
           }
         } catch (e) {
           print('⚠️ ProfileSwitch: FCM re-association failed: $e');
+        }
+
+        // Keep the biometric-saved active role in sync, so next biometric
+        // login opens the user on the screen they were last using.
+        try {
+          if (getx.Get.isRegistered<BiometricService>()) {
+            await getx.Get.find<BiometricService>().updateActiveRole(newRole);
+          }
+        } catch (e) {
+          print('⚠️ ProfileSwitch: failed to update biometric active role: $e');
         }
 
         // Refresh account status

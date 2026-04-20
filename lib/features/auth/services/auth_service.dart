@@ -595,6 +595,16 @@ class AuthService extends getx.GetxService {
           // Save user type for new registration
           await _saveUserType(userType);
 
+          // Persist active_role explicitly so the unified-account UI
+          // immediately treats the new account as the correct role
+          // (default 'customer'), without relying on /account/status.
+          try {
+            final prefs = await SharedPreferences.getInstance();
+            await prefs.setString('active_role', userType);
+          } catch (e) {
+            print('Error saving active_role after registration: $e');
+          }
+
           // Associate FCM token with newly registered user
           try {
             if (getx.Get.isRegistered<FCMService>()) {

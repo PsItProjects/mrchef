@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../features/auth/services/auth_service.dart';
@@ -48,44 +50,52 @@ class AppService extends GetxService {
       // Initialize ProfileSwitchService (unified account)
       await Get.putAsync(() => ProfileSwitchService().init(), permanent: true);
       print('📱 ProfileSwitchService registered');
-      
-      // Wait for auth service to load user data
-      await Future.delayed(const Duration(milliseconds: 500));
-      print('📱 Auth service delay completed');
-      
+
+      // NOTE: Removed artificial 500ms delay that was freezing UI on cold start.
+      // AuthService loads from SharedPreferences synchronously inside onInit().
+
       // Determine initial route based on authentication status
       print("isuserMarchent oo");
 
       if (authService.isAuthenticated) {
-        // Validate token with server before routing to home
-        final tokenValid = await _validateTokenWithServer(authService);
-        if (!tokenValid) {
-          print('🔒 Token invalid at startup, routing to login');
-          final onboardingService = Get.find<OnboardingService>();
-          initialRoute.value = onboardingService.hasSeenOnboarding ? '/login' : '/onboarding';
+        // Validate token with server in the BACKGROUND with a short timeout.
+        // We do NOT block the splash screen on a slow/unreachable network.
+        // If the token is later found invalid, the API client's 401 handler
+        // will redirect to login automatically.
+        unawaited(_validateTokenInBackground(authService));
+
+        // Refresh unified-account status in the background so the settings
+        // menu always shows the correct items for the current role.
+        try {
+          unawaited(Get.find<ProfileSwitchService>().fetchAccountStatus());
+        } catch (e) {
+          print('⚠️ Could not kick off background account-status fetch: $e');
+        }
+
+        // Use locally cached active_role from unified account system
+        final prefs = await SharedPreferences.getInstance();
+        final activeRole = prefs.getString('active_role');
+        final user = authService.user;
+
+        print("📱 Active role: $activeRole, userType: ${user?.userType}");
+
+        // Determine route based on active_role only.
+        // We intentionally do NOT fall back to user.isMerchant, because a
+        // brand-new customer who happens to have a merchant flag in the
+        // backend payload would otherwise be sent to the merchant home.
+        final isMerchantMode = activeRole == 'merchant';
+
+        if (isMerchantMode) {
+          print("🔍 MERCHANT MODE - Will check onboarding via API after navigation");
+          initialRoute.value = '/merchant-home';
         } else {
-          // Use locally cached active_role from unified account system
-          final prefs = await SharedPreferences.getInstance();
-          final activeRole = prefs.getString('active_role');
-          final user = authService.user;
-
-          print("📱 Active role: $activeRole, userType: ${user?.userType}");
-
-          // Determine route based on active_role (unified) or userType (legacy)
-          final isMerchantMode = activeRole == 'merchant' || (activeRole == null && (user?.isMerchant ?? false));
-
-          if (isMerchantMode) {
-            print("🔍 MERCHANT MODE - Will check onboarding via API after navigation");
-            initialRoute.value = '/merchant-home';
-          } else {
-            // Customer - go to home
-            initialRoute.value = '/home';
-          }
+          // Customer (default) - go to home
+          initialRoute.value = '/home';
         }
       } else {
         // Check if user has seen onboarding using OnboardingService
         final onboardingService = Get.find<OnboardingService>();
-        
+
         if (onboardingService.hasSeenOnboarding) {
           initialRoute.value = '/login';
         } else {
@@ -142,6 +152,24 @@ class AppService extends GetxService {
       print('❌ Token validation failed: $e');
       await _clearAuthState(authService);
       return false;
+    }
+  }
+
+  /// Validate the stored token in the background (non-blocking).
+  /// If invalid, clears auth state. UI redirect to /login will happen
+  /// automatically via the API client's 401 handler on the next request.
+  Future<void> _validateTokenInBackground(AuthService authService) async {
+    try {
+      // Short timeout so a slow server never affects the user experience.
+      await _validateTokenWithServer(authService).timeout(
+        const Duration(seconds: 4),
+        onTimeout: () {
+          print('⏱ Background token validation timed out (ignored)');
+          return true; // Assume valid; 401 handler will catch real problems.
+        },
+      );
+    } catch (e) {
+      print('⚠️ Background token validation error (ignored): $e');
     }
   }
 

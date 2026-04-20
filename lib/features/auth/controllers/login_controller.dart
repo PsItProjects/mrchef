@@ -167,26 +167,33 @@ class LoginController extends GetxController {
       if (result != null && result.token.isNotEmpty) {
         print('🔐 Token received: ${result.token.substring(0, 10)}...');
         print('🔐 User type: ${result.userType}');
-        
+        print('🔐 Active role: ${result.activeRole}');
+
         // حفظ التوكن ونوع المستخدم في AuthService
         await _authService.saveTokenWithUserType(result.token, result.userType);
         print('🔐 Token saved to AuthService');
-        
+
+        // استعادة الدور النشط الذي كان يستخدمه المستخدم آخر مرة
+        // (تاجر أو عميل) - حتى يفتح التطبيق على نفس الواجهة التي تركها
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('active_role', result.activeRole);
+        print('🔐 Active role restored: ${result.activeRole}');
+
         // محاولة تحميل بيانات المستخدم من السيرفر
         print('🔐 Loading user from token...');
         final userLoaded = await _authService.loadUserFromToken();
         print('🔐 User loaded: $userLoaded');
-        
+
         if (userLoaded) {
           print('✅ Biometric login successful!');
           ToastService.showSuccess(TranslationHelper.tr('biometric_welcome_back'));
 
-          // التوجيه حسب نوع المستخدم
-          if (result.userType == 'merchant') {
-            print('🔐 Navigating to merchant home...');
+          // التوجيه حسب الدور النشط الأخير (وليس userType)
+          if (result.shouldOpenAsMerchant) {
+            print('🔐 Navigating to merchant home (last active role)...');
             Get.offAllNamed(AppRoutes.MERCHANT_HOME);
           } else {
-            print('🔐 Navigating to customer home...');
+            print('🔐 Navigating to customer home (last active role)...');
             Get.offAllNamed(AppRoutes.HOME);
           }
         } else {
@@ -202,22 +209,24 @@ class LoginController extends GetxController {
           
           if (apiResult != null) {
             print('✅ Biometric API login successful!');
-            
-            // تحديث التوكن في البصمة
+
+            // تحديث التوكن في البصمة (مع الاحتفاظ بالدور النشط الأخير)
             await biometricService.updateCredentialsWithoutAuth(
               token: apiResult.token,
               userType: apiResult.userType,
               userId: result.userId,
               phoneNumber: result.phoneNumber,
+              activeRole: result.activeRole,
             );
-            
+
             // تحميل بيانات المستخدم مرة أخرى
             final userLoadedAfterApi = await _authService.loadUserFromToken();
-            
+
             if (userLoadedAfterApi) {
               ToastService.showSuccess(TranslationHelper.tr('biometric_welcome_back'));
-              
-              if (apiResult.userType == 'merchant') {
+
+              // التوجيه حسب الدور النشط الأخير
+              if (result.shouldOpenAsMerchant) {
                 Get.offAllNamed(AppRoutes.MERCHANT_HOME);
               } else {
                 Get.offAllNamed(AppRoutes.HOME);
