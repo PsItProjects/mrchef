@@ -6,6 +6,7 @@ import 'package:mrsheaf/core/services/toast_service.dart';
 import 'package:mrsheaf/core/routes/app_routes.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/features/auth/services/auth_service.dart';
+import 'package:mrsheaf/features/home/controllers/main_controller.dart';
 import 'package:mrsheaf/features/profile/pages/edit_profile_screen.dart';
 
 /// بطاقة الملف الشخصي الموحدة مع زر تبديل الحساب (مثل فيسبوك)
@@ -336,11 +337,14 @@ class UnifiedProfileCard extends StatelessWidget {
     if (success) {
       if (target == 'merchant') {
         ToastService.showSuccess('switched_to_merchant'.tr);
-        Get.offAllNamed('/merchant-home');
       } else {
         ToastService.showSuccess('switched_to_customer'.tr);
-        Get.offAllNamed('/home');
       }
+      // In-place switch: unified MainScreen rebuilds reactively to the new
+      // role. Stay on the Settings tab. NO navigation = NO freeze, NO desync.
+      try {
+        Get.find<MainController>().goToSettings();
+      } catch (_) {}
     } else {
       final action = service.lastSwitchAction.value;
       if (action == 'complete_onboarding') {

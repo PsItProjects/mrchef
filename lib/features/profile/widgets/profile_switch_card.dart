@@ -5,6 +5,7 @@ import 'package:mrsheaf/core/services/language_service.dart';
 import 'package:mrsheaf/core/services/profile_switch_service.dart';
 import 'package:mrsheaf/core/services/toast_service.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
+import 'package:mrsheaf/features/home/controllers/main_controller.dart';
 
 /// بطاقة تبديل الملف الشخصي - مثل فيسبوك
 /// تظهر فوق قائمة الملف الشخصي لتبديل بين عميل/تاجر
@@ -205,7 +206,12 @@ class ProfileSwitchCard extends StatelessWidget {
     final success = await switchService.switchRole();
     if (success) {
       ToastService.showSuccess('switched_to_merchant'.tr);
-      Get.offAllNamed('/merchant-home');
+      // In-place switch: the unified MainScreen rebuilds reactively to the
+      // new role. We just snap to the Settings tab of the new role so the
+      // user stays where they were. NO navigation = NO freeze, NO desync.
+      try {
+        Get.find<MainController>().goToSettings();
+      } catch (_) {}
     } else {
       final action = switchService.lastSwitchAction.value;
       final errorMsg = switchService.lastSwitchError.value;

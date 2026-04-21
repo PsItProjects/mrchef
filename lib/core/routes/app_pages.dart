@@ -131,7 +131,14 @@ class AppPages {
     GetPage(
       name: AppRoutes.HOME,
       page: () => const MainScreen(),
-      bindings: [ProfileBinding(), HomeBinding(), FavoritesBinding()],
+      bindings: [
+        ProfileBinding(),
+        HomeBinding(),
+        FavoritesBinding(),
+        // Merchant bindings registered too so that role-switch in place can
+        // render merchant tabs without re-running route navigation.
+        MerchantMainBinding(),
+      ],
       middlewares: [AuthMiddleware()],
       transition: Transition.fadeIn,
     ),
@@ -155,15 +162,25 @@ class AppPages {
     ),
     GetPage(
       name: AppRoutes.MERCHANT_HOME,
-      page: () => const MerchantDashboardScreen(),
-      binding: MerchantMainBinding(),
+      page: () => const MainScreen(),
+      bindings: [
+        ProfileBinding(),
+        HomeBinding(),
+        FavoritesBinding(),
+        MerchantMainBinding(),
+      ],
       middlewares: [AuthMiddleware()],
       transition: Transition.fadeIn,
     ),
     GetPage(
       name: AppRoutes.MERCHANT_DASHBOARD,
-      page: () => const MerchantDashboardScreen(),
-      binding: MerchantMainBinding(),
+      page: () => const MainScreen(),
+      bindings: [
+        ProfileBinding(),
+        HomeBinding(),
+        FavoritesBinding(),
+        MerchantMainBinding(),
+      ],
       middlewares: [AuthMiddleware()],
       transition: Transition.fadeIn,
     ),

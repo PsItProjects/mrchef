@@ -5,6 +5,7 @@ import 'package:mrsheaf/core/services/profile_switch_service.dart';
 import 'package:mrsheaf/core/services/toast_service.dart';
 import 'package:mrsheaf/core/routes/app_routes.dart';
 import 'package:mrsheaf/features/auth/services/auth_service.dart';
+import 'package:mrsheaf/features/home/controllers/main_controller.dart';
 import 'package:mrsheaf/features/profile/controllers/settings_controller.dart';
 import 'package:mrsheaf/features/profile/widgets/settings_menu_item.dart';
 
@@ -201,12 +202,11 @@ class SettingsMenuList extends GetView<SettingsController> {
     final success = await profileSwitch.switchRole();
     if (success) {
       ToastService.showSuccess('profile_switch_success'.tr);
-      // Navigate to the appropriate home
-      if (profileSwitch.isMerchantMode) {
-        Get.offAllNamed('/merchant-home');
-      } else {
-        Get.offAllNamed('/home');
-      }
+      // In-place switch: unified MainScreen rebuilds reactively to the new
+      // role. Stay on the Settings tab. NO navigation = NO freeze, NO desync.
+      try {
+        Get.find<MainController>().goToSettings();
+      } catch (_) {}
     } else {
       final action = profileSwitch.lastSwitchAction.value;
       if (action == 'complete_onboarding') {
