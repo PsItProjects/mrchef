@@ -284,7 +284,11 @@ class SettingsMenuList extends GetView<SettingsController> {
         final authService = Get.find<AuthService>();
         final token = await authService.getToken();
         final user = authService.currentUser.value;
-        final userType = authService.userType.value;
+        if (!Get.isRegistered<ProfileSwitchService>()) {
+          ToastService.showError('biometric_login_manually'.tr);
+          return;
+        }
+        final userType = Get.find<ProfileSwitchService>().currentActiveRole;
 
         if (token == null || user == null || userType.isEmpty) {
           ToastService.showError('biometric_login_manually'.tr);

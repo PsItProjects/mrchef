@@ -180,44 +180,29 @@ class StoreDetailsController extends GetxController {
     return 'https://mr-shife-backend-main-ygodva.laravel.cloud/storage/$imagePath';
   }
 
+  String _localizedText(dynamic value, {String fallback = ''}) {
+    if (value == null) return fallback;
+    if (value is String) return value.isNotEmpty ? value : fallback;
+    if (value is Map) {
+      final currentLang = Get.locale?.languageCode ?? 'ar';
+      return value[currentLang]?.toString() ??
+          value['current']?.toString() ??
+          value['ar']?.toString() ??
+          value['en']?.toString() ??
+          fallback;
+    }
+    return value.toString();
+  }
+
   void _setRawRestaurantData(Map<String, dynamic> rawData) {
     // Parse restaurant name based on language
-    String restaurantName = 'Restaurant';
-    if (rawData['name'] != null) {
-      final name = rawData['name'];
-      if (name is Map) {
-        // Get current language from controller or use Arabic as default
-        final currentLang = Get.locale?.languageCode ?? 'ar';
-        restaurantName = name[currentLang]?.toString() ??
-                       name['ar']?.toString() ??
-                       name['en']?.toString() ??
-                       'Restaurant';
-      } else if (name is String) {
-        restaurantName = name;
-      }
-    } else if (rawData['business_name'] != null) {
-      final businessName = rawData['business_name'];
-      if (businessName is Map) {
-        final currentLang = Get.locale?.languageCode ?? 'ar';
-        restaurantName = businessName[currentLang]?.toString() ??
-                       businessName['ar']?.toString() ??
-                       businessName['en']?.toString() ??
-                       'Restaurant';
-      } else if (businessName is String) {
-        restaurantName = businessName;
-      }
-    }
+    final restaurantName = _localizedText(
+      rawData['business_name'] ?? rawData['name'],
+      fallback: 'Restaurant',
+    );
 
     // Parse description
-    String description = '';
-    if (rawData['description'] != null) {
-      final desc = rawData['description'];
-      if (desc is Map && desc['current'] != null) {
-        description = desc['current'].toString();
-      } else if (desc is String) {
-        description = desc;
-      }
-    }
+    final description = _localizedText(rawData['description']);
 
     // Set basic data
     storeId.value = rawData['id']?.toString() ?? '';
@@ -242,19 +227,7 @@ class StoreDetailsController extends GetxController {
     preparationTime.value = int.tryParse(rawData['preparation_time']?.toString() ?? '30') ?? 30;
 
     // Parse address
-    String address = '';
-    if (rawData['address'] != null) {
-      final addr = rawData['address'];
-      if (addr is Map) {
-        final currentLang = Get.locale?.languageCode ?? 'ar';
-        address = addr[currentLang]?.toString() ??
-                 addr['ar']?.toString() ??
-                 addr['en']?.toString() ??
-                 '';
-      } else if (addr is String) {
-        address = addr;
-      }
-    }
+    final address = _localizedText(rawData['address']);
     storeLocation.value = address;
 
     // Set images

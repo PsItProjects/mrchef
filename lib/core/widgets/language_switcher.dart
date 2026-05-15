@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mrsheaf/core/localization/translation_helper.dart';
 import 'package:mrsheaf/core/services/language_service.dart';
+import 'package:mrsheaf/core/services/profile_switch_service.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/features/profile/services/profile_service.dart';
 import 'package:mrsheaf/features/auth/services/auth_service.dart';
@@ -274,7 +275,10 @@ class LanguageSwitcher extends StatelessWidget {
         return;
       }
 
-      final userType = authService.userType.value;
+      String userType = authService.userType.value;
+      if (Get.isRegistered<ProfileSwitchService>()) {
+        userType = Get.find<ProfileSwitchService>().currentActiveRole;
+      }
       
       if (userType == 'customer') {
         // Sync with customer profile endpoint

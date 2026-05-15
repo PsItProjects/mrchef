@@ -14,6 +14,20 @@ import 'package:mrsheaf/features/home/widgets/product_card.dart';
 class HomeScreen extends GetView<HomeController> {
   const HomeScreen({super.key});
 
+  String _localizedText(dynamic value, {String fallback = ''}) {
+    if (value == null) return fallback;
+    if (value is String) return value.isNotEmpty ? value : fallback;
+    if (value is Map) {
+      final currentLang = Get.locale?.languageCode ?? 'ar';
+      return value[currentLang]?.toString() ??
+          value['current']?.toString() ??
+          value['ar']?.toString() ??
+          value['en']?.toString() ??
+          fallback;
+    }
+    return value.toString();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -93,31 +107,13 @@ class HomeScreen extends GetView<HomeController> {
                     itemBuilder: (context, index) {
                       final restaurant = restaurantsToShow[index];
 
-                      // Parse restaurant name based on language
-                      String restaurantName = 'Restaurant';
-                      if (restaurant['name'] != null) {
-                        final name = restaurant['name'];
-                        if (name is Map) {
-                          final currentLang = Get.locale?.languageCode ?? 'ar';
-                          restaurantName = name[currentLang]?.toString() ??
-                                         name['ar']?.toString() ??
-                                         name['en']?.toString() ??
-                                         'Restaurant';
-                        } else if (name is String) {
-                          restaurantName = name;
-                        }
-                      } else if (restaurant['business_name'] != null) {
-                        final businessName = restaurant['business_name'];
-                        if (businessName is Map) {
-                          final currentLang = Get.locale?.languageCode ?? 'ar';
-                          restaurantName = businessName[currentLang]?.toString() ??
-                                         businessName['ar']?.toString() ??
-                                         businessName['en']?.toString() ??
-                                         'Restaurant';
-                        } else if (businessName is String) {
-                          restaurantName = businessName;
-                        }
-                      }
+                      // Restaurant display name must come from business_name.
+                      // The raw name field can be stale/legacy and may not match
+                      // the merchant's saved restaurant name.
+                      final restaurantName = _localizedText(
+                        restaurant['business_name'] ?? restaurant['name'],
+                        fallback: 'Restaurant',
+                      );
 
                       // Parse logo URL
                       String logoUrl = '';
@@ -141,6 +137,7 @@ class HomeScreen extends GetView<HomeController> {
                       final restaurantData = {
                         'id': restaurant['id'] ?? index,
                         'name': restaurantName,
+                        'business_name': restaurant['business_name'] ?? restaurantName,
                         'image': logoUrl, // kept for backward compat
                         'logo': logoUrl,
                         'cover_image': coverUrl,

@@ -315,13 +315,9 @@ class UnifiedProfileCard extends StatelessWidget {
   bool _isMerchantMode() {
     try {
       if (Get.isRegistered<ProfileSwitchService>()) {
-        final ps = Get.find<ProfileSwitchService>();
-        if (ps.accountStatus.value != null) {
-          return ps.accountStatus.value!.isMerchantMode;
-        }
+        return Get.find<ProfileSwitchService>().isMerchantMode;
       }
-      final auth = Get.find<AuthService>();
-      return auth.userType.value == 'merchant';
+      return false;
     } catch (e) {
       return false;
     }

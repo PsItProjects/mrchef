@@ -17,7 +17,7 @@ class KitchenCard extends StatelessWidget {
   });
 
   // ─── Quick data accessors ───
-  String get _name => (kitchen['name'] ?? 'restaurant'.tr).toString();
+  String get _name => _localizedText(kitchen['business_name'] ?? kitchen['name']);
   String get _logoUrl => (kitchen['logo'] ?? kitchen['image'] ?? '').toString();
   String get _coverUrl => (kitchen['cover_image'] ?? '').toString();
   bool get _isFeatured => kitchen['is_featured'] == true || kitchen['is_featured'] == 1;
@@ -32,6 +32,20 @@ class KitchenCard extends StatelessWidget {
     return fee.toString();
   }
   bool get _offersDelivery => kitchen['offers_delivery'] == true || kitchen['offers_delivery'] == 1;
+
+  String _localizedText(dynamic value) {
+    if (value == null) return 'restaurant'.tr;
+    if (value is String) return value.isNotEmpty ? value : 'restaurant'.tr;
+    if (value is Map) {
+      final lang = Get.locale?.languageCode ?? 'ar';
+      return value[lang]?.toString() ??
+          value['current']?.toString() ??
+          value['ar']?.toString() ??
+          value['en']?.toString() ??
+          'restaurant'.tr;
+    }
+    return value.toString();
+  }
 
   List<String> get _categoryNames {
     final cats = kitchen['categories'];

@@ -82,7 +82,7 @@ class _EditRestaurantInfoScreenState extends State<EditRestaurantInfoScreen>
       }
     });
     _initializeControllers();
-    _loadRestaurantData();
+    _loadRestaurantData(forceRefresh: true);
   }
 
   void _initializeControllers() {
@@ -102,44 +102,22 @@ class _EditRestaurantInfoScreenState extends State<EditRestaurantInfoScreen>
 
   Future<void> _loadRestaurantData({bool forceRefresh = false}) async {
     try {
-      final data = await _profileService.getProfile();
+      final data = await _profileService.getProfile(forceRefresh: forceRefresh);
       if (data != null) {
-        final merchant = data['merchant'];
-        final restaurant = merchant?['restaurant'];
+        final restaurant = _extractRestaurantData(data);
         if (restaurant != null) {
           setState(() {
             final businessName = restaurant['business_name'];
-            if (businessName is Map) {
-              _businessNameArController.text =
-                  businessName['ar'] ?? businessName['current'] ?? '';
-              _businessNameEnController.text =
-                  businessName['en'] ?? businessName['current'] ?? '';
-            } else if (businessName is String) {
-              _businessNameArController.text = businessName;
-              _businessNameEnController.text = businessName;
-            }
+            _businessNameArController.text = _translatedValue(businessName, 'ar');
+            _businessNameEnController.text = _translatedValue(businessName, 'en');
 
             final description = restaurant['description'];
-            if (description is Map) {
-              _descriptionArController.text =
-                  description['ar'] ?? description['current'] ?? '';
-              _descriptionEnController.text =
-                  description['en'] ?? description['current'] ?? '';
-            } else if (description is String) {
-              _descriptionArController.text = description;
-              _descriptionEnController.text = description;
-            }
+            _descriptionArController.text = _translatedValue(description, 'ar');
+            _descriptionEnController.text = _translatedValue(description, 'en');
 
             final address = restaurant['address'];
-            if (address is Map) {
-              _addressArController.text =
-                  address['ar'] ?? address['current'] ?? '';
-              _addressEnController.text =
-                  address['en'] ?? address['current'] ?? '';
-            } else if (address is String) {
-              _addressArController.text = address;
-              _addressEnController.text = address;
-            }
+            _addressArController.text = _translatedValue(address, 'ar');
+            _addressEnController.text = _translatedValue(address, 'en');
 
             _phoneController.text = restaurant['phone']?.toString() ?? '';
             _emailController.text = restaurant['email']?.toString() ?? '';
@@ -169,6 +147,34 @@ class _EditRestaurantInfoScreenState extends State<EditRestaurantInfoScreen>
     } catch (e) {
       print('❌ Error loading restaurant data: $e');
     }
+  }
+
+  Map<String, dynamic>? _extractRestaurantData(Map<String, dynamic> data) {
+    final merchant = data['merchant'];
+    if (merchant is Map && merchant['restaurant'] is Map) {
+      return Map<String, dynamic>.from(merchant['restaurant'] as Map);
+    }
+    if (data['restaurant'] is Map) {
+      return Map<String, dynamic>.from(data['restaurant'] as Map);
+    }
+    final nestedData = data['data'];
+    if (nestedData is Map) {
+      return _extractRestaurantData(Map<String, dynamic>.from(nestedData));
+    }
+    return null;
+  }
+
+  String _translatedValue(dynamic value, String lang) {
+    if (value == null) return '';
+    if (value is String) return value;
+    if (value is Map) {
+      return value[lang]?.toString() ??
+          value['current']?.toString() ??
+          value['ar']?.toString() ??
+          value['en']?.toString() ??
+          '';
+    }
+    return value.toString();
   }
 
   @override

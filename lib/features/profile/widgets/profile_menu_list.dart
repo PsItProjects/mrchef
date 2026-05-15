@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mrsheaf/core/services/biometric_service.dart';
+import 'package:mrsheaf/core/services/profile_switch_service.dart';
 import 'package:mrsheaf/core/services/toast_service.dart';
 import 'package:mrsheaf/features/auth/services/auth_service.dart';
 import 'package:mrsheaf/features/profile/controllers/profile_controller.dart';
@@ -133,7 +134,11 @@ class ProfileMenuList extends GetView<ProfileController> {
         final authService = Get.find<AuthService>();
         final token = await authService.getToken();
         final user = authService.currentUser.value;
-        final userType = authService.userType.value;
+        if (!Get.isRegistered<ProfileSwitchService>()) {
+          ToastService.showError('biometric_login_manually'.tr);
+          return;
+        }
+        final userType = Get.find<ProfileSwitchService>().currentActiveRole;
         
         if (token == null || user == null || userType.isEmpty) {
           ToastService.showError('biometric_login_manually'.tr);

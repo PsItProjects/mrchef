@@ -3,7 +3,6 @@ import 'package:get/get.dart';
 import 'package:mrsheaf/core/widgets/language_switcher.dart';
 import 'package:mrsheaf/features/profile/widgets/unified_profile_card.dart';
 import 'package:mrsheaf/features/profile/widgets/unified_menu_list.dart';
-import 'package:mrsheaf/features/auth/services/auth_service.dart';
 import 'package:mrsheaf/core/services/profile_switch_service.dart';
 import 'package:mrsheaf/features/merchant/controllers/merchant_main_controller.dart';
 
@@ -35,13 +34,11 @@ class UnifiedSettingsScreen extends StatelessWidget {
                     // Unified Menu (rebuilds when active role changes so a
                     // brand-new customer never momentarily sees merchant items)
                     Obx(() {
-                      // Touch reactive sources so this Obx rebuilds whenever
-                      // either the unified-account status or auth user-type
-                      // changes.
+                      // Touch only the unified-account status. The active role
+                      // is the source of truth; userType must not drive the UI.
                       if (Get.isRegistered<ProfileSwitchService>()) {
                         Get.find<ProfileSwitchService>().accountStatus.value;
                       }
-                      Get.find<AuthService>().userType.value;
                       return const UnifiedMenuList();
                     }),
                   ],

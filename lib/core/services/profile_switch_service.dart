@@ -339,11 +339,15 @@ class ProfileSwitchService extends getx.GetxService {
   /// Whether the user currently has a merchant profile available.
   bool get hasMerchantProfile => accountStatus.value?.hasMerchantProfile ?? false;
 
+  /// Current active role from the unified account status.
+  /// Defaults to customer until /account/status confirms merchant mode.
+  String get currentActiveRole => accountStatus.value?.activeRole ?? 'customer';
+
   /// Whether the user is currently in merchant mode.
-  bool get isMerchantMode => accountStatus.value?.isMerchantMode ?? false;
+  bool get isMerchantMode => currentActiveRole == 'merchant';
 
   /// Whether the user is currently in customer mode.
-  bool get isCustomerMode => accountStatus.value?.isCustomerMode ?? true;
+  bool get isCustomerMode => currentActiveRole == 'customer';
 
   /// Quick check for whether we can show the "switch" button.
   bool get canSwitch => accountStatus.value?.canSwitchToMerchant ?? false;

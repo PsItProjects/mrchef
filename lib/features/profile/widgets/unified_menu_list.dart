@@ -385,24 +385,19 @@ class UnifiedMenuList extends StatelessWidget {
             final auth = Get.find<AuthService>();
             final token = await auth.getToken();
             final user = auth.currentUser.value;
-            final userType = auth.userType.value;
-            if (token == null || user == null) return;
-
-            // Capture the role the user is currently using so biometric
-            // login restores them to the same screen later.
-            String? activeRole;
-            if (Get.isRegistered<ProfileSwitchService>()) {
-              activeRole =
-                  Get.find<ProfileSwitchService>().accountStatus.value?.activeRole;
+            if (!Get.isRegistered<ProfileSwitchService>()) {
+              ToastService.showError('biometric_login_manually'.tr);
+              return;
             }
-            activeRole ??= userType;
+            final userType = Get.find<ProfileSwitchService>().currentActiveRole;
+            if (token == null || user == null || userType.isEmpty) return;
 
             final ok = await bio.enableBiometricLogin(
               token: token,
               userType: userType,
               userId: user.id.toString(),
               phoneNumber: user.phoneNumber ?? '',
-              activeRole: activeRole,
+              activeRole: userType,
             );
             if (ok) {
               ToastService.showSuccess('biometric_enable_success'.tr);
