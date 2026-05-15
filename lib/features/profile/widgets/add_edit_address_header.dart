@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/navigation/app_navigator.dart';
 import 'package:mrsheaf/features/profile/controllers/add_edit_address_controller.dart';
 
 class AddEditAddressHeader extends GetView<AddEditAddressController> {
@@ -14,7 +15,7 @@ class AddEditAddressHeader extends GetView<AddEditAddressController> {
         children: [
           // Back button
           GestureDetector(
-            onTap: () => Get.back(),
+            onTap: () => AppNavigator.back(),
             child: Container(
               width: 24,
               height: 24,

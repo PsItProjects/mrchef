@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/navigation/app_navigator.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/features/profile/controllers/edit_profile_controller.dart';
 import 'package:mrsheaf/features/profile/controllers/profile_controller.dart';
@@ -98,7 +99,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         children: [
           // Back button
           GestureDetector(
-            onTap: () => Get.back(),
+            onTap: () => AppNavigator.back(),
             child: Container(
               width: 40,
               height: 40,

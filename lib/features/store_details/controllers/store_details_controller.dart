@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/navigation/app_navigator.dart';
 import 'package:mrsheaf/features/categories/models/category_model.dart';
 import 'package:mrsheaf/features/categories/services/kitchen_service.dart';
 import 'package:mrsheaf/core/services/language_service.dart';
@@ -843,7 +844,7 @@ class StoreDetailsController extends GetxController {
       final conversation = await chatService.getOrCreateRestaurantConversation(restaurantId);
 
       // Close loading dialog
-      Get.back();
+      AppNavigator.back();
 
       // Navigate to chat screen
       Get.toNamed(
@@ -857,7 +858,7 @@ class StoreDetailsController extends GetxController {
     } catch (e) {
       // Close loading dialog if open
       if (Get.isDialogOpen ?? false) {
-        Get.back();
+        AppNavigator.back();
       }
 
       if (kDebugMode) {

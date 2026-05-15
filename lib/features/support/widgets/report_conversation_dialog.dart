@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/navigation/app_navigator.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 
 class ReportConversationDialog extends StatefulWidget {
@@ -42,7 +43,7 @@ class _ReportConversationDialogState extends State<ReportConversationDialog> {
     if (Navigator.of(context).canPop()) {
       Navigator.of(context).pop();
     } else {
-      Get.back();
+      AppNavigator.back();
     }
 
     await widget.onSubmit(reason, details.isEmpty ? null : details);

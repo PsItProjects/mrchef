@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/navigation/app_navigator.dart';
 import 'package:mrsheaf/features/home/models/restaurant_model.dart';
 import '../../../core/services/toast_service.dart';
 import 'package:mrsheaf/features/home/services/restaurant_service.dart';
@@ -114,7 +115,7 @@ class AllRestaurantsController extends GetxController {
   
   /// Go back
   void goBack() {
-    Get.back();
+    AppNavigator.back();
   }
 }
 

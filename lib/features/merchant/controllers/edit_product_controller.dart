@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/navigation/app_navigator.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/features/merchant/services/merchant_products_service.dart';
@@ -140,14 +141,14 @@ class EditProductController extends GetxController {
         }
       } else {
         ToastService.showError('failed_to_load_product'.tr);
-        Get.back();
+        AppNavigator.back();
       }
     } catch (e) {
       if (kDebugMode) {
         print('❌ Error loading product: $e');
       }
       ToastService.showError('failed_to_load_product'.tr);
-      Get.back();
+      AppNavigator.back();
     } finally {
       isLoading.value = false;
     }
@@ -457,13 +458,13 @@ class EditProductController extends GetxController {
           content: Text('confirm_delete_option_group'.tr),
           actions: [
             TextButton(
-              onPressed: () => Get.back(),
+              onPressed: () => AppNavigator.back(),
               child: Text('cancel'.tr),
             ),
             TextButton(
               onPressed: () {
                 optionGroups.removeAt(index);
-                Get.back();
+                AppNavigator.back();
               },
               style: TextButton.styleFrom(foregroundColor: Colors.red),
               child: Text('delete'.tr),

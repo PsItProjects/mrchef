@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/navigation/app_navigator.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/features/merchant/controllers/add_product_controller.dart';
 import 'package:mrsheaf/features/merchant/widgets/searchable_select_bottom_sheet.dart';
@@ -67,7 +68,7 @@ class AddProductScreen extends GetView<AddProductController> {
           ),
           child: Icon(Icons.arrow_back_ios_new, color: AppColors.secondaryColor, size: 18),
         ),
-        onPressed: () => Get.back(),
+        onPressed: () => AppNavigator.back(),
       ),
       title: Text(
         'add_product'.tr,

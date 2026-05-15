@@ -65,7 +65,7 @@ class MyOrdersHeader extends GetView<MyOrdersController> {
           children: [
             // Back button
             GestureDetector(
-              onTap: () => Get.back(),
+              onTap: () => controller.navigateBack(context),
               child: Container(
                 width: 24,
                 height: 24,

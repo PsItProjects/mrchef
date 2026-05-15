@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/navigation/app_navigator.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/features/merchant/services/merchant_settings_service.dart';
 
@@ -61,7 +62,7 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
               children: [
                 // Back button
                 GestureDetector(
-                  onTap: () => Get.back(),
+                  onTap: () => AppNavigator.back(),
                   child: Container(
                     width: 40,
                     height: 40,
@@ -439,7 +440,7 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
     );
     
     if (success) {
-      Get.back();
+      AppNavigator.back();
     }
   }
 }

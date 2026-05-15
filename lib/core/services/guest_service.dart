@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/navigation/app_navigator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/core/routes/app_routes.dart';
@@ -110,7 +111,7 @@ class _LoginRequiredModal extends StatelessWidget {
               Align(
                 alignment: Alignment.topRight,
                 child: GestureDetector(
-                  onTap: () => Get.back(result: false),
+                  onTap: () => AppNavigator.back(result: false),
                   child: Container(
                     padding: const EdgeInsets.all(4),
                     decoration: BoxDecoration(
@@ -180,7 +181,7 @@ class _LoginRequiredModal extends StatelessWidget {
               height: 56,
               child: ElevatedButton(
                 onPressed: () async {
-                  Get.back(result: true);
+                  AppNavigator.back(result: true);
                   // Exit guest mode
                   final guestService = Get.find<GuestService>();
                   await guestService.exitGuestMode();
@@ -214,7 +215,7 @@ class _LoginRequiredModal extends StatelessWidget {
               height: 56,
               child: OutlinedButton(
                 onPressed: () async {
-                  Get.back(result: true);
+                  AppNavigator.back(result: true);
                   // Exit guest mode
                   final guestService = Get.find<GuestService>();
                   await guestService.exitGuestMode();
@@ -243,7 +244,7 @@ class _LoginRequiredModal extends StatelessWidget {
             
             // Continue as guest link
             GestureDetector(
-              onTap: () => Get.back(result: false),
+              onTap: () => AppNavigator.back(result: false),
               child: Text(
                 'continue_browsing'.tr,
                 style: const TextStyle(

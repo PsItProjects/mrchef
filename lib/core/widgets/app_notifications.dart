@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/navigation/app_navigator.dart';
 import 'package:mrsheaf/core/services/toast_service.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 
@@ -35,7 +36,10 @@ class AppNotifications {
       title: title,
       message: message,
       icon: icon,
+      backgroundColor: backgroundColor,
+      textColor: textColor,
       duration: duration,
+      position: position,
     );
   }
 }
@@ -56,14 +60,14 @@ class AppDialog {
         content: Text(message, style: AppTheme.bodyStyle),
         actions: [
           TextButton(
-            onPressed: () => Get.back(result: false),
+            onPressed: () => AppNavigator.back(result: false),
             style: TextButton.styleFrom(
               foregroundColor: cancelColor ?? AppColors.hintTextColor,
             ),
             child: Text(cancelText),
           ),
           ElevatedButton(
-            onPressed: () => Get.back(result: true),
+            onPressed: () => AppNavigator.back(result: true),
             style: ElevatedButton.styleFrom(
               backgroundColor: confirmColor ?? AppColors.primaryColor,
               foregroundColor: AppColors.searchIconColor,
@@ -90,7 +94,7 @@ class AppDialog {
         content: Text(message, style: AppTheme.bodyStyle),
         actions: [
           ElevatedButton(
-            onPressed: () => Get.back(),
+            onPressed: () => AppNavigator.back(),
             style: ElevatedButton.styleFrom(
               backgroundColor: buttonColor ?? AppColors.primaryColor,
               foregroundColor: AppColors.searchIconColor,
@@ -148,13 +152,13 @@ class AppDialog {
         ),
         actions: [
           TextButton(
-            onPressed: () => Get.back(),
+            onPressed: () => AppNavigator.back(),
             child: Text(cancelText),
           ),
           ElevatedButton(
             onPressed: () {
               if (formKey.currentState?.validate() ?? false) {
-                Get.back(result: controller.text);
+                AppNavigator.back(result: controller.text);
               }
             },
             style: ElevatedButton.styleFrom(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/navigation/app_navigator.dart';
 import 'package:mrsheaf/core/services/toast_service.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/shared/widgets/add_review_bottom_sheet.dart';
@@ -120,7 +121,7 @@ class OrderReviewPromptDialog extends StatelessWidget {
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () {
-                  Get.back();
+                  AppNavigator.back();
                   _showReviewFlow();
                 },
                 style: ElevatedButton.styleFrom(
@@ -151,7 +152,7 @@ class OrderReviewPromptDialog extends StatelessWidget {
             // Later button
             TextButton(
               onPressed: () {
-                Get.back();
+                AppNavigator.back();
                 onLater?.call();
               },
               child: Text(
@@ -311,7 +312,7 @@ class OrderReviewPromptDialog extends StatelessWidget {
         ),
         actions: [
           TextButton(
-            onPressed: () => Get.back(),
+            onPressed: () => AppNavigator.back(),
             child: Text(
               'no_thanks'.tr,
               style: const TextStyle(
@@ -322,7 +323,7 @@ class OrderReviewPromptDialog extends StatelessWidget {
           ),
           ElevatedButton(
             onPressed: () {
-              Get.back();
+              AppNavigator.back();
               _showReviewForItem(nextItem, currentIndex, totalCount);
             },
             style: ElevatedButton.styleFrom(

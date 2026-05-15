@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/navigation/app_navigator.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:mrsheaf/features/merchant/widgets/price_confirmation_modal.dart';
@@ -1172,7 +1173,7 @@ class MerchantProductAttachmentCard extends StatelessWidget {
         _handleStatusChange(orderId, 'confirmed',
             agreedPrice: agreedPrice,
             agreedDeliveryFee: agreedDeliveryFee);
-        Get.back();
+        AppNavigator.back();
       },
     );
   }

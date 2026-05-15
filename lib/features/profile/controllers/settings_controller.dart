@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/navigation/app_navigator.dart';
 import 'package:mrsheaf/features/profile/models/settings_model.dart';
 import 'package:mrsheaf/core/services/language_service.dart';
 import 'package:mrsheaf/features/profile/services/profile_service.dart';
@@ -146,7 +147,7 @@ class SettingsController extends GetxController {
       onTap: () {
         settings.value = settings.value.copyWith(currency: code);
         _saveSettings();
-        Get.back();
+        AppNavigator.back();
 
         ToastService.showSuccess('${'currency_changed_to'.tr} $code');
       },
@@ -173,7 +174,7 @@ class SettingsController extends GetxController {
         : null,
       onTap: isChangingLanguage.value ? null : () {
         _updateLanguage(code);
-        Get.back();
+        AppNavigator.back();
       },
     );
   }
@@ -285,7 +286,7 @@ class SettingsController extends GetxController {
         ),
         actions: [
           TextButton(
-            onPressed: () => Get.back(),
+            onPressed: () => AppNavigator.back(),
             child: const Text(
               'Cancel',
               style: TextStyle(
@@ -298,7 +299,7 @@ class SettingsController extends GetxController {
           ),
           TextButton(
             onPressed: () {
-              Get.back();
+              AppNavigator.back();
               _performClearCache();
             },
             child: const Text(

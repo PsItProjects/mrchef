@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/navigation/app_navigator.dart';
 import 'package:mrsheaf/features/auth/controllers/signup_controller.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 
@@ -16,7 +17,7 @@ class SignupScreen extends StatelessWidget {
         title: Text('create_account'.tr),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => Get.back(),
+          onPressed: () => AppNavigator.back(),
         ),
       ),
       body: SafeArea(

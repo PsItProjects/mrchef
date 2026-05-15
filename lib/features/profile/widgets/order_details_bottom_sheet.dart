@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/navigation/app_navigator.dart';
 import 'package:mrsheaf/features/profile/controllers/order_details_controller.dart';
 import 'package:mrsheaf/features/profile/widgets/order_details_header.dart';
 import 'package:mrsheaf/features/profile/widgets/order_status_timeline.dart';
@@ -84,7 +85,7 @@ class _OrderDetailsBottomSheetState extends State<OrderDetailsBottomSheet> {
                   ),
                 ),
                 IconButton(
-                  onPressed: () => Get.back(),
+                  onPressed: () => AppNavigator.back(),
                   icon: const Icon(Icons.close, size: 24),
                   color: const Color(0xFF2D2D2D),
                   padding: EdgeInsets.zero,

@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/navigation/app_navigator.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mrsheaf/core/services/toast_service.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
@@ -136,7 +137,7 @@ class AddReviewController extends GetxController {
 
       if (success) {
         HapticFeedback.heavyImpact();
-        Get.back(result: true);
+        AppNavigator.back(result: true);
         ToastService.showSuccess('review_submitted'.tr);
       }
     } catch (e) {
@@ -207,7 +208,7 @@ class AddReviewController extends GetxController {
                   ),
                 ),
                 onTap: () {
-                  Get.back();
+                  AppNavigator.back();
                   pickImageFromCamera();
                 },
               ),
@@ -238,7 +239,7 @@ class AddReviewController extends GetxController {
                   ),
                 ),
                 onTap: () {
-                  Get.back();
+                  AppNavigator.back();
                   pickImageFromGallery();
                 },
               ),
@@ -454,7 +455,7 @@ class AddReviewBottomSheet extends StatelessWidget {
         
         // Close button
         IconButton(
-          onPressed: () => Get.back(),
+          onPressed: () => AppNavigator.back(),
           icon: const Icon(Icons.close_rounded),
           color: const Color(0xFF999999),
           iconSize: 24,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/navigation/app_navigator.dart';
 import 'package:intl/intl.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/core/localization/translation_helper.dart';
@@ -513,7 +514,7 @@ class MerchantOrdersScreen extends GetView<MerchantOrdersController> {
             agreedDeliveryFee: agreedDeliveryFee,
           );
           if (success) {
-            Get.back();
+            AppNavigator.back();
           }
         },
       );
@@ -575,7 +576,7 @@ class MerchantOrdersScreen extends GetView<MerchantOrdersController> {
                   ),
                   title: Text(controller.getStatusText(status)),
                   onTap: () async {
-                    Get.back();
+                    AppNavigator.back();
                     await controller.updateOrderStatus(orderId, status);
                   },
                 )),

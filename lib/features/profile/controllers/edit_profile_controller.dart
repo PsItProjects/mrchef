@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/navigation/app_navigator.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mrsheaf/features/profile/models/user_profile_model.dart';
 import 'package:mrsheaf/features/profile/controllers/profile_controller.dart';
@@ -101,7 +102,7 @@ class EditProfileController extends GetxController {
                   const Icon(Icons.camera_alt, color: AppColors.primaryColor),
               title: Text(TranslationHelper.tr('camera')),
               onTap: () {
-                Get.back();
+                AppNavigator.back();
                 _pickAvatar(ImageSource.camera);
               },
             ),
@@ -110,7 +111,7 @@ class EditProfileController extends GetxController {
                   color: AppColors.primaryColor),
               title: Text(TranslationHelper.tr('gallery')),
               onTap: () {
-                Get.back();
+                AppNavigator.back();
                 _pickAvatar(ImageSource.gallery);
               },
             ),
@@ -120,7 +121,7 @@ class EditProfileController extends GetxController {
                 leading: const Icon(Icons.delete, color: Colors.red),
                 title: Text(TranslationHelper.tr('remove_photo')),
                 onTap: () {
-                  Get.back();
+                  AppNavigator.back();
                   _removeAvatar();
                 },
               ),
@@ -245,7 +246,7 @@ class EditProfileController extends GetxController {
         await Future.delayed(const Duration(milliseconds: 300));
 
         // Navigate back to Profile screen (main profile page with updated data)
-        Get.back();
+        AppNavigator.back();
       } else {
         // Show detailed validation errors from backend (e.g. email taken)
         final errorMsg = response.hasErrors

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/navigation/app_navigator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:mrsheaf/features/onboarding/widgets/vendor_stepper.dart';
 import 'package:mrsheaf/core/services/language_service.dart';
@@ -91,7 +92,7 @@ class VendorStep2Screen extends StatelessWidget {
       children: [
         // Back button
         GestureDetector(
-          onTap: () => Get.back(),
+          onTap: () => AppNavigator.back(),
           child: Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(

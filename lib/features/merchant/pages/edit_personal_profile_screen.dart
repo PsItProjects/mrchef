@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/navigation/app_navigator.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/features/merchant/services/merchant_profile_service.dart';
@@ -163,7 +164,7 @@ class _EditPersonalProfileScreenState extends State<EditPersonalProfileScreen> {
               leading: const Icon(Icons.camera_alt, color: AppColors.primaryColor),
               title: Text(TranslationHelper.tr('camera')),
               onTap: () {
-                Get.back();
+                AppNavigator.back();
                 _pickAvatar(ImageSource.camera);
               },
             ),
@@ -171,7 +172,7 @@ class _EditPersonalProfileScreenState extends State<EditPersonalProfileScreen> {
               leading: const Icon(Icons.photo_library, color: AppColors.primaryColor),
               title: Text(TranslationHelper.tr('gallery')),
               onTap: () {
-                Get.back();
+                AppNavigator.back();
                 _pickAvatar(ImageSource.gallery);
               },
             ),
@@ -180,7 +181,7 @@ class _EditPersonalProfileScreenState extends State<EditPersonalProfileScreen> {
                 leading: const Icon(Icons.delete, color: Colors.red),
                 title: Text(TranslationHelper.tr('remove_photo')),
                 onTap: () {
-                  Get.back();
+                  AppNavigator.back();
                   setState(() {
                     _selectedAvatar = null;
                     _currentAvatarUrl = null;
@@ -208,7 +209,7 @@ class _EditPersonalProfileScreenState extends State<EditPersonalProfileScreen> {
               leading: const Icon(Icons.camera_alt, color: AppColors.primaryColor),
               title: Text(TranslationHelper.tr('camera')),
               onTap: () {
-                Get.back();
+                AppNavigator.back();
                 _pickCover(ImageSource.camera);
               },
             ),
@@ -216,7 +217,7 @@ class _EditPersonalProfileScreenState extends State<EditPersonalProfileScreen> {
               leading: const Icon(Icons.photo_library, color: AppColors.primaryColor),
               title: Text(TranslationHelper.tr('gallery')),
               onTap: () {
-                Get.back();
+                AppNavigator.back();
                 _pickCover(ImageSource.gallery);
               },
             ),
@@ -225,7 +226,7 @@ class _EditPersonalProfileScreenState extends State<EditPersonalProfileScreen> {
                 leading: const Icon(Icons.delete, color: Colors.red),
                 title: Text(TranslationHelper.tr('remove_photo')),
                 onTap: () {
-                  Get.back();
+                  AppNavigator.back();
                   setState(() {
                     _selectedCover = null;
                     _currentCoverUrl = null;
@@ -294,7 +295,7 @@ class _EditPersonalProfileScreenState extends State<EditPersonalProfileScreen> {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: AppColors.textDarkColor),
-          onPressed: () => Get.back(),
+          onPressed: () => AppNavigator.back(),
         ),
         title: Text(
           TranslationHelper.tr('edit_profile'),

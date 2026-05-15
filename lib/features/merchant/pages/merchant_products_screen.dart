@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/navigation/app_navigator.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/core/localization/currency_helper.dart';
 import 'package:mrsheaf/features/merchant/controllers/merchant_products_controller.dart';
@@ -72,7 +73,7 @@ class MerchantProductsScreen extends GetView<MerchantProductsController> {
               children: [
                 _circleBtn(Icons.arrow_forward_rounded, () {
                   if (Get.key?.currentState?.canPop() ?? false) {
-                    Get.back();
+                    AppNavigator.back();
                   } else {
                     Get.offAllNamed('/merchant-home');
                   }
@@ -713,7 +714,7 @@ class MerchantProductsScreen extends GetView<MerchantProductsController> {
               width: double.infinity,
               height: 48,
               child: ElevatedButton(
-                onPressed: () => Get.back(),
+                onPressed: () => AppNavigator.back(),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primaryColor,
                   foregroundColor: AppColors.textDarkColor,
@@ -744,13 +745,13 @@ class MerchantProductsScreen extends GetView<MerchantProductsController> {
         content: Text('confirm_delete_product'.tr),
         actions: [
           TextButton(
-            onPressed: () => Get.back(),
+            onPressed: () => AppNavigator.back(),
             child: Text('cancel'.tr,
                 style: const TextStyle(color: AppColors.textDarkColor)),
           ),
           TextButton(
             onPressed: () async {
-              Get.back();
+              AppNavigator.back();
               final success = await controller.deleteProduct(product.id);
               if (success) {
                 ToastService.showSuccess('product_deleted_successfully'.tr);

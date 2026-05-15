@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/navigation/app_navigator.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/features/chat/controllers/chat_controller.dart';
 import 'package:mrsheaf/features/chat/models/conversation_model.dart';
@@ -168,7 +169,7 @@ class ChatScreen extends GetView<ChatController> {
           color: Colors.white,
           size: 20,
         ),
-        onPressed: () => Get.back(),
+        onPressed: () => AppNavigator.back(),
       ),
       title: Obx(() {
         final conv = controller.conversation.value;

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/navigation/app_navigator.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 
 /// A reusable searchable bottom sheet for selecting from a list of items.
@@ -146,7 +147,7 @@ class _SearchableSelectBottomSheetState extends State<SearchableSelectBottomShee
                   ),
                 ),
                 GestureDetector(
-                  onTap: () => Get.back(),
+                  onTap: () => AppNavigator.back(),
                   child: Container(
                     padding: const EdgeInsets.all(6),
                     decoration: BoxDecoration(
@@ -297,7 +298,7 @@ class _SearchableSelectBottomSheetState extends State<SearchableSelectBottomShee
                                     child: const Icon(Icons.check_rounded, color: AppColors.secondaryColor, size: 18),
                                   )
                                 : null,
-                            onTap: () => Get.back(result: item),
+                            onTap: () => AppNavigator.back(result: item),
                           );
                         },
                       ),

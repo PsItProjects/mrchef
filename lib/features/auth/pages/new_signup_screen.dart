@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/navigation/app_navigator.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/core/widgets/language_switcher.dart';
 import 'package:mrsheaf/features/auth/controllers/new_signup_controller.dart';
@@ -32,7 +33,7 @@ class NewSignupScreen extends StatelessWidget {
                   children: [
                     // Back button
                     GestureDetector(
-                      onTap: () => Get.back(),
+                      onTap: () => AppNavigator.back(),
                       child: Container(
                         width: 24,
                         height: 24,

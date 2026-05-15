@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/navigation/app_navigator.dart';
 import '../../../core/routes/app_routes.dart';
 import '../../auth/services/auth_service.dart';
 import '../../../core/services/toast_service.dart';
@@ -67,12 +68,12 @@ class SimpleMerchantHome extends StatelessWidget {
         content: Text('logout_confirmation'.tr),
         actions: [
           TextButton(
-            onPressed: () => Get.back(),
+            onPressed: () => AppNavigator.back(),
             child: Text('cancel'.tr),
           ),
           ElevatedButton(
             onPressed: () async {
-              Get.back();
+              AppNavigator.back();
 
               // Perform proper logout through AuthService
               try {

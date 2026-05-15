@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/navigation/app_navigator.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/core/services/toast_service.dart';
@@ -71,7 +72,7 @@ class _WebViewScreenState extends State<WebViewScreen> {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => Get.back(),
+          onPressed: () => AppNavigator.back(),
         ),
         title: Text(
           widget.title ?? _pageTitle,

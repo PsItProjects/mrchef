@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/navigation/app_navigator.dart';
 import 'package:mrsheaf/features/profile/models/address_model.dart';
 import 'package:mrsheaf/features/profile/controllers/shipping_addresses_controller.dart';
 import 'package:mrsheaf/features/profile/services/address_service.dart';
@@ -111,7 +112,7 @@ class AddEditAddressController extends GetxController {
       // Navigate back after current frame completes
       SchedulerBinding.instance.addPostFrameCallback((_) {
         if (Get.isRegistered<AddEditAddressController>()) {
-          Get.back(result: true);
+          AppNavigator.back(result: true);
           ToastService.showSuccess('address_saved'.tr);
         }
       });

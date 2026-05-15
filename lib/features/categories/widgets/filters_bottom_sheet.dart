@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/navigation/app_navigator.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/features/categories/controllers/categories_controller.dart';
 import 'package:mrsheaf/features/categories/widgets/filter_section.dart';
@@ -47,7 +48,7 @@ class FiltersBottomSheet extends GetView<CategoriesController> {
                 ),
                 
                 GestureDetector(
-                  onTap: () => Get.back(),
+                  onTap: () => AppNavigator.back(),
                   child: Container(
                     width: 24,
                     height: 24,

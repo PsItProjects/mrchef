@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/navigation/app_navigator.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/features/store_details/controllers/store_details_controller.dart';
 
@@ -89,7 +90,7 @@ class StoreDetailsHeader extends GetView<StoreDetailsController> {
               children: [
                 _buildNavButton(
                   icon: Icons.arrow_back_ios_new,
-                  onTap: () => Get.back(),
+                  onTap: () => AppNavigator.back(),
                 ),
                 Obx(() => _buildNavButton(
                   icon: controller.isFavorite.value

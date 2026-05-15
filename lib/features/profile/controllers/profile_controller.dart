@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/navigation/app_navigator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import 'package:mrsheaf/features/profile/models/user_profile_model.dart';
@@ -310,7 +311,7 @@ class ProfileController extends GetxController {
         ),
         actions: [
           TextButton(
-            onPressed: () => Get.back(),
+            onPressed: () => AppNavigator.back(),
             child: const Text(
               'Cancel',
               style: TextStyle(
@@ -323,7 +324,7 @@ class ProfileController extends GetxController {
           ),
           TextButton(
             onPressed: () {
-              Get.back();
+              AppNavigator.back();
               _performLogout();
             },
             child: const Text(

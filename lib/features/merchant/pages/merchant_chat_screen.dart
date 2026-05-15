@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/navigation/app_navigator.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/core/localization/translation_helper.dart';
@@ -146,7 +147,7 @@ class MerchantChatScreen extends GetView<MerchantChatController> {
           color: const Color(0xFF262626),
           size: 20,
         ),
-        onPressed: () => Get.back(),
+        onPressed: () => AppNavigator.back(),
       ),
       title: Obx(() {
         final conv = controller.conversation.value;

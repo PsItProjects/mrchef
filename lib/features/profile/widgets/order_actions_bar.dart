@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/navigation/app_navigator.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/features/profile/models/order_details_model.dart';
 import 'package:mrsheaf/features/profile/models/order_model.dart';
@@ -301,7 +302,7 @@ class OrderActionsBar extends StatelessWidget {
         ),
         actions: [
           TextButton(
-            onPressed: () => Get.back(),
+            onPressed: () => AppNavigator.back(),
             child: Text(
               'cancel'.tr,
               style: TextStyle(
@@ -312,7 +313,7 @@ class OrderActionsBar extends StatelessWidget {
           ),
           ElevatedButton(
             onPressed: () async {
-              Get.back();
+              AppNavigator.back();
               await controller.confirmDelivery();
             },
             style: ElevatedButton.styleFrom(
@@ -387,7 +388,7 @@ class OrderActionsBar extends StatelessWidget {
         ),
         actions: [
           TextButton(
-            onPressed: () => Get.back(),
+            onPressed: () => AppNavigator.back(),
             child: Text(
               'cancel'.tr,
               style: TextStyle(
@@ -398,7 +399,7 @@ class OrderActionsBar extends StatelessWidget {
           ),
           ElevatedButton(
             onPressed: () async {
-              Get.back();
+              AppNavigator.back();
               await controller.acceptPrice();
             },
             style: ElevatedButton.styleFrom(
@@ -446,7 +447,7 @@ class OrderActionsBar extends StatelessWidget {
         ),
         actions: [
           TextButton(
-            onPressed: () => Get.back(),
+            onPressed: () => AppNavigator.back(),
             child: Text(
               'cancel'.tr,
               style: TextStyle(
@@ -457,7 +458,7 @@ class OrderActionsBar extends StatelessWidget {
           ),
           ElevatedButton(
             onPressed: () async {
-              Get.back();
+              AppNavigator.back();
               await controller.rejectPrice();
             },
             style: ElevatedButton.styleFrom(
@@ -508,7 +509,7 @@ class OrderActionsBar extends StatelessWidget {
         ),
         actions: [
           TextButton(
-            onPressed: () => Get.back(),
+            onPressed: () => AppNavigator.back(),
             child: const Text(
               'No',
               style: TextStyle(
@@ -521,7 +522,7 @@ class OrderActionsBar extends StatelessWidget {
           ),
           ElevatedButton(
             onPressed: () {
-              Get.back();
+              AppNavigator.back();
               controller.cancelOrder();
             },
             style: ElevatedButton.styleFrom(

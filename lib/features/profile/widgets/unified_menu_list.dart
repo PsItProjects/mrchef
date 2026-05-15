@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/navigation/app_navigator.dart';
 import 'package:mrsheaf/core/services/biometric_service.dart';
 import 'package:mrsheaf/core/services/language_service.dart';
 import 'package:mrsheaf/core/services/profile_switch_service.dart';
@@ -444,7 +445,7 @@ class UnifiedMenuList extends StatelessWidget {
   }
 
   Future<void> _changeLanguage(String code) async {
-    Get.back();
+    AppNavigator.back();
     Get.dialog(
       const Center(
           child: CircularProgressIndicator(color: AppColors.primaryColor)),
@@ -454,10 +455,10 @@ class UnifiedMenuList extends StatelessWidget {
       final langService = Get.find<LanguageService>();
       await langService.setLanguage(code);
       Get.updateLocale(Locale(code));
-      Get.back();
+      AppNavigator.back();
       ToastService.showSuccess('language_updated_successfully'.tr);
     } catch (e) {
-      Get.back();
+      AppNavigator.back();
       ToastService.showError('language_update_failed'.tr);
     }
   }
@@ -496,13 +497,13 @@ class UnifiedMenuList extends StatelessWidget {
         content: Text('logout_confirmation'.tr),
         actions: [
           TextButton(
-            onPressed: () => Get.back(),
+            onPressed: () => AppNavigator.back(),
             child: Text('cancel'.tr,
                 style: const TextStyle(color: Color(0xFF999999))),
           ),
           TextButton(
             onPressed: () async {
-              Get.back();
+              AppNavigator.back();
               try {
                 final auth = Get.find<AuthService>();
                 await auth.logout();

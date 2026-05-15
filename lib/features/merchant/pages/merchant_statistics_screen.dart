@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/navigation/app_navigator.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/core/localization/translation_helper.dart';
 import 'package:mrsheaf/features/merchant/controllers/merchant_statistics_controller.dart';
@@ -64,7 +65,7 @@ class MerchantStatisticsScreen extends StatelessWidget {
       centerTitle: true,
       leading: IconButton(
         icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
-        onPressed: () => Get.back(),
+        onPressed: () => AppNavigator.back(),
       ),
       actions: [
         IconButton(

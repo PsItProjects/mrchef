@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/navigation/app_navigator.dart';
 import 'package:mrsheaf/core/routes/app_routes.dart';
 import 'package:mrsheaf/core/services/toast_service.dart';
 import 'package:mrsheaf/features/auth/services/auth_service.dart';
@@ -90,7 +91,7 @@ class _AccountDeletionSheetState extends State<_AccountDeletionSheet> {
         }
 
         if (Get.isBottomSheetOpen == true) {
-          Get.back();
+          AppNavigator.back();
         }
 
         Get.offAllNamed(AppRoutes.LOGIN);
@@ -146,7 +147,7 @@ class _AccountDeletionSheetState extends State<_AccountDeletionSheet> {
                         ),
                       ),
                       IconButton(
-                        onPressed: _isLoading.value ? null : () => Get.back(),
+                        onPressed: _isLoading.value ? null : () => AppNavigator.back(),
                         icon: const Icon(Icons.close),
                       ),
                     ],

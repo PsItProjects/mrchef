@@ -4,6 +4,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/navigation/app_navigator.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/features/merchant/services/merchant_profile_service.dart';
@@ -274,7 +275,7 @@ class _EditRestaurantInfoScreenState extends State<EditRestaurantInfoScreen>
                     icon: Icons.camera_alt_rounded,
                     label: 'camera'.tr,
                     onTap: () {
-                      Get.back();
+                      AppNavigator.back();
                       isLogo
                           ? _pickLogo(ImageSource.camera)
                           : _pickCover(ImageSource.camera);
@@ -287,7 +288,7 @@ class _EditRestaurantInfoScreenState extends State<EditRestaurantInfoScreen>
                     icon: Icons.photo_library_rounded,
                     label: 'gallery'.tr,
                     onTap: () {
-                      Get.back();
+                      AppNavigator.back();
                       isLogo
                           ? _pickLogo(ImageSource.gallery)
                           : _pickCover(ImageSource.gallery);
@@ -417,7 +418,7 @@ class _EditRestaurantInfoScreenState extends State<EditRestaurantInfoScreen>
       if (success) {
         ToastService.showSuccess('restaurant_info_updated_successfully'.tr);
         await Future.delayed(const Duration(milliseconds: 500));
-        Get.back(result: true);
+        AppNavigator.back(result: true);
       } else {
         ToastService.showError('restaurant_info_update_failed'.tr);
       }
@@ -551,7 +552,7 @@ class _EditRestaurantInfoScreenState extends State<EditRestaurantInfoScreen>
                   child: Row(
                     children: [
                       _frostedButton(
-                          Icons.arrow_back_rounded, () => Get.back()),
+                          Icons.arrow_back_rounded, () => AppNavigator.back()),
                       const Spacer(),
                       _frostedButton(Icons.camera_alt_rounded,
                           () => _showImagePicker(isLogo: false)),

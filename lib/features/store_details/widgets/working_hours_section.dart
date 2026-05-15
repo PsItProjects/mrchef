@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/navigation/app_navigator.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/features/store_details/controllers/store_details_controller.dart';
 
@@ -15,7 +16,7 @@ class WorkingHoursSection extends GetView<StoreDetailsController> {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Color(0xFF262626)),
-          onPressed: () => Get.back(),
+          onPressed: () => AppNavigator.back(),
         ),
         title: Text(
           'working_hours'.tr,

@@ -51,6 +51,24 @@ class ToastService {
     );
   }
 
+  static void showCustom({
+    required String title,
+    required String message,
+    IconData? icon,
+    Color? backgroundColor,
+    Color? textColor,
+    Duration? duration,
+    SnackPosition position = SnackPosition.TOP,
+  }) {
+    _showToast(
+      message: message,
+      title: title,
+      icon: icon ?? Icons.notifications_rounded,
+      backgroundColor: backgroundColor ?? _infoColor,
+      duration: duration?.inSeconds ?? 3,
+    );
+  }
+
   /// Internal method to show toast with consistent styling
   static void _showToast({
     required String message,
@@ -60,8 +78,13 @@ class ToastService {
     int duration = 3,
   }) {
     // Close any existing snackbar first
-    if (Get.isSnackbarOpen) {
-      Get.closeCurrentSnackbar();
+    try {
+      if (Get.isSnackbarOpen) {
+        Get.closeCurrentSnackbar();
+      }
+    } catch (_) {
+      // GetX can report an open snackbar before its animation controller is
+      // initialized. Ignore that stale queue entry and show the new toast.
     }
 
     Get.snackbar(

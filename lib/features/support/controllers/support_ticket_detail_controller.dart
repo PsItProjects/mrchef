@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/navigation/app_navigator.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mrsheaf/core/localization/translation_helper.dart';
 import '../../../core/services/toast_service.dart';
@@ -200,7 +201,7 @@ class SupportTicketDetailController extends GetxController {
               leading: const Icon(Icons.camera_alt, color: Colors.amber),
               title: Text('camera'.tr),
               onTap: () {
-                Get.back();
+                AppNavigator.back();
                 pickImage(source: ImageSource.camera);
               },
             ),
@@ -208,7 +209,7 @@ class SupportTicketDetailController extends GetxController {
               leading: const Icon(Icons.photo_library, color: Colors.amber),
               title: Text('gallery'.tr),
               onTap: () {
-                Get.back();
+                AppNavigator.back();
                 pickImage(source: ImageSource.gallery);
               },
             ),

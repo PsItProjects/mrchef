@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/navigation/app_navigator.dart';
 import 'package:mrsheaf/core/services/toast_service.dart';
 import 'package:mrsheaf/core/services/guest_service.dart';
 import 'package:mrsheaf/features/favorites/models/favorite_store_model.dart';
@@ -63,7 +64,7 @@ class FavoritesController extends GetxController {
       // Show error if not a customer
       WidgetsBinding.instance.addPostFrameCallback((_) {
         ToastService.showError('customer_only_feature'.tr);
-        Get.back();
+        AppNavigator.back();
       });
     }
   }

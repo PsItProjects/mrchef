@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/navigation/app_navigator.dart';
 
 class EditProfileHeader extends StatelessWidget {
   const EditProfileHeader({super.key});
@@ -13,7 +14,7 @@ class EditProfileHeader extends StatelessWidget {
         children: [
           // Back button
           GestureDetector(
-            onTap: () => Get.back(),
+            onTap: () => AppNavigator.back(),
             child: Container(
               width: 24,
               height: 24,

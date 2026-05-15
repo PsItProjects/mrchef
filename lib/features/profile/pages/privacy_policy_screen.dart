@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/navigation/app_navigator.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:mrsheaf/core/services/language_service.dart';
 
@@ -55,7 +56,7 @@ class _PrivacyPolicyScreenState extends State<PrivacyPolicyScreen> {
             color: const Color(0xFF262626),
             size: 20,
           ),
-          onPressed: () => Get.back(),
+          onPressed: () => AppNavigator.back(),
         ),
         title: Text(
           'privacy'.tr,

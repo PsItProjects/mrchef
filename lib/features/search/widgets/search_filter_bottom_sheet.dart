@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/navigation/app_navigator.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/features/search/controllers/search_controller.dart' as search;
 import 'package:mrsheaf/features/search/models/search_filter_model.dart';
@@ -124,7 +125,7 @@ class _SearchFilterBottomSheetState extends State<SearchFilterBottomSheet> {
                   ],
                 ),
                 IconButton(
-                  onPressed: () => Get.back(),
+                  onPressed: () => AppNavigator.back(),
                   style: IconButton.styleFrom(
                     backgroundColor: Colors.grey[100],
                     shape: RoundedRectangleBorder(
@@ -905,7 +906,7 @@ class _SearchFilterBottomSheetState extends State<SearchFilterBottomSheet> {
               child: GestureDetector(
                 onTap: () {
                   controller.clearFilters();
-                  Get.back();
+                  AppNavigator.back();
                 },
                 child: Container(
                   padding: const EdgeInsets.symmetric(vertical: 16),
@@ -934,7 +935,7 @@ class _SearchFilterBottomSheetState extends State<SearchFilterBottomSheet> {
               child: GestureDetector(
                 onTap: () {
                   controller.applyFilters(_tempFilters);
-                  Get.back();
+                  AppNavigator.back();
                 },
                 child: Container(
                   padding: const EdgeInsets.symmetric(vertical: 16),

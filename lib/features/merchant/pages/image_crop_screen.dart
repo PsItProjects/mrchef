@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/navigation/app_navigator.dart';
 import 'package:crop_your_image/crop_your_image.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/core/localization/translation_helper.dart';
@@ -33,7 +34,7 @@ class _ImageCropScreenState extends State<ImageCropScreen> {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.close, color: Colors.white),
-          onPressed: () => Get.back(),
+          onPressed: () => AppNavigator.back(),
         ),
         title: Text(
           TranslationHelper.tr('crop_image'),
@@ -79,7 +80,7 @@ class _ImageCropScreenState extends State<ImageCropScreen> {
                   // Handle crop result
                   if (result is CropSuccess) {
                     setState(() => _isCropping = false);
-                    Get.back(result: result.croppedImage);
+                    AppNavigator.back(result: result.croppedImage);
                   } else if (result is CropFailure) {
                     setState(() => _isCropping = false);
                     ToastService.showError(TranslationHelper.tr('crop_failed'));

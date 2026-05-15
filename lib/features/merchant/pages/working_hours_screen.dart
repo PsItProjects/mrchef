@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/navigation/app_navigator.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/features/merchant/services/merchant_settings_service.dart';
 import '../../../core/services/toast_service.dart';
@@ -95,7 +96,7 @@ class _WorkingHoursScreenState extends State<WorkingHoursScreen> {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: AppColors.textDarkColor),
-          onPressed: () => Get.back(),
+          onPressed: () => AppNavigator.back(),
         ),
         title: Text(
           'working_hours'.tr,
@@ -658,7 +659,7 @@ class _WorkingHoursScreenState extends State<WorkingHoursScreen> {
 
         // Wait a bit before closing to show the message
         await Future.delayed(const Duration(milliseconds: 500));
-        Get.back();
+        AppNavigator.back();
       }
     } finally {
       if (mounted) {

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/navigation/app_navigator.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/features/favorites/controllers/favorites_controller.dart';
 import 'package:mrsheaf/features/favorites/widgets/favorites_header.dart';
@@ -28,7 +29,7 @@ class FavoritesScreen extends GetView<FavoritesController> {
             size: 20,
             color: AppColors.textDarkColor,
           ),
-          onPressed: () => Get.back(),
+          onPressed: () => AppNavigator.back(),
         ),
         title: Text(
           'favorites'.tr,

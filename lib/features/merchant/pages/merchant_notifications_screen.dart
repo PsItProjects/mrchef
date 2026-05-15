@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/navigation/app_navigator.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/core/localization/translation_helper.dart';
 import 'package:mrsheaf/features/merchant/controllers/merchant_notifications_controller.dart';
@@ -58,7 +59,7 @@ class _MerchantNotificationsScreenState
       ),
       leading: IconButton(
         icon: const Icon(Icons.arrow_back, color: Colors.white),
-        onPressed: () => Get.back(),
+        onPressed: () => AppNavigator.back(),
       ),
       actions: [
         Obx(() {

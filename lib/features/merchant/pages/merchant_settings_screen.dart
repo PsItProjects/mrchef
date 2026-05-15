@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/navigation/app_navigator.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/features/auth/services/auth_service.dart';
 import 'package:mrsheaf/core/services/language_service.dart';
@@ -549,7 +550,7 @@ class _MerchantSettingsScreenState extends State<MerchantSettingsScreen> {
   }
 
   Future<void> _changeLanguage(String languageCode) async {
-    Get.back(); // Close dialog
+    AppNavigator.back(); // Close dialog
 
     // Show loading indicator
     Get.dialog(
@@ -573,20 +574,20 @@ class _MerchantSettingsScreenState extends State<MerchantSettingsScreen> {
         await _loadProfile();
 
         // Close loading dialog
-        Get.back();
+        AppNavigator.back();
 
         // Show success message
         ToastService.showSuccess('language_updated_successfully'.tr);
       } else {
         // Close loading dialog
-        Get.back();
+        AppNavigator.back();
 
         // Show error message
         ToastService.showError('language_update_failed'.tr);
       }
     } catch (e) {
       // Close loading dialog
-      Get.back();
+      AppNavigator.back();
 
       // Show error message
       ToastService.showError('language_update_failed'.tr);
@@ -630,12 +631,12 @@ class _MerchantSettingsScreenState extends State<MerchantSettingsScreen> {
         content: Text('logout_confirmation'.tr),
         actions: [
           TextButton(
-            onPressed: () => Get.back(),
+            onPressed: () => AppNavigator.back(),
             child: Text('cancel'.tr),
           ),
           TextButton(
             onPressed: () async {
-              Get.back();
+              AppNavigator.back();
               try {
                 await _authService.logout();
               } catch (e) {

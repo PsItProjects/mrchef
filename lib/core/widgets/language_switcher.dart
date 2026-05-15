@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/navigation/app_navigator.dart';
 import 'package:mrsheaf/core/localization/translation_helper.dart';
 import 'package:mrsheaf/core/services/language_service.dart';
 import 'package:mrsheaf/core/services/profile_switch_service.dart';
@@ -154,7 +155,7 @@ class LanguageSwitcher extends StatelessWidget {
                 children: [
                   Expanded(
                     child: TextButton(
-                      onPressed: () => Get.back(),
+                      onPressed: () => AppNavigator.back(),
                       child: Text(
                         TranslationHelper.tr('cancel'),
                         style: TextStyle(
@@ -181,7 +182,7 @@ class LanguageSwitcher extends StatelessWidget {
       onTap: () async {
         await languageService.setLanguage(code);
         Get.updateLocale(Locale(code));
-        Get.back();
+        AppNavigator.back();
         
         // Sync with backend if user is authenticated
         _syncLanguageWithBackend(code);

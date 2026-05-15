@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/navigation/app_navigator.dart';
 import 'package:mrsheaf/core/services/toast_service.dart';
 import 'package:mrsheaf/features/cart/controllers/cart_controller.dart';
 import 'package:mrsheaf/features/home/controllers/main_controller.dart';
@@ -31,7 +32,7 @@ class CartHeader extends GetView<CartController> {
                 final mainController = Get.find<MainController>();
                 mainController.changeTab(0);
               } catch (_) {
-                Get.back();
+                AppNavigator.back();
               }
             },
             child: Container(
@@ -142,7 +143,7 @@ class CartHeader extends GetView<CartController> {
                 children: [
                   Expanded(
                     child: GestureDetector(
-                      onTap: () => Get.back(),
+                      onTap: () => AppNavigator.back(),
                       child: Container(
                         height: 46,
                         decoration: BoxDecoration(
@@ -166,7 +167,7 @@ class CartHeader extends GetView<CartController> {
                   Expanded(
                     child: GestureDetector(
                       onTap: () {
-                        Get.back();
+                        AppNavigator.back();
                         controller.clearCart();
                         ToastService.showSuccess('all_items_cleared'.tr);
                       },

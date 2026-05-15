@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/navigation/app_navigator.dart';
 import 'package:mrsheaf/features/profile/models/address_model.dart';
 import 'package:mrsheaf/features/profile/pages/add_edit_address_screen.dart';
 import 'package:mrsheaf/features/profile/services/address_service.dart';
@@ -26,7 +27,7 @@ class ShippingAddressesController extends GetxController {
       // Show modal and go back
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _showGuestModeModal();
-        Get.back();
+        AppNavigator.back();
       });
       return;
     }
@@ -102,7 +103,7 @@ class ShippingAddressesController extends GetxController {
         ),
         actions: [
           TextButton(
-            onPressed: () => Get.back(),
+            onPressed: () => AppNavigator.back(),
             child: Text(
               'cancel'.tr,
               style: const TextStyle(
@@ -115,7 +116,7 @@ class ShippingAddressesController extends GetxController {
           ),
           TextButton(
             onPressed: () {
-              Get.back();
+              AppNavigator.back();
               _performDeleteAddress(address);
             },
             child: Text(
@@ -185,7 +186,7 @@ class ShippingAddressesController extends GetxController {
       }
 
       // Go back with result to indicate success
-      Get.back(result: true);
+      AppNavigator.back(result: true);
     } catch (e) {
       ToastService.showError('Failed to save address: ${e.toString()}');
     }

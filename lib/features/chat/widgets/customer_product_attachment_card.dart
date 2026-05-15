@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/navigation/app_navigator.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:mrsheaf/features/chat/controllers/chat_controller.dart';
@@ -1231,7 +1232,7 @@ class CustomerProductAttachmentCard extends StatelessWidget {
         ),
         actions: [
           TextButton(
-            onPressed: () => Get.back(),
+            onPressed: () => AppNavigator.back(),
             child: Text(
               _isArabic ? 'إلغاء' : 'Cancel',
               style: TextStyle(color: Colors.grey.shade600),
@@ -1239,7 +1240,7 @@ class CustomerProductAttachmentCard extends StatelessWidget {
           ),
           ElevatedButton(
             onPressed: () {
-              Get.back();
+              AppNavigator.back();
               if (Get.isRegistered<ChatController>()) {
                 Get.find<ChatController>().acceptPrice(id);
               }
@@ -1283,7 +1284,7 @@ class CustomerProductAttachmentCard extends StatelessWidget {
         ),
         actions: [
           TextButton(
-            onPressed: () => Get.back(),
+            onPressed: () => AppNavigator.back(),
             child: Text(
               _isArabic ? 'إلغاء' : 'Cancel',
               style: TextStyle(color: Colors.grey.shade600),
@@ -1291,7 +1292,7 @@ class CustomerProductAttachmentCard extends StatelessWidget {
           ),
           ElevatedButton(
             onPressed: () {
-              Get.back();
+              AppNavigator.back();
               if (Get.isRegistered<ChatController>()) {
                 Get.find<ChatController>().rejectPrice(id);
               }
@@ -1339,7 +1340,7 @@ class CustomerProductAttachmentCard extends StatelessWidget {
         ),
         actions: [
           TextButton(
-            onPressed: () => Get.back(),
+            onPressed: () => AppNavigator.back(),
             child: Text(
               _isArabic ? 'إلغاء' : 'Cancel',
               style: TextStyle(color: Colors.grey.shade600),
@@ -1347,7 +1348,7 @@ class CustomerProductAttachmentCard extends StatelessWidget {
           ),
           ElevatedButton(
             onPressed: () {
-              Get.back();
+              AppNavigator.back();
               if (onConfirmDelivery != null) {
                 onConfirmDelivery!(id);
               }

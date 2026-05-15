@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/navigation/app_navigator.dart';
 import 'package:mrsheaf/core/routes/app_routes.dart';
 import 'package:mrsheaf/core/services/toast_service.dart';
 import 'package:mrsheaf/features/categories/models/category_model.dart';
@@ -385,7 +386,7 @@ class CategoriesController extends GetxController with GetSingleTickerProviderSt
       }
     }
 
-    Get.back(); // Close bottom sheet
+    AppNavigator.back(); // Close bottom sheet
     ToastService.showSuccess('${appliedFilters.length} filters applied');
   }
 

@@ -12,43 +12,52 @@ class MyOrdersScreen extends GetView<MyOrdersController> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF2F2F2),
-      body: SafeArea(
-        child: Column(
-          children: [
-            // Header
-            const MyOrdersHeader(),
+    return WillPopScope(
+      onWillPop: () async {
+        if (controller.isSearching.value) {
+          controller.stopSearch();
+          return false;
+        }
+        return true;
+      },
+      child: Scaffold(
+        backgroundColor: const Color(0xFFF2F2F2),
+        body: SafeArea(
+          child: Column(
+            children: [
+              // Header
+              const MyOrdersHeader(),
 
-            // Tabs
-            const MyOrdersTabs(),
+              // Tabs
+              const MyOrdersTabs(),
 
-            // Content
-            Expanded(
-              child: Obx(() {
-                // Access observables to trigger reactivity
-                final isLoading = controller.isLoading.value;
-                final hasOrders = controller.hasOrdersInCurrentTab;
+              // Content
+              Expanded(
+                child: Obx(() {
+                  // Access observables to trigger reactivity
+                  final isLoading = controller.isLoading.value;
+                  final hasOrders = controller.hasOrdersInCurrentTab;
 
-                // Show loading indicator while fetching orders
-                if (isLoading) {
-                  return Center(
-                    child: CircularProgressIndicator(
-                      color: AppColors.primaryColor,
-                    ),
-                  );
-                }
+                  // Show loading indicator while fetching orders
+                  if (isLoading) {
+                    return Center(
+                      child: CircularProgressIndicator(
+                        color: AppColors.primaryColor,
+                      ),
+                    );
+                  }
 
-                // Show empty state if no orders
-                if (!hasOrders) {
-                  return const EmptyOrdersWidget();
-                }
+                  // Show empty state if no orders
+                  if (!hasOrders) {
+                    return const EmptyOrdersWidget();
+                  }
 
-                // Show orders list
-                return const OrdersList();
-              }),
-            ),
-          ],
+                  // Show orders list
+                  return const OrdersList();
+                }),
+              ),
+            ],
+          ),
         ),
       ),
     );

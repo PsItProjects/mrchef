@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/navigation/app_navigator.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/features/search/controllers/search_controller.dart' as search;
 
@@ -43,7 +44,7 @@ class _SearchAppBarState extends State<SearchAppBar> {
         children: [
           // Back button
           GestureDetector(
-            onTap: () => Get.back(),
+            onTap: () => AppNavigator.back(),
             child: Container(
               width: 48,
               height: 48,

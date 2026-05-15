@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/navigation/app_navigator.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/core/localization/translation_helper.dart';
 
@@ -204,7 +205,7 @@ class PriceConfirmationModal {
                 children: [
                   Expanded(
                     child: OutlinedButton(
-                      onPressed: () => Get.back(),
+                      onPressed: () => AppNavigator.back(),
                       style: OutlinedButton.styleFrom(
                         side: const BorderSide(color: Colors.grey),
                         shape: RoundedRectangleBorder(

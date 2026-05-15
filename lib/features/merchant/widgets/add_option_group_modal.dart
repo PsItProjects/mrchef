@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/navigation/app_navigator.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/features/merchant/models/merchant_product_model.dart';
 import '../../../core/services/toast_service.dart';
@@ -144,7 +145,7 @@ class _AddOptionGroupModalState extends State<AddOptionGroupModal> {
           ),
           IconButton(
             icon: const Icon(Icons.close, color: AppColors.textMediumColor),
-            onPressed: () => Get.back(),
+            onPressed: () => AppNavigator.back(),
           ),
         ],
       ),
@@ -591,7 +592,7 @@ class _AddOptionGroupModalState extends State<AddOptionGroupModal> {
         children: [
           Expanded(
             child: OutlinedButton(
-              onPressed: () => Get.back(),
+              onPressed: () => AppNavigator.back(),
               style: OutlinedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 side: BorderSide(color: Colors.grey[300]!),
@@ -815,6 +816,6 @@ class _AddOptionGroupModalState extends State<AddOptionGroupModal> {
     );
 
     // Return result
-    Get.back(result: optionGroup);
+    AppNavigator.back(result: optionGroup);
   }
 }

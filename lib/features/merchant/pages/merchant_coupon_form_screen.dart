@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/navigation/app_navigator.dart';
 import 'package:intl/intl.dart';
 import 'package:mrsheaf/core/services/toast_service.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
@@ -135,7 +136,7 @@ class _MerchantCouponFormScreenState extends State<MerchantCouponFormScreen> {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios, color: AppColors.textDarkColor),
-          onPressed: () => Get.back(),
+          onPressed: () => AppNavigator.back(),
         ),
       ),
       body: _isLoadingDetail

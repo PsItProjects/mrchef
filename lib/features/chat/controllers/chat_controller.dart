@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/navigation/app_navigator.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mrsheaf/core/localization/translation_helper.dart';
 import 'package:mrsheaf/core/services/fcm_service.dart';
@@ -86,7 +87,7 @@ class ChatController extends GetxController {
         print('   Arguments: ${Get.arguments}');
       }
       ToastService.showError('Invalid conversation ID');
-      Get.back();
+      AppNavigator.back();
       return;
     }
 
@@ -477,7 +478,7 @@ class ChatController extends GetxController {
               leading: const Icon(Icons.camera_alt, color: Colors.amber),
               title: Text('camera'.tr),
               onTap: () {
-                Get.back();
+                AppNavigator.back();
                 pickImage(source: ImageSource.camera);
               },
             ),
@@ -485,7 +486,7 @@ class ChatController extends GetxController {
               leading: const Icon(Icons.photo_library, color: Colors.amber),
               title: Text('gallery'.tr),
               onTap: () {
-                Get.back();
+                AppNavigator.back();
                 pickImage(source: ImageSource.gallery);
               },
             ),

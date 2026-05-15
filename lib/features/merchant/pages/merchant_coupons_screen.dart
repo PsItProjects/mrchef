@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/navigation/app_navigator.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/features/merchant/controllers/merchant_coupon_controller.dart';
 import 'package:mrsheaf/features/merchant/models/merchant_coupon_model.dart';
@@ -104,7 +105,7 @@ class MerchantCouponsScreen extends StatelessWidget {
               Row(
                 children: [
                   IconButton(
-                    onPressed: () => Get.back(),
+                    onPressed: () => AppNavigator.back(),
                     icon: const Icon(Icons.arrow_back_ios_rounded, color: Colors.white),
                   ),
                   Expanded(
@@ -739,7 +740,7 @@ class MerchantCouponsScreen extends StatelessWidget {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         actions: [
           TextButton(
-            onPressed: () => Get.back(),
+            onPressed: () => AppNavigator.back(),
             child: Text(
               'cancel'.tr,
               style: const TextStyle(color: AppColors.textMediumColor),
@@ -747,7 +748,7 @@ class MerchantCouponsScreen extends StatelessWidget {
           ),
           ElevatedButton(
             onPressed: () {
-              Get.back();
+              AppNavigator.back();
               controller.deleteCoupon(coupon.id);
             },
             style: ElevatedButton.styleFrom(

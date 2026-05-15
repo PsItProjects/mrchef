@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/navigation/app_navigator.dart';
 import 'package:mrsheaf/features/product_details/models/product_model.dart';
 import '../../../core/services/toast_service.dart';
 import 'package:mrsheaf/core/network/api_client.dart';
@@ -128,7 +129,7 @@ class AllProductsController extends GetxController {
   
   /// Go back
   void goBack() {
-    Get.back();
+    AppNavigator.back();
   }
   
   /// Get screen title

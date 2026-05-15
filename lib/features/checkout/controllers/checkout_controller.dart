@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/navigation/app_navigator.dart';
 import 'package:mrsheaf/core/network/api_client.dart';
 import 'package:mrsheaf/core/services/toast_service.dart';
 import 'package:mrsheaf/core/services/guest_service.dart';
@@ -45,7 +46,7 @@ class CheckoutController extends GetxController {
       // Show modal and go back
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _showGuestModeModal();
-        Get.back();
+        AppNavigator.back();
       });
       return;
     }
@@ -162,7 +163,7 @@ class CheckoutController extends GetxController {
             child: Row(
               children: [
                 GestureDetector(
-                  onTap: () => Get.back(),
+                  onTap: () => AppNavigator.back(),
                   child: const Icon(
                     Icons.close,
                     color: Color(0xFF262626),
@@ -457,7 +458,7 @@ class CheckoutController extends GetxController {
       final savedAddress = await _addressService.addAddress(address);
       
       // Close modal
-      Get.back();
+      AppNavigator.back();
       
       // Show success message
       ToastService.showSuccess('address_saved'.tr);

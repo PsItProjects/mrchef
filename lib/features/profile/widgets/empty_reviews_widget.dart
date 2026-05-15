@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/navigation/app_navigator.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/features/home/controllers/main_controller.dart';
 import 'package:mrsheaf/features/profile/controllers/my_reviews_controller.dart';
@@ -71,7 +72,7 @@ class EmptyReviewsWidget extends GetView<MyReviewsController> {
             height: 60,
             child: ElevatedButton(
               onPressed: () {
-                Get.back(); // Pop MyReviews screen
+                AppNavigator.back(); // Pop MyReviews screen
                 try {
                   final mainController = Get.find<MainController>();
                   mainController.changeTab(0); // Switch to Home tab

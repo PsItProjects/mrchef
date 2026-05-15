@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/navigation/app_navigator.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mrsheaf/core/services/toast_service.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
@@ -140,7 +141,7 @@ class EditReviewController extends GetxController {
                 leading: const Icon(Icons.photo_library_rounded, color: AppColors.primaryColor),
                 title: Text('choose_from_gallery'.tr),
                 onTap: () {
-                  Get.back();
+                  AppNavigator.back();
                   pickImageFromGallery();
                 },
               ),
@@ -148,7 +149,7 @@ class EditReviewController extends GetxController {
                 leading: const Icon(Icons.camera_alt_rounded, color: AppColors.primaryColor),
                 title: Text('take_photo'.tr),
                 onTap: () {
-                  Get.back();
+                  AppNavigator.back();
                   takePhoto();
                 },
               ),
@@ -192,7 +193,7 @@ class EditReviewController extends GetxController {
 
       if (success) {
         HapticFeedback.heavyImpact();
-        Get.back(result: true);
+        AppNavigator.back(result: true);
         ToastService.showSuccess('review_updated_successfully'.tr);
       }
     } catch (e) {
@@ -377,7 +378,7 @@ class EditReviewBottomSheet extends StatelessWidget {
 
         // Close button
         IconButton(
-          onPressed: () => Get.back(),
+          onPressed: () => AppNavigator.back(),
           icon: const Icon(Icons.close_rounded),
           color: const Color(0xFF999999),
           iconSize: 24,

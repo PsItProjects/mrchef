@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/navigation/app_navigator.dart';
 import 'package:mrsheaf/core/services/review_service.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/features/profile/models/review_model.dart';
@@ -233,7 +234,7 @@ class MyReviewsController extends GetxController {
                 children: [
                   Expanded(
                     child: OutlinedButton(
-                      onPressed: () => Get.back(result: false),
+                      onPressed: () => AppNavigator.back(result: false),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: AppColors.hintTextColor,
                         side: const BorderSide(color: Color(0xFFE0E0E0)),
@@ -255,7 +256,7 @@ class MyReviewsController extends GetxController {
                   const SizedBox(width: 12),
                   Expanded(
                     child: ElevatedButton(
-                      onPressed: () => Get.back(result: true),
+                      onPressed: () => AppNavigator.back(result: true),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.errorColor,
                         foregroundColor: Colors.white,
@@ -348,7 +349,7 @@ class MyReviewsController extends GetxController {
                   width: double.infinity,
                   height: 48,
                   child: ElevatedButton(
-                    onPressed: () => Get.back(),
+                    onPressed: () => AppNavigator.back(),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primaryColor,
                       foregroundColor: AppColors.secondaryColor,

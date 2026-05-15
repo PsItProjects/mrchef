@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/navigation/app_navigator.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/core/localization/currency_helper.dart';
 import 'package:mrsheaf/features/cart/controllers/cart_controller.dart';
@@ -28,7 +29,7 @@ class CheckoutScreen extends GetView<CheckoutController> {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios, color: Color(0xFF262626)),
-          onPressed: () => Get.back(),
+          onPressed: () => AppNavigator.back(),
         ),
       ),
       body: SafeArea(

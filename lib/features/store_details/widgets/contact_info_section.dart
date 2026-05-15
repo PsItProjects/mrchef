@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/navigation/app_navigator.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/features/store_details/controllers/store_details_controller.dart';
 
@@ -44,7 +45,7 @@ class ContactInfoSection extends GetView<StoreDetailsController> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   GestureDetector(
-                    onTap: () => Get.back(),
+                    onTap: () => AppNavigator.back(),
                     child: SvgPicture.asset(
                       'assets/icons/arrow_left.svg',
                       width: 24,

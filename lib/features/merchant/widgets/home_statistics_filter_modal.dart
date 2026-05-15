@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/navigation/app_navigator.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/features/merchant/controllers/merchant_dashboard_controller.dart';
 import '../../../core/services/toast_service.dart';
@@ -289,7 +290,7 @@ class _HomeStatisticsFilterModalState extends State<HomeStatisticsFilterModal> {
       startDate: _startDate,
       endDate: _endDate,
     );
-    Get.back();
+    AppNavigator.back();
   }
 }
 

@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/navigation/app_navigator.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:mrsheaf/features/product_details/models/product_model.dart';
@@ -57,7 +58,7 @@ class ProductDetailsController extends GetxController {
     
     if (receivedId == null) {
       ToastService.showError('معرف المنتج غير صحيح. يرجى المحاولة مرة أخرى.');
-      Future.delayed(const Duration(seconds: 2), () => Get.back());
+      Future.delayed(const Duration(seconds: 2), () => AppNavigator.back());
       return;
     }
     
@@ -351,13 +352,13 @@ class ProductDetailsController extends GetxController {
         AddToCartSuccessDialog.show(
           productName: productName,
           onGoToCart: () {
-            Get.back(); // Close dialog
-            Get.back(); // Close product details
+            AppNavigator.back(); // Close dialog
+            AppNavigator.back(); // Close product details
             // Navigate to cart tab in main screen
             Get.find<CartController>().goToCartPage();
           },
           onContinueShopping: () {
-            Get.back(); // Close dialog only
+            AppNavigator.back(); // Close dialog only
           },
         );
       }
@@ -398,7 +399,7 @@ class ProductDetailsController extends GetxController {
   }
   
   void goBack() {
-    Get.back();
+    AppNavigator.back();
   }
 
   void goToStore() {

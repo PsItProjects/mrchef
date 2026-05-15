@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/navigation/app_navigator.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/features/onboarding/controllers/vendor_step4_controller.dart';
 import 'package:mrsheaf/features/onboarding/widgets/vendor_stepper.dart';
@@ -15,7 +16,7 @@ class VendorStep4Screen extends GetView<VendorStep4Controller> {
         title: Text('vendor_step_4'.tr),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => Get.back(),
+          onPressed: () => AppNavigator.back(),
         ),
       ),
       body: SingleChildScrollView(

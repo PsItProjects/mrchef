@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/navigation/app_navigator.dart';
 import 'package:intl/intl.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/core/localization/translation_helper.dart';
@@ -110,7 +111,7 @@ class MerchantOrderDetailsScreen extends StatelessWidget {
             size: 18,
           ),
         ),
-        onPressed: () => Get.back(),
+        onPressed: () => AppNavigator.back(),
       ),
       actions: [
         Obx(() {
@@ -1167,7 +1168,7 @@ class MerchantOrderDetailsScreen extends StatelessWidget {
                 size: 18,
               ),
             ),
-            onPressed: () => Get.back(),
+            onPressed: () => AppNavigator.back(),
           ),
           flexibleSpace: FlexibleSpaceBar(
             background: Container(
@@ -1244,7 +1245,7 @@ class MerchantOrderDetailsScreen extends StatelessWidget {
                 size: 18,
               ),
             ),
-            onPressed: () => Get.back(),
+            onPressed: () => AppNavigator.back(),
           ),
           title: Text(
             'order_details'.tr,
@@ -1344,7 +1345,7 @@ class MerchantOrderDetailsScreen extends StatelessWidget {
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10)),
                 onTap: () {
-                  Get.back(); // Close bottom sheet
+                  AppNavigator.back(); // Close bottom sheet
                   if (status == 'awaiting_customer_approval' && currentStatus == 'pending') {
                     // Merchant sets price and awaits customer approval
                     _showPriceConfirmationForOrder(controller, order, targetStatus: 'awaiting_customer_approval');
@@ -1379,7 +1380,7 @@ class MerchantOrderDetailsScreen extends StatelessWidget {
               'negotiable',
       onConfirm: (agreedPrice, agreedDeliveryFee) async {
         // Close modal immediately
-        Get.back();
+        AppNavigator.back();
         // Then update status to the target status
         await controller.updateOrderStatus(
           targetStatus,
@@ -1412,14 +1413,14 @@ class MerchantOrderDetailsScreen extends StatelessWidget {
               style: TextStyle(color: Colors.grey[600], height: 1.4)),
           actions: [
             TextButton(
-              onPressed: () => Get.back(),
+              onPressed: () => AppNavigator.back(),
               child: Text('no'.tr,
                   style: TextStyle(
                       color: Colors.grey[500], fontWeight: FontWeight.w600)),
             ),
             ElevatedButton(
               onPressed: () {
-                Get.back();
+                AppNavigator.back();
                 controller.updateOrderStatus(newStatus);
               },
               style: ElevatedButton.styleFrom(

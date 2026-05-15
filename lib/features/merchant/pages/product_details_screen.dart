@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/navigation/app_navigator.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/core/localization/currency_helper.dart';
@@ -114,7 +115,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
       backgroundColor: AppColors.primaryColor,
       leading: IconButton(
         icon: const Icon(Icons.arrow_back, color: Colors.white),
-        onPressed: () => Get.back(),
+        onPressed: () => AppNavigator.back(),
       ),
       actions: [
         IconButton(
@@ -867,7 +868,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
               leading: const Icon(Icons.edit, color: AppColors.primaryColor),
               title: Text('edit_product'.tr),
               onTap: () {
-                Get.back();
+                AppNavigator.back();
                 Get.toNamed('/merchant/products/edit/${product.id}');
               },
             ),
@@ -880,7 +881,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                 product.isAvailable ? 'mark_unavailable'.tr : 'mark_available'.tr,
               ),
               onTap: () {
-                Get.back();
+                AppNavigator.back();
                 controller.toggleAvailability(product.id, !product.isAvailable);
               },
             ),
@@ -888,7 +889,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
               leading: const Icon(Icons.delete, color: Colors.red),
               title: Text('delete_product'.tr, style: const TextStyle(color: Colors.red)),
               onTap: () {
-                Get.back();
+                AppNavigator.back();
                 _confirmDelete(product);
               },
             ),
@@ -906,14 +907,14 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
         content: Text('delete_product_confirmation'.tr),
         actions: [
           TextButton(
-            onPressed: () => Get.back(),
+            onPressed: () => AppNavigator.back(),
             child: Text('cancel'.tr),
           ),
           TextButton(
             onPressed: () {
-              Get.back();
+              AppNavigator.back();
               controller.deleteProduct(product.id);
-              Get.back(); // Go back to products list
+              AppNavigator.back(); // Go back to products list
             },
             child: Text(
               'delete'.tr,

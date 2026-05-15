@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/navigation/app_navigator.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/features/support/controllers/support_ticket_detail_controller.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -309,7 +310,7 @@ class SupportTicketDetailScreen extends GetView<SupportTicketDetailController> {
               right: 20,
               child: IconButton(
                 icon: const Icon(Icons.close, color: Colors.white, size: 30),
-                onPressed: () => Get.back(),
+                onPressed: () => AppNavigator.back(),
               ),
             ),
           ],

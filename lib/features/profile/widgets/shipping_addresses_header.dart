@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/navigation/app_navigator.dart';
 import 'package:mrsheaf/features/profile/controllers/shipping_addresses_controller.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 
@@ -15,7 +16,7 @@ class ShippingAddressesHeader extends GetView<ShippingAddressesController> {
         children: [
           // Back button
           GestureDetector(
-            onTap: () => Get.back(),
+            onTap: () => AppNavigator.back(),
             child: const SizedBox(
               width: 24,
               height: 24,

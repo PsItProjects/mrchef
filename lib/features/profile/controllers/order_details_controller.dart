@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/navigation/app_navigator.dart';
 import 'package:mrsheaf/core/network/api_client.dart';
 import 'package:mrsheaf/core/routes/app_routes.dart';
 import 'package:mrsheaf/core/services/review_service.dart';
@@ -255,10 +256,10 @@ class OrderDetailsController extends GetxController {
         final orderMessageId = result['orderMessageId'] as int?;
 
         // Close loading dialog
-        Get.back();
+        AppNavigator.back();
 
         // Close order details bottom sheet
-        Get.back();
+        AppNavigator.back();
 
         // Navigate to chat screen with arguments
         Get.toNamed(
@@ -281,7 +282,7 @@ class OrderDetailsController extends GetxController {
         }
 
         // Close order details bottom sheet
-        Get.back();
+        AppNavigator.back();
 
         // Navigate to chat screen with the conversation ID
         Get.toNamed(
@@ -300,7 +301,7 @@ class OrderDetailsController extends GetxController {
     } catch (e) {
       // Close loading dialog if open
       if (Get.isDialogOpen ?? false) {
-        Get.back();
+        AppNavigator.back();
       }
 
       if (kDebugMode) {
@@ -398,7 +399,7 @@ class OrderDetailsController extends GetxController {
 
       // Close the review bottom sheet
       if (Get.isBottomSheetOpen ?? false) {
-        Get.back();
+        AppNavigator.back();
       }
 
       // Show success dialog
@@ -463,7 +464,7 @@ class OrderDetailsController extends GetxController {
                   width: double.infinity,
                   height: 48,
                   child: ElevatedButton(
-                    onPressed: () => Get.back(),
+                    onPressed: () => AppNavigator.back(),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primaryColor,
                       foregroundColor: AppColors.secondaryColor,
@@ -499,7 +500,7 @@ class OrderDetailsController extends GetxController {
 
       // Close the review bottom sheet if open
       if (Get.isBottomSheetOpen ?? false) {
-        Get.back();
+        AppNavigator.back();
       }
 
       // Show more specific error message
@@ -572,7 +573,7 @@ class OrderDetailsController extends GetxController {
                   width: double.infinity,
                   height: 48,
                   child: ElevatedButton(
-                    onPressed: () => Get.back(),
+                    onPressed: () => AppNavigator.back(),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.errorColor,
                       foregroundColor: Colors.white,

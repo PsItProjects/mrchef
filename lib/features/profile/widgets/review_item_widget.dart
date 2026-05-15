@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/navigation/app_navigator.dart';
 import 'package:mrsheaf/features/profile/models/review_model.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 
@@ -355,7 +356,7 @@ class ReviewItemWidget extends StatelessWidget {
               top: 40,
               right: 16,
               child: IconButton(
-                onPressed: () => Get.back(),
+                onPressed: () => AppNavigator.back(),
                 icon: const Icon(Icons.close, color: Colors.white, size: 30),
               ),
             ),

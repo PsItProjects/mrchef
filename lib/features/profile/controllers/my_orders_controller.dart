@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/navigation/app_navigator.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/features/home/controllers/main_controller.dart';
 import 'package:mrsheaf/features/profile/models/order_model.dart';
@@ -204,8 +205,25 @@ class MyOrdersController extends GetxController {
   }
 
   // Navigation
+  Future<void> navigateBack(BuildContext context) async {
+    if (isSearching.value) {
+      stopSearch();
+      return;
+    }
+
+    final navigator = Navigator.of(context);
+    if (navigator.canPop()) {
+      await navigator.maybePop();
+      return;
+    }
+
+    try {
+      Get.find<MainController>().goToSettings();
+    } catch (_) {}
+  }
+
   void goToHomePage() {
-    Get.back(); // Pop MyOrders screen
+    AppNavigator.back(); // Pop MyOrders screen
     try {
       final mainController = Get.find<MainController>();
       mainController.changeTab(0); // Switch to Home tab

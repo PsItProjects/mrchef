@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/navigation/app_navigator.dart';
 import '../../../core/services/toast_service.dart';
 
 class SettingsHeader extends StatelessWidget {
@@ -14,7 +15,7 @@ class SettingsHeader extends StatelessWidget {
         children: [
           // Back button
           GestureDetector(
-            onTap: () => Get.back(),
+            onTap: () => AppNavigator.back(),
             child: Container(
               width: 24,
               height: 24,

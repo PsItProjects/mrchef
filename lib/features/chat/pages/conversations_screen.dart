@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/navigation/app_navigator.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/features/chat/controllers/conversations_controller.dart';
 import 'package:mrsheaf/features/chat/widgets/conversation_card.dart';
@@ -24,7 +25,7 @@ class ConversationsScreen extends GetView<ConversationsController> {
             size: 20,
             color: AppColors.textDarkColor,
           ),
-          onPressed: () => Get.back(),
+          onPressed: () => AppNavigator.back(),
         ),
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

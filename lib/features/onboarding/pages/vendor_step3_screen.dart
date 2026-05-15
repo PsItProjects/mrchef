@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/navigation/app_navigator.dart';
 import 'package:mrsheaf/core/routes/app_routes.dart';
 import 'package:mrsheaf/features/onboarding/widgets/vendor_stepper.dart';
 
@@ -14,7 +15,7 @@ class VendorStep3Screen extends StatelessWidget {
         title: Text('vendor_step_3'.tr),
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
-          onPressed: () => Get.back(),
+          onPressed: () => AppNavigator.back(),
         ),
       ),
       body: Padding(

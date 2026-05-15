@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:mrsheaf/core/navigation/app_navigator.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:mrsheaf/core/theme/app_theme.dart';
 import 'package:mrsheaf/features/merchant/controllers/edit_product_controller.dart';
@@ -68,7 +69,7 @@ class EditProductScreen extends GetView<EditProductController> {
           ),
           child: Icon(Icons.arrow_back_ios_new, color: AppColors.secondaryColor, size: 18),
         ),
-        onPressed: () => Get.back(),
+        onPressed: () => AppNavigator.back(),
       ),
       title: Text(
         'edit_product'.tr,
