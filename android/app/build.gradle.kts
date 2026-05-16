@@ -60,7 +60,7 @@ android {
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
             ndk {
-                debugSymbolLevel = "NONE"
+                debugSymbolLevel = "SYMBOL_TABLE"
             }
         }
     }
@@ -68,7 +68,6 @@ android {
     packaging {
         jniLibs {
             useLegacyPackaging = true
-            doNotStrip += listOf("**/*.so")
         }
     }
 }
