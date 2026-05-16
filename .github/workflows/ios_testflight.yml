@@ -11,7 +11,7 @@ concurrency:
 
 jobs:
   build_upload:
-    runs-on: macos-14
+    runs-on: macos-latest
     timeout-minutes: 60
 
     steps:
@@ -56,20 +56,25 @@ jobs:
       - name: Setup Xcode
         uses: maxim-lobanov/setup-xcode@v1
         with:
-          # Ensure the runner uses a recent Swift toolchain (some Pods require newer Swift keywords).
           xcode-version: latest-stable
 
-      - name: Xcode & Swift versions
+      - name: Verify iOS 26 SDK
         run: |
           set -euo pipefail
           xcodebuild -version
+          SDK_VERSION=$(xcrun --sdk iphoneos --show-sdk-version)
+          echo "iphoneos SDK: $SDK_VERSION"
+          SDK_MAJOR=${SDK_VERSION%%.*}
+          if [ "$SDK_MAJOR" -lt 26 ]; then
+            echo "App Store Connect now requires iOS 26 SDK / Xcode 26+. Current SDK is $SDK_VERSION." >&2
+            exit 1
+          fi
           swiftc --version
 
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          # Pin Flutter version to avoid CI failures resolving "stable" on macos-14 (arm64)
-          flutter-version: "3.29.0"
+          channel: stable
           cache: true
 
       - name: Flutter pub get

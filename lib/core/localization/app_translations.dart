@@ -1474,6 +1474,7 @@ class AppTranslations extends Translations {
 
           // Cart and Pricing
           'go_to_store': 'Go to Store',
+          'view_store_menu_details': 'View menu and restaurant details',
           'meal_price': 'Meal price:',
           'meal_price_with_toppings': 'Meal price with toppings:',
           'selected_size_label': 'Selected size',
@@ -3076,6 +3077,7 @@ class AppTranslations extends Translations {
 
           // Cart and Pricing
           'go_to_store': 'الذهاب للمتجر',
+          'view_store_menu_details': 'عرض القائمة وتفاصيل المطعم',
           'meal_price': 'سعر الوجبة:',
           'meal_price_with_toppings': 'سعر الوجبة مع الإضافات:',
           'selected_size_label': 'الحجم المختار',

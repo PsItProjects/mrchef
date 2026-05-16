@@ -89,7 +89,7 @@ class ProductInfoSection extends GetView<ProductDetailsController> {
 
           const SizedBox(height: 12),
 
-          // ─── RATING + STORE ROW ────────────────────
+          // ─── RATING ROW ────────────────────────────
           Row(
             children: [
               GestureDetector(
@@ -132,36 +132,12 @@ class ProductInfoSection extends GetView<ProductDetailsController> {
                   );
                 }),
               ),
-              const SizedBox(width: 10),
-              GestureDetector(
-                onTap: controller.goToStore,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF0F0F0),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.storefront_rounded, color: Colors.grey[600], size: 16),
-                      const SizedBox(width: 4),
-                      Text(
-                        'go_to_store'.tr,
-                        style: TextStyle(fontFamily: 'Lato', fontWeight: FontWeight.w500, fontSize: 12, color: Colors.grey[700]),
-                      ),
-                      const SizedBox(width: 2),
-                      Icon(
-                        Get.locale == const Locale('ar') ? Icons.chevron_left_rounded : Icons.chevron_right_rounded,
-                        color: Colors.grey[500],
-                        size: 16,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
             ],
           ),
+
+          const SizedBox(height: 12),
+
+          _StoreCta(onTap: controller.goToStore),
 
           const SizedBox(height: 16),
 
@@ -368,6 +344,97 @@ class ProductInfoSection extends GetView<ProductDetailsController> {
             );
           }),
         ],
+      ),
+    );
+  }
+}
+
+class _StoreCta extends StatelessWidget {
+  final VoidCallback onTap;
+
+  const _StoreCta({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final isArabic = Get.locale?.languageCode == 'ar';
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(14),
+        child: Ink(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          decoration: BoxDecoration(
+            color: AppColors.primaryColor.withOpacity(0.10),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: AppColors.primaryColor.withOpacity(0.28)),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 38,
+                height: 38,
+                decoration: BoxDecoration(
+                  color: AppColors.primaryColor,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.storefront_rounded,
+                  color: Colors.white,
+                  size: 21,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'go_to_store'.tr,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontFamily: 'Lato',
+                        fontWeight: FontWeight.w800,
+                        fontSize: 14,
+                        color: Color(0xFF1A1A2E),
+                      ),
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      'view_store_menu_details'.tr,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontFamily: 'Lato',
+                        fontWeight: FontWeight.w500,
+                        fontSize: 12,
+                        color: Colors.grey.shade700,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 10),
+              Container(
+                width: 28,
+                height: 28,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Icon(
+                  isArabic ? Icons.chevron_left_rounded : Icons.chevron_right_rounded,
+                  color: AppColors.primaryColor,
+                  size: 22,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
